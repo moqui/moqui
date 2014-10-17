@@ -349,7 +349,9 @@ This Work includes contributions authored by David E. Jones, not as a
                 parent screen (the grand-parent screen).
 
                 If the screen-path type url starts with a "/" it will be relative to the root screen instead of relative
-                to the current screen.
+                to the current screen. If it starts with a "//" it will be relative to the root screen and a sparse
+                path, meaning that each path item specified will be searched for under the previous and does not have
+                to be a direct subscreen.
 
                 If the url-type is "plain" then this can be any valid URL (relative on current domain or absolute).
             </xs:documentation></xs:annotation>

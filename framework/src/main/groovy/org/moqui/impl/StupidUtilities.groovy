@@ -529,7 +529,7 @@ class StupidUtilities {
         int count = theList.size()
 
         // calculate the pagination values
-        int maxIndex = (new BigDecimal(count)).divide(pageSize, 0, BigDecimal.ROUND_DOWN) as int
+        int maxIndex = (new BigDecimal(count-1)).divide(pageSize, 0, BigDecimal.ROUND_DOWN) as int
         int pageRangeLow = (pageIndex * pageSize) + 1
         int pageRangeHigh = (pageIndex * pageSize) + pageSize
         if (pageRangeHigh > count) pageRangeHigh = count

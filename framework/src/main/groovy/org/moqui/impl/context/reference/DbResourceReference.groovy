@@ -85,7 +85,7 @@ class DbResourceReference extends BaseResourceReference {
         EntityValue dbr = getDbResource()
         if (dbr == null) return dirEntries
 
-        EntityList childList = ecf.entity.makeFind("DbResource").condition([parentResourceId:dbr.resourceId])
+        EntityList childList = ecf.entity.find("DbResource").condition([parentResourceId:dbr.resourceId])
                 .useCache(true).list()
         for (EntityValue child in childList) {
             dirEntries.add(new DbResourceReference().init("${location}/${child.filename}", child, ecf))
@@ -139,7 +139,7 @@ class DbResourceReference extends BaseResourceReference {
         String parentResourceId = null
         if (pathList) {
             for (String filename in pathList) {
-                EntityValue directoryValue = ecf.entity.makeFind("DbResource")
+                EntityValue directoryValue = ecf.entity.find("DbResource")
                         .condition([parentResourceId:parentResourceId, filename:filename])
                         .useCache(true).list().getFirst()
                 if (directoryValue == null) {
@@ -192,7 +192,7 @@ class DbResourceReference extends BaseResourceReference {
         for (String filename in filenameList) {
             // NOTE: using .useCache(true).list().getFirst() because .useCache(true).one() tries to use the one cache
             // and that doesn't auto-clear correctly for non-pk queries
-            lastValue = ecf.entity.makeFind("DbResource").condition([parentResourceId:parentResourceId, filename:filename])
+            lastValue = ecf.entity.find("DbResource").condition([parentResourceId:parentResourceId, filename:filename])
                     .useCache(true).list().getFirst()
             if (lastValue == null) continue
             parentResourceId = lastValue.resourceId
@@ -208,7 +208,7 @@ class DbResourceReference extends BaseResourceReference {
         if (dbr == null) return null
 
         // don't cache this, can be big and will be cached below this as text if needed
-        EntityValue dbrf = ecf.entity.makeFind("DbResourceFile").condition([resourceId:dbr.resourceId]).useCache(false).one()
+        EntityValue dbrf = ecf.entity.find("DbResourceFile").condition([resourceId:dbr.resourceId]).useCache(false).one()
 
         dbResourceFile = dbrf
         return dbrf

@@ -61,7 +61,7 @@ class L10nFacadeTests extends Specification {
 
         expect:
         ec.user.setLocale(new Locale(language, country))
-        EntityValue enumValue = ec.entity.makeFind("Enumeration").condition("enumId", enumId).one()
+        EntityValue enumValue = ec.entity.find("Enumeration").condition("enumId", enumId).one()
         localized == enumValue.get("description")
 
         cleanup:
@@ -105,7 +105,7 @@ class L10nFacadeTests extends Specification {
     @Unroll
     def "format output value (#value - #format)"() {
         expect:
-        result == ec.l10n.formatValue(value, format)
+        result == ec.l10n.format(value, format)
 
         where:
         value | format | result

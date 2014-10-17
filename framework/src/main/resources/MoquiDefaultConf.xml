@@ -28,6 +28,7 @@
 
         <cache name="screen.location" expire-time-idle="0" expire-time-live="0" max-elements="10000"/>
         <cache name="screen.location.perm" expire-time-idle="0" expire-time-live="0" max-elements="10000"/>
+        <cache name="screen.info" expire-time-idle="0" expire-time-live="0" max-elements="10000"/>
         <cache name="screen.template.mode" expire-time-idle="0" expire-time-live="0" max-elements="100"/>
         <cache name="screen.template.location" expire-time-idle="0" expire-time-live="0" max-elements="100"/>
         <cache name="screen.find.path" expire-time-idle="0" expire-time-live="0" max-elements="10000"/>

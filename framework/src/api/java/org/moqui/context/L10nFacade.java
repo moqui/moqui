@@ -39,6 +39,8 @@ public interface L10nFacade {
      * @param format The format string used to specify how to format the value.
      * @return The value as a String formatted according to the format string.
      */
+    String format(Object value, String format);
+    /** Same as the format() method, exists to support code using this older method name. */
     String formatValue(Object value, String format);
 
     java.sql.Time parseTime(String input, String format);

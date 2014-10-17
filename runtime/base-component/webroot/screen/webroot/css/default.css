@@ -105,11 +105,15 @@ white-space: normal;
 .form-cell span { display: block; }
 .form-cell input, .form-cell span input, .form-cell select, .form-cell span select { font-size: 0.9em; }
 .form-bottom-row { display: table-caption; caption-side: bottom; text-align: left; vertical-align: middle; width: 100%; }
+
 .bg-light .form-row:nth-child(odd) { background-color: #EEE; }
 .bg-dark .form-row:nth-child(odd) { background-color: #333; }
 /* .form-row:nth-child(even) { background-color: #FFF; } */
 .bg-light .form-row:hover { background-color: #DDD; }
 .bg-dark .form-row:hover { background-color: #222; }
+
+.bg-dark .modal-dialog .form-row:hover { background-color: #DDD; }
+.bg-dark .modal-dialog .form-row:nth-child(odd) { background-color: #EEE; }
 
 .form-list-outer .form-title { /* border-bottom: 1px solid #DDDDDF; */ white-space: nowrap; height: 1.5em; font-weight: bold; }
 
@@ -143,7 +147,7 @@ ul.float-box li { background: #EEEEEE; display: inline-block; line-height: 18px;
     box-shadow: 0 0 0 1px #080808 inset, 0 0 0 1px #333; }
 
 .shaded-area { padding: 8px; margin-bottom: 8px; }
-span.shaded-area { display: inline-block; }
+span.shaded-area { display: inline-block; white-space: normal; }
 .bg-light .shaded-area { background: #EEE; -webkit-box-shadow: 0 0 0 1px #F8F8F8 inset, 0 0 0 1px #CCC;
     box-shadow: 0 0 0 1px #F8F8F8 inset, 0 0 0 1px #CCC; }
 .bg-dark .shaded-area { background: #333; -webkit-box-shadow: 0 0 0 1px #080808 inset, 0 0 0 1px #333;
@@ -251,6 +255,9 @@ input[type=radio], input[type=checkbox] { height: auto; }
 
 .bg-dark .jstree-clicked { background-color: #013 !important; }
 .bg-dark .jstree-anchor:hover { background-color: #222; }
+
+a.jstree-anchor { white-space: normal; }
+.jstree-default .jstree-anchor { height: auto; }
 
 .bg-dark pre.editable-label { background-color: #3a3a3a; border-color: #222; }
 .editable-label { color: rgb(66, 139, 202); }

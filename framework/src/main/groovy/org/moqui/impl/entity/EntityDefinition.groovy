@@ -171,7 +171,7 @@ public class EntityDefinition {
 
             boolean alreadyDisabled = efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz()
             try {
-                EntityList userFieldList = efi.makeFind("moqui.entity.UserField").condition("entityName", getFullEntityName()).useCache(true).list()
+                EntityList userFieldList = efi.find("moqui.entity.UserField").condition("entityName", getFullEntityName()).useCache(true).list()
                 if (userFieldList) {
                     Set<String> userGroupIdSet = efi.getEcfi().getExecutionContext().getUser().getUserGroupIdSet()
                     for (EntityValue userField in userFieldList) {
@@ -509,7 +509,7 @@ public class EntityDefinition {
         if (includeUserFields && allowUserField && !this.isViewEntity()) {
             boolean alreadyDisabled = efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz()
             try {
-                EntityList userFieldList = efi.makeFind("moqui.entity.UserField").condition("entityName", getFullEntityName()).useCache(true).list()
+                EntityList userFieldList = efi.find("moqui.entity.UserField").condition("entityName", getFullEntityName()).useCache(true).list()
                 if (userFieldList) {
                     Set<String> userGroupIdSet = efi.getEcfi().getExecutionContext().getUser().getUserGroupIdSet()
                     for (EntityValue userField in userFieldList) {
@@ -541,7 +541,7 @@ public class EntityDefinition {
         // add UserFields to it if needed
         boolean alreadyDisabled = efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz()
         try {
-            EntityList userFieldList = efi.makeFind("moqui.entity.UserField").condition("entityName", getFullEntityName()).useCache(true).list()
+            EntityList userFieldList = efi.find("moqui.entity.UserField").condition("entityName", getFullEntityName()).useCache(true).list()
             if (userFieldList) {
                 hasUserFields = true
 
@@ -577,7 +577,7 @@ public class EntityDefinition {
         if (includeUserFields && allowUserField && !this.isViewEntity()) {
             boolean alreadyDisabled = efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz()
             try {
-                EntityList userFieldList = efi.makeFind("moqui.entity.UserField").condition("entityName", getFullEntityName()).useCache(true).list()
+                EntityList userFieldList = efi.find("moqui.entity.UserField").condition("entityName", getFullEntityName()).useCache(true).list()
                 if (userFieldList) {
                     Set<String> userGroupIdSet = efi.getEcfi().getExecutionContext().getUser().getUserGroupIdSet()
                     for (EntityValue userField in userFieldList) {

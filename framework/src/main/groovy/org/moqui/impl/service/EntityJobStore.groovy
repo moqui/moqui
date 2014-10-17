@@ -131,7 +131,7 @@ class EntityJobStore implements JobStore {
             logger.info("Quartz recovery complete")
 
             // remove lingering 'complete' triggers...
-            EntityList triggerList = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers")
+            EntityList triggerList = ecfi.entityFacade.find("moqui.service.quartz.QrtzTriggers")
                     .condition([schedName:instanceName, triggerState:Constants.STATE_COMPLETE])
                     .disableAuthz().list()
             for (EntityValue triggerValue in triggerList) {
@@ -141,7 +141,7 @@ class EntityJobStore implements JobStore {
             logger.info("Removed " + triggerList.size() + " 'complete' triggers")
 
             // clean up any fired trigger entries
-            int n = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzFiredTriggers")
+            int n = ecfi.entityFacade.find("moqui.service.quartz.QrtzFiredTriggers")
                     .condition([schedName:instanceName]).disableAuthz().deleteAll()
             logger.info("Removed " + n + " stale fired job entries")
         } catch (JobPersistenceException e) {
@@ -209,7 +209,7 @@ class EntityJobStore implements JobStore {
         return new RecoverMisfiredJobsResult(hasMoreMisfiredTriggers, misfiredTriggers.size(), earliestNewTime)
     }
     public boolean hasMisfiredTriggersInState(String state1, long ts, int count, List<TriggerKey> resultList) {
-        EntityList triggerList = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers")
+        EntityList triggerList = ecfi.entityFacade.find("moqui.service.quartz.QrtzTriggers")
                 .condition([schedName:instanceName, triggerState:state1])
                 .condition("misfireInstr", EntityCondition.NOT_EQUAL, Trigger.MISFIRE_INSTRUCTION_IGNORE_MISFIRE_POLICY)
                 .condition("nextFireTime", EntityCondition.LESS_THAN, ts)
@@ -229,7 +229,7 @@ class EntityJobStore implements JobStore {
     }
 
     public List<OperableTrigger> selectTriggersForRecoveringJobs() throws IOException, ClassNotFoundException {
-        EntityList triggerList = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzFiredTriggers")
+        EntityList triggerList = ecfi.entityFacade.find("moqui.service.quartz.QrtzFiredTriggers")
                 .condition([schedName:instanceName, instanceName:instanceId, requestsRecovery:"T"])
                 .disableAuthz().list()
 
@@ -244,7 +244,7 @@ class EntityJobStore implements JobStore {
             rcvryTrig.setMisfireInstruction(SimpleTrigger.MISFIRE_INSTRUCTION_IGNORE_MISFIRE_POLICY)
 
             Map triggerMap = [schedName:instanceName, triggerName:ev.triggerName, triggerGroup:ev.triggerGroup]
-            EntityValue triggerValue = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers").condition(triggerMap).disableAuthz().one()
+            EntityValue triggerValue = ecfi.entityFacade.find("moqui.service.quartz.QrtzTriggers").condition(triggerMap).disableAuthz().one()
             JobDataMap jd = new JobDataMap()
             if (triggerValue != null && triggerValue.jobData != null && triggerValue.getSerialBlob("jobData").length() > 0) {
                 ObjectInputStream ois = new ObjectInputStream(triggerValue.getSerialBlob("jobData").binaryStream)
@@ -401,7 +401,7 @@ class EntityJobStore implements JobStore {
 
         Map ftMap = [schedName:instanceName, jobGroup:jobGroup]
         if (jobName) ftMap.put("jobName", jobName)
-        EntityList qftList = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzFiredTriggers").condition(ftMap).disableAuthz().list()
+        EntityList qftList = ecfi.entityFacade.find("moqui.service.quartz.QrtzFiredTriggers").condition(ftMap).disableAuthz().list()
 
         for (EntityValue qft in qftList) {
             FiredTriggerRecord rec = new FiredTriggerRecord()
@@ -424,7 +424,7 @@ class EntityJobStore implements JobStore {
     }
 
     protected boolean isTriggerGroupPaused(String triggerGroup) {
-        return ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzPausedTriggerGrps")
+        return ecfi.entityFacade.find("moqui.service.quartz.QrtzPausedTriggerGrps")
                 .condition([schedName:instanceName, triggerGroup:triggerGroup]).disableAuthz().count() > 0
     }
     protected void insertPausedTriggerGroup(String triggerGroup) {
@@ -436,7 +436,7 @@ class EntityJobStore implements JobStore {
                 .parameters([schedName:instanceName, triggerGroup:triggerGroup]).disableAuthz().call()
     }
     protected int deletePausedTriggerGroup(GroupMatcher<TriggerKey> matcher) {
-        return ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzPausedTriggerGrps")
+        return ecfi.entityFacade.find("moqui.service.quartz.QrtzPausedTriggerGrps")
                 .condition([schedName:instanceName]).condition("triggerGroup", EntityCondition.LIKE, toSqlLikeClause(matcher))
                 .disableAuthz().deleteAll()
     }
@@ -480,9 +480,9 @@ class EntityJobStore implements JobStore {
     boolean removeJob(JobKey jobKey) throws JobPersistenceException {
         Map jobMap = [schedName:instanceName, jobName:jobKey.name, jobGroup:jobKey.group]
         // remove all job triggers
-        ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers").condition(jobMap).disableAuthz().deleteAll()
+        ecfi.entityFacade.find("moqui.service.quartz.QrtzTriggers").condition(jobMap).disableAuthz().deleteAll()
         // remove job
-        return ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzJobDetails").condition(jobMap).disableAuthz().deleteAll() as boolean
+        return ecfi.entityFacade.find("moqui.service.quartz.QrtzJobDetails").condition(jobMap).disableAuthz().deleteAll() as boolean
     }
 
     @Override
@@ -496,7 +496,7 @@ class EntityJobStore implements JobStore {
     JobDetail retrieveJob(JobKey jobKey) throws JobPersistenceException {
         try {
             Map jobMap = [schedName:instanceName, jobName:jobKey.name, jobGroup:jobKey.group]
-            EntityValue jobValue = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzJobDetails").condition(jobMap).disableAuthz().one()
+            EntityValue jobValue = ecfi.entityFacade.find("moqui.service.quartz.QrtzJobDetails").condition(jobMap).disableAuthz().one()
             if (!jobValue) return null
             JobDetailImpl job = new JobDetailImpl()
 
@@ -530,15 +530,15 @@ class EntityJobStore implements JobStore {
     boolean removeTrigger(TriggerKey triggerKey) throws JobPersistenceException {
         // delete the trigger
         Map triggerMap = [schedName:instanceName, triggerName:triggerKey.name, triggerGroup:triggerKey.group]
-        EntityValue triggerValue = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers").condition(triggerMap).disableAuthz().one()
+        EntityValue triggerValue = ecfi.entityFacade.find("moqui.service.quartz.QrtzTriggers").condition(triggerMap).disableAuthz().one()
         if (triggerValue == null) return false
         ecfi.serviceFacade.sync().name("delete#moqui.service.quartz.QrtzBlobTriggers").parameters(triggerMap).disableAuthz().call()
         ecfi.serviceFacade.sync().name("delete#moqui.service.quartz.QrtzTriggers").parameters(triggerMap).disableAuthz().call()
 
         // if there are no other triggers for the job, delete the job
         Map jobMap = [schedName:instanceName, jobName:triggerValue.jobName, jobGroup:triggerValue.jobGroup]
-        EntityList jobTriggers = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers").condition(jobMap).disableAuthz().list()
-        if (!jobTriggers) ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzJobDetails").condition(jobMap).disableAuthz().deleteAll()
+        EntityList jobTriggers = ecfi.entityFacade.find("moqui.service.quartz.QrtzTriggers").condition(jobMap).disableAuthz().list()
+        if (!jobTriggers) ecfi.entityFacade.find("moqui.service.quartz.QrtzJobDetails").condition(jobMap).disableAuthz().deleteAll()
 
         return true
     }
@@ -554,7 +554,7 @@ class EntityJobStore implements JobStore {
     boolean replaceTrigger(TriggerKey triggerKey, OperableTrigger operableTrigger) throws JobPersistenceException {
         // get the existing trigger and job
         Map triggerMap = [schedName:instanceName, triggerName:triggerKey.name, triggerGroup:triggerKey.group]
-        EntityValue triggerValue = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers").condition(triggerMap).disableAuthz().one()
+        EntityValue triggerValue = ecfi.entityFacade.find("moqui.service.quartz.QrtzTriggers").condition(triggerMap).disableAuthz().one()
         if (triggerValue == null) return false
         JobDetail job = retrieveJob(new JobKey((String) triggerValue.jobName, (String) triggerValue.jobGroup))
 
@@ -570,7 +570,7 @@ class EntityJobStore implements JobStore {
     @Override
     OperableTrigger retrieveTrigger(TriggerKey triggerKey) throws JobPersistenceException {
         Map triggerMap = [schedName:instanceName, triggerName:triggerKey.name, triggerGroup:triggerKey.group]
-        EntityValue triggerValue = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers").condition(triggerMap).disableAuthz().one()
+        EntityValue triggerValue = ecfi.entityFacade.find("moqui.service.quartz.QrtzTriggers").condition(triggerMap).disableAuthz().one()
         if (triggerValue == null) return null
 
         if (triggerValue.triggerType != Constants.TTYPE_BLOB)
@@ -580,7 +580,7 @@ class EntityJobStore implements JobStore {
     OperableTrigger getTriggerFromBlob(String triggerName, String triggerGroup) {
         Map triggerMap = [schedName:instanceName, triggerName:triggerName, triggerGroup:triggerGroup]
 
-        EntityValue blobTriggerValue = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzBlobTriggers").condition(triggerMap).disableAuthz().one()
+        EntityValue blobTriggerValue = ecfi.entityFacade.find("moqui.service.quartz.QrtzBlobTriggers").condition(triggerMap).disableAuthz().one()
         if (!blobTriggerValue) {
             logger.warn("Count not find blob for trigger ${triggerName}:${triggerGroup}")
             return null
@@ -595,28 +595,28 @@ class EntityJobStore implements JobStore {
 
     @Override
     boolean checkExists(JobKey jobKey) throws JobPersistenceException {
-        return ecfi.getEntityFacade().makeFind("moqui.service.quartz.QrtzJobDetails")
+        return ecfi.getEntityFacade().find("moqui.service.quartz.QrtzJobDetails")
                 .condition([schedName:instanceName, jobName:jobKey.name, jobGroup:jobKey.group]).disableAuthz().count() > 0
     }
 
     @Override
     boolean checkExists(TriggerKey triggerKey) throws JobPersistenceException {
-        return ecfi.getEntityFacade().makeFind("moqui.service.quartz.QrtzTriggers")
+        return ecfi.getEntityFacade().find("moqui.service.quartz.QrtzTriggers")
                 .condition([schedName:instanceName, triggerName:triggerKey.name, triggerGroup:triggerKey.group])
                 .disableAuthz().count() > 0
     }
 
     @Override
     void clearAllSchedulingData() throws JobPersistenceException {
-        ecfi.getEntityFacade().makeFind("moqui.service.quartz.QrtzSimpleTriggers").condition([schedName:instanceName]).deleteAll()
-        ecfi.getEntityFacade().makeFind("moqui.service.quartz.QrtzCronTriggers").condition([schedName:instanceName]).deleteAll()
-        ecfi.getEntityFacade().makeFind("moqui.service.quartz.QrtzSimpropTriggers").condition([schedName:instanceName]).deleteAll()
-        ecfi.getEntityFacade().makeFind("moqui.service.quartz.QrtzBlobTriggers").condition([schedName:instanceName]).deleteAll()
-        ecfi.getEntityFacade().makeFind("moqui.service.quartz.QrtzTriggers").condition([schedName:instanceName]).deleteAll()
+        ecfi.getEntityFacade().find("moqui.service.quartz.QrtzSimpleTriggers").condition([schedName:instanceName]).deleteAll()
+        ecfi.getEntityFacade().find("moqui.service.quartz.QrtzCronTriggers").condition([schedName:instanceName]).deleteAll()
+        ecfi.getEntityFacade().find("moqui.service.quartz.QrtzSimpropTriggers").condition([schedName:instanceName]).deleteAll()
+        ecfi.getEntityFacade().find("moqui.service.quartz.QrtzBlobTriggers").condition([schedName:instanceName]).deleteAll()
+        ecfi.getEntityFacade().find("moqui.service.quartz.QrtzTriggers").condition([schedName:instanceName]).deleteAll()
 
-        ecfi.getEntityFacade().makeFind("moqui.service.quartz.QrtzJobDetails").condition([schedName:instanceName]).deleteAll()
-        ecfi.getEntityFacade().makeFind("moqui.service.quartz.QrtzCalendars").condition([schedName:instanceName]).deleteAll()
-        ecfi.getEntityFacade().makeFind("moqui.service.quartz.QrtzPausedTriggerGrps").condition([schedName:instanceName]).deleteAll()
+        ecfi.getEntityFacade().find("moqui.service.quartz.QrtzJobDetails").condition([schedName:instanceName]).deleteAll()
+        ecfi.getEntityFacade().find("moqui.service.quartz.QrtzCalendars").condition([schedName:instanceName]).deleteAll()
+        ecfi.getEntityFacade().find("moqui.service.quartz.QrtzPausedTriggerGrps").condition([schedName:instanceName]).deleteAll()
     }
 
     @Override
@@ -657,13 +657,13 @@ class EntityJobStore implements JobStore {
     }
 
     boolean calendarExists(String calendarName) throws JobPersistenceException {
-        return ecfi.getEntityFacade().makeFind("moqui.service.quartz.QrtzCalendars")
+        return ecfi.getEntityFacade().find("moqui.service.quartz.QrtzCalendars")
                 .condition([schedName:instanceName, calendarName:calendarName]).disableAuthz().count() > 0
     }
 
     List<OperableTrigger> getTriggersForCalendar(String calendarName) throws JobPersistenceException {
         Map calMap = [schedName:instanceName, calendarName:calendarName]
-        EntityList triggerList = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers").condition(calMap).disableAuthz().list()
+        EntityList triggerList = ecfi.entityFacade.find("moqui.service.quartz.QrtzTriggers").condition(calMap).disableAuthz().list()
         List<OperableTrigger> resultList = []
         for (EntityValue triggerValue in triggerList)
             resultList.add(getTriggerFromBlob((String) triggerValue.triggerName, (String) triggerValue.triggerGroup))
@@ -673,9 +673,9 @@ class EntityJobStore implements JobStore {
     @Override
     boolean removeCalendar(String calendarName) throws JobPersistenceException {
         Map calMap = [schedName:instanceName, calendarName:calendarName]
-        if (ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers").condition(calMap)
+        if (ecfi.entityFacade.find("moqui.service.quartz.QrtzTriggers").condition(calMap)
                 .disableAuthz().count() > 0) throw new JobPersistenceException("Calender cannot be removed if it referenced by a trigger!")
-        return ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzCalendars").condition(calMap).disableAuthz().deleteAll() as boolean
+        return ecfi.entityFacade.find("moqui.service.quartz.QrtzCalendars").condition(calMap).disableAuthz().deleteAll() as boolean
     }
 
     @Override
@@ -683,7 +683,7 @@ class EntityJobStore implements JobStore {
         try {
             Map calMap = [schedName:instanceName, calendarName:calendarName]
 
-            EntityValue calValue = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzCalendars").condition(calMap).disableAuthz().one()
+            EntityValue calValue = ecfi.entityFacade.find("moqui.service.quartz.QrtzCalendars").condition(calMap).disableAuthz().one()
             if (!calValue) return null
 
             org.quartz.Calendar cal = null
@@ -699,7 +699,7 @@ class EntityJobStore implements JobStore {
 
     @Override
     List<String> getCalendarNames() throws JobPersistenceException {
-        EntityList calendarList = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzCalendars")
+        EntityList calendarList = ecfi.entityFacade.find("moqui.service.quartz.QrtzCalendars")
                 .condition([schedName:instanceName]).selectField("calendarName").distinct(true).disableAuthz().list()
         List<String> resultList = new ArrayList<>(calendarList.size())
         for (EntityValue calendarValue in calendarList) resultList.add((String) calendarValue.calendarName)
@@ -708,23 +708,23 @@ class EntityJobStore implements JobStore {
 
     @Override
     int getNumberOfJobs() throws JobPersistenceException {
-        return ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzJobDetails").condition([schedName:instanceName])
+        return ecfi.entityFacade.find("moqui.service.quartz.QrtzJobDetails").condition([schedName:instanceName])
                 .disableAuthz().count()
     }
     @Override
     int getNumberOfTriggers() throws JobPersistenceException {
-        return ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers").condition([schedName:instanceName])
+        return ecfi.entityFacade.find("moqui.service.quartz.QrtzTriggers").condition([schedName:instanceName])
                 .disableAuthz().count()
     }
     @Override
     int getNumberOfCalendars() throws JobPersistenceException {
-        return ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzCalendars").condition([schedName:instanceName])
+        return ecfi.entityFacade.find("moqui.service.quartz.QrtzCalendars").condition([schedName:instanceName])
                 .disableAuthz().count()
     }
 
     @Override
     Set<JobKey> getJobKeys(GroupMatcher<JobKey> matcher) throws JobPersistenceException {
-        EntityList jobList = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzJobDetails")
+        EntityList jobList = ecfi.entityFacade.find("moqui.service.quartz.QrtzJobDetails")
                 .condition([schedName:instanceName]).condition("jobGroup", EntityCondition.LIKE, toSqlLikeClause(matcher))
                 .selectField("jobName").selectField("jobGroup").disableAuthz().list()
         Set<JobKey> jobKeySet = new ArrayList<>(jobList.size())
@@ -734,7 +734,7 @@ class EntityJobStore implements JobStore {
 
     @Override
     Set<TriggerKey> getTriggerKeys(GroupMatcher<TriggerKey> matcher) throws JobPersistenceException {
-        EntityList triggerList = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers")
+        EntityList triggerList = ecfi.entityFacade.find("moqui.service.quartz.QrtzTriggers")
                 .condition([schedName:instanceName]).condition("triggerGroup", EntityCondition.LIKE, toSqlLikeClause(matcher))
                 .selectField("triggerName").selectField("triggerGroup").disableAuthz().list()
         Set<TriggerKey> triggerKeySet = new ArrayList<>(triggerList.size())
@@ -745,7 +745,7 @@ class EntityJobStore implements JobStore {
 
     @Override
     List<String> getJobGroupNames() throws JobPersistenceException {
-        EntityList jobList = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzJobDetails")
+        EntityList jobList = ecfi.entityFacade.find("moqui.service.quartz.QrtzJobDetails")
                 .condition([schedName:instanceName]).selectField("jobGroup").distinct(true).disableAuthz().list()
         List<String> jobGroupList = new ArrayList<>(jobList.size())
         for (EntityValue jobValue in jobList) jobGroupList.add((String) jobValue.jobGroup)
@@ -754,7 +754,7 @@ class EntityJobStore implements JobStore {
 
     @Override
     List<String> getTriggerGroupNames() throws JobPersistenceException {
-        EntityList triggerList = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers")
+        EntityList triggerList = ecfi.entityFacade.find("moqui.service.quartz.QrtzTriggers")
                 .condition([schedName:instanceName]).selectField("triggerGroup").distinct(true).disableAuthz().list()
         List<String> triggerGroupList = new ArrayList<>(triggerList.size())
         for (EntityValue triggerValue in triggerList) triggerGroupList.add((String) triggerValue.triggerGroup)
@@ -762,7 +762,7 @@ class EntityJobStore implements JobStore {
     }
 
     protected List<String> getTriggerGroupNames(GroupMatcher<TriggerKey> matcher) throws JobPersistenceException {
-        EntityList triggerList = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers")
+        EntityList triggerList = ecfi.entityFacade.find("moqui.service.quartz.QrtzTriggers")
                 .condition([schedName:instanceName]).condition("triggerGroup", EntityCondition.LIKE, toSqlLikeClause(matcher))
                 .selectField("triggerGroup").distinct(true).disableAuthz().list()
         List<String> triggerGroupList = new ArrayList<>(triggerList.size())
@@ -773,7 +773,7 @@ class EntityJobStore implements JobStore {
     @Override
     List<OperableTrigger> getTriggersForJob(JobKey jobKey) throws JobPersistenceException {
         Map jobMap = [schedName:instanceName, jobName:jobKey.name, jobGroup:jobKey.group]
-        EntityList triggerList = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers").condition(jobMap).disableAuthz().list()
+        EntityList triggerList = ecfi.entityFacade.find("moqui.service.quartz.QrtzTriggers").condition(jobMap).disableAuthz().list()
         List<OperableTrigger> resultList = []
         for (EntityValue triggerValue in triggerList)
             resultList.add(getTriggerFromBlob((String) triggerValue.triggerName, (String) triggerValue.triggerGroup))
@@ -783,7 +783,7 @@ class EntityJobStore implements JobStore {
     @Override
     TriggerState getTriggerState(TriggerKey triggerKey) throws JobPersistenceException {
         Map triggerMap = [schedName:instanceName, triggerName:triggerKey.name, triggerGroup:triggerKey.group]
-        EntityValue triggerValue = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers").condition(triggerMap).disableAuthz().one()
+        EntityValue triggerValue = ecfi.entityFacade.find("moqui.service.quartz.QrtzTriggers").condition(triggerMap).disableAuthz().one()
         String ts = triggerValue?.triggerState
 
         if (ts == null) return TriggerState.NONE
@@ -798,7 +798,7 @@ class EntityJobStore implements JobStore {
     }
     protected TriggerStatus selectTriggerStatus(TriggerKey triggerKey) {
         Map triggerMap = [schedName:instanceName, triggerName:triggerKey.name, triggerGroup:triggerKey.group]
-        EntityValue triggerValue = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers").condition(triggerMap).disableAuthz().one()
+        EntityValue triggerValue = ecfi.entityFacade.find("moqui.service.quartz.QrtzTriggers").condition(triggerMap).disableAuthz().one()
         if (!triggerValue) return null
 
         Long nextFireTime = triggerValue.getLong("nextFireTime")
@@ -875,7 +875,7 @@ class EntityJobStore implements JobStore {
 
     @Override
     Set<String> getPausedTriggerGroups() throws JobPersistenceException {
-        EntityList triggerList = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzPausedTriggerGrps")
+        EntityList triggerList = ecfi.entityFacade.find("moqui.service.quartz.QrtzPausedTriggerGrps")
                 .condition([schedName:instanceName]).selectField("triggerGroup").disableAuthz().list()
         Set<String> triggerGroupSet = new HashSet<>(triggerList.size())
         for (EntityValue triggerValue in triggerList) triggerGroupSet.add((String) triggerValue.triggerGroup)
@@ -1023,7 +1023,7 @@ class EntityJobStore implements JobStore {
         EntityConditionFactory ecf = ecfi.entityFacade.getConditionFactory()
         List<TriggerKey> nextTriggers = new LinkedList<TriggerKey>()
 
-        EntityList triggerList = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers")
+        EntityList triggerList = ecfi.entityFacade.find("moqui.service.quartz.QrtzTriggers")
                 .selectFields(['triggerName', 'triggerGroup', 'nextFireTime', 'priority'])
                 .condition([schedName:instanceName, triggerState:Constants.STATE_WAITING])
                 .condition(ecf.makeCondition("nextFireTime", EntityCondition.LESS_THAN_EQUAL_TO, noLaterThan))
@@ -1045,34 +1045,34 @@ class EntityJobStore implements JobStore {
     protected synchronized String getFiredTriggerRecordId() { return instanceId + ftrCtr++ }
 
     protected int updateTriggerState(TriggerKey triggerKey, String state) {
-        return ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers")
+        return ecfi.entityFacade.find("moqui.service.quartz.QrtzTriggers")
                 .condition([schedName:instanceName, triggerName:triggerKey.name, triggerGroup:triggerKey.group])
                 .disableAuthz().updateAll([triggerState:state])
     }
     protected int updateTriggerStateFromOtherState(TriggerKey triggerKey, String newState, String oldState) {
-        return ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers")
+        return ecfi.entityFacade.find("moqui.service.quartz.QrtzTriggers")
                 .condition([schedName:instanceName, triggerName:triggerKey.name, triggerGroup:triggerKey.group, triggerState:oldState])
                 .disableAuthz().updateAll([triggerState:newState])
     }
     protected int updateTriggerStatesForJob(JobKey jobKey, String newState) {
-        return ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers")
+        return ecfi.entityFacade.find("moqui.service.quartz.QrtzTriggers")
                 .condition([schedName:instanceName, jobName:jobKey.name, jobGroup:jobKey.group])
                 .disableAuthz().updateAll([triggerState:newState])
     }
     protected int updateTriggerStatesForJobFromOtherState(JobKey jobKey, String newState, String oldState) {
-        return ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers")
+        return ecfi.entityFacade.find("moqui.service.quartz.QrtzTriggers")
                 .condition([schedName:instanceName, jobName:jobKey.name, jobGroup:jobKey.group, triggerState:oldState])
                 .disableAuthz().updateAll([triggerState:newState])
     }
     protected int updateTriggerGroupStateFromOtherStates(GroupMatcher<TriggerKey> matcher, String newState, List<String> oldStates) {
-        return ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers")
+        return ecfi.entityFacade.find("moqui.service.quartz.QrtzTriggers")
                 .condition([schedName:instanceName])
                 .condition("triggerGroup", EntityCondition.LIKE, toSqlLikeClause(matcher))
                 .condition("triggerState", EntityCondition.IN, oldStates)
                 .disableAuthz().updateAll([triggerState:newState])
     }
     protected int updateTriggerStatesFromOtherStates(String newState, List<String> oldStates) {
-        return ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers")
+        return ecfi.entityFacade.find("moqui.service.quartz.QrtzTriggers")
                 .condition([schedName:instanceName])
                 .condition("triggerState", EntityCondition.IN, oldStates)
                 .disableAuthz().updateAll([triggerState:newState])
@@ -1116,7 +1116,7 @@ class EntityJobStore implements JobStore {
         }
     }
     protected int deleteFiredTrigger(String entryId) {
-        return ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzFiredTriggers")
+        return ecfi.entityFacade.find("moqui.service.quartz.QrtzFiredTriggers")
                 .condition([schedName:instanceName, entryId:entryId]).disableAuthz().deleteAll()
     }
 
@@ -1215,7 +1215,7 @@ class EntityJobStore implements JobStore {
     }
     protected String selectTriggerState(TriggerKey triggerKey) {
         Map triggerMap = [schedName:instanceName, triggerName:triggerKey.name, triggerGroup:triggerKey.group]
-        EntityValue triggerValue = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers").condition(triggerMap).disableAuthz().one()
+        EntityValue triggerValue = ecfi.entityFacade.find("moqui.service.quartz.QrtzTriggers").condition(triggerMap).disableAuthz().one()
         if (!triggerValue) return Constants.STATE_DELETED
         return triggerValue.triggerState
     }

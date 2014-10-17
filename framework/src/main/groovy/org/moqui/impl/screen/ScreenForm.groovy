@@ -70,7 +70,7 @@ class ScreenForm {
         // does this form have DbForm extensions?
         boolean alreadyDisabled = ecfi.getExecutionContext().getArtifactExecution().disableAuthz()
         try {
-            EntityList dbFormLookupList = this.ecfi.getEntityFacade().makeFind("DbFormLookup")
+            EntityList dbFormLookupList = this.ecfi.getEntityFacade().find("DbFormLookup")
                     .condition("modifyXmlScreenForm", fullFormName).useCache(true).list()
             if (dbFormLookupList) hasDbExtensions = true
         } finally {
@@ -239,7 +239,7 @@ class ScreenForm {
         try {
             // find DbForm records and merge them in as well
             String formName = sd.getLocation() + "#" + internalFormNode."@name"
-            EntityList dbFormLookupList = this.ecfi.getEntityFacade().makeFind("DbFormLookup")
+            EntityList dbFormLookupList = this.ecfi.getEntityFacade().find("DbFormLookup")
                     .condition("userGroupId", EntityCondition.IN, ecfi.getExecutionContext().getUser().getUserGroupIdSet())
                     .condition("modifyXmlScreenForm", formName)
                     .useCache(true).list()
@@ -260,10 +260,10 @@ class ScreenForm {
         Node dbFormNode = dbFormNodeById.get(formId)
 
         if (dbFormNode == null) {
-            EntityValue dbForm = ecfi.getEntityFacade().makeFind("DbForm").condition("formId", formId).useCache(true).one()
+            EntityValue dbForm = ecfi.getEntityFacade().find("DbForm").condition("formId", formId).useCache(true).one()
             dbFormNode = new Node(null, (dbForm.isListForm == "Y" ? "form-list" : "form-single"),null)
 
-            EntityList dbFormFieldList = ecfi.getEntityFacade().makeFind("moqui.screen.form.DbFormField").condition("formId", formId)
+            EntityList dbFormFieldList = ecfi.getEntityFacade().find("moqui.screen.form.DbFormField").condition("formId", formId)
                     .useCache(true).list()
             for (EntityValue dbFormField in dbFormFieldList) {
                 String fieldName = dbFormField.fieldName
@@ -278,7 +278,7 @@ class ScreenForm {
                 String widgetName = fieldType.substring(6)
                 Node widgetNode = subFieldNode.appendNode(widgetName, [:])
 
-                EntityList dbFormFieldAttributeList = ecfi.getEntityFacade().makeFind("DbFormFieldAttribute")
+                EntityList dbFormFieldAttributeList = ecfi.getEntityFacade().find("DbFormFieldAttribute")
                         .condition([formId:formId, fieldName:fieldName]).useCache(true).list()
                 for (EntityValue dbFormFieldAttribute in dbFormFieldAttributeList) {
                     String attributeName = dbFormFieldAttribute.attributeName
@@ -292,9 +292,9 @@ class ScreenForm {
                 }
 
                 // add option settings when applicable
-                EntityList dbFormFieldOptionList = ecfi.getEntityFacade().makeFind("moqui.screen.form.DbFormFieldOption")
+                EntityList dbFormFieldOptionList = ecfi.getEntityFacade().find("moqui.screen.form.DbFormFieldOption")
                         .condition([formId:formId, fieldName:fieldName]).useCache(true).list()
-                EntityList dbFormFieldEntOptsList = ecfi.getEntityFacade().makeFind("moqui.screen.form.DbFormFieldEntOpts")
+                EntityList dbFormFieldEntOptsList = ecfi.getEntityFacade().find("moqui.screen.form.DbFormFieldEntOpts")
                         .condition([formId:formId, fieldName:fieldName]).useCache(true).list()
                 EntityList combinedOptionList = new EntityListImpl(ecfi.getEntityFacade())
                 combinedOptionList.addAll(dbFormFieldOptionList)
@@ -308,14 +308,14 @@ class ScreenForm {
                         Node entityOptionsNode = widgetNode.appendNode("entity-options", [text:(optionValue.text ?: "\${description}")])
                         Node entityFindNode = entityOptionsNode.appendNode("entity-find", ["entity-name":optionValue.entityName])
 
-                        EntityList dbFormFieldEntOptsCondList = ecfi.getEntityFacade().makeFind("moqui.screen.form.DbFormFieldEntOptsCond")
+                        EntityList dbFormFieldEntOptsCondList = ecfi.getEntityFacade().find("moqui.screen.form.DbFormFieldEntOptsCond")
                                 .condition([formId:formId, fieldName:fieldName, sequenceNum:optionValue.sequenceNum])
                                 .useCache(true).list()
                         for (EntityValue dbFormFieldEntOptsCond in dbFormFieldEntOptsCondList) {
                             entityFindNode.appendNode("econdition", ["field-name":dbFormFieldEntOptsCond.entityFieldName, value:dbFormFieldEntOptsCond.value])
                         }
 
-                        EntityList dbFormFieldEntOptsOrderList = ecfi.getEntityFacade().makeFind("moqui.screen.form.DbFormFieldEntOptsOrder")
+                        EntityList dbFormFieldEntOptsOrderList = ecfi.getEntityFacade().find("moqui.screen.form.DbFormFieldEntOptsOrder")
                                 .condition([formId:formId, fieldName:fieldName, sequenceNum:optionValue.sequenceNum])
                                 .orderBy("orderSequenceNum").useCache(true).list()
                         for (EntityValue dbFormFieldEntOptsOrder in dbFormFieldEntOptsOrderList) {
@@ -649,12 +649,12 @@ class ScreenForm {
                         try {
                             if (relatedEntityName == "moqui.basic.Enumeration") {
                                 // make sure the title is an actual enumTypeId before adding condition
-                                if (ecfi.entityFacade.makeFind("moqui.basic.EnumerationType").condition("enumTypeId", title).count() > 0) {
+                                if (ecfi.entityFacade.find("moqui.basic.EnumerationType").condition("enumTypeId", title).count() > 0) {
                                     entityFindNode.appendNode("econdition", ["field-name":"enumTypeId", "value":title])
                                 }
                             } else if (relatedEntityName == "moqui.basic.StatusItem") {
                                 // make sure the title is an actual statusTypeId before adding condition
-                                if (ecfi.entityFacade.makeFind("moqui.basic.StatusType").condition("statusTypeId", title).count() > 0) {
+                                if (ecfi.entityFacade.find("moqui.basic.StatusType").condition("statusTypeId", title).count() > 0) {
                                     entityFindNode.appendNode("econdition", ["field-name":"statusTypeId", "value":title])
                                 }
                             }
@@ -932,7 +932,7 @@ class ScreenForm {
         for (Node childNode in (Collection<Node>) widgetNode.children()) {
             if (childNode.name() == "entity-options") {
                 Node entityFindNode = childNode."entity-find"[0]
-                EntityFindImpl ef = (EntityFindImpl) ec.entity.makeFind((String) entityFindNode."@entity-name")
+                EntityFindImpl ef = (EntityFindImpl) ec.entity.find((String) entityFindNode."@entity-name")
                 ef.findNode(entityFindNode)
 
                 EntityList eli = ef.list()

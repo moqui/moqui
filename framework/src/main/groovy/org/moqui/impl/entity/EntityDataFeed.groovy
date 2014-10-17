@@ -46,7 +46,7 @@ class EntityDataFeed {
      * to the current time. This method should be called in a service or something to manage the transaction.
      * See the org.moqui.impl.EntityServices.get#DataFeedLatestDocuments service.*/
     List<Map> getFeedLatestDocuments(String dataFeedId) {
-        EntityValue dataFeed = efi.makeFind("moqui.entity.feed.DataFeed").condition("dataFeedId", dataFeedId)
+        EntityValue dataFeed = efi.find("moqui.entity.feed.DataFeed").condition("dataFeedId", dataFeedId)
                 .useCache(false).forUpdate(true).one()
         Timestamp fromUpdateStamp = dataFeed.getTimestamp("lastFeedStamp")
         Timestamp thruUpdateStamp = new Timestamp(System.currentTimeMillis())
@@ -58,7 +58,7 @@ class EntityDataFeed {
     }
 
     List<Map> getFeedDocuments(String dataFeedId, Timestamp fromUpdateStamp, Timestamp thruUpdatedStamp) {
-        EntityList dataFeedDocumentList = efi.makeFind("moqui.entity.feed.DataFeedDocument")
+        EntityList dataFeedDocumentList = efi.find("moqui.entity.feed.DataFeedDocument")
                 .condition("dataFeedId", dataFeedId).useCache(true).list()
 
         List<Map> fullDocumentList = []
@@ -191,7 +191,7 @@ class EntityDataFeed {
         EntityList dataFeedAndDocumentList = null
         boolean alreadyDisabled = efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz()
         try {
-            dataFeedAndDocumentList = efi.makeFind("moqui.entity.feed.DataFeedAndDocument")
+            dataFeedAndDocumentList = efi.find("moqui.entity.feed.DataFeedAndDocument")
                     .condition("dataFeedTypeEnumId", "DTFDTP_RT_PUSH").useCache(true).list()
             //logger.warn("============= got dataFeedAndDocumentList: ${dataFeedAndDocumentList}")
         } finally {
@@ -222,7 +222,7 @@ class EntityDataFeed {
         EntityList dataDocumentConditionList = null
         boolean alreadyDisabled = efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz()
         try {
-            dataDocument = efi.makeFind("moqui.entity.document.DataDocument")
+            dataDocument = efi.find("moqui.entity.document.DataDocument")
                     .condition("dataDocumentId", dataDocumentId).useCache(true).one()
             if (dataDocument == null) throw new EntityException("No DataDocument found with ID [${dataDocumentId}]")
             dataDocumentFieldList = dataDocument.findRelated("moqui.entity.document.DataDocumentField", null, null, true, false)
@@ -495,7 +495,7 @@ class EntityDataFeed {
                             boolean alreadyDisabled = efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz()
                             try {
                                 // for each DataDocument go through feedValues and get the primary entity's PK field(s) for each
-                                dataDocument = efi.makeFind("moqui.entity.document.DataDocument")
+                                dataDocument = efi.find("moqui.entity.document.DataDocument")
                                         .condition("dataDocumentId", dataDocumentId).useCache(true).one()
                                 dataDocumentFieldList =
                                     dataDocument.findRelated("moqui.entity.document.DataDocumentField", null, null, true, false)
@@ -637,7 +637,7 @@ class EntityDataFeed {
                                 List<Map> documents = efi.getDataDocuments(dataDocumentId, condition, null, null)
 
                                 if (documents) {
-                                    EntityList dataFeedAndDocumentList = efi.makeFind("moqui.entity.feed.DataFeedAndDocument")
+                                    EntityList dataFeedAndDocumentList = efi.find("moqui.entity.feed.DataFeedAndDocument")
                                             .condition("dataFeedTypeEnumId", "DTFDTP_RT_PUSH")
                                             .condition("dataDocumentId", dataDocumentId).useCache(true).list()
 

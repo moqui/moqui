@@ -84,7 +84,7 @@ class MoquiShiroRealm implements Realm {
         try {
             boolean alreadyDisabled = ecfi.executionContext.artifactExecution.disableAuthz()
             try {
-                newUserAccount = ecfi.entityFacade.makeFind("moqui.security.UserAccount").condition("username", username).useCache(true).one()
+                newUserAccount = ecfi.entityFacade.find("moqui.security.UserAccount").condition("username", username).useCache(true).one()
             } finally {
                 if (!alreadyDisabled) ecfi.executionContext.artifactExecution.enableAuthz()
             }

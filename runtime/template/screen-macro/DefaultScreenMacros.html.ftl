@@ -381,8 +381,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
 
     <#assign afterScreenScript>
     $("#${.node["@name"]}").bind('select_node.jstree', function(e,data) {window.location.href = data.node.a_attr.href;}).jstree({
-        "plugins" : [ "themes" ],
-        "core" : { "themes" : { "url" : true, "dots" : true, "icons" : false }, "multiple" : false,
+        "core" : { "themes" : { "url" : false, "dots" : true, "icons" : false }, "multiple" : false,
             'data' : {
                 dataType: 'json', type: 'POST',
                 url: function (node) { return '${ajaxUrlInfo.url}'; },
@@ -1152,8 +1151,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#assign datepickerFormat><@getBootstrapDateFormat .node["@format"]!defaultFormat/></#assign>
 
     <#assign curFieldName><@fieldName .node/></#assign>
-    <#assign fieldValueFrom = ec.l10n.formatValue(ec.context.get(curFieldName + "_from")!?default(.node["@default-value-from"]!""), defaultFormat)>
-    <#assign fieldValueThru = ec.l10n.formatValue(ec.context.get(curFieldName + "_thru")!?default(.node["@default-value-thru"]!""), defaultFormat)>
+    <#assign fieldValueFrom = ec.l10n.format(ec.context.get(curFieldName + "_from")!?default(.node["@default-value-from"]!""), defaultFormat)>
+    <#assign fieldValueThru = ec.l10n.format(ec.context.get(curFieldName + "_thru")!?default(.node["@default-value-thru"]!""), defaultFormat)>
     <#assign id><@fieldId .node/></#assign>
 
     <span class="form-date-find">
@@ -1493,17 +1492,20 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
     <#-- NOTE: removed number type (<#elseif validationClasses?contains("number")>number) because on Safari, maybe others, ignores size and behaves funny for decimal values -->
     <input type="<#if validationClasses?contains("email")>email<#elseif validationClasses?contains("url")>url<#else>text</#if>" name="${name}" value="${fieldValue?html}" size="${.node.@size!"70"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.evaluateCondition(.node.@disabled!"false", "")> disabled="disabled"</#if> id="${id}" class="form-control<#if validationClasses?has_content> ${validationClasses}</#if>"<#if validationClasses?has_content> data-vv-validations="${validationClasses}"</#if><#if validationClasses?contains("required")> required</#if><#if regexpInfo?has_content> pattern="${regexpInfo.regexp}"</#if><#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
     <#if .node["@ac-transition"]?has_content>
+        <#assign acUrlInfo = sri.makeUrlByType(.node["@ac-transition"], "transition", null, "false")>
+        <#assign acUrlParameterMap = acUrlInfo.getParameterMap()>
+        <#assign acShowValue = .node["@ac-show-value"]! != "false">
+        <#if acShowValue>
         <span id="${id}_value" class="form-autocomplete-value"><#if .node["@ac-initial-text"]??>${ec.resource.evaluateStringExpand(.node["@ac-initial-text"], "")}<#else>&nbsp;</#if></span>
+        </#if>
         <#assign afterFormScript>
             $("#${id}").autocomplete({
                 source: function(request, response) { $.ajax({
-                    url: "${sri.screenUrlInfo.url}/${.node["@ac-transition"]}", type: "POST", dataType: "json", data: { term: request.term },
+                    url: "${acUrlInfo.url}", type: "POST", dataType: "json", data: { term: request.term<#list acUrlParameterMap?keys as parameterKey><#if acUrlParameterMap.get(parameterKey)?has_content>, "${parameterKey}":"${acUrlParameterMap.get(parameterKey)}"</#if></#list> },
                     success: function(data) { response($.map(data, function(item) { return { label: item.label, value: item.value } })); }
-                }); },
-                <#t><#if .node["@ac-delay"]?has_content>delay: ${.node["@ac-delay"]},</#if>
-                <#t><#if .node["@ac-min-length"]?has_content>minLength: ${.node["@ac-min-length"]},</#if>
+                }); }, <#if .node["@ac-delay"]?has_content>delay: ${.node["@ac-delay"]},</#if><#if .node["@ac-min-length"]?has_content>minLength: ${.node["@ac-min-length"]},</#if>
                 select: function( event, ui ) {
-                    if (ui.item) { this.value = ui.item.value; if (ui.item.label) { $("#${id}_value").html(ui.item.label); } }
+                    if (ui.item) { this.value = ui.item.value; <#if acShowValue>if (ui.item.label) { $("#${id}_value").html(ui.item.label); }</#if> }
                 }
             });
         </#assign>

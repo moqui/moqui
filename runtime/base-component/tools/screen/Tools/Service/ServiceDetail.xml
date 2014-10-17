@@ -14,7 +14,7 @@ This Work includes contributions authored by David E. Jones, not as a
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd"
         default-menu-include="false">
 
-    <parameter name="serviceName"/>
+    <parameter name="serviceName" required="true"/>
 
     <transition name="serviceRun">
         <default-response url="../ServiceRun"/>

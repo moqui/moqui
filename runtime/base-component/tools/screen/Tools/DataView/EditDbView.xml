@@ -14,7 +14,7 @@ This Work includes contributions authored by David E. Jones, not as a
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd"
         default-menu-title="Edit DB-View" default-menu-index="1">
 
-    <parameter name="dbViewEntityName"/>
+    <parameter name="dbViewEntityName" required="true"/>
     <parameter name="dbViewEntityName_0"/>
 
     <transition name="view"><default-response url="../ViewDbView"/></transition>
@@ -127,9 +127,9 @@ This Work includes contributions authored by David E. Jones, not as a
         <default-response url="."/>
     </transition>
 
-    <actions>
+    <pre-actions>
         <set field="dbViewEntityName" from="dbViewEntityName ?: dbViewEntityName_0"/>
-    </actions>
+    </pre-actions>
     <widgets>
         <container>
             <link url="view" text="View ${dbViewEntityName}"/>

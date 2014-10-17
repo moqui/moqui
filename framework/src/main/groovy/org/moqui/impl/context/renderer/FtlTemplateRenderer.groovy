@@ -13,11 +13,12 @@ package org.moqui.impl.context.renderer
 
 import freemarker.core.Environment
 import freemarker.ext.beans.BeansWrapper
+import freemarker.ext.beans.BeansWrapperBuilder
 import freemarker.template.Configuration
 import freemarker.template.Template
 import freemarker.template.TemplateExceptionHandler
 import freemarker.template.TemplateException
-
+import freemarker.template.Version
 import org.moqui.context.Cache
 import org.moqui.context.ExecutionContextFactory
 import org.moqui.context.TemplateRenderer
@@ -84,8 +85,8 @@ class FtlTemplateRenderer implements TemplateRenderer {
     public Configuration getFtlConfiguration() { return defaultFtlConfiguration }
 
     protected static Configuration makeFtlConfiguration(ExecutionContextFactoryImpl ecfi) {
-        Configuration newConfig = new MoquiConfiguration(ecfi)
-        BeansWrapper defaultWrapper = BeansWrapper.getDefaultInstance()
+        Configuration newConfig = new MoquiConfiguration(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS, ecfi)
+        BeansWrapper defaultWrapper = new BeansWrapperBuilder(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS).build()
         newConfig.setObjectWrapper(defaultWrapper)
         newConfig.setSharedVariable("Static", defaultWrapper.getStaticModels())
 
@@ -101,23 +102,24 @@ class FtlTemplateRenderer implements TemplateRenderer {
 
     static class MoquiConfiguration extends Configuration {
         ExecutionContextFactoryImpl ecfi
-        MoquiConfiguration(ExecutionContextFactoryImpl ecfi) {
-            super()
+        MoquiConfiguration(Version version, ExecutionContextFactoryImpl ecfi) {
+            super(version)
             this.ecfi = ecfi
         }
+
         @Override
-        Template getTemplate(String name, Locale locale, String encoding, boolean parse) {
+        Template getTemplate(String name, Locale locale, String encoding, boolean parseAsFTL, boolean ignoreMissing) throws IOException {
             //return super.getTemplate(name, locale, encoding, parse)
             // NOTE: doing this because template loading behavior with cache/etc not desired and was having issues
             Template theTemplate
-            if (parse) {
-                theTemplate = ecfi.resourceFacade.ftlTemplateRenderer.getFtlTemplateByLocation(name)
+            if (parseAsFTL) {
+                theTemplate = ecfi.getResourceFacade().getFtlTemplateRenderer().getFtlTemplateByLocation(name)
             } else {
-                String text = ecfi.resourceFacade.getLocationText(name, true)
+                String text = ecfi.getResourceFacade().getLocationText(name, true)
                 theTemplate = Template.getPlainTextTemplate(name, text, this)
             }
             // NOTE: this is the same exception the standard FreeMarker code returns
-            if (theTemplate == null) throw new FileNotFoundException("Template [${name}] not found.")
+            if (theTemplate == null && !ignoreMissing) throw new FileNotFoundException("Template [${name}] not found.")
             return theTemplate
         }
     }
@@ -146,7 +148,7 @@ class FtlTemplateRenderer implements TemplateRenderer {
         public Reader getReader(Object templateSource, String encoding) throws IOException {
             String text = ecfi.resourceFacade.getLocationText((String) templateSource, true)
             if (!text) {
-                logger.warn("Could not find text at location [${templateSource}] reffered to in an FTL template.")
+                logger.warn("Could not find text at location [${templateSource}] referred to in an FTL template.")
                 text = ""
             }
             return new StringReader(text)

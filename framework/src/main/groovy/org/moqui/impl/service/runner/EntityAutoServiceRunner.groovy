@@ -152,7 +152,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
                                     Map<String, Object> result, Set<String> outParamNames, EntityValue preLookedUpValue) {
         EntityValue lookedUpValue = preLookedUpValue ?:
                 sfi.getEcfi().getEntityFacade().makeValue(ed.getFullEntityName()).setFields(parameters, true, null, true)
-        // this is much slower, and we don't need to do the query: sfi.getEcfi().getEntityFacade().makeFind(ed.entityName).condition(parameters).useCache(false).forUpdate(true).one()
+        // this is much slower, and we don't need to do the query: sfi.getEcfi().getEntityFacade().find(ed.entityName).condition(parameters).useCache(false).forUpdate(true).one()
         if (lookedUpValue == null) {
             throw new ServiceException("In entity-auto update service for entity [${ed.fullEntityName}] value not found, cannot update; using parameters [${parameters}]")
         }
@@ -161,7 +161,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
         Node statusIdField = ed.getFieldNode("statusId")
         if (statusIdField != null) {
             // do the actual query so we'll have the current statusId
-            lookedUpValue = preLookedUpValue ?: sfi.getEcfi().getEntityFacade().makeFind(ed.getFullEntityName()).condition(parameters).useCache(false).one()
+            lookedUpValue = preLookedUpValue ?: sfi.getEcfi().getEntityFacade().find(ed.getFullEntityName()).condition(parameters).useCache(false).one()
             if (lookedUpValue == null) {
                 throw new ServiceException("In entity-auto update service for entity [${ed.fullEntityName}] value not found, cannot update; using parameters [${parameters}]")
             }
@@ -181,7 +181,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
             if (lookedUpStatusId && !parameterStatusId.equals(lookedUpStatusId)) {
                 // there was an old status, and in this call we are trying to change it, so do the StatusFlowTransition check
                 // NOTE that we are using a cached list from a common pattern so it should generally be there instead of a count that wouldn't
-                EntityList statusFlowTransitionList = sfi.ecfi.entityFacade.makeFind("moqui.basic.StatusFlowTransition")
+                EntityList statusFlowTransitionList = sfi.ecfi.entityFacade.find("moqui.basic.StatusFlowTransition")
                         .condition(["statusId":lookedUpStatusId, "toStatusId":parameterStatusId])
                         .useCache(true).list()
                 if (!statusFlowTransitionList) {
@@ -205,7 +205,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
 
     /** Does a create if record does not exist, or update if it does. */
     public static void storeEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> parameters, Map<String, Object> result, Set<String> outParamNames) {
-        EntityValue lookedUpValue = sfi.getEcfi().getEntityFacade().makeFind(ed.fullEntityName).condition(parameters)
+        EntityValue lookedUpValue = sfi.getEcfi().getEntityFacade().find(ed.fullEntityName).condition(parameters)
                 .useCache(false).forUpdate(true).one()
         if (lookedUpValue == null) {
             createEntity(sfi, ed, parameters, result, outParamNames)

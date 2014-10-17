@@ -43,7 +43,10 @@ public interface EntityFacade {
      * @param entityName The Name of the Entity as defined in the entity XML file, can be null.
      * @return An EntityFind object.
      */
+    EntityFind find(String entityName);
+    /** Same as the find() method, exists to support code using this older method name. */
     EntityFind makeFind(String entityName);
+
 
     /** Do a database query with the given SQL and return the results as an EntityList for the given entity and with
      * selected columns mapped to the listed fields.

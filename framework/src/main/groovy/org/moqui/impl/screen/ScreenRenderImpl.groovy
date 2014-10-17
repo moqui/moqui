@@ -61,6 +61,7 @@ class ScreenRenderImpl implements ScreenRender {
     protected ScreenUrlInfo screenUrlInfo = null
     protected Map<String, ScreenUrlInfo> subscreenUrlInfos = new HashMap()
     protected int screenPathIndex = 0
+    protected Set<String> stopRenderScreenLocations = new HashSet()
 
     protected String baseLinkUrl = null
     protected String servletContextPath = null
@@ -568,6 +569,17 @@ class ScreenRenderImpl implements ScreenRender {
                 return
             }
 
+            // we've run always and pre actions, it's now or never for required parameters so check them
+            for (ScreenDefinition sd in screenUrlInfo.screenRenderDefList) {
+                for (ScreenDefinition.ParameterItem pi in sd.getParameterMap().values()) {
+                    if (pi.required && ec.context.get(pi.name) == null) {
+                        ec.message.addError("Required parameter missing (${pi.name})")
+                        logger.warn("Tried to render screen [${sd.getLocation()}] without required parameter [${pi.name}], error message added and adding to stop list to not render")
+                        stopRenderScreenLocations.add(sd.getLocation())
+                    }
+                }
+            }
+
             // start rendering at the root section of the root screen
             ScreenDefinition renderStartDef = screenUrlInfo.screenRenderDefList[0]
             // if screenRenderDefList.size == 1 then it is the target screen, otherwise it's not
@@ -699,9 +711,11 @@ class ScreenRenderImpl implements ScreenRender {
         screenPathIndex++
         ScreenDefinition screenDef = screenUrlInfo.screenRenderDefList[screenPathIndex]
         try {
-            writer.flush()
-            screenDef.render(this, (screenUrlInfo.screenRenderDefList.size() - 1) == screenPathIndex)
-            writer.flush()
+            if (!stopRenderScreenLocations.contains(screenDef.getLocation())) {
+                writer.flush()
+                screenDef.render(this, (screenUrlInfo.screenRenderDefList.size() - 1) == screenPathIndex)
+                writer.flush()
+            }
         } catch (Throwable t) {
             logger.error("Error rendering screen [${screenDef.location}]", t)
             return "Error rendering screen [${screenDef.location}]: ${t.toString()}"
@@ -957,9 +971,11 @@ class ScreenRenderImpl implements ScreenRender {
          */
         String url = origUrl?.contains("\${") ? ec.resource.evaluateStringExpand(origUrl, "") : origUrl
         ScreenUrlInfo sui
-        switch (urlType) {
+        String urlTypeExpanded = ec.resource.evaluateStringExpand(urlType, "")
+        switch (urlTypeExpanded) {
             // for transition we want a URL relative to the current screen, so just pass that to buildUrl
             case "transition": sui = new ScreenUrlInfo(this, null, null, url, expandTransitionUrl, null); break;
+            case "screen": sui = new ScreenUrlInfo(this, null, null, url, expandTransitionUrl, null); break;
             case "content": throw new IllegalArgumentException("The url-type of content is not yet supported"); break;
             case "plain":
             default: sui = new ScreenUrlInfo(this, url); break;
@@ -1005,9 +1021,9 @@ class ScreenRenderImpl implements ScreenRender {
     }
     String getFieldValueString(FtlNodeWrapper fieldNodeWrapper, String defaultValue, String format) {
         Object obj = getFieldValue(fieldNodeWrapper, defaultValue)
-        String strValue = ec.l10n.formatValue(obj, format)
+        String strValue = ec.l10n.format(obj, format)
         /* if (format) {
-            strValue = ec.l10n.formatValue(obj, format)
+            strValue = ec.l10n.format(obj, format)
         } else {
             strValue = obj ? obj.toString() : ""
         } */
@@ -1093,7 +1109,7 @@ class ScreenRenderImpl implements ScreenRender {
         // find the entity value
         String keyFieldName = widgetNode."@key-field-name"
         if (!keyFieldName) keyFieldName = ed.getPkFieldNames().get(0)
-        EntityValue ev = ec.entity.makeFind((String) widgetNode."@entity-name").condition(keyFieldName, fieldValue)
+        EntityValue ev = ec.entity.find((String) widgetNode."@entity-name").condition(keyFieldName, fieldValue)
                 .useCache(widgetNode."@use-cache"?:"true" == "true").one()
         if (ev == null) return ""
 
@@ -1152,14 +1168,14 @@ class ScreenRenderImpl implements ScreenRender {
         if (!stteId) stteId = "STT_INTERNAL"
 
         // see if there is a user setting for the theme
-        String themeId = sfi.ecfi.entityFacade.makeFind("moqui.security.UserScreenTheme")
+        String themeId = sfi.ecfi.entityFacade.find("moqui.security.UserScreenTheme")
                 .condition([userId:ec.user.userId, screenThemeTypeEnumId:stteId])
                 .useCache(true).one()?.screenThemeId
         // use the Enumeration.enumCode from the type to find the theme type's default screenThemeId
         if (!themeId) {
             boolean alreadyDisabled = ec.getArtifactExecution().disableAuthz()
             try {
-                EntityValue themeTypeEnum = sfi.ecfi.entityFacade.makeFind("moqui.basic.Enumeration")
+                EntityValue themeTypeEnum = sfi.ecfi.entityFacade.find("moqui.basic.Enumeration")
                         .condition("enumId", stteId).useCache(true).one()
                 if (themeTypeEnum?.enumCode) themeId = themeTypeEnum.enumCode
             } finally {
@@ -1168,7 +1184,7 @@ class ScreenRenderImpl implements ScreenRender {
         }
         // theme with "DEFAULT" in the ID
         if (!themeId) {
-            EntityValue stv = sfi.ecfi.entityFacade.makeFind("moqui.screen.ScreenTheme")
+            EntityValue stv = sfi.ecfi.entityFacade.find("moqui.screen.ScreenTheme")
                     .condition("screenThemeTypeEnumId", stteId)
                     .condition("screenThemeId", ComparisonOperator.LIKE, "%DEFAULT%").one()
             if (stv) themeId = stv.screenThemeId
@@ -1177,7 +1193,7 @@ class ScreenRenderImpl implements ScreenRender {
     }
 
     List<String> getThemeValues(String resourceTypeEnumId) {
-        EntityList strList = sfi.ecfi.entityFacade.makeFind("moqui.screen.ScreenThemeResource")
+        EntityList strList = sfi.ecfi.entityFacade.find("moqui.screen.ScreenThemeResource")
                 .condition([screenThemeId:getCurrentThemeId(), resourceTypeEnumId:resourceTypeEnumId])
                 .orderBy("sequenceNum").useCache(true).list()
         List<String> values = new LinkedList()

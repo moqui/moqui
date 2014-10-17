@@ -771,7 +771,9 @@ class EntityFacadeImpl implements EntityFacade {
     }
 
     @Override
-    EntityFind makeFind(String entityName) {
+    EntityFind makeFind(String entityName) { return find(entityName) }
+    @Override
+    EntityFind find(String entityName) {
         if (!entityName) throw new EntityException("No entityName passed to EntityFacade.makeFind")
         EntityDatasourceFactory edf = getDatasourceFactory(getEntityGroupName(entityName))
         return edf.makeEntityFind(entityName)

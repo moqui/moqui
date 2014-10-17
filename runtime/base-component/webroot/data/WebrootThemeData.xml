@@ -24,6 +24,8 @@ This Work includes contributions authored by David E. Jones, not as a
             resourceValue="/assets/lib/chosen/chosen.min.css"/>
     <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="8" resourceTypeEnumId="STRT_STYLESHEET"
             resourceValue="/assets/lib/jasny/css/jasny-bootstrap.min.css"/>
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="9" resourceTypeEnumId="STRT_STYLESHEET"
+            resourceValue="/js/jstree-3.0.3/themes/default/style.min.css"/>
     <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="10" resourceTypeEnumId="STRT_STYLESHEET"
             resourceValue="/assets/css/main.min.css"/>
     <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="11" resourceTypeEnumId="STRT_STYLESHEET"
