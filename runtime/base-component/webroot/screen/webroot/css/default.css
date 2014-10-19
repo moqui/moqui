@@ -39,7 +39,7 @@ button.button-plain:hover { text-decoration: underline; }
 
 input:required:invalid, input:invalid, textarea:invalid { background-color: #FEE; }
 input:focus:valid, textarea:focus:valid { background-color: #EEE; }
-
+input { color: #000; }
 
 .form-list-outer th { text-align: left; padding: 0px 4px 0px 2px; }
 .form-list-outer td { padding: 0px 4px 0px 2px; }
