@@ -91,21 +91,27 @@ class ScreenForm {
         if (baseFormNode."@extends") {
             String extendsForm = baseFormNode."@extends"
             if (isDynamic) extendsForm = ecfi.resourceFacade.evaluateStringExpand(extendsForm, "")
-            ScreenForm esf
+
+            Node formNode
             if (extendsForm.contains("#")) {
                 String screenLocation = extendsForm.substring(0, extendsForm.indexOf("#"))
                 String formName = extendsForm.substring(extendsForm.indexOf("#")+1)
                 if (screenLocation == sd.getLocation()) {
-                    esf = sd.getForm(formName)
+                    ScreenForm esf = sd.getForm(formName)
+                    formNode = esf?.formNode
+                } else if (screenLocation == "moqui.screen.form.DbForm" || screenLocation == "DbForm") {
+                    formNode = this.getDbFormNode(formName)
                 } else {
                     ScreenDefinition esd = ecfi.screenFacade.getScreenDefinition(screenLocation)
-                    esf = esd ? esd.getForm(formName) : null
+                    ScreenForm esf = esd ? esd.getForm(formName) : null
+                    formNode = esf?.formNode
                 }
             } else {
-                esf = sd.getForm(extendsForm)
+                ScreenForm esf = sd.getForm(extendsForm)
+                formNode = esf?.formNode
             }
-            if (esf == null) throw new IllegalArgumentException("Cound not find extends form [${extendsForm}] referred to in form [${newFormNode."@name"}] of screen [${sd.location}]")
-            mergeFormNodes(newFormNode, esf.formNode, true, true)
+            if (formNode == null) throw new IllegalArgumentException("Cound not find extends form [${extendsForm}] referred to in form [${newFormNode."@name"}] of screen [${sd.location}]")
+            mergeFormNodes(newFormNode, formNode, true, true)
         }
 
         for (Node formSubNode in (Collection<Node>) baseFormNode.children()) {
@@ -260,8 +266,8 @@ class ScreenForm {
         Node dbFormNode = dbFormNodeById.get(formId)
 
         if (dbFormNode == null) {
-            EntityValue dbForm = ecfi.getEntityFacade().find("DbForm").condition("formId", formId).useCache(true).one()
-            dbFormNode = new Node(null, (dbForm.isListForm == "Y" ? "form-list" : "form-single"),null)
+            EntityValue dbForm = ecfi.getEntityFacade().find("moqui.screen.form.DbForm").condition("formId", formId).useCache(true).one()
+            dbFormNode = new Node(null, (dbForm.isListForm == "Y" ? "form-list" : "form-single"), null)
 
             EntityList dbFormFieldList = ecfi.getEntityFacade().find("moqui.screen.form.DbFormField").condition("formId", formId)
                     .useCache(true).list()
@@ -278,7 +284,7 @@ class ScreenForm {
                 String widgetName = fieldType.substring(6)
                 Node widgetNode = subFieldNode.appendNode(widgetName, [:])
 
-                EntityList dbFormFieldAttributeList = ecfi.getEntityFacade().find("DbFormFieldAttribute")
+                EntityList dbFormFieldAttributeList = ecfi.getEntityFacade().find("moqui.screen.form.DbFormFieldAttribute")
                         .condition([formId:formId, fieldName:fieldName]).useCache(true).list()
                 for (EntityValue dbFormFieldAttribute in dbFormFieldAttributeList) {
                     String attributeName = dbFormFieldAttribute.attributeName
