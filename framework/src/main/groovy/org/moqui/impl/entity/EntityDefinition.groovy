@@ -786,7 +786,7 @@ public class EntityDefinition {
                 case 8:
                 case 9:
                     if (value instanceof BigDecimal) value = ((BigDecimal) value).stripTrailingZeros()
-                    outValue = efi.getEcfi().getL10nFacade().formatValue(value, null)
+                    outValue = efi.getEcfi().getL10nFacade().format(value, null)
                     break
                 case 10: outValue = value.toString(); break
                 case 11: outValue = value; break
