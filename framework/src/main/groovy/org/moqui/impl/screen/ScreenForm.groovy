@@ -54,7 +54,6 @@ class ScreenForm {
 
     protected XmlAction rowActions = null
 
-    protected Map<String, Node> dbFormNodeById = null
     protected List<Node> nonReferencedFieldList = null
 
     ScreenForm(ExecutionContextFactoryImpl ecfi, ScreenDefinition sd, Node baseFormNode, String location) {
@@ -100,7 +99,7 @@ class ScreenForm {
                     ScreenForm esf = sd.getForm(formName)
                     formNode = esf?.formNode
                 } else if (screenLocation == "moqui.screen.form.DbForm" || screenLocation == "DbForm") {
-                    formNode = this.getDbFormNode(formName)
+                    formNode = getDbFormNode(formName, ecfi)
                 } else {
                     ScreenDefinition esd = ecfi.screenFacade.getScreenDefinition(screenLocation)
                     ScreenForm esf = esd ? esd.getForm(formName) : null
@@ -254,16 +253,16 @@ class ScreenForm {
             if (!dbFormLookupList) return null
 
             List<Node> formNodeList = new ArrayList<Node>()
-            for (EntityValue dbFormLookup in dbFormLookupList) formNodeList.add(getDbFormNode(dbFormLookup.getString("formId")))
+            for (EntityValue dbFormLookup in dbFormLookupList) formNodeList.add(getDbFormNode(dbFormLookup.getString("formId"), ecfi))
 
             return formNodeList
         } finally {
             if (!alreadyDisabled) ecfi.getExecutionContext().getArtifactExecution().enableAuthz()
         }
     }
-    Node getDbFormNode(String formId) {
-        if (dbFormNodeById == null) dbFormNodeById = new HashMap<String, Node>()
-        Node dbFormNode = dbFormNodeById.get(formId)
+
+    static Node getDbFormNode(String formId, ExecutionContextFactoryImpl ecfi) {
+        Node dbFormNode = (Node) ecfi.getScreenFacade().dbFormNodeByIdCache.get(formId)
 
         if (dbFormNode == null) {
             EntityValue dbForm = ecfi.getEntityFacade().find("moqui.screen.form.DbForm").condition("formId", formId).useCache(true).one()
@@ -337,7 +336,7 @@ class ScreenForm {
                 mergeFieldNode(dbFormNode, newFieldNode, false)
             }
 
-            dbFormNodeById.put(formId, dbFormNode)
+            ecfi.getScreenFacade().dbFormNodeByIdCache.put(formId, dbFormNode)
         }
 
         return dbFormNode
