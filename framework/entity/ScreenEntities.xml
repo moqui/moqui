@@ -197,7 +197,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <entity entity-name="FormResponse" package-name="moqui.screen.form">
         <field name="formResponseId" type="id" is-pk="true"/>
         <field name="formLocation" type="text-medium"/>
-        <field name="userId" type="id"/>
+        <field name="userId" type="id-long"/>
         <field name="responseDate" type="date-time"/>
         <relationship type="one" related-entity-name="moqui.security.UserAccount"/>
     </entity>
