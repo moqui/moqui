@@ -41,4 +41,45 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <moqui.entity.UserField entityName="moqui.example.Example" fieldName="testUserField" userGroupId="ALL_USERS"
                             fieldType="text-long" enableAuditLog="Y" enableLocalization="N" encrypt="N"/>
+
+    <!-- Example Survey Form 1 -->
+    <moqui.screen.form.DbForm formId="ExampleSurvey1"/>
+    <moqui.screen.form.DbFormField formId="ExampleSurvey1" fieldName="favoriteColor" fieldTypeEnumId="DBFFT_text-line" title="Favorite Color" layoutSequenceNum="1"/>
+    <moqui.screen.form.DbFormField formId="ExampleSurvey1" fieldName="currentAge" fieldTypeEnumId="DBFFT_text-line" title="Age" layoutSequenceNum="2"/>
+    <moqui.screen.form.DbFormFieldAttribute formId="ExampleSurvey1" fieldName="currentAge" attributeName="size" value="8"/>
+
+    <moqui.screen.form.DbFormField formId="ExampleSurvey1" fieldName="exampleTypeEnumId" fieldTypeEnumId="DBFFT_drop-down" title="Favorite Example Type" layoutSequenceNum="3"/>
+    <moqui.screen.form.DbFormFieldEntOpts formId="ExampleSurvey1" fieldName="exampleTypeEnumId" sequenceNum="1" entityName="moqui.basic.Enumeration" text="${description}"/>
+    <moqui.screen.form.DbFormFieldEntOptsCond formId="ExampleSurvey1" fieldName="exampleTypeEnumId" sequenceNum="1" entityFieldName="enumTypeId" value="ExampleType"/>
+    <moqui.screen.form.DbFormFieldEntOptsOrder formId="ExampleSurvey1" fieldName="exampleTypeEnumId" sequenceNum="1" orderSequenceNum="1" entityFieldName="description"/>
+
+    <moqui.screen.form.DbFormField formId="ExampleSurvey1" fieldName="happy" fieldTypeEnumId="DBFFT_radio" title="Happy?" layoutSequenceNum="5"/>
+    <moqui.screen.form.DbFormFieldOption formId="ExampleSurvey1" fieldName="happy" sequenceNum="1" keyValue="Y" text="Yes"/>
+    <moqui.screen.form.DbFormFieldOption formId="ExampleSurvey1" fieldName="happy" sequenceNum="2" keyValue="N" text="No"/>
+    <moqui.screen.form.DbFormFieldOption formId="ExampleSurvey1" fieldName="happy" sequenceNum="3" keyValue="D" text="Don't Know"/>
+    <moqui.screen.form.DbFormFieldOption formId="ExampleSurvey1" fieldName="happy" sequenceNum="4" keyValue="W" text="What is the meaning of happiness?"/>
+
+    <moqui.screen.form.DbFormField formId="ExampleSurvey1" fieldName="testDate" fieldTypeEnumId="DBFFT_date-time" title="Date Test" layoutSequenceNum="5"/>
+    <moqui.screen.form.DbFormFieldAttribute formId="ExampleSurvey1" fieldName="testDate" attributeName="type" value="date"/>
+    <moqui.screen.form.DbFormField formId="ExampleSurvey1" fieldName="testTimestamp" fieldTypeEnumId="DBFFT_date-time" title="Timestamp Test" layoutSequenceNum="6"/>
+
+    <moqui.screen.form.DbFormField formId="ExampleSurvey1" fieldName="submitButton" fieldTypeEnumId="DBFFT_submit" title="Save" layoutSequenceNum="9"/>
+
+    <!-- Example Survey Form 2 -->
+    <moqui.screen.form.DbForm formId="ExampleSurvey2"/>
+    <moqui.screen.form.DbFormField formId="ExampleSurvey2" fieldName="text1" fieldTypeEnumId="DBFFT_text-line" layoutSequenceNum="1"/>
+    <moqui.screen.form.DbFormField formId="ExampleSurvey2" fieldName="text2" fieldTypeEnumId="DBFFT_text-area" layoutSequenceNum="2"/>
+    <moqui.screen.form.DbFormFieldAttribute formId="ExampleSurvey2" fieldName="text2" attributeName="rows" value="10"/>
+
+    <moqui.screen.form.DbFormField formId="ExampleSurvey2" fieldName="meaningOfLife" fieldTypeEnumId="DBFFT_radio" title="Meaning of Life" layoutSequenceNum="5"/>
+    <moqui.screen.form.DbFormFieldOption formId="ExampleSurvey2" fieldName="meaningOfLife" sequenceNum="1" keyValue="God"/>
+    <moqui.screen.form.DbFormFieldOption formId="ExampleSurvey2" fieldName="meaningOfLife" sequenceNum="2" keyValue="Consciousness"/>
+    <moqui.screen.form.DbFormFieldOption formId="ExampleSurvey2" fieldName="meaningOfLife" sequenceNum="3" keyValue="Happiness"/>
+    <moqui.screen.form.DbFormFieldOption formId="ExampleSurvey2" fieldName="meaningOfLife" sequenceNum="4" keyValue="Acceptance"/>
+    <moqui.screen.form.DbFormFieldOption formId="ExampleSurvey2" fieldName="meaningOfLife" sequenceNum="5" keyValue="Purpose"/>
+    <moqui.screen.form.DbFormFieldOption formId="ExampleSurvey2" fieldName="meaningOfLife" sequenceNum="6" keyValue="Pleasure"/>
+
+    <moqui.screen.form.DbFormField formId="ExampleSurvey2" fieldName="testTimestamp" fieldTypeEnumId="DBFFT_date-time" title="Timestamp Test" layoutSequenceNum="6"/>
+
+    <moqui.screen.form.DbFormField formId="ExampleSurvey2" fieldName="submitButton" fieldTypeEnumId="DBFFT_submit" title="Save" layoutSequenceNum="9"/>
 </entity-facade-xml>
