@@ -44,7 +44,8 @@ This Work includes contributions authored by David E. Jones, not as a
         </in-parameters>
         <out-parameters><parameter name="formResponseId"/></out-parameters>
         <actions>
-            <set field="formNode" from="ec.screen.getFormNode(formLocation)"/>
+            <entity-find-one entity-name="moqui.screen.form.FormResponse" value-field="formResponse"/>
+            <set field="formNode" from="ec.screen.getFormNode(formResponse.formLocation)"/>
             <iterate list="formNode.field" entry="fieldNode">
                 <set field="fieldName" from="fieldNode.'@name'"/>
                 <if condition="responseMap.containsKey(fieldName)">
