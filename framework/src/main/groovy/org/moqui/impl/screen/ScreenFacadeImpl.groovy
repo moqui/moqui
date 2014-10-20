@@ -133,6 +133,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
     }
 
     Node getFormNode(String location) {
+        if (!location) return null
         if (location.contains("#")) {
             String screenLocation = location.substring(0, location.indexOf("#"))
             String formName = location.substring(location.indexOf("#")+1)
