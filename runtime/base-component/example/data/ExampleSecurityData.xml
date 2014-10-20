@@ -27,7 +27,6 @@ This Work includes contributions authored by David E. Jones, not as a
     <moqui.security.UserPermission userPermissionId="ExamplePerm" description="Example Permission"/>
     <moqui.security.UserGroupPermission userGroupId="ADMIN" userPermissionId="ExamplePerm"
             fromDate="1265184000000" thruDate=""/>
-    <moqui.security.UserPasswordHistory userId="EX_JOHN_DOE" fromDate="1265184000000" password="moqui"/>
     <moqui.security.UserLoginHistory userId="EX_JOHN_DOE" fromDate="1265184000000" successfulLogin="Y"/>
 
     <!-- ========== Basic example artifact authz ========== -->
