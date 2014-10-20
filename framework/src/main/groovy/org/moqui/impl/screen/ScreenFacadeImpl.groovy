@@ -35,6 +35,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
     protected final Cache screenTemplateLocationCache
     protected final Cache widgetTemplateLocationCache
     protected final Cache screenFindPathCache
+    protected final Cache dbFormNodeByIdCache
 
     ScreenFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
@@ -45,6 +46,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
         this.screenTemplateLocationCache = ecfi.cacheFacade.getCache("screen.template.location")
         this.widgetTemplateLocationCache = ecfi.cacheFacade.getCache("widget.template.location")
         this.screenFindPathCache = ecfi.cacheFacade.getCache("screen.find.path")
+        this.dbFormNodeByIdCache = ecfi.cacheFacade.getCache("screen.form.db.node")
     }
 
     ExecutionContextFactoryImpl getEcfi() { return ecfi }
@@ -128,6 +130,23 @@ public class ScreenFacadeImpl implements ScreenFacade {
         screenLocationCache.put(location, sd)
         if (screenRr.supportsLastModified()) screenLocationPermCache.put(location, sd)
         return sd
+    }
+
+    Node getFormNode(String location) {
+        if (!location) return null
+        if (location.contains("#")) {
+            String screenLocation = location.substring(0, location.indexOf("#"))
+            String formName = location.substring(location.indexOf("#")+1)
+            if (screenLocation == "moqui.screen.form.DbForm" || screenLocation == "DbForm") {
+                return ScreenForm.getDbFormNode(formName, ecfi)
+            } else {
+                ScreenDefinition esd = getScreenDefinition(screenLocation)
+                ScreenForm esf = esd ? esd.getForm(formName) : null
+                return esf?.formNode
+            }
+        } else {
+            throw new IllegalArgumentException("Must use full form location (with #) to get a form node, [${location}] has no hash (#).")
+        }
     }
 
     String getMimeTypeByMode(String renderMode) {

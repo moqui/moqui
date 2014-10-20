@@ -83,6 +83,10 @@ New Features:
   - Added XML Form text-line.ac-show-value attribute which defaults to true
     and if set to false doesn't use the span by the input box to show what
     was selected
+  - DbForm forms can now be used independently rather than just modifying
+    existing XML Screen forms by using 'moqui.screen.form.DbForm' or
+    'DbForm' as the location, before the hash (#), in the @extends
+    attribute
 - Entity Facade:
   - Added in operator (_op) for searchFormInputs/search-form-inputs
   - Added entity.field.@default attribute with a Groovy expression to set a

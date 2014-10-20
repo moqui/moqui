@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This Work is in the public domain and is provided on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+including, without limitation, any warranties or conditions of TITLE,
+NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+You are solely responsible for determining the appropriateness of using
+this Work and assume any risks associated with your use of this Work.
+
+This Work includes contributions authored by David E. Jones, not as a
+"work for hire", who hereby disclaims any copyright to the same.
+-->
+<services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-1.5.xsd">
+
+    <service verb="create" noun="FormResponse">
+        <in-parameters>
+            <parameter name="formLocation" required="true"/>
+            <parameter name="userId" default="ec.user.userId"/>
+            <parameter name="responseDate" type="Timestamp" default="ec.user.nowTimestamp"/>
+            <parameter name="responseMap" type="Map" required="true"/>
+        </in-parameters>
+        <out-parameters><parameter name="formResponseId"/></out-parameters>
+        <actions>
+            <service-call name="create#moqui.screen.form.FormResponse" in-map="context" out-map="context"/>
+
+            <set field="formNode" from="ec.screen.getFormNode(formLocation)"/>
+            <iterate list="formNode.field" entry="fieldNode">
+                <set field="fieldName" from="fieldNode.'@name'"/>
+                <if condition="responseMap.containsKey(fieldName)">
+                    <service-call name="create#moqui.screen.form.FormResponseAnswer"
+                            in-map="[formResponseId:formResponseId, fieldName:fieldName,
+                                valueText:StupidUtilities.toPlainString(responseMap.get(fieldName))]"/>
+                </if>
+            </iterate>
+        </actions>
+    </service>
+    <service verb="update" noun="FormResponse">
+        <description>Updates existing FormResponseAnswer or adds new ones as needed. Note that this doesn't work with
+            fields that have multiple responses (it will update the first response).</description>
+        <in-parameters>
+            <parameter name="formResponseId" required="true"/>
+            <!-- QUESTION: update userId and responseDate? -->
+            <parameter name="responseMap" type="Map" required="true"/>
+        </in-parameters>
+        <out-parameters><parameter name="formResponseId"/></out-parameters>
+        <actions>
+            <entity-find-one entity-name="moqui.screen.form.FormResponse" value-field="formResponse"/>
+            <set field="formNode" from="ec.screen.getFormNode(formResponse.formLocation)"/>
+            <iterate list="formNode.field" entry="fieldNode">
+                <set field="fieldName" from="fieldNode.'@name'"/>
+                <if condition="responseMap.containsKey(fieldName)">
+                    <entity-find-one entity-name="moqui.screen.form.FormResponseAnswer" value-field="answer">
+                        <field-map field-name="formResponseId"/><field-map field-name="fieldName"/></entity-find-one>
+                    <if condition="answer">
+                        <service-call name="update#moqui.screen.form.FormResponseAnswer"
+                                in-map="[formResponseAnswerId:answer.formResponseAnswerId,
+                                    valueText:StupidUtilities.toPlainString(responseMap.get(fieldName))]"/>
+                        <else>
+                            <service-call name="create#moqui.screen.form.FormResponseAnswer"
+                                    in-map="[formResponseId:formResponseId, fieldName:fieldName,
+                                        valueText:StupidUtilities.toPlainString(responseMap.get(fieldName))]"/>
+                        </else>
+                    </if>
+                </if>
+            </iterate>
+        </actions>
+    </service>
+    <service verb="get" noun="FormResponse">
+        <in-parameters><parameter name="formResponseId" required="true"/></in-parameters>
+        <out-parameters>
+            <auto-parameters entity-name="moqui.screen.form.FormResponse"/>
+            <parameter name="responseMap" type="Map"/>
+        </out-parameters>
+        <actions>
+            <entity-find-one entity-name="moqui.screen.form.FormResponse" value-field="formResponse"/>
+            <script>context.putAll(formResponse)</script>
+            <entity-find entity-name="moqui.screen.form.FormResponseAnswer" list="answerList">
+                <econdition field-name="formResponseId"/></entity-find>
+            <set field="responseMap" from="[:]"/>
+            <iterate list="answerList" entry="answer">
+                <script>responseMap.put(answer.fieldName, answer.valueText)</script>
+            </iterate>
+        </actions>
+    </service>
+</services>

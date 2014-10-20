@@ -54,7 +54,6 @@ class ScreenForm {
 
     protected XmlAction rowActions = null
 
-    protected Map<String, Node> dbFormNodeById = null
     protected List<Node> nonReferencedFieldList = null
 
     ScreenForm(ExecutionContextFactoryImpl ecfi, ScreenDefinition sd, Node baseFormNode, String location) {
@@ -91,21 +90,27 @@ class ScreenForm {
         if (baseFormNode."@extends") {
             String extendsForm = baseFormNode."@extends"
             if (isDynamic) extendsForm = ecfi.resourceFacade.evaluateStringExpand(extendsForm, "")
-            ScreenForm esf
+
+            Node formNode
             if (extendsForm.contains("#")) {
                 String screenLocation = extendsForm.substring(0, extendsForm.indexOf("#"))
                 String formName = extendsForm.substring(extendsForm.indexOf("#")+1)
                 if (screenLocation == sd.getLocation()) {
-                    esf = sd.getForm(formName)
+                    ScreenForm esf = sd.getForm(formName)
+                    formNode = esf?.formNode
+                } else if (screenLocation == "moqui.screen.form.DbForm" || screenLocation == "DbForm") {
+                    formNode = getDbFormNode(formName, ecfi)
                 } else {
                     ScreenDefinition esd = ecfi.screenFacade.getScreenDefinition(screenLocation)
-                    esf = esd ? esd.getForm(formName) : null
+                    ScreenForm esf = esd ? esd.getForm(formName) : null
+                    formNode = esf?.formNode
                 }
             } else {
-                esf = sd.getForm(extendsForm)
+                ScreenForm esf = sd.getForm(extendsForm)
+                formNode = esf?.formNode
             }
-            if (esf == null) throw new IllegalArgumentException("Cound not find extends form [${extendsForm}] referred to in form [${newFormNode."@name"}] of screen [${sd.location}]")
-            mergeFormNodes(newFormNode, esf.formNode, true, true)
+            if (formNode == null) throw new IllegalArgumentException("Cound not find extends form [${extendsForm}] referred to in form [${newFormNode."@name"}] of screen [${sd.location}]")
+            mergeFormNodes(newFormNode, formNode, true, true)
         }
 
         for (Node formSubNode in (Collection<Node>) baseFormNode.children()) {
@@ -248,90 +253,96 @@ class ScreenForm {
             if (!dbFormLookupList) return null
 
             List<Node> formNodeList = new ArrayList<Node>()
-            for (EntityValue dbFormLookup in dbFormLookupList) formNodeList.add(getDbFormNode(dbFormLookup.getString("formId")))
+            for (EntityValue dbFormLookup in dbFormLookupList) formNodeList.add(getDbFormNode(dbFormLookup.getString("formId"), ecfi))
 
             return formNodeList
         } finally {
             if (!alreadyDisabled) ecfi.getExecutionContext().getArtifactExecution().enableAuthz()
         }
     }
-    Node getDbFormNode(String formId) {
-        if (dbFormNodeById == null) dbFormNodeById = new HashMap<String, Node>()
-        Node dbFormNode = dbFormNodeById.get(formId)
+
+    static Node getDbFormNode(String formId, ExecutionContextFactoryImpl ecfi) {
+        Node dbFormNode = (Node) ecfi.getScreenFacade().dbFormNodeByIdCache.get(formId)
 
         if (dbFormNode == null) {
-            EntityValue dbForm = ecfi.getEntityFacade().find("DbForm").condition("formId", formId).useCache(true).one()
-            dbFormNode = new Node(null, (dbForm.isListForm == "Y" ? "form-list" : "form-single"),null)
 
-            EntityList dbFormFieldList = ecfi.getEntityFacade().find("moqui.screen.form.DbFormField").condition("formId", formId)
-                    .useCache(true).list()
-            for (EntityValue dbFormField in dbFormFieldList) {
-                String fieldName = dbFormField.fieldName
-                Node newFieldNode = new Node(null, "field", [name:fieldName])
-                if (dbFormField.entryName) newFieldNode.attributes().put("entry-name", dbFormField.entryName)
-                Node subFieldNode = newFieldNode.appendNode("default-field", [:])
-                if (dbFormField.title) subFieldNode.attributes().put("title", dbFormField.title)
+            boolean alreadyDisabled = ecfi.getExecutionContext().getArtifactExecution().disableAuthz()
+            try {
+                EntityValue dbForm = ecfi.getEntityFacade().find("moqui.screen.form.DbForm").condition("formId", formId).useCache(true).one()
+                dbFormNode = new Node(null, (dbForm.isListForm == "Y" ? "form-list" : "form-single"), null)
 
-                String fieldType = dbFormField.fieldTypeEnumId
-                if (!fieldType) throw new IllegalArgumentException("DbFormField record with formId [${formId}] and fieldName [${fieldName}] has no fieldTypeEnumId")
+                EntityList dbFormFieldList = ecfi.getEntityFacade().find("moqui.screen.form.DbFormField").condition("formId", formId)
+                        .orderBy("layoutSequenceNum").useCache(true).list()
+                for (EntityValue dbFormField in dbFormFieldList) {
+                    String fieldName = dbFormField.fieldName
+                    Node newFieldNode = new Node(null, "field", [name:fieldName])
+                    if (dbFormField.entryName) newFieldNode.attributes().put("entry-name", dbFormField.entryName)
+                    Node subFieldNode = newFieldNode.appendNode("default-field", [:])
+                    if (dbFormField.title) subFieldNode.attributes().put("title", dbFormField.title)
 
-                String widgetName = fieldType.substring(6)
-                Node widgetNode = subFieldNode.appendNode(widgetName, [:])
+                    String fieldType = dbFormField.fieldTypeEnumId
+                    if (!fieldType) throw new IllegalArgumentException("DbFormField record with formId [${formId}] and fieldName [${fieldName}] has no fieldTypeEnumId")
 
-                EntityList dbFormFieldAttributeList = ecfi.getEntityFacade().find("DbFormFieldAttribute")
-                        .condition([formId:formId, fieldName:fieldName]).useCache(true).list()
-                for (EntityValue dbFormFieldAttribute in dbFormFieldAttributeList) {
-                    String attributeName = dbFormFieldAttribute.attributeName
-                    if (fieldAttributeNames.contains(attributeName)) {
-                        newFieldNode.attributes().put(attributeName, dbFormFieldAttribute.value)
-                    } else if (subFieldAttributeNames.contains(attributeName)) {
-                        subFieldNode.attributes().put(attributeName, dbFormFieldAttribute.value)
-                    } else {
-                        widgetNode.attributes().put(attributeName, dbFormFieldAttribute.value)
-                    }
-                }
+                    String widgetName = fieldType.substring(6)
+                    Node widgetNode = subFieldNode.appendNode(widgetName, [:])
 
-                // add option settings when applicable
-                EntityList dbFormFieldOptionList = ecfi.getEntityFacade().find("moqui.screen.form.DbFormFieldOption")
-                        .condition([formId:formId, fieldName:fieldName]).useCache(true).list()
-                EntityList dbFormFieldEntOptsList = ecfi.getEntityFacade().find("moqui.screen.form.DbFormFieldEntOpts")
-                        .condition([formId:formId, fieldName:fieldName]).useCache(true).list()
-                EntityList combinedOptionList = new EntityListImpl(ecfi.getEntityFacade())
-                combinedOptionList.addAll(dbFormFieldOptionList)
-                combinedOptionList.addAll(dbFormFieldEntOptsList)
-                combinedOptionList.orderByFields(["sequenceNum"])
-
-                for (EntityValue optionValue in combinedOptionList) {
-                    if (optionValue.getEntityName() == "moqui.screen.form.DbFormFieldOption") {
-                        widgetNode.appendNode("option", [key:optionValue.keyValue, text:optionValue.text])
-                    } else {
-                        Node entityOptionsNode = widgetNode.appendNode("entity-options", [text:(optionValue.text ?: "\${description}")])
-                        Node entityFindNode = entityOptionsNode.appendNode("entity-find", ["entity-name":optionValue.entityName])
-
-                        EntityList dbFormFieldEntOptsCondList = ecfi.getEntityFacade().find("moqui.screen.form.DbFormFieldEntOptsCond")
-                                .condition([formId:formId, fieldName:fieldName, sequenceNum:optionValue.sequenceNum])
-                                .useCache(true).list()
-                        for (EntityValue dbFormFieldEntOptsCond in dbFormFieldEntOptsCondList) {
-                            entityFindNode.appendNode("econdition", ["field-name":dbFormFieldEntOptsCond.entityFieldName, value:dbFormFieldEntOptsCond.value])
-                        }
-
-                        EntityList dbFormFieldEntOptsOrderList = ecfi.getEntityFacade().find("moqui.screen.form.DbFormFieldEntOptsOrder")
-                                .condition([formId:formId, fieldName:fieldName, sequenceNum:optionValue.sequenceNum])
-                                .orderBy("orderSequenceNum").useCache(true).list()
-                        for (EntityValue dbFormFieldEntOptsOrder in dbFormFieldEntOptsOrderList) {
-                            entityFindNode.appendNode("order-by", ["field-name":dbFormFieldEntOptsOrder.entityFieldName])
+                    EntityList dbFormFieldAttributeList = ecfi.getEntityFacade().find("moqui.screen.form.DbFormFieldAttribute")
+                            .condition([formId:formId, fieldName:fieldName]).useCache(true).list()
+                    for (EntityValue dbFormFieldAttribute in dbFormFieldAttributeList) {
+                        String attributeName = dbFormFieldAttribute.attributeName
+                        if (fieldAttributeNames.contains(attributeName)) {
+                            newFieldNode.attributes().put(attributeName, dbFormFieldAttribute.value)
+                        } else if (subFieldAttributeNames.contains(attributeName)) {
+                            subFieldNode.attributes().put(attributeName, dbFormFieldAttribute.value)
+                        } else {
+                            widgetNode.attributes().put(attributeName, dbFormFieldAttribute.value)
                         }
                     }
+
+                    // add option settings when applicable
+                    EntityList dbFormFieldOptionList = ecfi.getEntityFacade().find("moqui.screen.form.DbFormFieldOption")
+                            .condition([formId:formId, fieldName:fieldName]).useCache(true).list()
+                    EntityList dbFormFieldEntOptsList = ecfi.getEntityFacade().find("moqui.screen.form.DbFormFieldEntOpts")
+                            .condition([formId:formId, fieldName:fieldName]).useCache(true).list()
+                    EntityList combinedOptionList = new EntityListImpl(ecfi.getEntityFacade())
+                    combinedOptionList.addAll(dbFormFieldOptionList)
+                    combinedOptionList.addAll(dbFormFieldEntOptsList)
+                    combinedOptionList.orderByFields(["sequenceNum"])
+
+                    for (EntityValue optionValue in combinedOptionList) {
+                        if (optionValue.getEntityName() == "moqui.screen.form.DbFormFieldOption") {
+                            widgetNode.appendNode("option", [key:optionValue.keyValue, text:optionValue.text])
+                        } else {
+                            Node entityOptionsNode = widgetNode.appendNode("entity-options", [text:(optionValue.text ?: "\${description}")])
+                            Node entityFindNode = entityOptionsNode.appendNode("entity-find", ["entity-name":optionValue.entityName])
+
+                            EntityList dbFormFieldEntOptsCondList = ecfi.getEntityFacade().find("moqui.screen.form.DbFormFieldEntOptsCond")
+                                    .condition([formId:formId, fieldName:fieldName, sequenceNum:optionValue.sequenceNum])
+                                    .useCache(true).list()
+                            for (EntityValue dbFormFieldEntOptsCond in dbFormFieldEntOptsCondList) {
+                                entityFindNode.appendNode("econdition", ["field-name":dbFormFieldEntOptsCond.entityFieldName, value:dbFormFieldEntOptsCond.value])
+                            }
+
+                            EntityList dbFormFieldEntOptsOrderList = ecfi.getEntityFacade().find("moqui.screen.form.DbFormFieldEntOptsOrder")
+                                    .condition([formId:formId, fieldName:fieldName, sequenceNum:optionValue.sequenceNum])
+                                    .orderBy("orderSequenceNum").useCache(true).list()
+                            for (EntityValue dbFormFieldEntOptsOrder in dbFormFieldEntOptsOrderList) {
+                                entityFindNode.appendNode("order-by", ["field-name":dbFormFieldEntOptsOrder.entityFieldName])
+                            }
+                        }
+                    }
+
+                    // logger.warn("TOREMOVE Adding DbForm field [${fieldName}] widgetName [${widgetName}] at layout sequence [${dbFormField.getLong("layoutSequenceNum")}], node: ${newFieldNode}")
+                    if (dbFormField.getLong("layoutSequenceNum") != null) {
+                        newFieldNode.attributes().put("layoutSequenceNum", dbFormField.getLong("layoutSequenceNum"))
+                    }
+                    mergeFieldNode(dbFormNode, newFieldNode, false)
                 }
 
-                // logger.warn("TOREMOVE Adding DbForm field [${fieldName}] widgetName [${widgetName}] at layout sequence [${dbFormField.getLong("layoutSequenceNum")}], node: ${newFieldNode}")
-                if (dbFormField.getLong("layoutSequenceNum") != null) {
-                    newFieldNode.attributes().put("layoutSequenceNum", dbFormField.getLong("layoutSequenceNum"))
-                }
-                mergeFieldNode(dbFormNode, newFieldNode, false)
+                ecfi.getScreenFacade().dbFormNodeByIdCache.put(formId, dbFormNode)
+            } finally {
+                if (!alreadyDisabled) ecfi.getExecutionContext().getArtifactExecution().enableAuthz()
             }
-
-            dbFormNodeById.put(formId, dbFormNode)
         }
 
         return dbFormNode
