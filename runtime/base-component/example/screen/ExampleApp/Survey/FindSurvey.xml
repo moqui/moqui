@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This Work is in the public domain and is provided on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+including, without limitation, any warranties or conditions of TITLE,
+NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+You are solely responsible for determining the appropriateness of using
+this Work and assume any risks associated with your use of this Work.
+
+This Work includes contributions authored by David E. Jones, not as a
+"work for hire", who hereby disclaims any copyright to the same.
+-->
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd"
+        default-menu-include="false">
+
+    <transition name="createFormResponse">
+        <service-call name="org.moqui.impl.ScreenServices.create#FormResponse"
+                in-map="[formLocation:formLocation, responseMap:ec.web.parameters]"/>
+        <default-response url="../EditSurvey"/>
+    </transition>
+    <transition name="editSurvey"><default-response url="../EditSurvey"/></transition>
+
+    <actions>
+        <set field="userId" from="ec.user.userId"/>
+
+        <entity-find entity-name="moqui.screen.form.FormResponse" list="responseList">
+            <search-form-inputs default-order-by="-responseDate"/>
+            <econdition field-name="userId"/>
+        </entity-find>
+    </actions>
+    <widgets>
+        <container-dialog id="NewSurvey1Dialog" button-text="New Survey 1">
+            <form-single name="NewSurvey1Form" transition="createFormResponse" extends="DbForm#ExampleSurvey1">
+                <field name="formLocation"><default-field><hidden default-value="DbForm#ExampleSurvey1"/></default-field></field>
+            </form-single>
+        </container-dialog>
+        <container-dialog id="NewSurvey2Dialog" button-text="New Survey 2">
+            <form-single name="NewSurvey2Form" transition="createFormResponse" extends="DbForm#ExampleSurvey2">
+                <field name="formLocation"><default-field><hidden default-value="DbForm#ExampleSurvey2"/></default-field></field>
+            </form-single>
+        </container-dialog>
+
+        <form-list name="ResponseListForm" list="responseList">
+            <field name="formResponseId">
+                <default-field><link url="editSurvey" text="Edit ${formResponseId}" link-type="anchor"/></default-field>
+            </field>
+            <field name="formLocation">
+                <header-field title="Form" show-order-by="case-insensitive"><text-find hide-options="true"/></header-field>
+                <default-field><display also-hidden="false"/></default-field>
+            </field>
+            <field name="responseDate">
+                <header-field title="Date" show-order-by="true"><date-period/></header-field>
+                <default-field title=""><display/></default-field>
+            </field>
+        </form-list>
+    </widgets>
+</screen>
