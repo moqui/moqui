@@ -59,9 +59,9 @@ This Work includes contributions authored by David E. Jones, not as a
     <moqui.screen.form.DbFormFieldOption formId="ExampleSurvey1" fieldName="happy" sequenceNum="3" keyValue="D" text="Don't Know"/>
     <moqui.screen.form.DbFormFieldOption formId="ExampleSurvey1" fieldName="happy" sequenceNum="4" keyValue="W" text="What is the meaning of happiness?"/>
 
-    <moqui.screen.form.DbFormField formId="ExampleSurvey1" fieldName="testDate" fieldTypeEnumId="DBFFT_date-time" title="Date Test" layoutSequenceNum="5"/>
+    <moqui.screen.form.DbFormField formId="ExampleSurvey1" fieldName="testDate" fieldTypeEnumId="DBFFT_date-time" title="Date Test" layoutSequenceNum="6"/>
     <moqui.screen.form.DbFormFieldAttribute formId="ExampleSurvey1" fieldName="testDate" attributeName="type" value="date"/>
-    <moqui.screen.form.DbFormField formId="ExampleSurvey1" fieldName="testTimestamp" fieldTypeEnumId="DBFFT_date-time" title="Timestamp Test" layoutSequenceNum="6"/>
+    <moqui.screen.form.DbFormField formId="ExampleSurvey1" fieldName="testTimestamp" fieldTypeEnumId="DBFFT_date-time" title="Timestamp Test" layoutSequenceNum="7"/>
 
     <moqui.screen.form.DbFormField formId="ExampleSurvey1" fieldName="submitButton" fieldTypeEnumId="DBFFT_submit" title="Save" layoutSequenceNum="9"/>
 
