@@ -15,7 +15,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <service verb="create" noun="FormResponse">
         <in-parameters>
             <parameter name="formLocation" required="true"/>
-            <parameter name="partyId" default="ec.user.userAccount.partyId"/>
+            <parameter name="userId" default="ec.user.userId"/>
             <parameter name="responseDate" type="Timestamp" default="ec.user.nowTimestamp"/>
             <parameter name="responseMap" type="Map" required="true"/>
         </in-parameters>
@@ -29,7 +29,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <if condition="responseMap.containsKey(fieldName)">
                     <service-call name="create#moqui.screen.form.FormResponseAnswer"
                             in-map="[formResponseId:formResponseId, fieldName:fieldName,
-                                textValue:StupidUtilities.toPlainString(responseMap.get(fieldName))]"/>
+                                valueText:StupidUtilities.toPlainString(responseMap.get(fieldName))]"/>
                 </if>
             </iterate>
         </actions>
@@ -39,7 +39,7 @@ This Work includes contributions authored by David E. Jones, not as a
             fields that have multiple responses (it will update the first response).</description>
         <in-parameters>
             <parameter name="formResponseId" required="true"/>
-            <!-- QUESTION: update partyId and responseDate? -->
+            <!-- QUESTION: update userId and responseDate? -->
             <parameter name="responseMap" type="Map" required="true"/>
         </in-parameters>
         <out-parameters><parameter name="formResponseId"/></out-parameters>
@@ -53,11 +53,11 @@ This Work includes contributions authored by David E. Jones, not as a
                     <if condition="answer">
                         <service-call name="update#moqui.screen.form.FormResponseAnswer"
                                 in-map="[formResponseAnswerId:answer.formResponseAnswerId,
-                                    textValue:StupidUtilities.toPlainString(responseMap.get(fieldName))]"/>
+                                    valueText:StupidUtilities.toPlainString(responseMap.get(fieldName))]"/>
                         <else>
                             <service-call name="create#moqui.screen.form.FormResponseAnswer"
                                     in-map="[formResponseId:formResponseId, fieldName:fieldName,
-                                        textValue:StupidUtilities.toPlainString(responseMap.get(fieldName))]"/>
+                                        valueText:StupidUtilities.toPlainString(responseMap.get(fieldName))]"/>
                         </else>
                     </if>
                 </if>
@@ -77,7 +77,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <econdition field-name="formResponseId"/></entity-find>
             <set field="responseMap" from="[:]"/>
             <iterate list="answerList" entry="answer">
-                <script>responseMap.put(answer.fieldName, answer.textValue)</script>
+                <script>responseMap.put(answer.fieldName, answer.valueText)</script>
             </iterate>
         </actions>
     </service>
