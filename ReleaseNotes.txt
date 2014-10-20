@@ -28,6 +28,8 @@ New Features:
 - Various improvements to Tools screens for layout and pagination
 - Added convert#Uom service
 - Added clone#DataDocument service
+- Added WebFacade.sendResourceResponse() method to stream content from any
+  Resource Facade location
 - XML Screen:
   - Added tree element for XML Screen that renders a lazy-loaded tree with
     links using jstree (currently version 3.0.3); see the wiki.xml screen
@@ -87,6 +89,9 @@ New Features:
     existing XML Screen forms by using 'moqui.screen.form.DbForm' or
     'DbForm' as the location, before the hash (#), in the @extends
     attribute
+  - Added FormResponse/Answer entities to save form responses from any form
+    based on form field names; can be used with DbFrom to have flexible
+    database driven survey forms
 - Entity Facade:
   - Added in operator (_op) for searchFormInputs/search-form-inputs
   - Added entity.field.@default attribute with a Groovy expression to set a
