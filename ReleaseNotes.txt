@@ -96,6 +96,10 @@ New Features:
 
 Bug Fixes:
 
+- Fixed security issue where current password was stored in
+  UserPasswordHistory with 2-way encryption. Now only previous passwords
+  are stored in UserPasswordHistory on password change, and they are stored
+  in the hashed (one-way encrypted) form along with the salt and hash type.
 - Fixed delete buttons not working on the Find Auto Screen
 - Fixed links with images (link.image element) FTL error
 - Required service parameters used to use the Groovy definition of empty
