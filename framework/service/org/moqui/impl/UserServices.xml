@@ -122,6 +122,8 @@ This Work includes contributions authored by David E. Jones, not as a
             <parameter name="requirePasswordChange" default-value="N"/>
         </in-parameters>
         <actions>
+            <entity-find-one entity-name="moqui.security.UserAccount" value-field="userAccount"/>
+
             <!-- check a bunch of stuff about the new password -->
             <set field="passwordNode" from="ec.ecfi.confXmlRoot.'user-facade'[0].'password'[0]"/>
 
@@ -148,6 +150,12 @@ This Work includes contributions authored by David E. Jones, not as a
 
             <!-- don't log this by default, security hole: <log level="info" message="newPassword=${newPassword}, length=${newPassword.length()}, digits=${digits}, others=${others}"/> -->
 
+            <!-- if password is same as current don't allow it -->
+            <set field="hashedNewPassword" from="ec.ecfi.getSimpleHash(newPassword, userAccount.passwordSalt, userAccount.passwordHashType)"/>
+            <if condition="userAccount.currentPassword == hashedNewPassword">
+                <message error="true">New password is same as current password</message>
+            </if>
+
             <!-- if password is in the history don't allow it -->
             <set field="historyLimit" from="passwordNode.'@history-limit'" default-value="5" type="Integer"/>
             <entity-find entity-name="moqui.security.UserPasswordHistory" list="duplicateUserPasswordHistoryList">
@@ -155,7 +163,8 @@ This Work includes contributions authored by David E. Jones, not as a
                 <!-- can't query by this field since it is encrypted: <econdition field-name="password" from="newPassword"/> -->
             </entity-find>
             <iterate list="duplicateUserPasswordHistoryList" entry="duplicateUserPasswordHistory">
-                <if condition="duplicateUserPasswordHistory.password == newPassword">
+                <set field="hashedNewPassword" from="ec.ecfi.getSimpleHash(newPassword, duplicateUserPasswordHistory.passwordSalt, duplicateUserPasswordHistory.passwordHashType)"/>
+                <if condition="duplicateUserPasswordHistory.password == hashedNewPassword">
                     <message error="true">Password was used in last ${historyLimit} passwords</message>
                 </if>
             </iterate>
@@ -164,10 +173,9 @@ This Work includes contributions authored by David E. Jones, not as a
             <!-- from here on the newPassword is considered okay -->
 
             <!-- save history, then while more in history than password.@history-limit default 5 then remove oldest -->
-            <service-call name="create#moqui.security.UserPasswordHistory">
-                <field-map field-name="userId"/>
-                <field-map field-name="password" from="newPassword"/>
-            </service-call>
+            <service-call name="create#moqui.security.UserPasswordHistory"
+                    in-map="[userId:userId, password:userAccount.currentPassword, passwordSalt:userAccount.passwordSalt,
+                        passwordHashType:userAccount.passwordHashType, fromDate:ec.user.nowTimestamp]"/>
             <entity-find entity-name="moqui.security.UserPasswordHistory" list="existingUserPasswordHistoryList">
                 <econdition field-name="userId" from="userId"/>
                 <order-by field-name="fromDate"/>
