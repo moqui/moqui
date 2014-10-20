@@ -453,7 +453,10 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         Node passwordNode = confXmlRoot."user-facade"[0]."password"[0]
         return passwordNode."@encrypt-hash-type" ?: "SHA-256"
     }
-    String getSimpleHash(String source, String salt) { return new SimpleHash(passwordHashType, source, salt).toString() }
+    String getSimpleHash(String source, String salt) { return getSimpleHash(source, salt, getPasswordHashType()) }
+    String getSimpleHash(String source, String salt, String hashType) {
+        return new SimpleHash(hashType ?: getPasswordHashType(), source, salt).toString()
+    }
 
     // ========== Getters ==========
 
