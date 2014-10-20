@@ -106,7 +106,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="title" type="text-medium"/>
         <field name="fieldTypeEnumId" type="id"/>
         <field name="layoutSequenceNum" type="number-integer"/>
-        <relationship type="one" related-entity-name="DbForm"/>
+        <relationship type="one" related-entity-name="moqui.screen.form.DbForm"/>
         <relationship type="one" title="DbFormFieldType" related-entity-name="moqui.basic.Enumeration">
             <key-map field-name="fieldTypeEnumId" related-field-name="enumId"/>
         </relationship>
@@ -142,7 +142,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="fieldName" type="text-medium" is-pk="true"/>
         <field name="attributeName" type="text-medium" is-pk="true"/>
         <field name="value" type="text-medium"/>
-        <relationship type="one" related-entity-name="DbFormField"/>
+        <relationship type="one" related-entity-name="moqui.screen.form.DbFormField"/>
     </entity>
     <entity entity-name="DbFormFieldOption" package-name="moqui.screen.form">
         <field name="formId" type="id" is-pk="true"/>
@@ -150,7 +150,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="sequenceNum" type="number-integer" is-pk="true"/>
         <field name="keyValue" type="text-medium"/>
         <field name="text" type="text-medium"/>
-        <relationship type="one" related-entity-name="DbFormField"/>
+        <relationship type="one" related-entity-name="moqui.screen.form.DbFormField"/>
     </entity>
     <entity entity-name="DbFormFieldEntOpts" package-name="moqui.screen.form">
         <field name="formId" type="id" is-pk="true"/>
@@ -158,7 +158,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="sequenceNum" type="number-integer" is-pk="true"/>
         <field name="entityName" type="text-medium"/>
         <field name="text" type="text-medium"/>
-        <relationship type="one" related-entity-name="DbFormField"/>
+        <relationship type="one" related-entity-name="moqui.screen.form.DbFormField"/>
     </entity>
     <entity entity-name="DbFormFieldEntOptsCond" package-name="moqui.screen.form">
         <field name="formId" type="id" is-pk="true"/>
@@ -166,7 +166,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="sequenceNum" type="number-integer" is-pk="true"/>
         <field name="entityFieldName" type="text-medium" is-pk="true"/>
         <field name="value" type="text-medium"/>
-        <relationship type="one" related-entity-name="DbFormFieldEntOpts"/>
+        <relationship type="one" related-entity-name="moqui.screen.form.DbFormFieldEntOpts"/>
     </entity>
     <entity entity-name="DbFormFieldEntOptsOrder" package-name="moqui.screen.form">
         <field name="formId" type="id" is-pk="true"/>
@@ -174,15 +174,15 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="sequenceNum" type="number-integer" is-pk="true"/>
         <field name="orderSequenceNum" type="number-integer" is-pk="true"/>
         <field name="entityFieldName" type="text-medium"/>
-        <relationship type="one" related-entity-name="DbFormFieldEntOpts"/>
+        <relationship type="one" related-entity-name="moqui.screen.form.DbFormFieldEntOpts"/>
     </entity>
     <entity entity-name="DbFormUserGroup" package-name="moqui.screen.form">
         <field name="formId" type="id" is-pk="true"/>
         <field name="userGroupId" type="id" is-pk="true">
             <description>These settings are for a UserGroup. To apply to all users just use the ALL_USERS UserGroup.</description>
         </field>
-        <relationship type="one" related-entity-name="DbForm"/>
-        <relationship type="one" related-entity-name="UserGroup"/>
+        <relationship type="one" related-entity-name="moqui.screen.form.DbForm"/>
+        <relationship type="one" related-entity-name="moqui.security.UserGroup"/>
     </entity>
     <view-entity entity-name="DbFormLookup" package-name="moqui.screen.form">
         <member-entity entity-alias="DBF" entity-name="DbForm"/>
@@ -197,14 +197,16 @@ This Work includes contributions authored by David E. Jones, not as a
     <entity entity-name="FormResponse" package-name="moqui.screen.form">
         <field name="formResponseId" type="id" is-pk="true"/>
         <field name="formLocation" type="text-medium"/>
-        <field name="partyId" type="id"/>
+        <field name="userId" type="id"/>
         <field name="responseDate" type="date-time"/>
+        <relationship type="one" related-entity-name="moqui.security.UserAccount"/>
     </entity>
     <entity entity-name="FormResponseAnswer" package-name="moqui.screen.form">
         <field name="formResponseAnswerId" type="id" is-pk="true"/>
         <field name="formResponseId" type="id"/>
         <field name="fieldName" type="text-short"/>
-        <field name="textValue" type="text-long"/>
+        <field name="valueText" type="text-long"/>
+        <relationship type="one" related-entity-name="moqui.screen.form.FormResponse"/>
     </entity>
 
     <!-- ========================================================= -->
