@@ -1606,15 +1606,11 @@ Features considered, but may not to be included in 1.x series
 ===========================================================================
 
 - XML Screens
-  - Screen tree elements
   - Screen section-iterate pagination
   - Screen form automatic client JS validation for service in-parameters
     for number-range, text-length, text-letters, time-range,
     credit-card.@types
   - Dynamic Screens (database-driven: DynamicScreen* entities)
-  - Dynamic Forms (database-driven: DynForm* entities) like the OFBiz
-    Survey and related entities (DbForm already in place to extend
-    XML Screen Forms)
 - Entity Facade
   - LiquiBase integration, entity.change-set element
   - EntitySync tool
@@ -1639,6 +1635,10 @@ Features considered, but may not to be included in 1.x series
   - Service
     - Configure and run chain of services (dynamic wizard)
   - Artifact Info screens (with in/out references for all)
+    - Screen tree and graph browse screen
+    - Entity info screen
+    - Entity usage/reference section
+    - Service usage/reference section on ServiceDetail screen
 
 - Email verification by random code on registration and email change
 - Login through Google, Facebook, etc
