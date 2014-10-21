@@ -637,7 +637,7 @@ class ScreenForm {
                     newFieldNode.appendNode("header-field", ["show-order-by":"case-insensitive"])
                 if (efType.startsWith("date") || efType.startsWith("time")) {
                     Node dateTimeNode = subFieldNode.appendNode("date-time", [type:efType])
-                    if (fieldName == "fromDate") dateTimeNode.attributes().put("default-value", "\${ec.user.nowTimestamp}")
+                    if (fieldName == "fromDate") dateTimeNode.attributes().put("default-value", "\${ec.l10n.format(ec.user.nowTimestamp, 'yyyy-MM-dd HH:mm')}")
                 } else if (efType == "text-very-long") {
                     subFieldNode.appendNode("text-area")
                 } else if (efType == "text-indicator") {
