@@ -247,39 +247,12 @@ abstract class EntityFindBase implements EntityFind {
                 }
                 if (ec != null) this.condition(ec)
             } else if (inf.containsKey(fn + "_period")) {
-                String period = ((String) inf.get(fn + "_period") ?: "day").toLowerCase()
-                int offset = (inf.get(fn + "_poffset") ?: "0") as int
-
                 ExecutionContext ec = efi.getEcfi().getExecutionContext()
-                Calendar basisCal = ec.user.getCalendarSafe()
-                basisCal.setTime(new java.sql.Date(ec.user.nowTimestamp.time))
-                Calendar fromCal = basisCal
-                Calendar thruCal = null
-                if (period == "week") {
-                    fromCal.set(Calendar.DAY_OF_WEEK, fromCal.getFirstDayOfWeek())
-                    fromCal.add(Calendar.WEEK_OF_YEAR, offset)
-                    thruCal = (Calendar) fromCal.clone()
-                    thruCal.add(Calendar.WEEK_OF_YEAR, 1)
-                } else if (period == "month") {
-                    fromCal.set(Calendar.DAY_OF_MONTH, fromCal.getActualMinimum(Calendar.DAY_OF_MONTH))
-                    fromCal.add(Calendar.MONTH, offset)
-                    thruCal = (Calendar) fromCal.clone()
-                    thruCal.add(Calendar.MONTH, 1)
-                } else if (period == "year") {
-                    fromCal.set(Calendar.DAY_OF_YEAR, fromCal.getActualMinimum(Calendar.DAY_OF_YEAR))
-                    fromCal.add(Calendar.YEAR, offset)
-                    thruCal = (Calendar) fromCal.clone()
-                    thruCal.add(Calendar.YEAR, 1)
-                } else {
-                    // default to day
-                    fromCal.add(Calendar.DAY_OF_YEAR, offset)
-                    thruCal = (Calendar) fromCal.clone()
-                    thruCal.add(Calendar.DAY_OF_YEAR, 1)
-                }
+                List<Timestamp> range = ec.user.getPeriodRange(inf.get(fn + "_period"), inf.get(fn + "_poffset"))
                 this.condition(efi.conditionFactory.makeCondition(fn,
-                        EntityCondition.GREATER_THAN_EQUAL_TO, new Timestamp(fromCal.getTimeInMillis())))
+                        EntityCondition.GREATER_THAN_EQUAL_TO, range[0]))
                 this.condition(efi.conditionFactory.makeCondition(fn,
-                        EntityCondition.LESS_THAN, new Timestamp(thruCal.getTimeInMillis())))
+                        EntityCondition.LESS_THAN, range[1]))
             } else {
                 // these will handle range-find and date-find
                 Object fromValue = inf.get(fn + "_from")
