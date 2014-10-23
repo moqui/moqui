@@ -210,6 +210,11 @@ class ScreenDefinition {
     }
 
     Map<String, ParameterItem> getParameterMap() { return parameterByName }
+    boolean hasRequiredParameters() {
+        boolean hasRequired = false
+        for (ParameterItem pi in parameterByName.values()) if (pi.required) { hasRequired = true; break }
+        return hasRequired
+    }
 
     TransitionItem getTransitionItem(String name, String method) {
         method = method ? method.toLowerCase() : ""
