@@ -217,6 +217,7 @@ class StupidUtilities {
         public String toString() { return this.fieldNameList.toString() }
     }
 
+    /** NOTE: in Groovy this method is not necessary, just use something like: theList.field */
     static Set<Object> getFieldValuesFromMapList(List<Map> theList, String fieldName) {
         Set<Object> theSet = new HashSet<>()
         for (Map curMap in theList) if (curMap.get(fieldName)) theSet.add(curMap.get(fieldName))

@@ -382,6 +382,42 @@ class UserFacadeImpl implements UserFacade {
     }
 
     @Override
+    List<Timestamp> getPeriodRange(String period, String poffset) {
+        period = (period ?: "day").toLowerCase()
+        int offset = (poffset ?: "0") as int
+
+        Calendar basisCal = getCalendarSafe()
+        basisCal.set(Calendar.HOUR_OF_DAY, 0); basisCal.set(Calendar.MINUTE, 0);
+        basisCal.set(Calendar.SECOND, 0); basisCal.set(Calendar.MILLISECOND, 0);
+        // this doesn't seem to work to set the time to midnight: basisCal.setTime(new java.sql.Date(nowTimestamp.time))
+        Calendar fromCal = basisCal
+        Calendar thruCal
+        if (period == "week") {
+            fromCal.set(Calendar.DAY_OF_WEEK, fromCal.getFirstDayOfWeek())
+            fromCal.add(Calendar.WEEK_OF_YEAR, offset)
+            thruCal = (Calendar) fromCal.clone()
+            thruCal.add(Calendar.WEEK_OF_YEAR, 1)
+        } else if (period == "month") {
+            fromCal.set(Calendar.DAY_OF_MONTH, fromCal.getActualMinimum(Calendar.DAY_OF_MONTH))
+            fromCal.add(Calendar.MONTH, offset)
+            thruCal = (Calendar) fromCal.clone()
+            thruCal.add(Calendar.MONTH, 1)
+        } else if (period == "year") {
+            fromCal.set(Calendar.DAY_OF_YEAR, fromCal.getActualMinimum(Calendar.DAY_OF_YEAR))
+            fromCal.add(Calendar.YEAR, offset)
+            thruCal = (Calendar) fromCal.clone()
+            thruCal.add(Calendar.YEAR, 1)
+        } else {
+            // default to day
+            fromCal.add(Calendar.DAY_OF_YEAR, offset)
+            thruCal = (Calendar) fromCal.clone()
+            thruCal.add(Calendar.DAY_OF_YEAR, 1)
+        }
+
+        return [new Timestamp(fromCal.getTimeInMillis()), new Timestamp(thruCal.getTimeInMillis())]
+    }
+
+    @Override
     void setEffectiveTime(Timestamp effectiveTime) { this.effectiveTime = effectiveTime }
 
     @Override

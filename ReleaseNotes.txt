@@ -28,6 +28,8 @@ New Features:
 - Various improvements to Tools screens for layout and pagination
 - Added convert#Uom service
 - Added clone#DataDocument service
+- Added WebFacade.sendResourceResponse() method to stream content from any
+  Resource Facade location
 - XML Screen:
   - Added tree element for XML Screen that renders a lazy-loaded tree with
     links using jstree (currently version 3.0.3); see the wiki.xml screen
@@ -87,6 +89,9 @@ New Features:
     existing XML Screen forms by using 'moqui.screen.form.DbForm' or
     'DbForm' as the location, before the hash (#), in the @extends
     attribute
+  - Added FormResponse/Answer entities to save form responses from any form
+    based on form field names; can be used with DbFrom to have flexible
+    database driven survey forms
 - Entity Facade:
   - Added in operator (_op) for searchFormInputs/search-form-inputs
   - Added entity.field.@default attribute with a Groovy expression to set a
@@ -96,6 +101,10 @@ New Features:
 
 Bug Fixes:
 
+- Fixed security issue where current password was stored in
+  UserPasswordHistory with 2-way encryption. Now only previous passwords
+  are stored in UserPasswordHistory on password change, and they are stored
+  in the hashed (one-way encrypted) form along with the salt and hash type.
 - Fixed delete buttons not working on the Find Auto Screen
 - Fixed links with images (link.image element) FTL error
 - Required service parameters used to use the Groovy definition of empty
@@ -1597,15 +1606,11 @@ Features considered, but may not to be included in 1.x series
 ===========================================================================
 
 - XML Screens
-  - Screen tree elements
   - Screen section-iterate pagination
   - Screen form automatic client JS validation for service in-parameters
     for number-range, text-length, text-letters, time-range,
     credit-card.@types
   - Dynamic Screens (database-driven: DynamicScreen* entities)
-  - Dynamic Forms (database-driven: DynForm* entities) like the OFBiz
-    Survey and related entities (DbForm already in place to extend
-    XML Screen Forms)
 - Entity Facade
   - LiquiBase integration, entity.change-set element
   - EntitySync tool
@@ -1630,6 +1635,10 @@ Features considered, but may not to be included in 1.x series
   - Service
     - Configure and run chain of services (dynamic wizard)
   - Artifact Info screens (with in/out references for all)
+    - Screen tree and graph browse screen
+    - Entity info screen
+    - Entity usage/reference section
+    - Service usage/reference section on ServiceDetail screen
 
 - Email verification by random code on registration and email change
 - Login through Google, Facebook, etc

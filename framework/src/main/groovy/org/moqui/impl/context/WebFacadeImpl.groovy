@@ -14,7 +14,9 @@ package org.moqui.impl.context
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 import org.moqui.context.ContextStack
+import org.moqui.context.ResourceReference
 import org.moqui.context.ValidationError
+import org.moqui.impl.StupidUtilities
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -408,6 +410,26 @@ class WebFacadeImpl implements WebFacade {
             response.writer.flush()
         } catch (IOException e) {
             logger.error("Error sending text response", e)
+        }
+    }
+
+    @Override
+    void sendResourceResponse(String location) {
+        ResourceReference rr = eci.resource.getLocationReference(location)
+        if (rr == null) throw new IllegalArgumentException("Resource not found at: ${location}")
+        response.setContentType(rr.contentType)
+        response.addHeader("Content-Disposition", "attachment; filename=\"${rr.getFileName()}\"")
+        InputStream is = rr.openStream()
+        try {
+            OutputStream os = response.outputStream
+            try {
+                int totalLen = StupidUtilities.copyStream(is, os)
+                logger.info("Streamed ${totalLen} bytes from contentLocation ${location}")
+            } finally {
+                os.close()
+            }
+        } finally {
+            is.close()
         }
     }
 

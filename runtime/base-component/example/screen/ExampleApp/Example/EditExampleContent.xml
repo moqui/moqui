@@ -52,20 +52,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <transition name="downloadContent">
         <actions>
             <entity-find-one entity-name="ExampleContent" value-field="exampleContent"/>
-            <script><![CDATA[
-                import org.moqui.context.ResourceReference
-                org.moqui.context.ExecutionContext ec = context.ec
-
-                ResourceReference rr = ec.resource.getLocationReference(exampleContent.contentLocation)
-                ec.web.response.setContentType(rr.contentType)
-                InputStream is = rr.openStream()
-                OutputStream os = ec.web.response.outputStream
-                int totalLen = StupidUtilities.copyStream(is, os)
-                is.close()
-                os.close()
-
-                ec.logger.info("Streamed ${totalLen} bytes from contentLocation ${exampleContent.contentLocation}")
-            ]]></script>
+            <script>ec.web.sendResourceResponse(exampleContent.contentLocation)</script>
         </actions>
         <default-response type="none"/>
     </transition>

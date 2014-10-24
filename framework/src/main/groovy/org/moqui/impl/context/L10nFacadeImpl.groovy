@@ -15,6 +15,7 @@ import org.moqui.context.Cache
 import org.moqui.context.L10nFacade
 import org.moqui.entity.EntityValue
 import org.moqui.entity.EntityFind
+import org.moqui.impl.StupidUtilities
 
 import javax.xml.bind.DatatypeConverter
 import java.text.NumberFormat
@@ -152,32 +153,41 @@ public class L10nFacadeImpl implements L10nFacade {
         return dateStr
     }
 
+    static final List<String> timestampFormats = ["yyyy-MM-dd HH:mm", "yyyy-MM-dd HH:mm:ss.SSS", "yyyy-MM-dd'T'HH:mm:ss",
+            "yyyy-MM-dd'T'HH:mm:ssZ", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd", "yyyy-MM-dd HH:mm:ss.SSS z"]
+
     @Override
     Timestamp parseTimestamp(String input, String format) {
         if (!input) return null
         Locale curLocale = getLocale()
         TimeZone curTz = getTimeZone()
-        if (!format) format = "yyyy-MM-dd HH:mm:ss.SSS z"
-        Calendar cal = calendarValidator.validate(input, format, curLocale, curTz)
-        // try a couple of other format strings
-        if (cal == null) cal = calendarValidator.validate(input, "yyyy-MM-dd HH:mm:ss.SSS", curLocale, curTz)
-        if (cal == null) cal = calendarValidator.validate(input, "yyyy-MM-dd'T'HH:mm:ss", curLocale, curTz)
-        // NOTE: JsonBuilder seems to be using this format, see GitHub issue #33
-        if (cal == null) cal = calendarValidator.validate(input, "yyyy-MM-dd'T'HH:mm:ssZ", curLocale, curTz)
-        if (cal == null) cal = calendarValidator.validate(input, "yyyy-MM-dd HH:mm:ss", curLocale, curTz)
-        if (cal == null) cal = calendarValidator.validate(input, "yyyy-MM-dd HH:mm", curLocale, curTz)
-        if (cal == null) cal = calendarValidator.validate(input, "yyyy-MM-dd", curLocale, curTz)
+        Calendar cal
+        if (format) cal = calendarValidator.validate(input, format, curLocale, curTz)
+
+        // long values are pretty common, so if there are no special characters try that first (fast to check)
+        if (cal == null) {
+            int nonDigits = StupidUtilities.countChars(input, false, true, true)
+            if (nonDigits == 0) {
+                try {
+                    Long lng = Long.valueOf(input)
+                    return new Timestamp(lng)
+                } catch (NumberFormatException e) {
+                    if (logger.isTraceEnabled()) logger.trace("Ignoring NumberFormatException for Timestamp parse: ${e.toString()}")
+                }
+            }
+        }
+
+        // try a bunch of other format strings
+        if (cal == null) {
+            Iterator timestampFormatIter = timestampFormats.iterator()
+            while (cal == null && timestampFormatIter.hasNext()) {
+                String tf = timestampFormatIter.next()
+                cal = calendarValidator.validate(input, tf, curLocale, curTz)
+            }
+        }
 
         // logger.warn("=========== input=${input}, cal=${cal}, long=${cal?.getTimeInMillis()}, locale=${curLocale}, timeZone=${curTz}, System=${System.currentTimeMillis()}")
         if (cal != null) return new Timestamp(cal.getTimeInMillis())
-
-        // try interpreting the String as a long
-        try {
-            Long lng = Long.valueOf(input)
-            return new Timestamp(lng)
-        } catch (NumberFormatException e) {
-            if (logger.isTraceEnabled()) logger.trace("Ignoring NumberFormatException for Timestamp parse: ${e.toString()}")
-        }
 
         try {
             // NOTE: do this AFTER the long parse because long numbers are interpreted really weird by this
@@ -191,7 +201,7 @@ public class L10nFacadeImpl implements L10nFacade {
         return null
     }
     String formatTimestamp(Timestamp input, String format) {
-        if (!format) format = "yyyy-MM-dd HH:mm:ss.SSS"
+        if (!format) format = "yyyy-MM-dd HH:mm"
         return calendarValidator.format(input, format, getLocale(), getTimeZone())
     }
 
