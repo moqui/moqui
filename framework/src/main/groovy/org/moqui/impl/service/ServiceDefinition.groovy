@@ -504,6 +504,20 @@ class ServiceDefinition {
                             eci.message.addValidationError(null, "${namePrefix}${parameterName}", getServiceName(), "Value [${parameterValue}] could not be converted to a ${type}" + (format ? " using format [${format}]": ""), null)
                         }
                         break
+                    case "Collection":
+                    case "List":
+                    case "java.util.Collection":
+                    case "java.util.List":
+                        String valueStr = (String) parameterValue
+                        if (valueStr.contains(",")) converted = Arrays.asList(valueStr.split(","))
+                        else converted = [valueStr]
+                        break
+                    case "Set":
+                    case "java.util.Set":
+                        String valueStr = (String) parameterValue
+                        if (valueStr.contains(",")) converted = new HashSet(valueStr.split(",").collect())
+                        else converted = new HashSet([valueStr])
+                        break
                 }
             }
 

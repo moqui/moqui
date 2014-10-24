@@ -53,6 +53,8 @@ public class StupidClassLoader extends ClassLoader {
         m.put(Integer.TYPE.getName(), Integer.TYPE); m.put(Long.TYPE.getName(), Long.TYPE);
         m.put(Float.TYPE.getName(), Float.TYPE); m.put(Double.TYPE.getName(), Double.TYPE);
         m.put(Byte.TYPE.getName(), Byte.TYPE); m.put(Character.TYPE.getName(), Character.TYPE);
+        m.put("org.moqui.entity.EntityValue", org.moqui.entity.EntityValue.class); m.put("EntityValue", org.moqui.entity.EntityValue.class);
+        m.put("org.moqui.entity.EntityList", org.moqui.entity.EntityList.class); m.put("EntityList", org.moqui.entity.EntityList.class);
         return m;
     }
 

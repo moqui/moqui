@@ -23,5 +23,6 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="resourceId" type="id" is-pk="true"/>
         <field name="mimeType" type="text-medium"/>
         <field name="fileData" type="binary-very-long"/>
+        <relationship type="one" related-entity-name="moqui.resource.DbResource"/>
     </entity>
 </entities>

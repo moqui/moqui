@@ -605,6 +605,10 @@ abstract class EntityValueBase implements EntityValue {
                 Object obj = get(fieldName)
                 if (obj instanceof byte[]) {
                     cdataMap.put(fieldName, new String(Base64.encodeBase64((byte[]) obj)))
+                } else if (obj instanceof SerialBlob) {
+                    if (((SerialBlob) obj).length() == 0) continue
+                    byte[] objBytes = ((SerialBlob) obj).getBytes(1, (int) obj.length())
+                    cdataMap.put(fieldName, new String(Base64.encodeBase64(objBytes)))
                 } else {
                     logger.warn("Field [${fieldName}] on entity [${entityName}] is not of type 'byte[]', is [${obj}] so skipping, won't be in export")
                 }

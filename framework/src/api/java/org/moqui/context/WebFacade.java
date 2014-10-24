@@ -39,6 +39,7 @@ public interface WebFacade {
 
     void sendJsonResponse(Object responseObj);
     void sendTextResponse(String text);
+    void sendResourceResponse(String location);
     void handleXmlRpcServiceCall();
     void handleJsonRpcServiceCall();
 }

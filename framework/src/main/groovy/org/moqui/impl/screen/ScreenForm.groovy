@@ -159,7 +159,8 @@ class ScreenForm {
                     Set<String> inParamNames = sd.getInParameterNames()
                     for (Node fieldNode in newFormNode."field") {
                         // if the field matches an in-parameter name and does not already have a validate-service, then set it
-                        if (inParamNames.contains(fieldNode."@name") && !fieldNode."@validate-service") {
+                        // do it even if it has a validate-service since it might be from another form, in general we want the current service:  && !fieldNode."@validate-service"
+                        if (inParamNames.contains(fieldNode."@name")) {
                             fieldNode.attributes().put("validate-service", singleServiceName)
                         }
                     }
@@ -637,7 +638,7 @@ class ScreenForm {
                     newFieldNode.appendNode("header-field", ["show-order-by":"case-insensitive"])
                 if (efType.startsWith("date") || efType.startsWith("time")) {
                     Node dateTimeNode = subFieldNode.appendNode("date-time", [type:efType])
-                    if (fieldName == "fromDate") dateTimeNode.attributes().put("default-value", "\${ec.user.nowTimestamp}")
+                    if (fieldName == "fromDate") dateTimeNode.attributes().put("default-value", "\${ec.l10n.format(ec.user.nowTimestamp, 'yyyy-MM-dd HH:mm')}")
                 } else if (efType == "text-very-long") {
                     subFieldNode.appendNode("text-area")
                 } else if (efType == "text-indicator") {
