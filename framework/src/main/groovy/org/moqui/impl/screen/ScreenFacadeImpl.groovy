@@ -331,6 +331,9 @@ public class ScreenFacadeImpl implements ScreenFacade {
                 }
             }
 
+            // populate transition references
+
+
             // now that subscreen is initialized save in list for location and path
             List curInfoList = (List) screenInfoCache.get(sd.location)
             if (curInfoList == null) { curInfoList = []; screenInfoCache.put(sd.location, curInfoList) }
