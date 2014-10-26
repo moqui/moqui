@@ -230,6 +230,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
         return templatesNode
     }
 
+    /* may use these at some point but are really superceded by getScreenInfoList():
     String getScreenDisplayString(String rootLocation, int levels) {
         StringBuilder sb = new StringBuilder()
         List<String> infoList = getScreenDisplayInfo(rootLocation, levels)
@@ -258,6 +259,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
             addScreenDisplayInfo(infoList, childSi, level+1, levels)
         }
     }
+    */
 
     List<ScreenInfo> getScreenInfoList(String rootLocation, int levels) {
         ScreenInfo rootInfo = new ScreenInfo(getScreenDefinition(rootLocation), null, null, 0)
