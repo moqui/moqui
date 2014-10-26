@@ -556,6 +556,7 @@ class ScreenUrlInfo {
         sui.ec = this.ec
         sui.sfi = this.sfi
         sui.rootSd = this.rootSd
+        sui.currentPathNameList = this.currentPathNameList
         sui.fromSd = this.fromSd
         sui.fromPathList = this.fromPathList!=null ? new ArrayList<String>(this.fromPathList) : null
         sui.fromScreenPath = this.fromScreenPath
