@@ -14,7 +14,7 @@ This Work includes contributions authored by David E. Jones, not as a
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd">
 
     <widget-template name="enumDropDown">
-        <drop-down allow-empty="${allowEmpty ?: 'false'}" no-current-selected-key="${noCurrentSelectedKey?:''}">
+        <drop-down allow-empty="${allowEmpty ?: 'false'}" no-current-selected-key="${noCurrentSelectedKey?:''}" style="${style?:'chosen-wide'}">
             <entity-options key="${enumId}" text="${description}">
                 <entity-find entity-name="moqui.basic.Enumeration">
                     <econdition field-name="enumTypeId"/>
@@ -24,7 +24,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </drop-down>
     </widget-template>
     <widget-template name="enumWithParentDropDown">
-        <drop-down allow-empty="${allowEmpty ?: 'false'}" no-current-selected-key="${noCurrentSelectedKey?:''}">
+        <drop-down allow-empty="${allowEmpty ?: 'false'}" no-current-selected-key="${noCurrentSelectedKey?:''}" style="${style?:'chosen-wide'}">
             <entity-options key="${enumId}" text="${description}">
                 <entity-find entity-name="moqui.basic.Enumeration">
                     <econdition field-name="enumTypeId"/>
@@ -46,7 +46,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </drop-down>
     </widget-template>
     <widget-template name="statusTransitionDropDown">
-        <drop-down allow-empty="false" current-description="${currentDescription?:''}">
+        <drop-down allow-empty="false" current-description="${currentDescription?:''}" style="${style?:'chosen-wide'}">
             <entity-options key="${toStatusId}" text="${transitionName} (${description})">
                 <entity-find entity-name="moqui.basic.StatusFlowTransitionToDetail">
                     <econdition field-name="statusId"/>
@@ -55,7 +55,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </drop-down>
     </widget-template>
     <widget-template name="statusTransitionWithFlowDropDown">
-        <drop-down allow-empty="false" current-description="${currentDescription?:''}">
+        <drop-down allow-empty="false" current-description="${currentDescription?:''}" style="${style?:'chosen-wide'}">
             <entity-options key="${toStatusId}" text="${transitionName} (${description})">
                 <entity-find entity-name="moqui.basic.StatusFlowTransitionToDetail">
                     <econdition field-name="statusId"/>
