@@ -13,13 +13,16 @@ package org.moqui.impl.screen
 
 import freemarker.template.Template
 import net.sf.ehcache.Element
+import org.moqui.context.ExecutionContext
 import org.moqui.context.ResourceReference
 import org.moqui.context.ScreenFacade
 import org.moqui.context.ScreenRender
 import org.moqui.context.Cache
+import org.moqui.impl.StupidUtilities
 import org.moqui.impl.context.CacheImpl
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.impl.screen.ScreenDefinition.SubscreensItem
+import org.moqui.impl.screen.ScreenDefinition.TransitionItem
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -31,6 +34,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
     protected final Cache screenLocationCache
     protected final Cache screenLocationPermCache
     protected final Cache screenInfoCache
+    protected final Cache screenInfoRefRevCache
     protected final Cache screenTemplateModeCache
     protected final Cache screenTemplateLocationCache
     protected final Cache widgetTemplateLocationCache
@@ -42,6 +46,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
         this.screenLocationCache = ecfi.cacheFacade.getCache("screen.location")
         this.screenLocationPermCache = ecfi.cacheFacade.getCache("screen.location.perm")
         this.screenInfoCache = ecfi.cacheFacade.getCache("screen.info")
+        this.screenInfoRefRevCache = ecfi.cacheFacade.getCache("screen.info.ref.rev")
         this.screenTemplateModeCache = ecfi.cacheFacade.getCache("screen.template.mode")
         this.screenTemplateLocationCache = ecfi.cacheFacade.getCache("screen.template.location")
         this.widgetTemplateLocationCache = ecfi.cacheFacade.getCache("widget.template.location")
@@ -273,7 +278,9 @@ public class ScreenFacadeImpl implements ScreenFacade {
         ScreenDefinition sd
         SubscreensItem ssi
         ScreenInfo parentInfo
+        ScreenInfo rootInfo
         Map<String, ScreenInfo> subscreenInfoByName = new TreeMap()
+        Map<String, TransitionInfo> transitionInfoByName = new TreeMap()
         int level
         String name
         List<String> screenPath = []
@@ -311,8 +318,10 @@ public class ScreenFacadeImpl implements ScreenFacade {
                 curParent.allSubscreensTrees += trees
                 curParent.allSubscreensSections += sections
                 curParent.allSubscreensTransitions += transitions
+                if (curParent.parentInfo == null) rootInfo = curParent
                 curParent = curParent.parentInfo
             }
+            if (rootInfo == null) rootInfo = this
 
             // get info for all subscreens
             for (Map.Entry<String, SubscreensItem> ssEntry in sd.subscreensByName.entrySet()) {
@@ -334,7 +343,9 @@ public class ScreenFacadeImpl implements ScreenFacade {
             }
 
             // populate transition references
-
+            for (Map.Entry<String, TransitionItem> tiEntry in sd.transitionByName.entrySet()) {
+                transitionInfoByName.put(tiEntry.getKey(), new TransitionInfo(this, tiEntry.getValue()))
+            }
 
             // now that subscreen is initialized save in list for location and path
             List curInfoList = (List) screenInfoCache.get(sd.location)
@@ -354,6 +365,33 @@ public class ScreenFacadeImpl implements ScreenFacade {
             for (ScreenInfo si in subscreenInfoByName.values()) {
                 infoList.add(si)
                 if (maxLevel > level) si.addChildrenToList(infoList, maxLevel)
+            }
+        }
+    }
+
+    class TransitionInfo implements Serializable {
+        ScreenInfo si
+        TransitionItem ti
+        Set<String> responseScreenPathSet = new TreeSet()
+        List<String> transitionPath
+
+        TransitionInfo(ScreenInfo si, TransitionItem ti) {
+            this.si = si
+            this.ti = ti
+            transitionPath = si.screenPath
+            transitionPath.add(ti.getName())
+
+            for (ScreenDefinition.ResponseItem ri in ti.conditionalResponseList) {
+                if (ri.urlType && ri.urlType != "transition" && ri.urlType != "screen") continue
+                ScreenUrlInfo sui = new ScreenUrlInfo(ecfi.getEci(), si.rootInfo.sd, null, null,
+                        si.sd, si.screenPath, ri.url, null, null)
+                if (sui.targetScreen == null) continue
+                String targetScreenPath = screenPathToString(sui.getPreTransitionPathNameList())
+                responseScreenPathSet.add(targetScreenPath)
+
+                Set<String> refSet = (Set<String>) screenInfoRefRevCache.get(targetScreenPath)
+                if (refSet == null) { refSet = new HashSet(); screenInfoRefRevCache.put(targetScreenPath, refSet) }
+                refSet.add(screenPathToString(transitionPath))
             }
         }
     }
