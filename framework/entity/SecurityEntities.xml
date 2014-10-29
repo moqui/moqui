@@ -336,7 +336,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </seed-data>
     </entity>
     <entity entity-name="UserGroupPreference" package-name="moqui.security">
-        <description>Use this entity for user-specific preferences (or properties). For default preferences use userId="_NA_".</description>
+        <description>Use this entity for user group preferences (or properties). For all users use userGroupId="ALL_USERS".</description>
         <field name="userGroupId" type="id" is-pk="true"/>
         <field name="preferenceKey" type="text-medium" is-pk="true"/>
         <field name="preferenceValue" type="text-long"/>
