@@ -244,7 +244,7 @@ input[type=radio], input[type=checkbox] { height: auto; }
 .chosen-container { min-width: 80px !important; }
 .chosen-single { height: 34px !important; line-height: 34px !important; background: #EEE !important; }
 .chosen-single div b { margin-top: 5px; }
-.dynamic-dialog .chosen-container, .container-dialog .chosen-container, .field-row-item .chosen-container { min-width: 150px !important; }
+.dynamic-dialog .chosen-container, .container-dialog .chosen-container, .field-row-item .chosen-container { min-width: 200px !important; }
 .dynamic-options { min-width: 200px !important; }
 .chosen-container.chosen-wide { min-width: 300px !important; }
 .chosen-container.chosen-wider { min-width: 400px !important; }
