@@ -1495,10 +1495,13 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
         <#assign acUrlInfo = sri.makeUrlByType(.node["@ac-transition"], "transition", null, "false")>
         <#assign acUrlParameterMap = acUrlInfo.getParameterMap()>
         <#assign acShowValue = .node["@ac-show-value"]! == "true">
-        <input id="${id}_ac" type="<#if validationClasses?contains("email")>email<#elseif validationClasses?contains("url")>url<#else>text</#if>" name="${name}_ac" value="${fieldValue?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.evaluateCondition(.node.@disabled!"false", "")> disabled="disabled"</#if> class="form-control<#if validationClasses?has_content> ${validationClasses}</#if>"<#if validationClasses?has_content> data-vv-validations="${validationClasses}"</#if><#if validationClasses?contains("required")> required</#if><#if regexpInfo?has_content> pattern="${regexpInfo.regexp}"</#if><#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
+        <#if .node["@ac-initial-text"]?has_content><#assign valueText = ec.resource.evaluateStringExpand(.node["@ac-initial-text"]!, "")>
+            <#else><#assign valueText = fieldValue>
+        </#if>
+        <input id="${id}_ac" type="<#if validationClasses?contains("email")>email<#elseif validationClasses?contains("url")>url<#else>text</#if>" name="${name}_ac" value="${valueText?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.evaluateCondition(.node.@disabled!"false", "")> disabled="disabled"</#if> class="form-control<#if validationClasses?has_content> ${validationClasses}</#if>"<#if validationClasses?has_content> data-vv-validations="${validationClasses}"</#if><#if validationClasses?contains("required")> required</#if><#if regexpInfo?has_content> pattern="${regexpInfo.regexp}"</#if><#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
         <input id="${id}" type="hidden" name="${name}" value="${fieldValue?html}">
         <#if acShowValue>
-        <span id="${id}_value" class="form-autocomplete-value"><#if .node["@ac-initial-text"]??>${ec.resource.evaluateStringExpand(.node["@ac-initial-text"], "")}<#else>&nbsp;</#if></span>
+        <span id="${id}_value" class="form-autocomplete-value"><#if valueText?has_content>${valueText?html}<#else>&nbsp;</#if></span>
         </#if>
         <#assign afterFormScript>
             $("#${id}_ac").autocomplete({
@@ -1511,14 +1514,14 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
                     if (ui.item) { this.value = ui.item.value; $("#${id}").val(ui.item.value); $("#${id}_ac").val(ui.item.label);<#if acShowValue> if (ui.item.label) { $("#${id}_value").html(ui.item.label); }</#if> return false; }
                 }
             });
-
+            <#if !.node["@ac-initial-text"]?has_content>
             /* load the initial value if there is one */
             if ($("#${id}").val()) {
                 $.ajax({ url: "${acUrlInfo.url}", type: "POST", dataType: "json", data: { term: $("#${id}").val()<#list acUrlParameterMap?keys as parameterKey><#if acUrlParameterMap.get(parameterKey)?has_content>, "${parameterKey}":"${acUrlParameterMap.get(parameterKey)}"</#if></#list> },
                     success: function(data) { if (data && data[0].label) { $("#${id}_ac").val(data[0].label); <#if acShowValue>$("#${id}_value").html(data[0].label);</#if> } }
                 });
             }
-
+            </#if>
         </#assign>
         <#t>${sri.appendToScriptWriter(afterFormScript)}
     <#else>

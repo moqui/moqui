@@ -102,6 +102,10 @@ New Features:
   - Added FormResponse/Answer entities to save form responses from any form
     based on form field names; can be used with DbFrom to have flexible
     database driven survey forms
+  - Autocomplete fields (with text-line.@ac-transition) now hide the
+    ID/value and put the label in the input box; they also do a server call
+    with the initial value to get a label for it if there is no
+    @ac-initial-text attribute
 - Entity Facade:
   - Added in operator (_op) for searchFormInputs/search-form-inputs
   - Added entity.field.@default attribute with a Groovy expression to set a
