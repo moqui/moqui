@@ -1489,27 +1489,45 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
     <#assign fieldValue = sri.getFieldValueString(.node?parent?parent, .node["@default-value"]!"", .node["@format"]!)>
     <#assign validationClasses = sri.getFormFieldValidationClasses(.node?parent?parent?parent["@name"], .node?parent?parent["@name"])>
     <#assign regexpInfo = sri.getFormFieldValidationRegexpInfo(.node?parent?parent?parent["@name"], .node?parent?parent["@name"])!>
+    <#assign isAutoComplete = .node["@ac-transition"]?has_content>
     <#-- NOTE: removed number type (<#elseif validationClasses?contains("number")>number) because on Safari, maybe others, ignores size and behaves funny for decimal values -->
-    <input type="<#if validationClasses?contains("email")>email<#elseif validationClasses?contains("url")>url<#else>text</#if>" name="${name}" value="${fieldValue?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.evaluateCondition(.node.@disabled!"false", "")> disabled="disabled"</#if> id="${id}" class="form-control<#if validationClasses?has_content> ${validationClasses}</#if>"<#if validationClasses?has_content> data-vv-validations="${validationClasses}"</#if><#if validationClasses?contains("required")> required</#if><#if regexpInfo?has_content> pattern="${regexpInfo.regexp}"</#if><#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
-    <#if .node["@ac-transition"]?has_content>
+    <#if isAutoComplete>
         <#assign acUrlInfo = sri.makeUrlByType(.node["@ac-transition"], "transition", null, "false")>
         <#assign acUrlParameterMap = acUrlInfo.getParameterMap()>
-        <#assign acShowValue = .node["@ac-show-value"]! != "false">
+        <#assign acShowValue = .node["@ac-show-value"]! == "true">
+        <#if .node["@ac-initial-text"]?has_content><#assign valueText = ec.resource.evaluateStringExpand(.node["@ac-initial-text"]!, "")>
+            <#else><#assign valueText = fieldValue>
+        </#if>
+        <input id="${id}_ac" type="<#if validationClasses?contains("email")>email<#elseif validationClasses?contains("url")>url<#else>text</#if>" name="${name}_ac" value="${valueText?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.evaluateCondition(.node.@disabled!"false", "")> disabled="disabled"</#if> class="form-control<#if validationClasses?has_content> ${validationClasses}</#if>"<#if validationClasses?has_content> data-vv-validations="${validationClasses}"</#if><#if validationClasses?contains("required")> required</#if><#if regexpInfo?has_content> pattern="${regexpInfo.regexp}"</#if><#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
+        <input id="${id}" type="hidden" name="${name}" value="${fieldValue?html}">
         <#if acShowValue>
-        <span id="${id}_value" class="form-autocomplete-value"><#if .node["@ac-initial-text"]??>${ec.resource.evaluateStringExpand(.node["@ac-initial-text"], "")}<#else>&nbsp;</#if></span>
+        <span id="${id}_value" class="form-autocomplete-value"><#if valueText?has_content>${valueText?html}<#else>&nbsp;</#if></span>
         </#if>
         <#assign afterFormScript>
-            $("#${id}").autocomplete({
+            $("#${id}_ac").autocomplete({
                 source: function(request, response) { $.ajax({
                     url: "${acUrlInfo.url}", type: "POST", dataType: "json", data: { term: request.term<#list acUrlParameterMap?keys as parameterKey><#if acUrlParameterMap.get(parameterKey)?has_content>, "${parameterKey}":"${acUrlParameterMap.get(parameterKey)}"</#if></#list> },
                     success: function(data) { response($.map(data, function(item) { return { label: item.label, value: item.value } })); }
                 }); }, <#if .node["@ac-delay"]?has_content>delay: ${.node["@ac-delay"]},</#if><#if .node["@ac-min-length"]?has_content>minLength: ${.node["@ac-min-length"]},</#if>
-                select: function( event, ui ) {
-                    if (ui.item) { this.value = ui.item.value; <#if acShowValue>if (ui.item.label) { $("#${id}_value").html(ui.item.label); }</#if> }
-                }
+                focus: function(event, ui) { $("#${id}").val(ui.item.value); $("#${id}_ac").val(ui.item.label); return false; },
+                select: function(event, ui) { if (ui.item) { this.value = ui.item.value; $("#${id}").val(ui.item.value); $("#${id}_ac").val(ui.item.label);<#if acShowValue> if (ui.item.label) { $("#${id}_value").html(ui.item.label); }</#if> return false; } }
             });
+            <#if !.node["@ac-initial-text"]?has_content>
+            /* load the initial value if there is one */
+            if ($("#${id}").val()) {
+                $.ajax({ url: "${acUrlInfo.url}", type: "POST", dataType: "json", data: { term: $("#${id}").val()<#list acUrlParameterMap?keys as parameterKey><#if acUrlParameterMap.get(parameterKey)?has_content>, "${parameterKey}":"${acUrlParameterMap.get(parameterKey)}"</#if></#list> },
+                    success: function(data) {
+                        var curValue = $("#${id}").val();
+                        for (var i = 0; i < data.length; i++) { if (data[i].value == curValue) { $("#${id}_ac").val(data[i].label); <#if acShowValue>$("#${id}_value").html(data[i].label);</#if> break; } }
+                        <#-- don't do this by default if we haven't found a valid one: if (data && data[0].label) { $("#${id}_ac").val(data[0].label); <#if acShowValue>$("#${id}_value").html(data[0].label);</#if> } -->
+                    }
+                });
+            }
+            </#if>
         </#assign>
         <#t>${sri.appendToScriptWriter(afterFormScript)}
+    <#else>
+        <input id="${id}" type="<#if validationClasses?contains("email")>email<#elseif validationClasses?contains("url")>url<#else>text</#if>" name="${name}" value="${fieldValue?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.evaluateCondition(.node.@disabled!"false", "")> disabled="disabled"</#if> class="form-control<#if validationClasses?has_content> ${validationClasses}</#if>"<#if validationClasses?has_content> data-vv-validations="${validationClasses}"</#if><#if validationClasses?contains("required")> required</#if><#if regexpInfo?has_content> pattern="${regexpInfo.regexp}"</#if><#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
     </#if>
     <#-- OLD approach for validate() with regexp (with validVal just goes in pattern attribute):
     <#assign regexpInfo = sri.getFormFieldValidationRegexpInfo(.node?parent?parent?parent["@name"], .node?parent?parent["@name"])!>

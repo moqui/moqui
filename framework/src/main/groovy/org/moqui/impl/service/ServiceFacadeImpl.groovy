@@ -77,8 +77,11 @@ class ServiceFacadeImpl implements ServiceFacade {
         }
 
         // prep data for scheduler history listeners
-        InetAddress localHost = InetAddress.getLocalHost()
-        schedulerInfoMap = [hostAddress:localHost.getHostAddress(), hostName:localHost.getHostName(),
+        InetAddress localHost = null
+        try { localHost = InetAddress.getLocalHost() }
+        catch (UnknownHostException e) { logger.warn("Could not get localhost address", e) }
+        schedulerInfoMap = [hostAddress:(localHost?.getHostAddress() ?: '127.0.0.1'),
+                hostName:(localHost?.getHostName() ?: 'localhost'),
                 schedulerId:scheduler.getSchedulerInstanceId(), schedulerName:scheduler.getSchedulerName()]
 
         scheduler.getListenerManager().addTriggerListener(new HistoryTriggerListener());
