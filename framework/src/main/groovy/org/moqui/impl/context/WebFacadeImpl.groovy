@@ -284,8 +284,12 @@ class WebFacadeImpl implements WebFacade {
                 if (webappNode."@https-host") {
                     urlBuilder.append(webappNode."@https-host")
                 } else {
-                    if (webFacade) {
-                        urlBuilder.append(webFacade.getRequest().getServerName())
+                    if (webFacade != null) {
+                        String hostName = null
+                        try { hostName = new URL(webFacade.getRequest().getRequestURL().toString()).getHost() }
+                        catch (Exception e) { /* ignore it, default to getServerName() result */ }
+                        if (!hostName) hostName = webFacade.getRequest().getServerName()
+                        urlBuilder.append(hostName)
                     } else {
                         // uh-oh, no web context, default to localhost
                         urlBuilder.append("localhost")
@@ -301,7 +305,11 @@ class WebFacadeImpl implements WebFacade {
                     urlBuilder.append(webappNode."@http-host")
                 } else {
                     if (webFacade) {
-                        urlBuilder.append(webFacade.getRequest().getServerName())
+                        String hostName = null
+                        try { hostName = new URL(webFacade.getRequest().getRequestURL().toString()).getHost() }
+                        catch (Exception e) { /* ignore it, default to getServerName() result */ }
+                        if (!hostName) hostName = webFacade.getRequest().getServerName()
+                        urlBuilder.append(hostName)
                     } else {
                         // uh-oh, no web context, default to localhost
                         urlBuilder.append("localhost")
