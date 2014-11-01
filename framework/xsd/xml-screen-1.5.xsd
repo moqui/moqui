@@ -646,6 +646,26 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:complexType>
     </xs:element>
 
+    <xs:element name="container-row" substitutionGroup="AllWidgets">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="row-col"/>
+            </xs:sequence>
+            <xs:attribute name="id" type="xs:string"/>
+            <xs:attribute name="style" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="row-col">
+        <xs:complexType>
+            <xs:group ref="widget-elements" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:attribute name="lg" type="xs:string"/>
+            <xs:attribute name="md" type="xs:string"/>
+            <xs:attribute name="sm" type="xs:string"/>
+            <xs:attribute name="xs" type="xs:string"/>
+            <xs:attribute name="style" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+
     <xs:element name="container-panel" substitutionGroup="AllWidgets">
         <xs:annotation><xs:documentation>
             This panel can have up to five areas: header, left, center, right, footer. Only the center area is required.
