@@ -650,9 +650,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <xs:annotation><xs:documentation>A responsive 12-column grid row. For the concept and one possible
             implementation see http://getbootstrap.com/css/#grid</xs:documentation></xs:annotation>
         <xs:complexType>
-            <xs:sequence>
-                <xs:element ref="row-col"/>
-            </xs:sequence>
+            <xs:sequence><xs:element ref="row-col" maxOccurs="unbounded"/></xs:sequence>
             <xs:attribute name="id" type="xs:string"/>
             <xs:attribute name="style" type="xs:string"/>
         </xs:complexType>

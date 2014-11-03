@@ -106,6 +106,8 @@ New Features:
     ID/value and put the label in the input box; they also do a server call
     with the initial value to get a label for it if there is no
     @ac-initial-text attribute
+  - Added container-row and row-col elements for 12 column responsive
+    layouts currently implemented with the Bootstrap 12 col styles
 - Entity Facade:
   - Added in operator (_op) for searchFormInputs/search-form-inputs
   - Added entity.field.@default attribute with a Groovy expression to set a
