@@ -70,6 +70,14 @@ class ScreenDefinition {
             TransitionItem ti = new TransitionItem(transitionNode, this)
             transitionByName.put(ti.method == "any" ? ti.name : ti.name + "#" + ti.method, ti)
         }
+        // transition-include
+        for (Node transitionInclNode in screenNode."transition-include") {
+            ScreenDefinition includeScreen = sfi.getEcfi().getScreenFacade().getScreenDefinition((String) transitionInclNode["@location"])
+            Node transitionNode = includeScreen?.getTransitionItem((String) transitionInclNode["@name"], (String) transitionInclNode["@method"])?.transitionNode
+            if (transitionNode == null) throw new IllegalArgumentException("For transition-include could not find transition [${transitionInclNode["@name"]}] with method [${transitionInclNode["@method"]}] in screen at [${transitionInclNode["@location"]}]")
+            TransitionItem ti = new TransitionItem(transitionNode, this)
+            transitionByName.put(ti.method == "any" ? ti.name : ti.name + "#" + ti.method, ti)
+        }
         // subscreens
         populateSubscreens()
 
@@ -420,6 +428,7 @@ class ScreenDefinition {
 
     static class TransitionItem {
         protected ScreenDefinition parentScreen
+        protected Node transitionNode
 
         protected String name
         protected String method
@@ -440,6 +449,7 @@ class ScreenDefinition {
 
         TransitionItem(Node transitionNode, ScreenDefinition parentScreen) {
             this.parentScreen = parentScreen
+            this.transitionNode = transitionNode
             name = transitionNode."@name"
             method = transitionNode."@method" ?: "any"
             location = "${parentScreen.location}.transition_${StupidUtilities.cleanStringForJavaName(name)}"

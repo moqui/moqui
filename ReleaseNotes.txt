@@ -108,6 +108,7 @@ New Features:
     @ac-initial-text attribute
   - Added container-row and row-col elements for 12 column responsive
     layouts currently implemented with the Bootstrap 12 col styles
+  - Added transition-include element to reuse transition definitions
 - Entity Facade:
   - Added in operator (_op) for searchFormInputs/search-form-inputs
   - Added entity.field.@default attribute with a Groovy expression to set a
