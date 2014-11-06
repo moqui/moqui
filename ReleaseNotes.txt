@@ -8,7 +8,7 @@ Release 1.5.0 - TBD
 Moqui Framework 1.5.0 is a major new feature and bug fix release.
 
 This release includes a number of UI improvements in XML Screens and Forms
-including lazy-loaded trees (with jstree), more complete database-driven
+including lazy-loading trees (with jstree), more complete database-driven
 forms, general form response saving (together support DB-driven surveys,
 and can also be used with any XML Form), including entire screen sections
 in other screens, required screen parameters so explicit checking isn't
