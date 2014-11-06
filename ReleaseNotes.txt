@@ -137,6 +137,9 @@ Bug Fixes:
 - Fixed search#DataDocuments issues with documentType parameter, adding it
   to the count query (was getting wrong counts because it was left out),
   set to null if an empty String as ElasticSearch treats that as a real one
+- Fixed issue with a distinct query where order by fields are not selected,
+  Entity Facade now automatically selects order by fields for distinct
+  queries
 
 ===========================================================================
 Release 1.4.1 - 01 Aug 2014

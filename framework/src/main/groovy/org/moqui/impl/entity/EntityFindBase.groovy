@@ -641,6 +641,13 @@ abstract class EntityFindBase implements EntityFind {
         } else if (cacheList != null) {
             el = cacheList
         } else {
+            // order by fields need to be selected (at least on some databases, Derby is one of them)
+            if (this.fieldsToSelect && getDistinct() && orderByExpanded) {
+                for (String orderByField in orderByExpanded) {
+                    EntityFindBuilder.FieldOrderOptions foo = new EntityFindBuilder.FieldOrderOptions(orderByField)
+                    fieldsToSelect.add(foo.fieldName)
+                }
+            }
             // we always want fieldsToSelect populated so that we know the order of the results coming back
             if (!this.fieldsToSelect || txCache != null || doEntityCache) this.selectFields(ed.getFieldNames(true, true, false))
             // TODO: this will not handle query conditions on UserFields, it will blow up in fact
@@ -719,6 +726,19 @@ abstract class EntityFindBase implements EntityFind {
         // there may not be a simpleAndMap, but that's all we have that can be treated directly by the EECA
         efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-iterator", true)
 
+        List<String> orderByExpanded = new ArrayList()
+        // add the manually specified ones, then the ones in the view entity's entity-condition
+        if (this.getOrderBy()) orderByExpanded.addAll(this.getOrderBy())
+        def ecObList = ed.getEntityNode()."entity-condition"?.first?."order-by"
+        if (ecObList) for (Node orderBy in ecObList) orderByExpanded.add((String) orderBy."@field-name")
+
+        // order by fields need to be selected (at least on some databases, Derby is one of them)
+        if (this.fieldsToSelect && getDistinct() && orderByExpanded) {
+            for (String orderByField in orderByExpanded) {
+                EntityFindBuilder.FieldOrderOptions foo = new EntityFindBuilder.FieldOrderOptions(orderByField)
+                fieldsToSelect.add(foo.fieldName)
+            }
+        }
         // we always want fieldsToSelect populated so that we know the order of the results coming back
         if (!this.fieldsToSelect) this.selectFields(ed.getFieldNames(true, true, false))
         // TODO: this will not handle query conditions on UserFields, it will blow up in fact
@@ -741,12 +761,6 @@ abstract class EntityFindBase implements EntityFind {
         } else if (viewHaving) {
             havingCondition = viewHaving
         }
-
-        List<String> orderByExpanded = new ArrayList()
-        // add the manually specified ones, then the ones in the view entity's entity-condition
-        if (this.getOrderBy()) orderByExpanded.addAll(this.getOrderBy())
-        def ecObList = ed.getEntityNode()."entity-condition"?.first?."order-by"
-        if (ecObList) for (Node orderBy in ecObList) orderByExpanded.add((String) orderBy."@field-name")
 
         // call the abstract method
         EntityListIterator eli = iteratorExtended(whereCondition, havingCondition, orderByExpanded)
