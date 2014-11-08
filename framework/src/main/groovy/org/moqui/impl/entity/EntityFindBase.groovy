@@ -11,7 +11,6 @@
  */
 package org.moqui.impl.entity
 
-import org.moqui.impl.context.ExecutionContextImpl
 import org.moqui.impl.context.TransactionCache
 
 import java.sql.ResultSet
@@ -246,9 +245,9 @@ abstract class EntityFindBase implements EntityFind {
                         break;
                 }
                 if (ec != null) this.condition(ec)
-            } else if (inf.containsKey(fn + "_period")) {
+            } else if (inf.get(fn + "_period")) {
                 ExecutionContext ec = efi.getEcfi().getExecutionContext()
-                List<Timestamp> range = ec.user.getPeriodRange(inf.get(fn + "_period"), inf.get(fn + "_poffset"))
+                List<Timestamp> range = ec.user.getPeriodRange((String) inf.get(fn + "_period"), (String) inf.get(fn + "_poffset"))
                 this.condition(efi.conditionFactory.makeCondition(fn,
                         EntityCondition.GREATER_THAN_EQUAL_TO, range[0]))
                 this.condition(efi.conditionFactory.makeCondition(fn,
