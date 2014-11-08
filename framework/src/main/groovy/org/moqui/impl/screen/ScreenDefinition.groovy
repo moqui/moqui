@@ -102,26 +102,7 @@ class ScreenDefinition {
             }
             for (Node sectionNode in (Collection<Node>) rootSection.widgets.widgetsNode.depthFirst()
                     .findAll({ it instanceof Node && (it.name() == "section-include") })) {
-                ScreenDefinition includeScreen = sfi.getEcfi().getScreenFacade().getScreenDefinition((String) sectionNode["@location"])
-                ScreenSection includeSection = includeScreen?.getSection((String) sectionNode["@name"])
-                if (includeSection == null) throw new IllegalArgumentException("Could not find section [${sectionNode["@name"]} to include at location [${sectionNode["@location"]}]")
-                sectionByName.put((String) sectionNode["@name"], includeSection)
-
-                // see if the included section contains any SECTIONS, need to reference those here too!
-                for (Node inclRefNode in (Collection<Node>) includeSection.sectionNode.depthFirst()
-                        .findAll({ it instanceof Node && (it.name() == "section" || it.name() == "section-iterate") })) {
-                    sectionByName.put((String) inclRefNode["@name"], includeScreen.getSection((String) inclRefNode["@name"]))
-                }
-
-                // see if the included section contains any FORMS or TREES, need to reference those here too!
-                for (Node formNode in (Collection<Node>) includeSection.sectionNode.depthFirst()
-                        .findAll({ it instanceof Node && (it.name() == "form-single" || it.name() == "form-list") })) {
-                    formByName.put((String) formNode["@name"], includeScreen.getForm((String) formNode["@name"]))
-                }
-                for (Node treeNode in (Collection<Node>) includeSection.sectionNode.depthFirst()
-                        .findAll({ it instanceof Node && (it.name() == "tree") })) {
-                    treeByName.put((String) treeNode["@name"], includeScreen.getTree((String) treeNode["@name"]))
-                }
+                pullSectionInclude(sectionNode)
             }
 
             // get all forms by name
@@ -138,6 +119,34 @@ class ScreenDefinition {
         }
 
         if (logger.isTraceEnabled()) logger.trace("Loaded screen at [${location}] in [${(System.currentTimeMillis()-startTime)/1000}] seconds")
+    }
+
+    void pullSectionInclude(Node sectionNode) {
+        ScreenDefinition includeScreen = sfi.getEcfi().getScreenFacade().getScreenDefinition((String) sectionNode["@location"])
+        ScreenSection includeSection = includeScreen?.getSection((String) sectionNode["@name"])
+        if (includeSection == null) throw new IllegalArgumentException("Could not find section [${sectionNode["@name"]} to include at location [${sectionNode["@location"]}]")
+        sectionByName.put((String) sectionNode["@name"], includeSection)
+
+        // see if the included section contains any SECTIONS, need to reference those here too!
+        for (Node inclRefNode in (Collection<Node>) includeSection.sectionNode.depthFirst()
+                .findAll({ it instanceof Node && (it.name() == "section" || it.name() == "section-iterate") })) {
+            sectionByName.put((String) inclRefNode["@name"], includeScreen.getSection((String) inclRefNode["@name"]))
+        }
+        // recurse for section-include
+        for (Node inclRefNode in (Collection<Node>) includeSection.sectionNode.depthFirst()
+                .findAll({ it instanceof Node && (it.name() == "section-include") })) {
+            pullSectionInclude(inclRefNode)
+        }
+
+        // see if the included section contains any FORMS or TREES, need to reference those here too!
+        for (Node formNode in (Collection<Node>) includeSection.sectionNode.depthFirst()
+                .findAll({ it instanceof Node && (it.name() == "form-single" || it.name() == "form-list") })) {
+            formByName.put((String) formNode["@name"], includeScreen.getForm((String) formNode["@name"]))
+        }
+        for (Node treeNode in (Collection<Node>) includeSection.sectionNode.depthFirst()
+                .findAll({ it instanceof Node && (it.name() == "tree") })) {
+            treeByName.put((String) treeNode["@name"], includeScreen.getTree((String) treeNode["@name"]))
+        }
     }
 
     void populateSubscreens() {
