@@ -845,7 +845,7 @@ class ScreenForm {
         if (overrideFormNode."row-actions") {
             if (!baseFormNode."row-actions") baseFormNode.appendNode("row-actions")
             Node baseRowActionsNode = baseFormNode."row-actions"[0]
-            for (Node actionNode in overrideFormNode."row-actions") baseRowActionsNode.append(actionNode)
+            for (Node actionNode in overrideFormNode."row-actions"[0].children()) baseRowActionsNode.append(actionNode)
         }
 
         if (copyFields) {

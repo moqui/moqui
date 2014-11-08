@@ -140,6 +140,8 @@ Bug Fixes:
 - Fixed issue with a distinct query where order by fields are not selected,
   Entity Facade now automatically selects order by fields for distinct
   queries
+- Fixed issue with merging row-actions in list forms, was cloning
+  row-actions node instead of the actions nodes under it
 
 ===========================================================================
 Release 1.4.1 - 01 Aug 2014
