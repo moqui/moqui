@@ -192,6 +192,8 @@ return;
 <#macro "entity-set">    ${.node["@value-field"]}.setFields(${.node["@map"]?default("context")}, ${.node["@set-if-empty"]?default("false")}, ${.node["@prefix"]?default("null")}, <#if .node["@include"]?has_content && .node["@include"] == "pk">true<#elseif .node["@include"]?has_content && .node["@include"] == "nonpk"/>false<#else/>null</#if>)
 </#macro>
 
+<#macro break>    break
+</#macro>
 <#macro iterate>
     <#if .node["@key"]?has_content>
     if (${.node["@list"]} instanceof Map) {
