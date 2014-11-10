@@ -102,7 +102,7 @@ white-space: normal;
 .form-body { display: table-row-group; }
 .form-row { display: table-row; vertical-align: middle; }
 .form-cell { display: table-cell; padding: 0px 4px 0px 2px; font-size: 1em; vertical-align: middle; }
-.form-cell span { display: block; }
+.form-cell span { display: inline-block; white-space: normal; }
 .form-cell input, .form-cell span input, .form-cell select, .form-cell span select { font-size: 0.9em; }
 .form-bottom-row { display: table-caption; caption-side: bottom; text-align: left; vertical-align: middle; width: 100%; }
 
