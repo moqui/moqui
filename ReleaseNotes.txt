@@ -8,7 +8,7 @@ Release 1.5.0 - TBD
 Moqui Framework 1.5.0 is a major new feature and bug fix release.
 
 This release includes a number of UI improvements in XML Screens and Forms
-including lazy-loaded trees (with jstree), more complete database-driven
+including lazy-loading trees (with jstree), more complete database-driven
 forms, general form response saving (together support DB-driven surveys,
 and can also be used with any XML Form), including entire screen sections
 in other screens, required screen parameters so explicit checking isn't
@@ -106,6 +106,9 @@ New Features:
     ID/value and put the label in the input box; they also do a server call
     with the initial value to get a label for it if there is no
     @ac-initial-text attribute
+  - Added container-row and row-col elements for 12 column responsive
+    layouts currently implemented with the Bootstrap 12 col styles
+  - Added transition-include element to reuse transition definitions
 - Entity Facade:
   - Added in operator (_op) for searchFormInputs/search-form-inputs
   - Added entity.field.@default attribute with a Groovy expression to set a
@@ -134,6 +137,12 @@ Bug Fixes:
 - Fixed search#DataDocuments issues with documentType parameter, adding it
   to the count query (was getting wrong counts because it was left out),
   set to null if an empty String as ElasticSearch treats that as a real one
+- Fixed issue with a distinct query where order by fields are not selected,
+  Entity Facade now automatically selects order by fields for distinct
+  queries
+- Fixed issue with merging row-actions in list forms, was cloning
+  row-actions node instead of the actions nodes under it
+- Fixed issue with form-list-column nodes not getting removed when merging
 
 ===========================================================================
 Release 1.4.1 - 01 Aug 2014

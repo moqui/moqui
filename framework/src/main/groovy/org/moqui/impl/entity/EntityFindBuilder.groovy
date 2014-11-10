@@ -11,6 +11,8 @@
  */
 package org.moqui.impl.entity
 
+import org.apache.commons.collections.set.ListOrderedSet
+
 import java.sql.PreparedStatement
 import java.sql.SQLException
 import org.moqui.impl.entity.condition.EntityConditionImplBase
@@ -98,7 +100,7 @@ class EntityFindBuilder extends EntityQueryBuilder {
         }
     }
 
-    void makeSqlSelectFields(Set<String> fieldsToSelect) {
+    void makeSqlSelectFields(ListOrderedSet fieldsToSelect) {
         if (fieldsToSelect.size() > 0) {
             boolean isFirst = true
             for (String fieldName in fieldsToSelect) {
@@ -157,7 +159,10 @@ class EntityFindBuilder extends EntityQueryBuilder {
             if (entityFindBase.havingEntityCondition != null)
                 entityFindBase.havingEntityCondition.getAllAliases(entityAliasUsedSet, fieldUsedSet)
             fieldUsedSet.addAll(entityFindBase.fieldsToSelect)
-            if (entityFindBase.orderByFields) fieldUsedSet.addAll(entityFindBase.orderByFields)
+            for (String orderByField in entityFindBase.orderByFields) {
+                FieldOrderOptions foo = new FieldOrderOptions(orderByField)
+                fieldUsedSet.add(foo.fieldName)
+            }
             // get a list of entity aliases used
             for (String fieldName in fieldUsedSet) {
                 Node aliasNode = localEntityDefinition.getFieldNode(fieldName)

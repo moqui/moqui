@@ -56,7 +56,10 @@ This Work includes contributions authored by David E. Jones, not as a
                     </xs:documentation></xs:annotation>
                 </xs:element>
                 <xs:element ref="always-actions" minOccurs="0"/>
-                <xs:element ref="transition" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:choice minOccurs="0" maxOccurs="unbounded">
+                    <xs:element ref="transition"/>
+                    <xs:element ref="transition-include"/>
+                </xs:choice>
                 <xs:element ref="subscreens" minOccurs="0"/>
                 <xs:element ref="pre-actions" minOccurs="0"/>
                 <xs:group ref="section-elements"/>
@@ -389,6 +392,14 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:attribute>
     </xs:attributeGroup>
 
+    <xs:element name="transition-include">
+        <xs:complexType>
+            <xs:attribute name="name" type="xs:string" use="required"/>
+            <xs:attribute name="location" type="xs:string" use="required"/>
+            <xs:attribute name="method" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+
     <!-- ================ Subscreens ================ -->
     <xs:element name="subscreens">
         <xs:annotation><xs:documentation>
@@ -643,6 +654,26 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="box-body">
         <xs:complexType>
             <xs:group ref="widget-elements" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="container-row" substitutionGroup="AllWidgets">
+        <xs:annotation><xs:documentation>A responsive 12-column grid row. For the concept and one possible
+            implementation see http://getbootstrap.com/css/#grid</xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:sequence><xs:element ref="row-col" maxOccurs="unbounded"/></xs:sequence>
+            <xs:attribute name="id" type="xs:string"/>
+            <xs:attribute name="style" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="row-col">
+        <xs:complexType>
+            <xs:group ref="widget-elements" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:attribute name="lg" type="xs:string"/>
+            <xs:attribute name="md" type="xs:string"/>
+            <xs:attribute name="sm" type="xs:string"/>
+            <xs:attribute name="xs" type="xs:string"/>
+            <xs:attribute name="style" type="xs:string"/>
         </xs:complexType>
     </xs:element>
 

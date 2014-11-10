@@ -845,7 +845,7 @@ class ScreenForm {
         if (overrideFormNode."row-actions") {
             if (!baseFormNode."row-actions") baseFormNode.appendNode("row-actions")
             Node baseRowActionsNode = baseFormNode."row-actions"[0]
-            for (Node actionNode in overrideFormNode."row-actions") baseRowActionsNode.append(actionNode)
+            for (Node actionNode in overrideFormNode."row-actions"[0].children()) baseRowActionsNode.append(actionNode)
         }
 
         if (copyFields) {
@@ -862,7 +862,7 @@ class ScreenForm {
         if (overrideFormNode."form-list-column") {
             // if there are any form-list-column remove all from base and copy all from override
             if (baseFormNode."form-list-column") {
-                for (Node flcNode in overrideFormNode."form-list-column") baseFormNode.remove(flcNode)
+                for (Node flcNode in baseFormNode."form-list-column") baseFormNode.remove(flcNode)
             }
             for (Node flcNode in overrideFormNode."form-list-column") baseFormNode.append(StupidUtilities.deepCopyNode(flcNode))
         }

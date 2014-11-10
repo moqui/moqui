@@ -231,6 +231,17 @@ ${sri.renderSection(.node["@name"])}
     </div>
 </#macro>
 
+<#macro "container-row">
+    <#assign divId><#if .node["@id"]?has_content>${ec.resource.evaluateStringExpand(.node["@id"], "")}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#if></#assign>
+    <div class="row<#if .node["@style"]?has_content> ${ec.resource.evaluateStringExpand(.node["@style"], "")}</#if>"<#if divId?has_content> id="${divId}"</#if>>
+        <#list .node["row-col"] as rowColNode>
+            <div class="<#if rowColNode["@lg"]?has_content> col-lg-${rowColNode["@lg"]}</#if><#if rowColNode["@md"]?has_content> col-md-${rowColNode["@md"]}</#if><#if rowColNode["@sm"]?has_content> col-sm-${rowColNode["@sm"]}</#if><#if rowColNode["@xs"]?has_content> col-xs-${rowColNode["@xs"]}</#if><#if rowColNode["@style"]?has_content> ${ec.resource.evaluateStringExpand(rowColNode["@style"], "")}</#if>">
+                <#recurse rowColNode>
+            </div>
+        </#list>
+    </div>
+</#macro>
+
 <#macro "container-panel">
     <#assign panelId><#if .node["@id"]?has_content>${ec.resource.evaluateStringExpand(.node["@id"], "")}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#if></#assign>
     <#-- DEJ 24 Jan 2014: disabling dynamic panels for now, need to research with new Metis admin theme:
