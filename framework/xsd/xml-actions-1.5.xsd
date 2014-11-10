@@ -842,6 +842,9 @@ This Work includes contributions authored by David E. Jones, not as a
     </xs:element>
 
     <!-- =================== CONTROL OPERATIONS =================== -->
+    <xs:element name="break" substitutionGroup="ControlOperations">
+        <xs:annotation><xs:documentation>Break from an iterate or while loop (will result in an error elsewhere).</xs:documentation></xs:annotation>
+    </xs:element>
     <xs:element name="iterate" substitutionGroup="ControlOperations">
         <xs:annotation><xs:documentation>
             The operations contained by the iterate tag will be executed for each of the entries in the list,
