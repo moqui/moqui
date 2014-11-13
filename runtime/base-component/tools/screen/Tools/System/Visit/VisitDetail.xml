@@ -16,14 +16,14 @@ This Work includes contributions authored by David E. Jones, not as a
     <parameter name="visitId" required="true"/>
 
     <actions>
-        <entity-find-one entity-name="moqui.server.Visit" value-field="fieldValues"/>
+        <entity-find-one entity-name="moqui.server.Visit" value-field="visit"/>
         <entity-find entity-name="moqui.server.ArtifactHit" list="artifactHitList">
             <econdition field-name="visitId"/>
             <order-by field-name="+startDateTime"/>
         </entity-find>
     </actions>
     <widgets>
-        <form-single name="VisitDetail">
+        <form-single name="VisitDetail" map="visit">
             <auto-fields-entity entity-name="moqui.server.Visit" field-type="display"/>
             <field-layout>
                 <field-row><field-ref name="visitId"/><field-ref name="visitorId"/></field-row>
