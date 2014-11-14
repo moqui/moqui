@@ -312,6 +312,9 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="dynamic-load-id" type="xs:string"><xs:annotation><xs:documentation>
                 If specified URL will be loaded into the dynamic-container with this ID.
             </xs:documentation></xs:annotation></xs:attribute>
+            <xs:attribute name="condition" type="xs:string"><xs:annotation><xs:documentation>
+                If specified and evaluates to false link is not rendered.
+            </xs:documentation></xs:annotation></xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="image" substitutionGroup="StandaloneFields">
@@ -356,6 +359,9 @@ This Work includes contributions authored by David E. Jones, not as a
                     Defaults to false.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="style" type="xs:string"/>
+            <xs:attribute name="condition" type="xs:string"><xs:annotation><xs:documentation>
+                If specified and evaluates to false label is not rendered.
+            </xs:documentation></xs:annotation></xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="editable" substitutionGroup="StandaloneFields">
