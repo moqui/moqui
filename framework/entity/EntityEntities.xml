@@ -64,7 +64,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="enableAuditLog" type="text-indicator"/>
         <field name="enableLocalization" type="text-indicator"/>
         <field name="encrypt" type="text-indicator"/>
-        <relationship type="one" related-entity-name="UserGroup"/>
+        <relationship type="one" related-entity-name="moqui.security.UserGroup"/>
     </entity>
     <entity entity-name="UserFieldValue" package-name="moqui.entity">
         <field name="fieldValueSeqId" type="id" is-pk="true"/>
@@ -212,8 +212,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <relationship type="one" related-entity-name="moqui.entity.document.DataDocument"/>
     </entity>
     <view-entity entity-name="DataFeedAndDocument" package-name="moqui.entity.feed">
-        <member-entity entity-alias="DTFD" entity-name="DataFeed"/>
-        <member-entity entity-alias="DFD" entity-name="DataFeedDocument" join-from-alias="DTFD">
+        <member-entity entity-alias="DTFD" entity-name="moqui.entity.feed.DataFeed"/>
+        <member-entity entity-alias="DFD" entity-name="moqui.entity.feed.DataFeedDocument" join-from-alias="DTFD">
             <key-map field-name="dataFeedId"/>
         </member-entity>
         <alias-all entity-alias="DTFD"/>
@@ -221,28 +221,12 @@ This Work includes contributions authored by David E. Jones, not as a
     </view-entity>
 
     <!-- ========================================================= -->
+    <!-- moqui.entity.sync -->
     <!-- ========================================================= -->
-    <!-- Tabled for now, not to be part of 1.0:
-    <entity entity-name="EntityGroup" package-name="moqui.entity.group">
-        <field name="entityGroupId" type="id" is-pk="true"/>
-        <field name="entityGroupName" type="text-medium"/>
-    </entity>
-    <entity entity-name="EntityGroupEntry" package-name="moqui.entity.group">
-        <field name="entityGroupId" type="id" is-pk="true"/>
-        <field name="entityOrPackage" type="text-medium" is-pk="true"/>
-        <field name="applEnumId" type="id"/>
-        <relationship type="one" related-entity-name="EntityGroup"/>
-    </entity>
-    <moqui.basic.EnumerationType description="Entity Group Entry Application Type" enumTypeId="ENTGRP_ENTRY_APPL"/>
-    <moqui.basic.Enumeration description="Include" enumCode="INCLUDE" enumId="ESIA_INCLUDE" sequenceNum="1" enumTypeId="ENTGRP_ENTRY_APPL"/>
-    <moqui.basic.Enumeration description="Exclude" enumCode="EXCLUDE" enumId="ESIA_EXCLUDE" sequenceNum="2" enumTypeId="ENTGRP_ENTRY_APPL"/>
-    <moqui.basic.Enumeration description="Always Include" enumCode="ALWAYS" enumId="ESIA_ALWAYS" sequenceNum="3" enumTypeId="ENTGRP_ENTRY_APPL"/>
-    -->
 
-    <!-- Tabled for now, not to be part of 1.0:
-    <entity entity-name="EntitySync" package-name="moqui.entity.synchronization">
+    <entity entity-name="EntitySync" package-name="moqui.entity.sync">
         <field name="entitySyncId" type="id" is-pk="true"/>
-        <field name="runStatusId" type="id"/>
+        <field name="statusId" type="id"/>
         <field name="lastSuccessfulSyncTime" type="date-time"/>
         <field name="syncSplitMillis" type="number-integer"/>
         <field name="targetServerUrl" type="text-medium"/>
@@ -252,26 +236,36 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="keepRemoveInfoHours" type="number-float"/>
         <field name="forPullOnly" type="text-indicator"/>
         <field name="forPushOnly" type="text-indicator"/>
-        <relationship type="one-nofk" title="Last" related-entity-name="EntitySyncHistory">
-            <key-map field-name="entitySyncId"/>
-            <key-map field-name="lastHistoryStartDate" related-field-name="startDate"/>
-        </relationship>
+        <relationship type="one" title="EntitySync" related-entity-name="moqui.basic.StatusItem"/>
+        <seed-data>
+            <moqui.basic.StatusType description="Entity Sync" parentTypeId="" statusTypeId="EntitySync"/>
+            <moqui.basic.StatusItem description="Not Started" sequenceNum="1" statusId="EsNotStarted" statusTypeId="EntitySync"/>
+            <moqui.basic.StatusItem description="Running" sequenceNum="2" statusId="EsRunning" statusTypeId="EntitySync"/>
+            <moqui.basic.StatusItem description="Offline Pending" sequenceNum="3" statusId="EsOfflinePending" statusTypeId="EntitySync"/>
+            <moqui.basic.StatusItem description="Complete" sequenceNum="4" statusId="EsComplete" statusTypeId="EntitySync"/>
+            <moqui.basic.StatusItem description="Other Error" sequenceNum="98" statusId="EsOtherError" statusTypeId="EntitySync"/>
+            <moqui.basic.StatusItem description="Data Error" sequenceNum="99" statusId="EsDataError" statusTypeId="EntitySync"/>
+        </seed-data>
     </entity>
-    <moqui.basic.StatusType description="Entity Sync Run Status" parentTypeId="" statusTypeId="ENTSYNC_RUN"/>
-    <moqui.basic.StatusItem description="Not Started" sequenceNum="1" statusCode="NOT_STARTED" statusId="ESR_NOT_STARTED" statusTypeId="ENTSYNC_RUN"/>
-    <moqui.basic.StatusItem description="Running" sequenceNum="2" statusCode="RUNNING" statusId="ESR_RUNNING" statusTypeId="ENTSYNC_RUN"/>
-    <moqui.basic.StatusItem description="Offline Pending" sequenceNum="3" statusCode="PENDING" statusId="ESR_PENDING" statusTypeId="ENTSYNC_RUN"/>
-    <moqui.basic.StatusItem description="Complete" sequenceNum="4" statusCode="COMPLETE" statusId="ESR_COMPLETE" statusTypeId="ENTSYNC_RUN"/>
-    <moqui.basic.StatusItem description="Other Error" sequenceNum="97" statusCode="OTHER_ERROR" statusId="ESR_OTHER_ERROR" statusTypeId="ENTSYNC_RUN"/>
-    <moqui.basic.StatusItem description="Service Call Error" sequenceNum="98" statusCode="SERVICE_ERROR" statusId="ESR_SERVICE_ERROR" statusTypeId="ENTSYNC_RUN"/>
-    <moqui.basic.StatusItem description="Data Error" sequenceNum="99" statusCode="DATA_ERROR" statusId="ESR_DATA_ERROR" statusTypeId="ENTSYNC_RUN"/>
+    <entity entity-name="EntitySyncEntity" package-name="moqui.entity.sync">
+        <field name="entitySyncId" type="id" is-pk="true"/>
+        <field name="entityName" type="text-medium" is-pk="true"/>
+        <field name="nameIsPattern" type="text-indicator"/>
+        <field name="applEnumId" type="id"/>
+        <relationship type="one" related-entity-name="moqui.entity.sync.EntitySync"/>
+        <seed-data>
+            <moqui.basic.EnumerationType description="Entity Group Entry Application Type" enumTypeId="EntityGroupMemberAppl"/>
+            <moqui.basic.Enumeration description="Include" enumId="EgmaInclude" sequenceNum="1" enumTypeId="EntityGroupMemberAppl"/>
+            <moqui.basic.Enumeration description="Exclude" enumId="EgmaExclude" sequenceNum="2" enumTypeId="EntityGroupMemberAppl"/>
+            <moqui.basic.Enumeration description="Always Include" enumId="EgmaAlways" sequenceNum="3" enumTypeId="EntityGroupMemberAppl"/>
+        </seed-data>
+    </entity>
     <entity entity-name="EntitySyncHistory" package-name="moqui.entity.synchronization">
         <field name="entitySyncId" type="id" is-pk="true"/>
         <field name="startDate" type="date-time" is-pk="true"/>
-        <field name="runStatusId" type="id"/>
-        <field name="beginningSyncTime" type="date-time"/>
+        <field name="statusId" type="id"/>
         <field name="lastSuccessfulSyncTime" type="date-time"/>
-        <field name="lastSplitStartTime" type="number-integer"/>
+        <field name="lastSplitStartTime" type="date-time"/>
         <field name="toStoreInserted" type="number-integer"/>
         <field name="toStoreUpdated" type="number-integer"/>
         <field name="toStoreNotUpdated" type="number-integer"/>
@@ -287,17 +281,12 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="perSplitMaxMillis" type="number-integer"/>
         <field name="perSplitMinItems" type="number-integer"/>
         <field name="perSplitMaxItems" type="number-integer"/>
-        <relationship type="one" related-entity-name="EntitySync"/>
+        <relationship type="one" related-entity-name="moqui.entity.sync.EntitySync"/>
+        <relationship type="one" title="EntitySync" related-entity-name="moqui.basic.StatusItem"/>
     </entity>
-    <entity entity-name="EntitySyncIncludeGroup" package-name="moqui.entity.synchronization">
-        <field name="entitySyncId" type="id" is-pk="true"/>
-        <field name="entityGroupId" type="id" is-pk="true"/>
-        <relationship type="one" related-entity-name="EntityGroup"/>
-        <relationship type="one" related-entity-name="EntitySync"/>
-    </entity>
-    <entity entity-name="EntitySyncRemove" package-name="moqui.entity.synchronization">
+    <entity entity-name="EntitySyncRemove" package-name="moqui.entity.sync">
         <field name="entitySyncRemoveId" type="id" is-pk="true"/>
-        <field name="primaryKeyRemoved" type="text-very-long"/>
+        <field name="entityName" type="text-medium" is-pk="true"/>
+        <field name="primaryKeyRemoved" type="text-long"/>
     </entity>
-    -->
 </entities>
