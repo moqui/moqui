@@ -143,6 +143,15 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
 
         long callStartTime = System.currentTimeMillis()
 
+        // in-parameter validation
+        sfi.runSecaRules(getServiceName(), currentParameters, null, "pre-validate")
+        if (sd != null) sd.convertValidateCleanParameters(currentParameters, eci)
+        // if error(s) in parameters, return now with no results
+        if (eci.getMessage().hasError()) {
+            logger.warn("Found error(s) when validating input parameters for service [${getServiceName()}], so not running service. Errors: ${eci.getMessage().getErrorsString()}; the artifact stack is:\n ${eci.artifactExecution.stack}")
+            return null
+        }
+
         boolean userLoggedIn = false
 
         // always try to login the user if parameters are specified
@@ -159,7 +168,8 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         // NOTE: if no sd then requiresAuthz is false, ie let the authz get handled at the entity level (but still put
         //     the service on the stack)
         eci.getArtifactExecution().push(new ArtifactExecutionInfoImpl(getServiceName(), "AT_SERVICE",
-                ServiceDefinition.getVerbAuthzActionId(verb)), (sd != null && sd.getAuthenticate() == "true"))
+                    ServiceDefinition.getVerbAuthzActionId(verb)).setParameters(currentParameters),
+                (sd != null && sd.getAuthenticate() == "true"))
 
         // must be done after the artifact execution push so that AEII object to set anonymous authorized is in place
         boolean loggedInAnonymous = false
@@ -204,16 +214,6 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
             } else if (sd.getTxForceNew()) {
                 pauseResumeIfNeeded = true
             }
-        }
-
-        sfi.runSecaRules(getServiceName(), currentParameters, null, "pre-validate")
-
-        // in-parameter validation
-        sd.convertValidateCleanParameters(currentParameters, eci)
-        // if error(s) in parameters, return now with no results
-        if (eci.getMessage().hasError()) {
-            logger.warn("Found error(s) when validating input parameters for service [${getServiceName()}], so not running service. Errors: ${eci.getMessage().getErrorsString()}; the artifact stack is:\n ${eci.artifactExecution.stack}")
-            return null
         }
 
         TransactionFacade tf = sfi.getEcfi().getTransactionFacade()

@@ -21,6 +21,7 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
     protected String typeEnumId
     protected String actionEnumId
     protected String actionDetail = ""
+    protected Map<String, Object> parameters = null
     protected String authorizedUserId = null
     protected String authorizedAuthzTypeId = null
     protected String authorizedActionEnumId = null
@@ -41,6 +42,7 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
     }
 
     ArtifactExecutionInfoImpl setActionDetail(String detail) { this.actionDetail = detail; return this }
+    ArtifactExecutionInfoImpl setParameters(Map<String, Object> parameters) { this.parameters = parameters; return this }
 
     @Override
     String getName() { return this.name }

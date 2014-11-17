@@ -39,6 +39,8 @@ This Work includes contributions authored by David E. Jones, not as a
                 Defaults to Y. 
             </description>
         </field>
+        <field name="filterMap" type="text-long"><description>A Groovy expression that should evaluate to a Map that
+            will be used to constrain Entity operations and Service calls.</description></field>
         <relationship type="one" related-entity-name="moqui.security.ArtifactGroup"/>
         <relationship type="one" title="ArtifactType" related-entity-name="moqui.basic.Enumeration">
             <key-map field-name="artifactTypeEnumId"/>
@@ -80,7 +82,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 Will try to pass the following fields to this service: userId, authzActionEnumId,  artifactTypeEnumId,
                 and artifactName. The service will also have access to the ArtifactExecutionFacade (ec.artifactExecution)
                 which you can use to get the current artifact stack, etc.
-                The service must pass back a authzTypeEnumId (AUTHZT_ALLOW, AUTHZT_ALWAYS, or AUTHZT_DENY).
+                The service must return an authzTypeEnumId (AUTHZT_ALLOW, AUTHZT_ALWAYS, or AUTHZT_DENY).
             </description>
         </field>
         <relationship type="one" related-entity-name="moqui.security.UserGroup"/>
@@ -167,6 +169,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <alias entity-alias="AGM" name="artifactTypeEnumId"/>
         <alias entity-alias="AGM" name="nameIsPattern"/>
         <alias entity-alias="AGM" name="inheritAuthz"/>
+        <alias entity-alias="AGM" name="filterMap"/>
         <alias entity-alias="AAR" name="viewEntityName"/>
     </view-entity>
 
