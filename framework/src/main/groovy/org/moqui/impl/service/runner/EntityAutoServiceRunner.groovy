@@ -120,7 +120,8 @@ public class EntityAutoServiceRunner implements ServiceRunner {
                 newEntityValue.setSequencedIdPrimary()
                 pkValue = newEntityValue.get(singlePkField."@name")
             }
-            if (outParamNames == null || outParamNames.contains(singlePkParamName)) tempResult.put(singlePkParamName, pkValue)
+            if (outParamNames == null || outParamNames.contains(singlePkParamName))
+                tempResult.put(singlePkParamName, pkValue)
         } else if (isDoublePk && !allPksIn) {
             /* **** secondary sequenced primary key **** */
             // don't do it this way, currently only supports second pk fields: String doublePkSecondaryName = parameters.get(pkFieldNames.get(0)) ? pkFieldNames.get(1) : pkFieldNames.get(0)
@@ -161,7 +162,8 @@ public class EntityAutoServiceRunner implements ServiceRunner {
         Node statusIdField = ed.getFieldNode("statusId")
         if (statusIdField != null) {
             // do the actual query so we'll have the current statusId
-            lookedUpValue = preLookedUpValue ?: sfi.getEcfi().getEntityFacade().find(ed.getFullEntityName()).condition(parameters).useCache(false).one()
+            lookedUpValue = preLookedUpValue ?: sfi.getEcfi().getEntityFacade().find(ed.getFullEntityName())
+                    .condition(parameters).useCache(false).one()
             if (lookedUpValue == null) {
                 throw new ServiceException("In entity-auto update service for entity [${ed.fullEntityName}] value not found, cannot update; using parameters [${parameters}]")
             }
@@ -199,12 +201,15 @@ public class EntityAutoServiceRunner implements ServiceRunner {
     }
 
     public static void deleteEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> parameters) {
-        EntityValue ev = sfi.getEcfi().getEntityFacade().makeValue(ed.getFullEntityName()).setFields(parameters, true, null, true)
+        EntityValue ev = sfi.getEcfi().getEntityFacade().makeValue(ed.getFullEntityName())
+                .setFields(parameters, true, null, true)
         ev.delete()
     }
 
     /** Does a create if record does not exist, or update if it does. */
-    public static void storeEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> parameters, Map<String, Object> result, Set<String> outParamNames) {
+    public static void storeEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> parameters,
+                                   Map<String, Object> result, Set<String> outParamNames) {
+        // TODO: change to use EntityValue.store() method
         EntityValue lookedUpValue = sfi.getEcfi().getEntityFacade().find(ed.fullEntityName).condition(parameters)
                 .useCache(false).forUpdate(true).one()
         if (lookedUpValue == null) {
