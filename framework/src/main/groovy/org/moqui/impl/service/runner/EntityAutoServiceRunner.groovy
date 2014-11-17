@@ -34,11 +34,11 @@ public class EntityAutoServiceRunner implements ServiceRunner {
 
     EntityAutoServiceRunner() {}
 
-    public ServiceRunner init(ServiceFacadeImpl sfi) { this.sfi = sfi; return this }
+    ServiceRunner init(ServiceFacadeImpl sfi) { this.sfi = sfi; return this }
 
     // TODO: add update-expire and delete-expire entity-auto service verbs for entities with from/thru dates
     // TODO: add find (using search input parameters) and find-one (using literal PK, or as many PK fields as are passed on) entity-auto verbs
-    public Map<String, Object> runService(ServiceDefinition sd, Map<String, Object> parameters) {
+    Map<String, Object> runService(ServiceDefinition sd, Map<String, Object> parameters) {
         // check the verb and noun
         if (!sd.verb || !verbSet.contains(sd.verb))
             throw new ServiceException("In service [${sd.serviceName}] the verb must be one of ${verbSet} for entity-auto type services.")
@@ -83,11 +83,8 @@ public class EntityAutoServiceRunner implements ServiceRunner {
         return result
     }
 
-    public static void createEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> parameters,
-                                    Map<String, Object> result, Set<String> outParamNames) {
-        ExecutionContextFactoryImpl ecfi = sfi.getEcfi()
-        EntityValue newEntityValue = ecfi.getEntityFacade().makeValue(ed.getFullEntityName())
-
+    protected static void checkFromDate(EntityDefinition ed, Map<String, Object> parameters,
+                              Map<String, Object> result, ExecutionContextFactoryImpl ecfi) {
         List<String> pkFieldNames = ed.getPkFieldNames()
 
         // always make fromDate optional, whether or not part of the pk; do this before the allPksIn check
@@ -97,6 +94,11 @@ public class EntityAutoServiceRunner implements ServiceRunner {
             result.put("fromDate", fromDate)
             // logger.info("Set fromDate field to default [${parameters.fromDate}]")
         }
+    }
+
+    protected static boolean checkAllPkFields(EntityDefinition ed, Map<String, Object> parameters, Map<String, Object> tempResult,
+                                    EntityValue newEntityValue, Set<String> outParamNames) {
+        List<String> pkFieldNames = ed.getPkFieldNames()
 
         // see if all PK fields were passed in
         boolean allPksIn = true
@@ -106,7 +108,6 @@ public class EntityAutoServiceRunner implements ServiceRunner {
 
         // logger.info("allPksIn=${allPksIn}, isSinglePk=${isSinglePk}, isDoublePk=${isDoublePk}")
 
-        Map<String, Object> tempResult = new HashMap()
         if (isSinglePk) {
             /* **** primary sequenced primary key **** */
             /* **** primary sequenced key with optional override passed in **** */
@@ -142,50 +143,48 @@ public class EntityAutoServiceRunner implements ServiceRunner {
                     "3. all entity pk fields are passed into the service");
         }
 
-        newEntityValue.setFields(parameters, true, null, false)
         // logger.info("In auto createEntity allPksIn [${allPksIn}] isSinglePk [${isSinglePk}] isDoublePk [${isDoublePk}] newEntityValue final [${newEntityValue}]")
+
+        return allPksIn
+    }
+
+    static void createEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> parameters,
+                                    Map<String, Object> result, Set<String> outParamNames) {
+        ExecutionContextFactoryImpl ecfi = sfi.getEcfi()
+        EntityValue newEntityValue = ecfi.getEntityFacade().makeValue(ed.getFullEntityName())
+
+        checkFromDate(ed, parameters, result, ecfi)
+
+        Map<String, Object> tempResult = [:]
+        checkAllPkFields(ed, parameters, tempResult, newEntityValue, outParamNames)
+
+        newEntityValue.setFields(parameters, true, null, false)
         newEntityValue.create()
 
         result.putAll(tempResult)
     }
 
-    public static void updateEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> parameters,
-                                    Map<String, Object> result, Set<String> outParamNames, EntityValue preLookedUpValue) {
-        EntityValue lookedUpValue = preLookedUpValue ?:
-                sfi.getEcfi().getEntityFacade().makeValue(ed.getFullEntityName()).setFields(parameters, true, null, true)
-        // this is much slower, and we don't need to do the query: sfi.getEcfi().getEntityFacade().find(ed.entityName).condition(parameters).useCache(false).forUpdate(true).one()
-        if (lookedUpValue == null) {
-            throw new ServiceException("In entity-auto update service for entity [${ed.fullEntityName}] value not found, cannot update; using parameters [${parameters}]")
-        }
-
+    /* This should only be called if statusId is a field of the entity and lookedUpValue != null */
+    protected static void checkStatus(EntityDefinition ed, Map<String, Object> parameters, Map<String, Object> result,
+                            Set<String> outParamNames, EntityValue lookedUpValue, ExecutionContextFactoryImpl ecfi) {
         // populate the oldStatusId out if there is a service parameter for it, and before we do the set non-pk fields
-        Node statusIdField = ed.getFieldNode("statusId")
-        if (statusIdField != null) {
-            // do the actual query so we'll have the current statusId
-            lookedUpValue = preLookedUpValue ?: sfi.getEcfi().getEntityFacade().find(ed.getFullEntityName())
-                    .condition(parameters).useCache(false).one()
-            if (lookedUpValue == null) {
-                throw new ServiceException("In entity-auto update service for entity [${ed.fullEntityName}] value not found, cannot update; using parameters [${parameters}]")
-            }
-        }
-        if (statusIdField != null && (outParamNames == null || outParamNames.contains("oldStatusId"))) {
+        if (outParamNames == null || outParamNames.contains("oldStatusId")) {
             result.put("oldStatusId", lookedUpValue.get("statusId"))
         }
-        if (statusIdField != null && (outParamNames == null || outParamNames.contains("statusChanged"))) {
+        if (outParamNames == null || outParamNames.contains("statusChanged")) {
             result.put("statusChanged", !(lookedUpValue.get("statusId") == parameters.get("statusId")))
             // logger.warn("========= oldStatusId=${result.oldStatusId}, statusChanged=${result.statusChanged}, lookedUpValue.statusId=${lookedUpValue.statusId}, parameters.statusId=${parameters.statusId}, lookedUpValue=${lookedUpValue}")
         }
 
         // do the StatusValidChange check
         String parameterStatusId = (String) parameters.get("statusId")
-        if (parameterStatusId && statusIdField) {
+        if (parameterStatusId) {
             String lookedUpStatusId = (String) lookedUpValue.get("statusId")
             if (lookedUpStatusId && !parameterStatusId.equals(lookedUpStatusId)) {
                 // there was an old status, and in this call we are trying to change it, so do the StatusFlowTransition check
                 // NOTE that we are using a cached list from a common pattern so it should generally be there instead of a count that wouldn't
-                EntityList statusFlowTransitionList = sfi.ecfi.entityFacade.find("moqui.basic.StatusFlowTransition")
-                        .condition(["statusId":lookedUpStatusId, "toStatusId":parameterStatusId])
-                        .useCache(true).list()
+                EntityList statusFlowTransitionList = ecfi.getEntityFacade().find("moqui.basic.StatusFlowTransition")
+                        .condition(["statusId":lookedUpStatusId, "toStatusId":parameterStatusId]).useCache(true).list()
                 if (!statusFlowTransitionList) {
                     // uh-oh, no valid change...
                     throw new ServiceException("In entity-auto update service for entity [${ed.fullEntityName}] no status change was found going from status [${lookedUpStatusId}] to status [${parameterStatusId}]")
@@ -194,30 +193,79 @@ public class EntityAutoServiceRunner implements ServiceRunner {
         }
 
         // NOTE: nothing here to maintain the status history, that should be done with a custom service called by SECA rule or with audit log on field
+    }
+
+    static void updateEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> parameters,
+                                    Map<String, Object> result, Set<String> outParamNames, EntityValue preLookedUpValue) {
+        ExecutionContextFactoryImpl ecfi = sfi.getEcfi()
+        EntityValue lookedUpValue = preLookedUpValue ?:
+                ecfi.getEntityFacade().makeValue(ed.getFullEntityName()).setFields(parameters, true, null, true)
+        // this is much slower, and we don't need to do the query: sfi.getEcfi().getEntityFacade().find(ed.entityName).condition(parameters).useCache(false).forUpdate(true).one()
+        if (lookedUpValue == null) {
+            throw new ServiceException("In entity-auto update service for entity [${ed.fullEntityName}] value not found, cannot update; using parameters [${parameters}]")
+        }
+
+        if (ed.isField("statusId")) {
+            // do the actual query so we'll have the current statusId
+            lookedUpValue = preLookedUpValue ?: ecfi.getEntityFacade().find(ed.getFullEntityName())
+                    .condition(parameters).useCache(false).forUpdate(true).one()
+            if (lookedUpValue == null) {
+                throw new ServiceException("In entity-auto update service for entity [${ed.fullEntityName}] value not found, cannot update; using parameters [${parameters}]")
+            }
+
+            checkStatus(ed, parameters, result, outParamNames, lookedUpValue, ecfi)
+        }
 
         lookedUpValue.setFields(parameters, true, null, false)
         // logger.info("In auto updateEntity lookedUpValue final [${lookedUpValue}] for parameters [${parameters}]")
         lookedUpValue.update()
     }
 
-    public static void deleteEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> parameters) {
+    static void deleteEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> parameters) {
         EntityValue ev = sfi.getEcfi().getEntityFacade().makeValue(ed.getFullEntityName())
                 .setFields(parameters, true, null, true)
         ev.delete()
     }
 
     /** Does a create if record does not exist, or update if it does. */
-    public static void storeEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> parameters,
+    static void storeEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> parameters,
                                    Map<String, Object> result, Set<String> outParamNames) {
-        // TODO: change to use EntityValue.store() method
-        EntityValue lookedUpValue = sfi.getEcfi().getEntityFacade().find(ed.fullEntityName).condition(parameters)
-                .useCache(false).forUpdate(true).one()
-        if (lookedUpValue == null) {
-            createEntity(sfi, ed, parameters, result, outParamNames)
-        } else {
-            updateEntity(sfi, ed, parameters, result, outParamNames, lookedUpValue)
+        ExecutionContextFactoryImpl ecfi = sfi.getEcfi()
+        EntityValue newEntityValue = ecfi.getEntityFacade().makeValue(ed.getFullEntityName())
+
+        checkFromDate(ed, parameters, result, ecfi)
+
+        Map<String, Object> tempResult = [:]
+        boolean allPksIn = checkAllPkFields(ed, parameters, tempResult, newEntityValue, outParamNames)
+        result.putAll(tempResult)
+
+        if (!allPksIn) {
+            // we had to fill some stuff in, so do a create
+            newEntityValue.setFields(parameters, true, null, false)
+            newEntityValue.create()
+            return
         }
+
+        EntityValue lookedUpValue = null
+        if (ed.isField("statusId")) {
+            // do the actual query so we'll have the current statusId
+            lookedUpValue = ecfi.getEntityFacade().find(ed.getFullEntityName())
+                    .condition(newEntityValue).useCache(false).forUpdate(true).one()
+            if (lookedUpValue != null) {
+                checkStatus(ed, parameters, result, outParamNames, lookedUpValue, ecfi)
+            } else {
+                // no lookedUpValue at this point? doesn't exist so create
+                newEntityValue.setFields(parameters, true, null, false)
+                newEntityValue.create()
+                return
+            }
+        }
+
+        if (lookedUpValue == null) lookedUpValue = newEntityValue
+        lookedUpValue.setFields(parameters, true, null, false)
+        // logger.info("In auto updateEntity lookedUpValue final [${lookedUpValue}] for parameters [${parameters}]")
+        lookedUpValue.store()
     }
 
-    public void destroy() { }
+    void destroy() { }
 }
