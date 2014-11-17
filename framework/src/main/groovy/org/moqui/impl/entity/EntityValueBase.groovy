@@ -390,6 +390,8 @@ abstract class EntityValueBase implements EntityValue {
             return create()
         }
     }
+    @Override
+    EntityValue store() { return createOrUpdate() }
 
     void handleAuditLog(boolean isUpdate, Map oldValues) {
         if (isUpdate && oldValues == null) return
@@ -982,7 +984,7 @@ abstract class EntityValueBase implements EntityValue {
         // logger.warn("================ evb.update() ${getEntityName()} nonPkFieldList=${nonPkFieldList};\nvalueMap=${valueMap};\ndbValueMap=${dbValueMap}")
         if (!nonPkFieldList) {
             if (logger.isTraceEnabled()) logger.trace("Not doing update on entity with no populated non-PK fields; entity=" + this.toString())
-            return
+            return this
         }
 
         if (ed.getEntityNode()."@optimistic-lock" == "true") {

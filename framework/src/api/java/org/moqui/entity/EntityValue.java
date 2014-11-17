@@ -156,6 +156,8 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
      * @return reference to this for convenience
      */
     EntityValue createOrUpdate() throws EntityException;
+    /** Alias for createOrUpdate() */
+    EntityValue store() throws EntityException;
 
     /** Updates the record that matches the primary key.
      *
