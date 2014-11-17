@@ -862,7 +862,7 @@ abstract class EntityValueBase implements EntityValue {
         ExecutionContext ec = ecfi.getExecutionContext()
 
         ec.getArtifactExecution().push(
-                new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_CREATE"),
+                new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_CREATE").setParameters(valueMap),
                 (ed.entityNode."@authorize-skip" != "true" && !ed.entityNode."@authorize-skip"?.contains("create")))
 
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "create", true)
@@ -948,7 +948,7 @@ abstract class EntityValueBase implements EntityValue {
         if (ed.createOnly()) throw new EntityException("Entity [${getEntityName()}] is create-only (immutable), cannot be updated.")
 
         ec.getArtifactExecution().push(
-                new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_UPDATE"),
+                new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_UPDATE").setParameters(valueMap),
                 ed.entityNode."@authorize-skip" != "true")
 
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "update", true)
@@ -1096,7 +1096,7 @@ abstract class EntityValueBase implements EntityValue {
         if (ed.createOnly()) throw new EntityException("Entity [${getEntityName()}] is create-only (immutable), cannot be deleted.")
 
         ec.getArtifactExecution().push(
-                new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_DELETE"),
+                new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_DELETE").setParameters(valueMap),
                 ed.entityNode."@authorize-skip" != "true")
 
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "delete", true)
@@ -1155,7 +1155,9 @@ abstract class EntityValueBase implements EntityValue {
         ExecutionContextFactoryImpl ecfi = getEntityFacadeImpl().getEcfi()
         ExecutionContext ec = ecfi.getExecutionContext()
 
-        ec.getArtifactExecution().push(new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW").setActionDetail("refresh"),
+        ec.getArtifactExecution().push(
+                new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW")
+                        .setActionDetail("refresh").setParameters(valueMap),
                 ed.entityNode."@authorize-skip" != "true")
 
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "find-one", true)
