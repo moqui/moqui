@@ -247,17 +247,20 @@ This Work includes contributions authored by David E. Jones, not as a
             <moqui.basic.StatusItem description="Data Error" sequenceNum="99" statusId="EsDataError" statusTypeId="EntitySync"/>
         </seed-data>
     </entity>
-    <entity entity-name="EntitySyncEntity" package-name="moqui.entity.sync">
+    <entity entity-name="EntitySyncArtifact" package-name="moqui.entity.sync">
         <field name="entitySyncId" type="id" is-pk="true"/>
-        <field name="entityName" type="text-medium" is-pk="true"/>
-        <field name="nameIsPattern" type="text-indicator"/>
+        <field name="artifactGroupId" type="id"><description>Only entity artifacts (artifactTypeEnumId=AT_ENTITY) will
+            be used, all others ignored.</description></field>
         <field name="applEnumId" type="id"/>
         <relationship type="one" related-entity-name="moqui.entity.sync.EntitySync"/>
+        <relationship type="one" related-entity-name="moqui.security.ArtifactGroup"/>
+        <relationship type="one" title="EntitySyncArtifactAppl" related-entity-name="moqui.basic.Enumeration">
+            <key-map field-name="applEnumId"/></relationship>
         <seed-data>
-            <moqui.basic.EnumerationType description="Entity Group Entry Application Type" enumTypeId="EntityGroupMemberAppl"/>
-            <moqui.basic.Enumeration description="Include" enumId="EgmaInclude" sequenceNum="1" enumTypeId="EntityGroupMemberAppl"/>
-            <moqui.basic.Enumeration description="Exclude" enumId="EgmaExclude" sequenceNum="2" enumTypeId="EntityGroupMemberAppl"/>
-            <moqui.basic.Enumeration description="Always Include" enumId="EgmaAlways" sequenceNum="3" enumTypeId="EntityGroupMemberAppl"/>
+            <moqui.basic.EnumerationType description="Entity Sync Artifact Application Type" enumTypeId="EntitySyncArtifactAppl"/>
+            <moqui.basic.Enumeration description="Include" enumId="EgmaInclude" sequenceNum="1" enumTypeId="EntitySyncArtifactAppl"/>
+            <moqui.basic.Enumeration description="Exclude" enumId="EgmaExclude" sequenceNum="2" enumTypeId="EntitySyncArtifactAppl"/>
+            <moqui.basic.Enumeration description="Always Include" enumId="EgmaAlways" sequenceNum="3" enumTypeId="EntitySyncArtifactAppl"/>
         </seed-data>
     </entity>
     <entity entity-name="EntitySyncHistory" package-name="moqui.entity.synchronization">
