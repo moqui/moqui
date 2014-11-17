@@ -40,6 +40,10 @@ New Features:
 - Added clone#DataDocument service
 - Added WebFacade.sendResourceResponse() method to stream content from any
   Resource Facade location
+- Artifact Authz now gets parameters from entity and service operations
+  and if new ArtifactGroupMember.filterMap field is populated checks each
+  filter entry to see if it matches corresponding parameter entry,
+  otherwise authz rule does not apply
 - XML Screen:
   - Added tree element for XML Screen that renders a lazy-loaded tree with
     links using jstree (currently version 3.0.3); see the wiki.xml screen
