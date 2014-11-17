@@ -50,14 +50,14 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="when" use="required">
                 <xs:simpleType>
                     <xs:restriction base="xs:token">
+                        <xs:enumeration value="pre-validate">
+                            <xs:annotation><xs:documentation>Runs before input parameters are validated; useful for
+                                adding or modifying parameters before validation and data type conversion</xs:documentation></xs:annotation>
+                        </xs:enumeration>
                         <xs:enumeration value="pre-auth">
                             <xs:annotation><xs:documentation>Runs before authentication and authorization checks, but
                                 after the authUsername, authPassword and authTenantId parameters are used and specified
                                 user logged in; useful for any custom behavior related to authc or authz</xs:documentation></xs:annotation>
-                        </xs:enumeration>
-                        <xs:enumeration value="pre-validate">
-                            <xs:annotation><xs:documentation>Runs before input parameters are validated; useful for
-                                adding or modifying parameters before validation and data type conversion</xs:documentation></xs:annotation>
                         </xs:enumeration>
                         <xs:enumeration value="pre-service">
                             <xs:annotation><xs:documentation>Runs before the service itself is run; best place for
