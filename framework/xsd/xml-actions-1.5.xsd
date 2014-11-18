@@ -1086,7 +1086,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:complexType>
     </xs:element>
 
-    <!-- XML Operations - NOT YET IMPLEMENTED! -->
+    <!-- XML Operations - NOT YET IMPLEMENTED!
     <xs:element name="xml-consume" substitutionGroup="XmlOperations">
         <xs:annotation><xs:documentation>Used to process/consume an XML document. The document can be either a text
             file at a location or can be in a field in the current context that is either an XML text document or a
@@ -1161,5 +1161,5 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:attribute>
         </xs:complexType>
     </xs:element>
-
+    -->
 </xs:schema>

@@ -790,6 +790,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
                 StringBuilder ps = new StringBuilder()
                 for (Map.Entry pme in parameters) {
                     if (!pme.value) continue
+                    if (pme.key?.contains("password")) continue
                     if (ps.length() > 0) ps.append(",")
                     ps.append(pme.key).append("=").append(pme.value)
                 }
