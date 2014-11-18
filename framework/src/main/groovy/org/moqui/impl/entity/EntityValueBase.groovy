@@ -512,7 +512,7 @@ abstract class EntityValueBase implements EntityValue {
                 if (insertDummy) {
                     EntityValue newValue = getEntityFacadeImpl().makeValue((String) oneRel."@related-entity-name")
                     Map keyMap = getEntityDefinition().getRelationshipExpandedKeyMap(oneRel)
-                    if (!keyMap) throw new EntityException("Relationship [${oneRel."@title"}${oneRel."@related-entity-name"}] in entity [${entityName}] has no key-map sub-elements and no default values")
+                    if (!keyMap) throw new EntityException("Relationship [${oneRel."@title"}#${oneRel."@related-entity-name"}] in entity [${entityName}] has no key-map sub-elements and no default values")
 
                     // make a Map where the key is the related entity's field name, and the value is the value from this entity
                     for (Map.Entry entry in keyMap.entrySet())
