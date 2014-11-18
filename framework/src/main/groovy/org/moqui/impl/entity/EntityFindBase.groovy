@@ -177,7 +177,8 @@ abstract class EntityFindBase implements EntityFind {
 
     @Override
     EntityFind searchFormInputs(String inputFieldsMapName, String defaultOrderBy, boolean alwaysPaginate) {
-        Map inf = inputFieldsMapName ? (Map) efi.ecfi.executionContext.context[inputFieldsMapName] : efi.ecfi.executionContext.context
+        ExecutionContext ec = efi.getEcfi().getExecutionContext()
+        Map inf = inputFieldsMapName ? (Map) ec.context[inputFieldsMapName] : efi.ecfi.executionContext.context
         EntityDefinition ed = getEntityDef()
 
         for (String fn in ed.getAllFieldNames()) {
@@ -190,38 +191,38 @@ abstract class EntityFindBase implements EntityFind {
                 boolean not = (inf.get(fn + "_not") == "Y")
                 boolean ic = (inf.get(fn + "_ic") == "Y")
 
-                EntityCondition ec = null
+                EntityCondition cond = null
                 switch (op) {
                     case "equals":
                         if (value) {
-                            ec = efi.conditionFactory.makeCondition(fn,
+                            cond = efi.conditionFactory.makeCondition(fn,
                                     not ? EntityCondition.NOT_EQUAL : EntityCondition.EQUALS, value)
-                            if (ic) ec.ignoreCase()
+                            if (ic) cond.ignoreCase()
                         }
                         break;
                     case "like":
                         if (value) {
-                            ec = efi.conditionFactory.makeCondition(fn,
+                            cond = efi.conditionFactory.makeCondition(fn,
                                     not ? EntityCondition.NOT_LIKE : EntityCondition.LIKE, value)
-                            if (ic) ec.ignoreCase()
+                            if (ic) cond.ignoreCase()
                         }
                         break;
                     case "contains":
                         if (value) {
-                            ec = efi.conditionFactory.makeCondition(fn,
+                            cond = efi.conditionFactory.makeCondition(fn,
                                     not ? EntityCondition.NOT_LIKE : EntityCondition.LIKE, "%${value}%")
-                            if (ic) ec.ignoreCase()
+                            if (ic) cond.ignoreCase()
                         }
                         break;
                     case "begins":
                         if (value) {
-                            ec = efi.conditionFactory.makeCondition(fn,
+                            cond = efi.conditionFactory.makeCondition(fn,
                                     not ? EntityCondition.NOT_LIKE : EntityCondition.LIKE, "${value}%")
-                            if (ic) ec.ignoreCase()
+                            if (ic) cond.ignoreCase()
                         }
                         break;
                     case "empty":
-                        ec = efi.conditionFactory.makeCondition(
+                        cond = efi.conditionFactory.makeCondition(
                                 efi.conditionFactory.makeCondition(fn,
                                         not ? EntityCondition.NOT_EQUAL : EntityCondition.EQUALS, null),
                                 not ? EntityCondition.JoinOperator.AND : EntityCondition.JoinOperator.OR,
@@ -237,16 +238,15 @@ abstract class EntityFindBase implements EntityFind {
                                 valueList = value
                             }
                             if (valueList) {
-                                ec = efi.conditionFactory.makeCondition(fn,
+                                cond = efi.conditionFactory.makeCondition(fn,
                                         not ? EntityCondition.NOT_IN : EntityCondition.IN, valueList)
 
                             }
                         }
                         break;
                 }
-                if (ec != null) this.condition(ec)
+                if (cond != null) this.condition(cond)
             } else if (inf.get(fn + "_period")) {
-                ExecutionContext ec = efi.getEcfi().getExecutionContext()
                 List<Timestamp> range = ec.user.getPeriodRange((String) inf.get(fn + "_period"), (String) inf.get(fn + "_poffset"))
                 this.condition(efi.conditionFactory.makeCondition(fn,
                         EntityCondition.GREATER_THAN_EQUAL_TO, range[0]))
@@ -268,6 +268,7 @@ abstract class EntityFindBase implements EntityFind {
 
         // always look for an orderByField parameter too
         String orderByString = inf.get("orderByField") ?: defaultOrderBy
+        ec.context.put("orderByField", orderByString)
         this.orderBy(orderByString)
 
         // look for the pageIndex and optional pageSize parameters; don't set these if should cache as will disable the cached query
