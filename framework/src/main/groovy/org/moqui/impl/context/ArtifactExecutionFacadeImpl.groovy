@@ -191,7 +191,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
 
         // if ("AT_XML_SCREEN" == aeii.typeEnumId) logger.warn("TOREMOVE artifact isPermitted after authzDisabled ${aeii}")
 
-        EntityFacadeImpl efi = (EntityFacadeImpl) eci.entity
+        EntityFacadeImpl efi = (EntityFacadeImpl) eci.getEntity()
         UserFacadeImpl ufi = (UserFacadeImpl) eci.getUser()
 
 
@@ -316,8 +316,18 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
 
             if (aacvList.size() > 0) {
                 for (EntityValue aacv in aacvList) {
+                    // check the name
                     if ("Y".equals(aacv.get("nameIsPattern")) && !aeii.getName().matches(aacv.getString("artifactName")))
                         continue
+                    // check the filterMap
+                    if (aacv.get("filterMap") && aeii.parameters) {
+                        Map<String, Object> filterMapObj = eci.getResource().evaluateContextField(aacv.getString("filterMap"), null)
+                        boolean allMatches = true
+                        for (Map.Entry<String, Object> filterEntry in filterMapObj.entrySet()) {
+                            if (filterEntry.getValue() != aeii.parameters.get(filterEntry.getKey())) allMatches = false
+                        }
+                        if (!allMatches) continue
+                    }
                     // check the record-level permission
                     if (aacv.get("viewEntityName")) {
                         EntityValue artifactAuthzRecord = efi.find("moqui.security.ArtifactAuthzRecord")

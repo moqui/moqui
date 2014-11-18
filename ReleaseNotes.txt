@@ -40,6 +40,10 @@ New Features:
 - Added clone#DataDocument service
 - Added WebFacade.sendResourceResponse() method to stream content from any
   Resource Facade location
+- Artifact Authz now gets parameters from entity and service operations
+  and if new ArtifactGroupMember.filterMap field is populated checks each
+  filter entry to see if it matches corresponding parameter entry,
+  otherwise authz rule does not apply
 - XML Screen:
   - Added tree element for XML Screen that renders a lazy-loaded tree with
     links using jstree (currently version 3.0.3); see the wiki.xml screen
@@ -109,6 +113,7 @@ New Features:
   - Added container-row and row-col elements for 12 column responsive
     layouts currently implemented with the Bootstrap 12 col styles
   - Added transition-include element to reuse transition definitions
+  - Added @condition attribute to link and label elements
 - Entity Facade:
   - Added in operator (_op) for searchFormInputs/search-form-inputs
   - Added entity.field.@default attribute with a Groovy expression to set a
