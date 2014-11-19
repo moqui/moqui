@@ -509,12 +509,20 @@ class ServiceDefinition {
                     case "java.util.Collection":
                     case "java.util.List":
                         String valueStr = (String) parameterValue
+                        // strip off square braces
+                        if (valueStr.charAt(0) == '[' && valueStr.charAt(valueStr.length()-1) == ']')
+                            valueStr = valueStr.substring(1, valueStr.length()-1)
+                        // split by comma or just create a list with the single string
                         if (valueStr.contains(",")) converted = Arrays.asList(valueStr.split(","))
                         else converted = [valueStr]
                         break
                     case "Set":
                     case "java.util.Set":
                         String valueStr = (String) parameterValue
+                        // strip off square braces
+                        if (valueStr.charAt(0) == '[' && valueStr.charAt(valueStr.length()-1) == ']')
+                            valueStr = valueStr.substring(1, valueStr.length()-1)
+                        // split by comma or just create a list with the single string
                         if (valueStr.contains(",")) converted = new HashSet(valueStr.split(",").collect())
                         else converted = new HashSet([valueStr])
                         break
