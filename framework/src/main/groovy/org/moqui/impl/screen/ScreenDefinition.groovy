@@ -122,8 +122,15 @@ class ScreenDefinition {
     }
 
     void pullSectionInclude(Node sectionNode) {
-        ScreenDefinition includeScreen = sfi.getEcfi().getScreenFacade().getScreenDefinition((String) sectionNode["@location"])
-        ScreenSection includeSection = includeScreen?.getSection((String) sectionNode["@name"])
+        String location = (String) sectionNode["@location"]
+        String sectionName = (String) sectionNode["@name"]
+        if (location.contains('#')) {
+            sectionName = location.substring(location.indexOf('#') + 1)
+            location = location.substring(0, location.indexOf('#'))
+        }
+
+        ScreenDefinition includeScreen = sfi.getEcfi().getScreenFacade().getScreenDefinition(location)
+        ScreenSection includeSection = includeScreen?.getSection(sectionName)
         if (includeSection == null) throw new IllegalArgumentException("Could not find section [${sectionNode["@name"]} to include at location [${sectionNode["@location"]}]")
         sectionByName.put((String) sectionNode["@name"], includeSection)
 
