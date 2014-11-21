@@ -467,7 +467,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:sequence>
                 <xs:choice>
                     <xs:element minOccurs="0" ref="SubFields"/>
-                    <xs:element minOccurs="0" ref="AllWidgets"/>
+                    <xs:element minOccurs="0" maxOccurs="unbounded" ref="AllWidgets"/>
                 </xs:choice>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="set"/>
             </xs:sequence>
@@ -493,7 +493,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:sequence>
                 <xs:choice>
                     <xs:element minOccurs="0" ref="SubFields"/>
-                    <xs:element minOccurs="0" ref="AllWidgets"/>
+                    <xs:element minOccurs="0" maxOccurs="unbounded" ref="AllWidgets"/>
                 </xs:choice>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="StandaloneFields"/>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="set"/>
@@ -509,7 +509,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:sequence>
                 <xs:choice>
                     <xs:element minOccurs="0" ref="SubFields"/>
-                    <xs:element minOccurs="0" ref="AllWidgets"/>
+                    <xs:element minOccurs="0" maxOccurs="unbounded" ref="AllWidgets"/>
                 </xs:choice>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="StandaloneFields"/>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="set"/>
