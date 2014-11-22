@@ -291,6 +291,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
         int trees = 0, allSubscreensTrees = 0
         int sections = 0, allSubscreensSections = 0
         int transitions = 0, allSubscreensTransitions = 0
+        int transitionsWithActions = 0, allSubscreensTransitionsWithActions = 0
 
         ScreenInfo(ScreenDefinition sd, SubscreensItem ssi, ScreenInfo parentInfo, int level) {
             this.sd = sd
@@ -307,6 +308,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
             trees = sd.treeByName.size()
             sections = sd.sectionByName.size()
             transitions = sd.transitionByName.size()
+            for (TransitionItem ti in sd.transitionByName.values()) if (ti.hasActionsOrSingleService()) transitionsWithActions++
             isNonPlaceholder = forms || sections || transitions
 
             // trickle up totals
@@ -318,6 +320,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
                 curParent.allSubscreensTrees += trees
                 curParent.allSubscreensSections += sections
                 curParent.allSubscreensTransitions += transitions
+                curParent.allSubscreensTransitionsWithActions += transitionsWithActions
                 if (curParent.parentInfo == null) rootInfo = curParent
                 curParent = curParent.parentInfo
             }
