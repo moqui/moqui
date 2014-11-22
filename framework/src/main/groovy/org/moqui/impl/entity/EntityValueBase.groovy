@@ -56,7 +56,9 @@ abstract class EntityValueBase implements EntityValue {
     private Map<String, Object> internalPkMap = null
 
     protected boolean modified = false
+    protected boolean pkModified = false
     protected boolean mutable = true
+    protected boolean isFromDb = false
 
     EntityValueBase(EntityDefinition ed, EntityFacadeImpl efip) {
         efi = efip
@@ -84,7 +86,7 @@ abstract class EntityValueBase implements EntityValue {
     protected Map<String, Object> getDbValueMap() { return dbValueMap }
     protected void setDbValueMap(Map<String, Object> map) { dbValueMap = map }
 
-    void setSyncedWithDb() { dbValueMap = null; modified = false }
+    void setSyncedWithDb() { dbValueMap = null; modified = false; isFromDb = true }
 
     @Override
     String getEntityName() { return entityName }
@@ -204,6 +206,7 @@ abstract class EntityValueBase implements EntityValue {
         }
         if (valueMap.get(name) != value) {
             modified = true
+            if (entityDefinition.isPkField(name)) pkModified = true
             if (valueMap.containsKey(name)) {
                 if (dbValueMap == null) dbValueMap = [:]
                 dbValueMap.put(name, valueMap.get(name))
@@ -384,7 +387,7 @@ abstract class EntityValueBase implements EntityValue {
 
     @Override
     EntityValue createOrUpdate() {
-        if (this.cloneValue().refresh()) {
+        if ((isFromDb && !pkModified) || this.cloneValue().refresh()) {
             return update()
         } else {
             return create()
@@ -512,7 +515,7 @@ abstract class EntityValueBase implements EntityValue {
                 if (insertDummy) {
                     EntityValue newValue = getEntityFacadeImpl().makeValue((String) oneRel."@related-entity-name")
                     Map keyMap = getEntityDefinition().getRelationshipExpandedKeyMap(oneRel)
-                    if (!keyMap) throw new EntityException("Relationship [${oneRel."@title"}${oneRel."@related-entity-name"}] in entity [${entityName}] has no key-map sub-elements and no default values")
+                    if (!keyMap) throw new EntityException("Relationship [${oneRel."@title"}#${oneRel."@related-entity-name"}] in entity [${entityName}] has no key-map sub-elements and no default values")
 
                     // make a Map where the key is the related entity's field name, and the value is the value from this entity
                     for (Map.Entry entry in keyMap.entrySet())

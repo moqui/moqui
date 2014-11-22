@@ -474,6 +474,11 @@ public class EntityDefinition {
     }
 
     boolean isField(String fieldName) { return getFieldNode(fieldName) != null }
+    boolean isPkField(String fieldName) {
+        Node fieldNode = getFieldNode(fieldName)
+        if (fieldNode == null) return false
+        return fieldNode."@is-pk" == "true"
+    }
     boolean isSimpleField(String fieldName) {
         Boolean isSimpleVal = fieldSimpleMap.get(fieldName)
         if (isSimpleVal != null) return isSimpleVal

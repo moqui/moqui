@@ -132,7 +132,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
         if (this.disableEeca) reenableEeca = !this.efi.ecfi.eci.artifactExecution.disableEntityEca()
 
         // if no xmlText or locations, so find all of the component and entity-facade files
-        if (!this.xmlText && !this.locationList) {
+        if (!this.xmlText && !this.csvText && !this.locationList) {
             // if we're loading seed type data, add entity def files to the list of locations to load
             if (!dataTypes || dataTypes.contains("seed")) {
                 for (ResourceReference entityRr in efi.getAllEntityFileLocations())
