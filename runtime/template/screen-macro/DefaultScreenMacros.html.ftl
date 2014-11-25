@@ -207,10 +207,9 @@ ${sri.renderSection(.node["@name"])}
 
 <#-- ================ Containers ================ -->
 <#macro container>
-    <#assign tagName = .node["@type"]!"div">
     <#assign divId><#if .node["@id"]?has_content>${ec.resource.evaluateStringExpand(.node["@id"], "")}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#if></#assign>
-    <${tagName}<#if divId??> id="${divId}"</#if><#if .node["@style"]?has_content> class="${ec.resource.evaluateStringExpand(.node["@style"], "")}"</#if>><#recurse>
-    </${tagName}>
+    <${.node["@type"]!"div"}<#if divId??> id="${divId}"</#if><#if .node["@style"]?has_content> class="${ec.resource.evaluateStringExpand(.node["@style"], "")}"</#if>><#recurse>
+    </${.node["@type"]!"div"}>
 </#macro>
 
 <#macro "container-box">
