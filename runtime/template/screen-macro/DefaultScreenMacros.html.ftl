@@ -555,7 +555,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#assign skipEnd = (formNode["@skip-end"]! == "true")>
     <#assign urlInfo = sri.makeUrlByType(formNode["@transition"], "transition", null, "false")>
     <#assign formId = ec.resource.evaluateStringExpand(formNode["@name"], "")>
-    <#assign listEntryIndex = "">
+    <#-- shouldn't need this, and causes problems in section-iterate with single forms: <#assign listEntryIndex = ""> -->
     <#assign inFieldRow = false>
     <#assign bigRow = false>
     <#if !skipStart>
