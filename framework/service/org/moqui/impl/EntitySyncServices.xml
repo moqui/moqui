@@ -13,12 +13,16 @@ This Work includes contributions authored by David E. Jones, not as a
 <services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-1.5.xsd">
 
 
-    <service verb="run" noun="EntitySyncAll">
+    <service verb="run" noun="EntitySyncAll" transaction="ignore">
         <actions>
-            <!-- TODO -->
+            <entity-find entity-name="moqui.entity.sync.EntitySync" list="entitySyncList"/>
+            <iterate list="entitySyncList" entry="entitySync">
+                <service-call name="org.moqui.impl.EntitySyncServices.run#EntitySync"
+                        in-map="[entitySyncId:entitySync.entitySyncId]"/>
+            </iterate>
         </actions>
     </service>
-    <service verb="run" noun="EntitySync">
+    <service verb="run" noun="EntitySync" transaction="force-new">
         <in-parameters>
             <parameter name="entitySyncId" required="true"/>
         </in-parameters>
@@ -72,5 +76,8 @@ This Work includes contributions authored by David E. Jones, not as a
                 </parameter>
             </parameter>
         </out-parameters>
+        <actions>
+            <!-- TODO -->
+        </actions>
     </service>
 </services>
