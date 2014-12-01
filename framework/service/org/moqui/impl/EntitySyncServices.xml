@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This Work is in the public domain and is provided on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+including, without limitation, any warranties or conditions of TITLE,
+NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+You are solely responsible for determining the appropriateness of using
+this Work and assume any risks associated with your use of this Work.
+
+This Work includes contributions authored by David E. Jones, not as a
+"work for hire", who hereby disclaims any copyright to the same.
+-->
+<services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-1.5.xsd">
+
+
+    <service verb="run" noun="EntitySyncAll" transaction="ignore">
+        <actions>
+            <entity-find entity-name="moqui.entity.sync.EntitySync" list="entitySyncList"/>
+            <iterate list="entitySyncList" entry="entitySync">
+                <service-call name="org.moqui.impl.EntitySyncServices.run#EntitySync"
+                        in-map="[entitySyncId:entitySync.entitySyncId]"/>
+            </iterate>
+        </actions>
+    </service>
+    <service verb="run" noun="EntitySync" transaction="force-new">
+        <in-parameters>
+            <parameter name="entitySyncId" required="true"/>
+        </in-parameters>
+        <actions>
+            <!-- TODO -->
+        </actions>
+    </service>
+
+    <service verb="push" noun="EntitySyncData">
+        <in-parameters>
+            <parameter name="entityData" required="true"/>
+        </in-parameters>
+        <actions>
+            <!-- TODO -->
+        </actions>
+    </service>
+    <service verb="pull" noun="EntitySyncData">
+        <in-parameters>
+            <parameter name="entityIncludeList" type="List">
+                <parameter name="entryMap" type="Map">
+                    <parameter name="entityName"/>
+                    <parameter name="includeFilter" type="Map"/>
+                    <parameter name="excludeFilter" type="Map"/>
+                </parameter>
+            </parameter>
+            <!-- maybe entityIncludeList directly is better for this, then remote system doesn't have to determine which to include/exclude/etc:
+            <parameter name="entitySyncArtifactDetailList" type="EntityList" required="true"><description>An EntityList
+                of EntitySyncArtifactDetail view-entity records to specify what to include/exclude from the data set.</description></parameter>
+            -->
+            <parameter name="lastSuccessfulSyncTime" type="Long" required="true"/>
+            <parameter name="syncSplitMillis" type="Long" default="100"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="entityData" required="true"/>
+        </out-parameters>
+        <actions>
+            <!-- TODO -->
+        </actions>
+    </service>
+
+    <service verb="get" noun="EntitySyncIncludeList">
+        <in-parameters>
+            <parameter name="entitySyncId" required="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="entityIncludeList" type="List">
+                <parameter name="entryMap" type="Map">
+                    <parameter name="entityName"/>
+                    <parameter name="includeFilter" type="Map"/>
+                    <parameter name="excludeFilter" type="Map"/>
+                </parameter>
+            </parameter>
+        </out-parameters>
+        <actions>
+            <!-- TODO -->
+        </actions>
+    </service>
+</services>
