@@ -495,8 +495,8 @@ class EntityDataLoaderImpl implements EntityDataLoader {
             BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"))
 
             CSVParser parser = CSVFormat.newFormat(edli.csvDelimiter)
-                    .withCommentStart(edli.csvCommentStart) // is this start of line only? will it interfere with service names?
-                    .withQuoteChar(edli.csvQuoteChar)
+                    .withCommentMarker(edli.csvCommentStart)
+                    .withQuote(edli.csvQuoteChar)
                     .withSkipHeaderRecord(true) // TODO: remove this? does it even do anything?
                     .withIgnoreEmptyLines(true)
                     .withIgnoreSurroundingSpaces(true)
