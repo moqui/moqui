@@ -920,16 +920,16 @@ public class EntityDefinition {
         }
         for (Node econdition in conditionsParent."econdition") {
             EntityConditionImplBase cond;
+            ConditionField field
+            if (econdition."@entity-alias") {
+                Node memberEntity = (Node) this.internalEntityNode."member-entity".find({ it."@entity-alias" == econdition."@entity-alias"})
+                if (!memberEntity) throw new EntityException("The entity-alias [${econdition."@entity-alias"}] was not found in view-entity [${this.internalEntityName}]")
+                EntityDefinition aliasEntityDef = this.efi.getEntityDefinition((String) memberEntity."@entity-name")
+                field = new ConditionField((String) econdition."@entity-alias", (String) econdition."@field-name", aliasEntityDef)
+            } else {
+                field = new ConditionField((String) econdition."@field-name")
+            }
             if (econdition."@value" != null) {
-                ConditionField field
-                if (econdition."@entity-alias") {
-                    Node memberEntity = (Node) this.internalEntityNode."member-entity".find({ it."@entity-alias" == econdition."@entity-alias"})
-                    if (!memberEntity) throw new EntityException("The entity-alias [${econdition."@entity-alias"}] was not found in view-entity [${this.internalEntityName}]")
-                    EntityDefinition aliasEntityDef = this.efi.getEntityDefinition((String) memberEntity."@entity-name")
-                    field = new ConditionField((String) econdition."@entity-alias", (String) econdition."@field-name", aliasEntityDef)
-                } else {
-                    field = new ConditionField((String) econdition."@field-name")
-                }
                 // NOTE: may need to convert value from String to object for field
                 String condValue = econdition."@value" ?: null
                 // NOTE: only expand if contains "${", expanding normal strings does l10n and messes up key values; hopefully this won't result in a similar issue
@@ -937,15 +937,6 @@ public class EntityDefinition {
                 cond = new FieldValueCondition((EntityConditionFactoryImpl) this.efi.conditionFactory, field,
                         EntityConditionFactoryImpl.getComparisonOperator((String) econdition."@operator"), condValue)
             } else {
-                ConditionField field
-                if (econdition."@entity-alias") {
-                    Node memberEntity = (Node) this.internalEntityNode."member-entity".find({ it."@entity-alias" == econdition."@entity-alias"})
-                    if (!memberEntity) throw new EntityException("The entity-alias [${econdition."@entity-alias"}] was not found in view-entity [${this.internalEntityName}]")
-                    EntityDefinition aliasEntityDef = this.efi.getEntityDefinition((String) memberEntity."@entity-name")
-                    field = new ConditionField((String) econdition."@entity-alias", (String) econdition."@field-name", aliasEntityDef)
-                } else {
-                    field = new ConditionField((String) econdition."@field-name")
-                }
                 ConditionField toField
                 if (econdition."@to-entity-alias") {
                     Node memberEntity = (Node) this.internalEntityNode."member-entity".find({ it."@entity-alias" == econdition."@to-entity-alias"})
@@ -959,6 +950,12 @@ public class EntityDefinition {
                         EntityConditionFactoryImpl.getComparisonOperator((String) econdition."@operator"), toField)
             }
             if (cond && econdition."@ignore-case" == "true") cond.ignoreCase()
+
+            if (cond && econdition."@or-null" == "true") {
+                cond = (EntityConditionImplBase) this.efi.conditionFactory.makeCondition(cond, JoinOperator.OR,
+                        new FieldValueCondition((EntityConditionFactoryImpl) this.efi.conditionFactory, field, EntityCondition.EQUALS, null))
+            }
+
             if (cond) condList.add(cond)
         }
         for (Node econditions in conditionsParent."econditions") {
