@@ -234,8 +234,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="targetPassword" type="text-medium" encrypt="true"/>
         <field name="targetTenantId" type="text-medium"/>
         <field name="keepRemoveInfoHours" type="number-float"/>
-        <field name="forPullOnly" type="text-indicator"/>
-        <field name="forPushOnly" type="text-indicator"/>
+        <field name="forPull" type="text-indicator"><description>If Y this record tracks data pulled from a remote
+            system, otherwise it tracks data pushed from this system.</description></field>
         <relationship type="one" title="EntitySync" related-entity-name="moqui.basic.StatusItem"/>
         <seed-data>
             <moqui.basic.StatusType description="Entity Sync" parentTypeId="" statusTypeId="EntitySync"/>
@@ -263,6 +263,13 @@ This Work includes contributions authored by David E. Jones, not as a
             <moqui.basic.Enumeration description="Always Include" enumId="EgmaAlways" sequenceNum="3" enumTypeId="EntitySyncArtifactAppl"/>
         </seed-data>
     </entity>
+    <view-entity entity-name="EntitySyncArtifactDetail" package-name="moqui.entity.sync">
+        <member-entity entity-alias="ESA" entity-name="moqui.entity.sync.EntitySyncArtifact"/>
+        <member-entity entity-alias="AGM" entity-name="moqui.security.ArtifactGroupMember" join-from-alias="ESA">
+            <key-map field-name="artifactGroupId"/></member-entity>
+        <alias-all entity-alias="ESA"/>
+        <alias-all entity-alias="AGM"/>
+    </view-entity>
     <entity entity-name="EntitySyncHistory" package-name="moqui.entity.synchronization">
         <field name="entitySyncId" type="id" is-pk="true"/>
         <field name="startDate" type="date-time" is-pk="true"/>

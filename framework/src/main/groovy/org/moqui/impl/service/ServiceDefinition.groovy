@@ -291,16 +291,6 @@ class ServiceDefinition {
             Object parameterValue = parameters.get(parameterName)
             String type = parameterNode."@type" ?: "String"
 
-            // check if required and empty - use groovy non-empty rules, except for Boolean objects if they are a
-            //     non-null instanceof Boolean, then consider it not-empty (normally if false would eval to false)
-            if (parameterValue == null || (parameterValue instanceof String && !parameterValue)) {
-                if (validate && parameterNode."@required" == "true") {
-                    eci.message.addValidationError(null, "${namePrefix}${parameterName}", getServiceName(), "Field cannot be empty", null)
-                }
-                // NOTE: should we change empty values to null? for now, no
-                // if it isn't there continue on since since default-value, etc are handled below
-            }
-
             // check type
             Object converted = checkConvertType(parameterNode, namePrefix, parameterName, parameterValue, rootParameters, eci)
             if (converted != null) {
@@ -321,6 +311,16 @@ class ServiceDefinition {
 
             if (validate) checkSubtype(parameterName, parameterNode, parameterValue, eci)
             if (validate) validateParameterHtml(parameterNode, namePrefix, parameterName, parameterValue, eci)
+
+            // do this after the convert so defaults are in place
+            // check if required and empty - use groovy non-empty rules for String only
+            if (parameterValue == null || (parameterValue instanceof String && !parameterValue)) {
+                if (validate && parameterNode."@required" == "true") {
+                    eci.message.addValidationError(null, "${namePrefix}${parameterName}", getServiceName(), "Field cannot be empty", null)
+                }
+                // NOTE: should we change empty values to null? for now, no
+                // if it isn't there continue on since since default-value, etc are handled below
+            }
 
             // do this after the convert so we can deal with objects when needed
             if (validate) validateParameter(parameterNode, parameterName, parameterValue, eci)
