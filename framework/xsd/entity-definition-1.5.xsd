@@ -389,6 +389,9 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="to-field-name" type="xs:string"/>
             <xs:attribute name="value" type="xs:string"/>
             <xs:attribute name="ignore-case" default="false" type="boolean"/>
+            <xs:attribute name="or-null" type="boolean" default="false">
+                <xs:annotation><xs:documentation>If true make a condition specified value or null as valid matches.</xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="econditions">

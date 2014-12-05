@@ -207,10 +207,9 @@ ${sri.renderSection(.node["@name"])}
 
 <#-- ================ Containers ================ -->
 <#macro container>
-    <#assign tagName = .node["@type"]!"div">
     <#assign divId><#if .node["@id"]?has_content>${ec.resource.evaluateStringExpand(.node["@id"], "")}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#if></#assign>
-    <${tagName}<#if divId??> id="${divId}"</#if><#if .node["@style"]?has_content> class="${ec.resource.evaluateStringExpand(.node["@style"], "")}"</#if>><#recurse>
-    </${tagName}>
+    <${.node["@type"]!"div"}<#if divId??> id="${divId}"</#if><#if .node["@style"]?has_content> class="${ec.resource.evaluateStringExpand(.node["@style"], "")}"</#if>><#recurse>
+    </${.node["@type"]!"div"}>
 </#macro>
 
 <#macro "container-box">
@@ -556,7 +555,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#assign skipEnd = (formNode["@skip-end"]! == "true")>
     <#assign urlInfo = sri.makeUrlByType(formNode["@transition"], "transition", null, "false")>
     <#assign formId = ec.resource.evaluateStringExpand(formNode["@name"], "")>
-    <#assign listEntryIndex = "">
+    <#-- shouldn't need this, and causes problems in section-iterate with single forms: <#assign listEntryIndex = ""> -->
     <#assign inFieldRow = false>
     <#assign bigRow = false>
     <#if !skipStart>
@@ -1535,6 +1534,7 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
                 focus: function(event, ui) { $("#${id}").val(ui.item.value); $("#${id}_ac").val(ui.item.label); return false; },
                 select: function(event, ui) { if (ui.item) { this.value = ui.item.value; $("#${id}").val(ui.item.value); $("#${id}_ac").val(ui.item.label);<#if acShowValue> if (ui.item.label) { $("#${id}_value").html(ui.item.label); }</#if> return false; } }
             });
+            $("#${id}_ac").change(function() { if (!$("#${id}_ac").val()) { $("#${id}").val(""); } });
             <#if !.node["@ac-initial-text"]?has_content>
             /* load the initial value if there is one */
             if ($("#${id}").val()) {

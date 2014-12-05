@@ -101,7 +101,7 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
         return new WhereCondition(this, sqlWhereClause)
     }
 
-    EntityCondition.ComparisonOperator comparisonOperatorFromEnumId(String enumId) {
+    ComparisonOperator comparisonOperatorFromEnumId(String enumId) {
         switch (enumId) {
             case "ENTCO_LESS": return EntityCondition.LESS_THAN
             case "ENTCO_GREATER": return EntityCondition.GREATER_THAN
@@ -118,21 +118,21 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
         }
     }
 
-    EntityCondition makeActionCondition(String fieldName, String operator, String fromExpr, String value, String toFieldName, boolean ignoreCase, boolean ignoreIfEmpty, boolean orNull, boolean ignore) {
+    EntityCondition makeActionCondition(String fieldName, String operator, String fromExpr, String value, String toFieldName, boolean ignoreCase, boolean ignoreIfEmpty, boolean orNull, String ignore) {
         Object from = fromExpr ? this.efi.ecfi.resourceFacade.evaluateContextField(fromExpr, "") : null
         return makeActionConditionDirect(fieldName, operator, from, value, toFieldName, ignoreCase, ignoreIfEmpty, orNull, ignore)
     }
-    EntityCondition makeActionConditionDirect(String fieldName, String operator, Object fromObj, String value, String toFieldName, boolean ignoreCase, boolean ignoreIfEmpty, boolean orNull, boolean ignore) {
+    EntityCondition makeActionConditionDirect(String fieldName, String operator, Object fromObj, String value, String toFieldName, boolean ignoreCase, boolean ignoreIfEmpty, boolean orNull, String ignore) {
         // logger.info("TOREMOVE makeActionCondition(fieldName ${fieldName}, operator ${operator}, fromExpr ${fromExpr}, value ${value}, toFieldName ${toFieldName}, ignoreCase ${ignoreCase}, ignoreIfEmpty ${ignoreIfEmpty}, orNull ${orNull}, ignore ${ignore})")
 
-        if (ignore) return null
+        if (efi.getEcfi().getResourceFacade().evaluateCondition(ignore, null)) return null
 
         if (toFieldName) {
             EntityCondition ec = makeConditionToField(fieldName, getComparisonOperator(operator), toFieldName)
             if (ignoreCase) ec.ignoreCase()
             return ec
         } else {
-            Object condValue = null
+            Object condValue
             if (value) {
                 // NOTE: have to convert value (if needed) later on because we don't know which entity/field this is for, or change to pass in entity?
                 condValue = value
@@ -155,7 +155,7 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
                 (String) node["@operator"] ?: "equals", (String) (node["@from"] ?: node["@field-name"]),
                 (String) node["@value"], (String) node["@to-field-name"], (node["@ignore-case"] ?: "false") == "true",
                 (node["@ignore-if-empty"] ?: "false") == "true", (node["@or-null"] ?: "false") == "true",
-                (node["@ignore"] ?: "false") == "true")
+                ((String) node["@ignore"] ?: "false"))
     }
 
     EntityCondition makeActionConditions(Node node) {
@@ -232,7 +232,6 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
             case "AND":
             default: return JoinOperator.AND
         }
-        return JoinOperator.AND
     }
     static String getComparisonOperatorString(ComparisonOperator op) {
         return comparisonOperatorStringMap.get(op)
