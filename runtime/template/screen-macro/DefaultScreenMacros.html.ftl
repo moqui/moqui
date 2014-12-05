@@ -1534,6 +1534,7 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
                 focus: function(event, ui) { $("#${id}").val(ui.item.value); $("#${id}_ac").val(ui.item.label); return false; },
                 select: function(event, ui) { if (ui.item) { this.value = ui.item.value; $("#${id}").val(ui.item.value); $("#${id}_ac").val(ui.item.label);<#if acShowValue> if (ui.item.label) { $("#${id}_value").html(ui.item.label); }</#if> return false; } }
             });
+            $("#${id}_ac").change(function() { if (!$("#${id}_ac").val()) { $("#${id}").val(""); } });
             <#if !.node["@ac-initial-text"]?has_content>
             /* load the initial value if there is one */
             if ($("#${id}").val()) {
