@@ -22,8 +22,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="dataSourceTypeEnumId" type="id"/>
         <field name="description" type="text-medium"/>
         <relationship type="one" title="DataSourceType" related-entity-name="moqui.basic.Enumeration">
-            <key-map field-name="dataSourceTypeEnumId"/>
-        </relationship>
+            <key-map field-name="dataSourceTypeEnumId"/></relationship>
         <seed-data>
             <!-- =========================== Data Source Type Data ==================== -->
             <moqui.basic.EnumerationType description="Data Source Type" enumTypeId="DataSourceType"/>
@@ -44,8 +43,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="description" type="text-medium" enable-localization="true"/>
         <relationship type="one" related-entity-name="moqui.basic.EnumerationType"/>
         <relationship type="one-nofk" title="Parent" related-entity-name="moqui.basic.Enumeration">
-            <key-map field-name="parentEnumId"/>
-        </relationship>
+            <key-map field-name="parentEnumId"/></relationship>
         <seed-data>
             <moqui.basic.EnumerationType enumTypeId="_NA_" description="Not Applicable"/>
             <moqui.basic.Enumeration enumId="_NA_" enumTypeId="_NA_" description="Not Applicable"/>
@@ -67,8 +65,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="geoCodeNumeric" type="text-short"/>
         <field name="wellKnownText" type="text-very-long"/>
         <relationship type="one" title="GeoType" related-entity-name="moqui.basic.Enumeration">
-            <key-map field-name="geoTypeEnumId"/>
-        </relationship>
+            <key-map field-name="geoTypeEnumId"/></relationship>
         <seed-data>
             <!-- A placeholder for when there is no Geo -->
             <moqui.basic.Geo geoId="_NA_" geoName="Not Applicable" geoCodeAlpha3="_NA" geoCodeAlpha2="_N"/>
@@ -100,11 +97,9 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="geoAssocTypeEnumId" type="id"/>
         <relationship type="one" title="Main" related-entity-name="moqui.basic.Geo"/>
         <relationship type="one" title="Assoc" related-entity-name="moqui.basic.Geo">
-            <key-map field-name="toGeoId"/>
-        </relationship>
+            <key-map field-name="toGeoId"/></relationship>
         <relationship type="one" title="GeoAssocType" related-entity-name="moqui.basic.Enumeration">
-            <key-map field-name="geoAssocTypeEnumId"/>
-        </relationship>
+            <key-map field-name="geoAssocTypeEnumId"/></relationship>
         <seed-data>
             <moqui.basic.EnumerationType description="Geo Assoc Type" enumTypeId="GeoAssocType"/>
             <moqui.basic.Enumeration description="Geo Group Member" enumId="GAT_GROUP_MEMBER" enumTypeId="GeoAssocType"/>
@@ -115,16 +110,14 @@ This Work includes contributions authored by David E. Jones, not as a
     <view-entity entity-name="GeoAssocAndToDetail" package-name="moqui.basic">
         <member-entity entity-alias="GEOA" entity-name="moqui.basic.GeoAssoc"/>
         <member-entity entity-alias="GEOTO" entity-name="moqui.basic.Geo" join-from-alias="GEOA">
-            <key-map field-name="toGeoId" related-field-name="geoId"/>
-        </member-entity>
+            <key-map field-name="toGeoId" related-field-name="geoId"/></member-entity>
         <alias-all entity-alias="GEOA"/>
         <alias-all entity-alias="GEOTO"><exclude field="geoId"/></alias-all>
     </view-entity>
     <view-entity entity-name="GeoAssocAndFromDetail" package-name="moqui.basic">
         <member-entity entity-alias="GEOA" entity-name="moqui.basic.GeoAssoc"/>
         <member-entity entity-alias="GEOFR" entity-name="moqui.basic.Geo" join-from-alias="GEOA">
-            <key-map field-name="geoId"/>
-        </member-entity>
+            <key-map field-name="geoId"/></member-entity>
         <alias-all entity-alias="GEOA"/>
         <alias-all entity-alias="GEOFR"><exclude field="geoId"/></alias-all>
     </view-entity>
@@ -138,8 +131,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="information" type="text-medium"/>
         <relationship type="one" related-entity-name="moqui.basic.DataSource"/>
         <relationship type="one" title="Elevation" related-entity-name="moqui.basic.Uom">
-            <key-map field-name="elevationUomId"/>
-        </relationship>
+            <key-map field-name="elevationUomId"/></relationship>
     </entity>
 
     <!-- ========== Localized ========== -->
@@ -187,15 +179,13 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="transitionName" type="text-medium"/>
         <relationship type="one" title="Main" related-entity-name="moqui.basic.StatusItem"/>
         <relationship type="one" title="To" related-entity-name="moqui.basic.StatusItem">
-            <key-map field-name="toStatusId" related-field-name="statusId"/>
-        </relationship>
+            <key-map field-name="toStatusId" related-field-name="statusId"/></relationship>
     </entity>
     <view-entity entity-name="StatusValidChangeToDetail" package-name="moqui.basic">
         <description>DEPRECATED by StatusFlowTransitionToDetail</description>
         <member-entity entity-alias="SVC" entity-name="moqui.basic.StatusValidChange"/>
         <member-entity entity-alias="SI" entity-name="moqui.basic.StatusItem" join-from-alias="SVC">
-            <key-map field-name="toStatusId" related-field-name="statusId"/>
-        </member-entity>
+            <key-map field-name="toStatusId" related-field-name="statusId"/></member-entity>
         <alias-all entity-alias="SVC"/>
         <alias-all entity-alias="SI"><exclude field="statusId"/></alias-all>
         <relationship type="one" related-entity-name="moqui.basic.StatusValidChange"/>
@@ -225,14 +215,12 @@ This Work includes contributions authored by David E. Jones, not as a
         <relationship type="one" related-entity-name="moqui.basic.StatusFlow"/>
         <relationship type="one" related-entity-name="moqui.basic.StatusItem"/>
         <relationship type="one" title="To" related-entity-name="moqui.basic.StatusItem">
-            <key-map field-name="toStatusId" related-field-name="statusId"/>
-        </relationship>
+            <key-map field-name="toStatusId" related-field-name="statusId"/></relationship>
     </entity>
     <view-entity entity-name="StatusFlowTransitionToDetail" package-name="moqui.basic">
         <member-entity entity-alias="SFT" entity-name="moqui.basic.StatusFlowTransition"/>
         <member-entity entity-alias="SI" entity-name="moqui.basic.StatusItem" join-from-alias="SFT">
-            <key-map field-name="toStatusId" related-field-name="statusId"/>
-        </member-entity>
+            <key-map field-name="toStatusId" related-field-name="statusId"/></member-entity>
         <alias-all entity-alias="SFT"/>
         <alias-all entity-alias="SI"><exclude field="statusId"/></alias-all>
         <entity-condition><order-by field-name="sequenceNum"/></entity-condition>
@@ -245,8 +233,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="abbreviation" type="text-short"/>
         <field name="description" type="text-medium"/>
         <relationship type="one" title="UomType" related-entity-name="moqui.basic.Enumeration">
-            <key-map field-name="uomTypeEnumId"/>
-        </relationship>
+            <key-map field-name="uomTypeEnumId"/></relationship>
         <seed-data>
             <!-- =========================== UOM Type Data ============================ -->
             <moqui.basic.EnumerationType description="UOM Type" enumTypeId="UomType"/>
@@ -268,8 +255,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <view-entity entity-name="UomAndType" package-name="moqui.basic" cache="true">
         <member-entity entity-alias="UOM" entity-name="moqui.basic.Uom"/>
         <member-entity entity-alias="UTE" entity-name="moqui.basic.Enumeration" join-from-alias="UOM">
-            <key-map field-name="uomTypeEnumId" related-field-name="enumId"/>
-        </member-entity>
+            <key-map field-name="uomTypeEnumId" related-field-name="enumId"/></member-entity>
         <alias entity-alias="UOM" name="uomId"/>
         <alias entity-alias="UOM" name="uomTypeEnumId"/>
         <alias entity-alias="UOM" name="description"/>
@@ -290,22 +276,19 @@ This Work includes contributions authored by David E. Jones, not as a
         </field>
         <relationship type="one" related-entity-name="moqui.basic.Uom"/>
         <relationship type="one" title="To" related-entity-name="moqui.basic.Uom">
-            <key-map field-name="toUomId" related-field-name="uomId"/>
-        </relationship>
+            <key-map field-name="toUomId" related-field-name="uomId"/></relationship>
     </entity>
     <view-entity entity-name="UomConversionAndToDetail" package-name="moqui.basic">
         <member-entity entity-alias="UOMC" entity-name="moqui.basic.UomConversion"/>
         <member-entity entity-alias="UOMTO" entity-name="moqui.basic.Uom" join-from-alias="UOMC">
-            <key-map field-name="toUomId" related-field-name="uomId"/>
-        </member-entity>
+            <key-map field-name="toUomId" related-field-name="uomId"/></member-entity>
         <alias-all entity-alias="UOMC"/>
         <alias-all entity-alias="UOMTO"><exclude field="uomId"/></alias-all>
     </view-entity>
     <view-entity entity-name="UomConversionAndFromDetail" package-name="moqui.basic">
         <member-entity entity-alias="UOMC" entity-name="moqui.basic.UomConversion"/>
         <member-entity entity-alias="UOMFR" entity-name="moqui.basic.Uom" join-from-alias="UOMC">
-            <key-map field-name="uomId"/>
-        </member-entity>
+            <key-map field-name="uomId"/></member-entity>
         <alias-all entity-alias="UOMC"/>
         <alias-all entity-alias="UOMFR"><exclude field="uomId"/></alias-all>
     </view-entity>
@@ -344,20 +327,15 @@ This Work includes contributions authored by David E. Jones, not as a
 
         <relationship type="one" title="EmailMessage" related-entity-name="moqui.basic.StatusItem"/>
         <relationship type="one" title="EmailType" related-entity-name="moqui.basic.Enumeration">
-            <key-map field-name="emailTypeEnumId"/>
-        </relationship>
+            <key-map field-name="emailTypeEnumId"/></relationship>
         <relationship type="one" title="Root" related-entity-name="moqui.basic.email.EmailMessage">
-            <key-map field-name="rootEmailMessageId" related-field-name="emailMessageId"/>
-        </relationship>
+            <key-map field-name="rootEmailMessageId" related-field-name="emailMessageId"/></relationship>
         <relationship type="one" title="Parent" related-entity-name="moqui.basic.email.EmailMessage">
-            <key-map field-name="parentEmailMessageId" related-field-name="emailMessageId"/>
-        </relationship>
+            <key-map field-name="parentEmailMessageId" related-field-name="emailMessageId"/></relationship>
         <relationship type="one" title="From" related-entity-name="moqui.security.UserAccount">
-            <key-map field-name="fromUserId"/>
-        </relationship>
+            <key-map field-name="fromUserId"/></relationship>
         <relationship type="one" title="To" related-entity-name="moqui.security.UserAccount">
-            <key-map field-name="toUserId"/>
-        </relationship>
+            <key-map field-name="toUserId"/></relationship>
         <relationship type="one" related-entity-name="moqui.basic.email.EmailTemplate"/>
         <index name="EMAIL_MSG_ID" unique="true"><index-field name="messageId"/></index>
 
@@ -435,8 +413,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <entity entity-name="EmailTemplateAttachment" package-name="moqui.basic.email" cache="true">
         <field name="emailTemplateId" type="id" is-pk="true"/>
         <field name="fileName" type="text-medium" is-pk="true"/>
-        <field name="attachmentLocation" type="text-medium">
-        </field>
+        <field name="attachmentLocation" type="text-medium"/>
         <field name="screenRenderMode" type="text-short">
             <description>Used to determine the MIME/content type, and which screen render template to use.
                 Can be used to generate XSL:FO that is transformed to a PDF and attached to the email with
