@@ -20,23 +20,18 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="screenLocation" type="text-medium" is-pk="true"/>
         <field name="subscreenName" type="text-medium" is-pk="true"/>
         <field name="userGroupId" type="id" is-pk="true">
-            <description>These settings are for a UserGroup. To apply to all users just use the ALL_USERS UserGroup.</description>
-        </field>
+            <description>These settings are for a UserGroup. To apply to all users just use the ALL_USERS UserGroup.</description></field>
         <field name="subscreenLocation" type="text-medium"/>
         <field name="menuTitle" type="text-medium">
-            <description>
-                The title to show for this subscreen in the menu. Can be used to override subscreen titles in the
-                screen.default-menu-title attribute and the subscreens-item.menu-title attribute.
-            </description>
+            <description>The title to show for this subscreen in the menu. Can be used to override subscreen titles in the
+                screen.default-menu-title attribute and the subscreens-item.menu-title attribute.</description>
         </field>
         <field name="menuIndex" type="number-integer">
             <description>Insert this item in subscreens menu at this index (1-based).</description>
         </field>
         <field name="menuInclude" type="text-indicator">
-            <description>
-                Defaults to Y. Set to N to not include in the menu for the subscreens. This can be used to hide
-                subscreens from the directory structure or even explicitly declared in the Screen XML file.
-            </description>
+            <description>Defaults to Y. Set to N to not include in the menu for the subscreens. This can be used to hide
+                subscreens from the directory structure or even explicitly declared in the Screen XML file.</description>
         </field>
         <relationship type="one" related-entity-name="moqui.security.UserGroup"/>
     </entity>
@@ -47,8 +42,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="screenThemeTypeEnumId" type="id"/>
         <field name="description" type="text-medium"/>
         <relationship type="one" title="ScreenThemeType" related-entity-name="moqui.basic.Enumeration">
-            <key-map field-name="screenThemeTypeEnumId"/>
-        </relationship>
+            <key-map field-name="screenThemeTypeEnumId"/></relationship>
         <seed-data>
             <!-- Screen Themes -->
             <moqui.basic.EnumerationType description="Screen Theme Type" enumTypeId="ScreenThemeType"/>
@@ -68,12 +62,10 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="sequenceNum" type="number-integer" is-pk="true"/>
         <field name="resourceTypeEnumId" type="id"/>
         <field name="resourceValue" type="text-long">
-            <description>The location, name or other value description the resource.</description>
-        </field>
+            <description>The location, name or other value description the resource.</description></field>
         <relationship type="one" related-entity-name="moqui.screen.ScreenTheme"/>
         <relationship type="one" title="ScreenThemeResourceType" related-entity-name="moqui.basic.Enumeration">
-            <key-map field-name="resourceTypeEnumId" related-field-name="enumId"/>
-        </relationship>
+            <key-map field-name="resourceTypeEnumId" related-field-name="enumId"/></relationship>
         <seed-data>
             <moqui.basic.EnumerationType description="Screen Theme Resource Type" enumTypeId="ScreenThemeResourceType"/>
             <moqui.basic.Enumeration description="Style Sheet (CSS) URL" enumId="STRT_STYLESHEET" enumTypeId="ScreenThemeResourceType"/>
@@ -95,9 +87,8 @@ This Work includes contributions authored by David E. Jones, not as a
     <entity entity-name="DbForm" package-name="moqui.screen.form">
         <field name="formId" type="id" is-pk="true"/>
         <field name="isListForm" type="text-indicator"/>
-        <field name="modifyXmlScreenForm" type="text-medium">
-            <description>The screen location and form name (separated by a hash/pound sign) of XML Screen Form to modify.</description>
-        </field>
+        <field name="modifyXmlScreenForm" type="text-medium"><description>The screen location and form name (separated
+            by a hash/pound sign) of XML Screen Form to modify.</description></field>
     </entity>
     <entity entity-name="DbFormField" package-name="moqui.screen.form">
         <field name="formId" type="id" is-pk="true"/>
@@ -108,8 +99,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="layoutSequenceNum" type="number-integer"/>
         <relationship type="one" related-entity-name="moqui.screen.form.DbForm"/>
         <relationship type="one" title="DbFormFieldType" related-entity-name="moqui.basic.Enumeration">
-            <key-map field-name="fieldTypeEnumId" related-field-name="enumId"/>
-        </relationship>
+            <key-map field-name="fieldTypeEnumId" related-field-name="enumId"/></relationship>
         <seed-data>
             <moqui.basic.EnumerationType description="DB Form Field Type" enumTypeId="DbFormFieldType"/>
             <moqui.basic.Enumeration description="link" enumId="DBFFT_link" enumTypeId="DbFormFieldType"/>
@@ -178,17 +168,15 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
     <entity entity-name="DbFormUserGroup" package-name="moqui.screen.form">
         <field name="formId" type="id" is-pk="true"/>
-        <field name="userGroupId" type="id" is-pk="true">
-            <description>These settings are for a UserGroup. To apply to all users just use the ALL_USERS UserGroup.</description>
-        </field>
+        <field name="userGroupId" type="id" is-pk="true"><description>These settings are for a UserGroup. To apply to
+            all users just use the ALL_USERS UserGroup.</description></field>
         <relationship type="one" related-entity-name="moqui.screen.form.DbForm"/>
         <relationship type="one" related-entity-name="moqui.security.UserGroup"/>
     </entity>
     <view-entity entity-name="DbFormLookup" package-name="moqui.screen.form">
         <member-entity entity-alias="DBF" entity-name="DbForm"/>
         <member-entity entity-alias="DBFUG" entity-name="DbFormUserGroup" join-from-alias="DBF">
-            <key-map field-name="formId"/>
-        </member-entity>
+            <key-map field-name="formId"/></member-entity>
         <alias name="formId" entity-alias="DBF"/>
         <alias name="modifyXmlScreenForm" entity-alias="DBF"/>
         <alias name="userGroupId" entity-alias="DBFUG"/>
