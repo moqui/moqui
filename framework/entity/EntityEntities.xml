@@ -54,12 +54,10 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <entity entity-name="UserField" package-name="moqui.entity" cache="true">
         <field name="entityName" type="text-medium" is-pk="true">
-            <description>This should be the full entity name, ie like "${package-name}.${entity-name}"</description>
-        </field>
+            <description>This should be the full entity name, ie like "${package-name}.${entity-name}"</description></field>
         <field name="fieldName" type="text-medium" is-pk="true"/>
         <field name="userGroupId" type="id" is-pk="true">
-            <description>These settings are for a UserGroup. To apply to all users just use the ALL_USERS UserGroup.</description>
-        </field>
+            <description>These settings are for a UserGroup. To apply to all users just use the ALL_USERS UserGroup.</description></field>
         <field name="fieldType" type="text-medium"/>
         <field name="enableAuditLog" type="text-indicator"/>
         <field name="enableLocalization" type="text-indicator"/>
@@ -113,11 +111,9 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="joinFromAlias" type="text-short" is-pk="true"/>
         <field name="entityAlias" type="text-short" is-pk="true"/>
         <field name="fieldName" type="text-medium" is-pk="true">
-            <description>The name of the field corresponding to the joinFromAlias.</description>
-        </field>
+            <description>The name of the field corresponding to the joinFromAlias.</description></field>
         <field name="relatedFieldName" type="text-medium">
-            <description>The name of the field corresponding to the entityAlias, ie the related field.</description>
-        </field>
+            <description>The name of the field corresponding to the entityAlias, ie the related field.</description></field>
         <relationship type="one" related-entity-name="moqui.entity.view.DbViewEntity"/>
         <relationship type="one" related-entity-name="moqui.entity.view.DbViewEntityMember"/>
     </entity>
@@ -196,8 +192,7 @@ This Work includes contributions authored by David E. Jones, not as a
             org.moqui.EntityServices.receive#DataFeed interface.</description></field>
         <field name="lastFeedStamp" type="date-time"><description>Used only for periodic feeds.</description></field>
         <relationship type="one" title="DataFeedType" related-entity-name="moqui.basic.Enumeration">
-            <key-map field-name="dataFeedTypeEnumId"/>
-        </relationship>
+            <key-map field-name="dataFeedTypeEnumId"/></relationship>
         <seed-data>
             <moqui.basic.EnumerationType description="Data Feed Type" enumTypeId="DataFeedType"/>
             <moqui.basic.Enumeration description="Real-time Service Push" enumId="DTFDTP_RT_PUSH" enumTypeId="DataFeedType"/>
@@ -214,8 +209,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <view-entity entity-name="DataFeedAndDocument" package-name="moqui.entity.feed">
         <member-entity entity-alias="DTFD" entity-name="moqui.entity.feed.DataFeed"/>
         <member-entity entity-alias="DFD" entity-name="moqui.entity.feed.DataFeedDocument" join-from-alias="DTFD">
-            <key-map field-name="dataFeedId"/>
-        </member-entity>
+            <key-map field-name="dataFeedId"/></member-entity>
         <alias-all entity-alias="DTFD"/>
         <alias entity-alias="DFD" name="dataDocumentId"/>
     </view-entity>
