@@ -353,6 +353,21 @@ public class ResourceFacadeImpl implements ResourceFacade {
             throw new IllegalArgumentException("Error in field expression [${expression}] from [${debugLocation}]", e)
         }
     }
+    @Override
+    Object evaluateContextField(String expression, String debugLocation, Map additionalContext) {
+        ExecutionContext ec = ecfi.getExecutionContext()
+        ContextStack cs = (ContextStack) ec.context
+        try {
+            // push the entire context to isolate the context for the string expand
+            cs.pushContext()
+            cs.push(additionalContext)
+            return evaluateContextField(expression, debugLocation)
+        } finally {
+            // pop the entire context to get back to where we were before isolating the context with pushContext
+            cs.popContext()
+        }
+    }
+
 
     @Override
     String evaluateStringExpand(String inputString, String debugLocation) {
