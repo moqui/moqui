@@ -49,6 +49,8 @@ return;
         </#if>
         <#if (.node["@web-send-json-response"]?if_exists == "true")>
         ec.web.sendJsonResponse(call_service_result)
+        <#elseif (.node["@web-send-json-response"]?has_content && .node["@web-send-json-response"] != "false")>
+        ec.web.sendJsonResponse(ec.resource.evaluateContextField("${.node["@web-send-json-response"]}", "", call_service_result))
         </#if>
         <#if !(.node["@ignore-error"]?if_exists == "true")>
         if (ec.message.errors) return

@@ -143,7 +143,10 @@ This Work includes contributions authored by David E. Jones, not as a
                     </xs:restriction>
                 </xs:simpleType>
             </xs:attribute>
-            <xs:attribute name="web-send-json-response" type="boolean" default="false"/>
+            <xs:attribute name="web-send-json-response" type="xs:string" default="false">
+                <xs:annotation><xs:documentation>Can be false to do nothing, true to send the service result or an
+                    expression to run on the service result to get the object to send.</xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="service-group" substitutionGroup="CallOperations">
