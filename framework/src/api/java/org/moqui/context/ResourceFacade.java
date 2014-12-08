@@ -58,6 +58,7 @@ public interface ResourceFacade {
      * @return Object reference representing result of evaluating the expression
      */
     Object evaluateContextField(String expression, String debugLocation);
+    Object evaluateContextField(String expression, String debugLocation, Map additionalContext);
 
     /** Evaluate a Groovy expression as a GString to be expanded/interpolated into a simple String.
      *
