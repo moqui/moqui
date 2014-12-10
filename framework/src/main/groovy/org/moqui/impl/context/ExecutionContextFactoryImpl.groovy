@@ -75,6 +75,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     protected final Node confXmlRoot
 
     protected StupidClassLoader cachedClassLoader
+    protected InetAddress localhostAddress = null
 
     protected final ListOrderedMap componentLocationMap = new ListOrderedMap()
 
@@ -259,6 +260,12 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     }
 
     protected void preFacadeInit() {
+        try {
+            localhostAddress = InetAddress.getLocalHost()
+        } catch (UnknownHostException e) {
+            logger.warn("Could not get localhost address", new BaseException("Could not get localhost address", e))
+        }
+
         // must load components before ClassLoader since ClassLoader currently adds lib and classes directories at init time
         initComponents()
         // init ClassLoader early so that classpath:// resources and framework interface impls will work
@@ -374,35 +381,35 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     }
 
     synchronized void destroy() {
-        if (!this.destroyed) {
-            // stop Camel to prevent more calls coming in
-            if (camelContext != null) camelContext.stop()
+        if (destroyed) return
 
-            // stop NotificationMessageListeners
-            for (NotificationMessageListener nml in registeredNotificationMessageListeners) nml.destroy()
+        // stop Camel to prevent more calls coming in
+        if (camelContext != null) camelContext.stop()
 
-            // stop ElasticSearch
-            if (elasticSearchNode != null) elasticSearchNode.close()
+        // stop NotificationMessageListeners
+        for (NotificationMessageListener nml in registeredNotificationMessageListeners) nml.destroy()
 
-            // persist any remaining bins in artifactHitBinByType
-            Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis())
-            List<Map<String, Object>> ahbList = new ArrayList<Map<String, Object>>(artifactHitBinByType.values())
-            artifactHitBinByType.clear()
-            for (Map<String, Object> ahb in ahbList) {
-                ahb.binEndDateTime = currentTimestamp
-                executionContext.service.sync().name("create", "moqui.server.ArtifactHitBin").parameters(ahb).call()
-            }
+        // stop ElasticSearch
+        if (elasticSearchNode != null) elasticSearchNode.close()
 
-            // this destroy order is important as some use others so must be destroyed first
-            if (this.serviceFacade != null) { this.serviceFacade.destroy() }
-            if (this.entityFacade != null) { this.entityFacade.destroy() }
-            if (this.transactionFacade != null) { this.transactionFacade.destroy() }
-            if (this.cacheFacade != null) { this.cacheFacade.destroy() }
-
-            activeContext.remove()
-
-            this.destroyed = true
+        // persist any remaining bins in artifactHitBinByType
+        Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis())
+        List<Map<String, Object>> ahbList = new ArrayList<Map<String, Object>>(artifactHitBinByType.values())
+        artifactHitBinByType.clear()
+        for (Map<String, Object> ahb in ahbList) {
+            ahb.binEndDateTime = currentTimestamp
+            executionContext.service.sync().name("create", "moqui.server.ArtifactHitBin").parameters(ahb).call()
         }
+
+        // this destroy order is important as some use others so must be destroyed first
+        if (this.serviceFacade != null) { this.serviceFacade.destroy() }
+        if (this.entityFacade != null) { this.entityFacade.destroy() }
+        if (this.transactionFacade != null) { this.transactionFacade.destroy() }
+        if (this.cacheFacade != null) { this.cacheFacade.destroy() }
+
+        activeContext.remove()
+
+        destroyed = true
     }
 
     @Override
@@ -420,6 +427,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     String getRuntimePath() { return runtimePath }
     Node getConfXmlRoot() { return confXmlRoot }
+
+    InetAddress getLocalhostAddress() { return localhostAddress }
 
     void registerNotificationMessageListener(NotificationMessageListener nml) {
         nml.init(this)
@@ -813,15 +822,9 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
                 ahp.requestUrl = fullUrl
                 ahp.referrerUrl = eci.web.request.getHeader("Referrer") ?: ""
             }
-            try {
-                InetAddress address = InetAddress.getLocalHost()
-                if (address) {
-                    ahp.serverIpAddress = address.getHostAddress()
-                    ahp.serverHostName = address.getHostName()
-                }
-            } catch (UnknownHostException e) {
-                logger.warn("Could not get localhost address", new BaseException("Could not get localhost address", e))
-            }
+
+            ahp.serverIpAddress = localhostAddress?.getHostAddress() ?: "127.0.0.1"
+            ahp.serverHostName = localhostAddress?.getHostName() ?: "localhost"
 
             // call async, let the server do it whenever
             eci.service.async().name("create", "moqui.server.ArtifactHit").parameters(ahp).call()
@@ -867,15 +870,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         Map<String, Object> ahb = (Map<String, Object>) [artifactType:artifactType, artifactSubType:artifactSubType,
                 artifactName:artifactName, binStartDateTime:new Timestamp(startTime), binEndDateTime:null,
                 hitCount:0, totalTimeMillis:0, minTimeMillis:Long.MAX_VALUE, maxTimeMillis:0]
-        try {
-            InetAddress address = InetAddress.getLocalHost()
-            if (address) {
-                ahb.serverIpAddress = address.getHostAddress()
-                ahb.serverHostName = address.getHostName()
-            }
-        } catch (UnknownHostException e) {
-            logger.warn("Could not get localhost address", new BaseException("Could not get localhost address", e))
-        }
+        ahb.serverIpAddress = localhostAddress?.getHostAddress() ?: "127.0.0.1"
+        ahb.serverHostName = localhostAddress?.getHostName() ?: "localhost"
         artifactHitBinByType.put(artifactType + "." + artifactSubType + ":" + artifactName, ahb)
         return ahb
     }
