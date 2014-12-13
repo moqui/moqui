@@ -375,7 +375,7 @@ class StupidUtilities {
     static Node deepCopyNode(Node original) { return deepCopyNode(original, null) }
     static Node deepCopyNode(Node original, Node parent) {
         // always pass in a null parent and expect this to be appended to the parent node by the caller if desired
-        Node newNode = new Node(parent, original.name(), original.attributes())
+        Node newNode = new Node(parent, original.name(), new HashMap(original.attributes()))
         for (Object child in original.children()) {
             if (child instanceof Node) {
                 newNode.append(deepCopyNode((Node) child, null))
