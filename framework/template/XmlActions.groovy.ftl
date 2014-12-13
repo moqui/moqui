@@ -49,6 +49,8 @@ return;
         </#if>
         <#if (.node["@web-send-json-response"]?if_exists == "true")>
         ec.web.sendJsonResponse(call_service_result)
+        <#elseif (.node["@web-send-json-response"]?has_content && .node["@web-send-json-response"] != "false")>
+        ec.web.sendJsonResponse(ec.resource.evaluateContextField("${.node["@web-send-json-response"]}", "", call_service_result))
         </#if>
         <#if !(.node["@ignore-error"]?if_exists == "true")>
         if (ec.message.errors) return
@@ -83,7 +85,7 @@ return;
         def _listToFilter = ${.node["@list"]}
     </#if>
     <#if .node["field-map"]?has_content>
-        StupidUtilities.filterMapList(_listToFilter, [<#list .node["field-map"] as fm>"${fm["@field-name"]}":<#if fm["@from"]?has_content>${fm["@from"]}<#else>"""${fm["@value"]}"""</#if><#if fm_has_next>, </#if></#list>])
+        StupidUtilities.filterMapList(_listToFilter, [<#list .node["field-map"] as fm>"${fm["@field-name"]}":<#if fm["@value"]?has_content>"""${fm["@value"]}"""<#elseif fm["@from"]?has_content>"""${fm["@from"]}"""<#else>${fm["@field-name"]}</#if><#if fm_has_next>, </#if></#list>])
     </#if>
     <#list .node["date-filter"] as df>
         StupidUtilities.filterMapListByDate(_listToFilter, "${df["@from-field-name"]?default("fromDate")}", "${df["@thru-field-name"]?default("thruDate")}", <#if df["@valid-date"]?has_content>${df["@valid-date"]} ?: ec.user.nowTimestamp<#else>null</#if>, ${df["@ignore-if-empty"]?default("false")})

@@ -46,8 +46,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="triggerInstructionCode" type="text-short"/>
         <!-- this is one-nofk because it is used during initial data load, need a better solution for this -->
         <relationship type="one-nofk" title="SchedulerEventType" related-entity-name="moqui.basic.Enumeration">
-            <key-map field-name="eventTypeEnumId"/>
-        </relationship>
+            <key-map field-name="eventTypeEnumId"/></relationship>
         <seed-data>
             <!-- Scheduler Event Type -->
             <moqui.basic.EnumerationType description="Scheduler Event Type" enumTypeId="SchedulerEventType"/>
@@ -105,8 +104,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="misfireInstr" type="number-integer"/>
         <field name="jobData" type="binary-very-long"/>
         <relationship type="one" related-entity-name="moqui.service.quartz.QrtzJobDetails">
-            <key-map field-name="schedName"/><key-map field-name="jobName"/><key-map field-name="jobGroup"/>
-        </relationship>
+            <key-map field-name="schedName"/><key-map field-name="jobName"/><key-map field-name="jobGroup"/></relationship>
     </entity>
     <entity entity-name="QrtzSimpleTriggers" package-name="moqui.service.quartz">
         <field name="schedName" type="text-medium" is-pk="true"/>
@@ -116,8 +114,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="repeatInterval" type="number-integer"/>
         <field name="timesTriggered" type="number-integer"/>
         <relationship type="one" related-entity-name="moqui.service.quartz.QrtzTriggers">
-            <key-map field-name="schedName"/><key-map field-name="triggerName"/><key-map field-name="triggerGroup"/>
-        </relationship>
+            <key-map field-name="schedName"/><key-map field-name="triggerName"/><key-map field-name="triggerGroup"/></relationship>
     </entity>
     <entity entity-name="QrtzCronTriggers" package-name="moqui.service.quartz">
         <field name="schedName" type="text-medium" is-pk="true"/>
@@ -126,8 +123,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="cronExpression" type="text-medium"/>
         <field name="timeZoneId" type="text-medium"/>
         <relationship type="one" related-entity-name="moqui.service.quartz.QrtzTriggers">
-            <key-map field-name="schedName"/><key-map field-name="triggerName"/><key-map field-name="triggerGroup"/>
-        </relationship>
+            <key-map field-name="schedName"/><key-map field-name="triggerName"/><key-map field-name="triggerGroup"/></relationship>
     </entity>
     <entity entity-name="QrtzSimpropTriggers" package-name="moqui.service.quartz">
         <field name="schedName" type="text-medium" is-pk="true"/>
@@ -145,8 +141,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="boolProp1" type="text-indicator"/>
         <field name="boolProp2" type="text-indicator"/>
         <relationship type="one" related-entity-name="moqui.service.quartz.QrtzTriggers">
-            <key-map field-name="schedName"/><key-map field-name="triggerName"/><key-map field-name="triggerGroup"/>
-        </relationship>
+            <key-map field-name="schedName"/><key-map field-name="triggerName"/><key-map field-name="triggerGroup"/></relationship>
     </entity>
     <entity entity-name="QrtzBlobTriggers" package-name="moqui.service.quartz">
         <field name="schedName" type="text-medium" is-pk="true"/>
@@ -154,8 +149,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="triggerGroup" type="text-medium" is-pk="true"/>
         <field name="blobData" type="binary-very-long"/>
         <relationship type="one" related-entity-name="moqui.service.quartz.QrtzTriggers">
-            <key-map field-name="schedName"/><key-map field-name="triggerName"/><key-map field-name="triggerGroup"/>
-        </relationship>
+            <key-map field-name="schedName"/><key-map field-name="triggerName"/><key-map field-name="triggerGroup"/></relationship>
     </entity>
     <entity entity-name="QrtzCalendars" package-name="moqui.service.quartz">
         <field name="schedName" type="text-medium" is-pk="true"/>

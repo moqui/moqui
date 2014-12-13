@@ -24,8 +24,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="artifactType" type="text-medium"/>
         <field name="artifactSubType" type="text-medium"/>
         <field name="artifactName" type="text-medium">
-            <description>The name of the artifact hit. For XML Screens request it is "${webapp-name}.${screen-path}"</description>
-        </field>
+            <description>The name of the artifact hit. For XML Screens request it is "${webapp-name}.${screen-path}"</description></field>
         <field name="parameterString" type="text-long"/>
         <field name="startDateTime" type="date-time"/>
         <field name="runningTimeMillis" type="number-integer"/>
@@ -91,14 +90,10 @@ This Work includes contributions authored by David E. Jones, not as a
         <relationship type="one" related-entity-name="moqui.server.Visitor"/>
         <relationship type="one" related-entity-name="moqui.security.UserAccount"/>
         <relationship type="one" title="ClientIpStateProv" related-entity-name="Geo">
-            <key-map field-name="clientIpStateProvGeoId" related-field-name="geoId"/>
-        </relationship>
+            <key-map field-name="clientIpStateProvGeoId" related-field-name="geoId"/></relationship>
         <relationship type="one" title="ClientIpCountry" related-entity-name="Geo">
-            <key-map field-name="clientIpCountryGeoId" related-field-name="geoId"/>
-        </relationship>
-        <index name="VisitThruIndex" unique="false">
-            <index-field name="thruDate"/>
-        </index>
+            <key-map field-name="clientIpCountryGeoId" related-field-name="geoId"/></relationship>
+        <index name="VisitThruIndex" unique="false"><index-field name="thruDate"/></index>
     </entity>
     <entity entity-name="Visitor" package-name="moqui.server" sequence-bank-size="100">
         <field name="visitorId" type="id" is-pk="true"/>

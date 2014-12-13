@@ -197,15 +197,9 @@ class UserFacadeImpl implements UserFacade {
                         initialUserAgent:request.getHeader("User-Agent")?:"",
                         clientHostName:request.getRemoteHost(), clientUser:request.getRemoteUser()]
 
-                try {
-                    InetAddress address = InetAddress.getLocalHost()
-                    if (address) {
-                        parameters.serverIpAddress = address.getHostAddress()
-                        parameters.serverHostName = address.getHostName()
-                    }
-                } catch (UnknownHostException e) {
-                    logger.warn("Could not get localhost address", new BaseException("Could not get localhost address", e))
-                }
+                InetAddress address = eci.getEcfi().getLocalhostAddress()
+                parameters.serverIpAddress = address?.getHostAddress() ?: "127.0.0.1"
+                parameters.serverHostName = address?.getHostName() ?: "localhost"
 
                 // handle proxy original address, if exists
                 if (request.getHeader("X-Forwarded-For")) {

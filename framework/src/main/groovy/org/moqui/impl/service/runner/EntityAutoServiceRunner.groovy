@@ -118,8 +118,11 @@ public class EntityAutoServiceRunner implements ServiceRunner {
             if (pkValue) {
                 newEntityValue.set((String) singlePkField."@name", pkValue)
             } else {
-                newEntityValue.setSequencedIdPrimary()
-                pkValue = newEntityValue.get(singlePkField."@name")
+                // if it has a default value don't sequence the PK
+                if (!singlePkField."@default") {
+                    newEntityValue.setSequencedIdPrimary()
+                    pkValue = newEntityValue.get(singlePkField."@name")
+                }
             }
             if (outParamNames == null || outParamNames.contains(singlePkParamName))
                 tempResult.put(singlePkParamName, pkValue)
@@ -128,9 +131,13 @@ public class EntityAutoServiceRunner implements ServiceRunner {
             // don't do it this way, currently only supports second pk fields: String doublePkSecondaryName = parameters.get(pkFieldNames.get(0)) ? pkFieldNames.get(1) : pkFieldNames.get(0)
             String doublePkSecondaryName = pkFieldNames.get(1)
             newEntityValue.setFields(parameters, true, null, true)
-            newEntityValue.setSequencedIdSecondary()
-            if (outParamNames == null || outParamNames.contains(doublePkSecondaryName))
-                tempResult.put(doublePkSecondaryName, newEntityValue.get(doublePkSecondaryName))
+            // if it has a default value don't sequence the PK
+            Node doublePkSecondaryNode = ed.getFieldNode(doublePkSecondaryName)
+            if (!doublePkSecondaryNode."@default") {
+                newEntityValue.setSequencedIdSecondary()
+                if (outParamNames == null || outParamNames.contains(doublePkSecondaryName))
+                    tempResult.put(doublePkSecondaryName, newEntityValue.get(doublePkSecondaryName))
+            }
         } else if (allPksIn) {
             /* **** plain specified primary key **** */
             newEntityValue.setFields(parameters, true, null, true)
@@ -160,6 +167,11 @@ public class EntityAutoServiceRunner implements ServiceRunner {
 
         newEntityValue.setFields(parameters, true, null, false)
         newEntityValue.create()
+
+        // if a PK field has a @default get it and return it
+        List<Node> pkNodes = ed.getFieldNodes(true, false, false)
+        for (Node pkNode in pkNodes) if (pkNode."@default")
+            tempResult.put((String) pkNode."@name", newEntityValue.get((String) pkNode."@name"))
 
         result.putAll(tempResult)
     }
