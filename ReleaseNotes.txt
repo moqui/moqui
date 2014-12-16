@@ -114,6 +114,8 @@ New Features:
     layouts currently implemented with the Bootstrap 12 col styles
   - Added transition-include element to reuse transition definitions
   - Added @condition attribute to link and label elements
+  - Added support _openDialog parameter or context field to specify a
+    dialog (container-dialog or dynamic-dialog) to show on load
 - Entity Facade:
   - Added in operator (_op) for searchFormInputs/search-form-inputs
   - Added entity.field.@default attribute with a Groovy expression to set a

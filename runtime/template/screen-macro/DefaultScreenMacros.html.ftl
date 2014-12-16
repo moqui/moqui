@@ -306,6 +306,7 @@ ${sri.renderSection(.node["@name"])}
     <#assign buttonText = ec.resource.evaluateStringExpand(.node["@button-text"], "")>
     <#assign divId><#if .node["@id"]?has_content>${ec.resource.evaluateStringExpand(.node["@id"], "")}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#if></#assign>
     <button id="${divId}-button" type="button" data-toggle="modal" data-target="#${divId}" data-original-title="${buttonText}" data-placement="bottom" class="btn btn-primary btn-sm"><i class="glyphicon glyphicon-share"></i> ${buttonText}</button>
+    <#if _openDialog! == divId><#assign afterScreenScript>$('#${divId}').modal('show'); </#assign><#t>${sri.appendToScriptWriter(afterScreenScript)}</#if>
     <div id="${divId}" class="modal fade container-dialog" aria-hidden="true" style="display: none;">
         <div class="modal-dialog" style="width: ${.node["@width"]!"600"}px;">
             <div class="modal-content">
@@ -320,6 +321,7 @@ ${sri.renderSection(.node["@name"])}
             </div>
         </div>
     </div>
+
     <#-- for jQuery dialog:
     <#assign afterScreenScript>
         $("#${.node["@id"]}").dialog({autoOpen:false, height:${.node["@height"]!"600"}, width:${.node["@width"]!"600"}, modal:false });
@@ -363,6 +365,8 @@ ${sri.renderSection(.node["@name"])}
         </div>
     </div>
     <script>$("#${divId}").on("show.bs.modal", function (e) { $("#${divId}-body").load('${urlInfo.urlWithParams}') })</script>
+    <#if _openDialog! == divId><#assign afterScreenScript>$('#${divId}').modal('show')</#assign><#t>${sri.appendToScriptWriter(afterScreenScript)}</#if>
+
     <#-- jQuery dialog:
     <button id="${divId}-button"><i class="glyphicon glyphicon-share"></i> ${buttonText}</button>
     <div id="${divId}" title="${buttonText}"></div>
