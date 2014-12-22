@@ -775,9 +775,8 @@ class ScreenForm {
             if (widgetTemplateNode == null) throw new IllegalArgumentException("Could not find widget-template [${widgetTemplateName}] in [${fileLocation}]")
 
             fieldSubNode.remove(widgetNode)
-            for (Node widgetChildNode in (Collection<Node>) widgetTemplateNode.children()) {
-                fieldSubNode.append((Node) widgetChildNode.clone())
-            }
+            for (Node widgetChildNode in (Collection<Node>) widgetTemplateNode.children())
+                fieldSubNode.append(StupidUtilities.deepCopyNode(widgetChildNode))
 
             for (Node setNode in setNodeList) fieldSubNode.append(StupidUtilities.deepCopyNode(setNode))
         }
