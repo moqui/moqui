@@ -773,14 +773,10 @@ class ScreenForm {
             Node widgetTemplatesNode = ecfi.getScreenFacade().getWidgetTemplatesNodeByLocation(fileLocation)
             Node widgetTemplateNode = (Node) widgetTemplatesNode?.find({ it."@name" == widgetTemplateName })
             if (widgetTemplateNode == null) throw new IllegalArgumentException("Could not find widget-template [${widgetTemplateName}] in [${fileLocation}]")
-            boolean isFirst = true
+
+            fieldSubNode.remove(widgetNode)
             for (Node widgetChildNode in (Collection<Node>) widgetTemplateNode.children()) {
-                if (isFirst) {
-                    widgetNode.replaceNode { node -> StupidUtilities.deepCopyNode(widgetChildNode, fieldSubNode) }
-                    isFirst = false
-                } else {
-                    fieldSubNode.append(StupidUtilities.deepCopyNode(widgetChildNode))
-                }
+                fieldSubNode.append(widgetChildNode.clone())
             }
 
             for (Node setNode in setNodeList) fieldSubNode.append(StupidUtilities.deepCopyNode(setNode))
