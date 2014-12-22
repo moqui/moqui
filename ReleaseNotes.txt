@@ -148,6 +148,9 @@ Bug Fixes:
 - Fixed issue with merging row-actions in list forms, was cloning
   row-actions node instead of the actions nodes under it
 - Fixed issue with form-list-column nodes not getting removed when merging
+- Fixed issue with deepCopyNode copying attributes, the original Node's
+  attribute Map was used instead of being copied allowing attributes to be
+  modified in the copy of the Node
 
 ===========================================================================
 Release 1.4.1 - 01 Aug 2014

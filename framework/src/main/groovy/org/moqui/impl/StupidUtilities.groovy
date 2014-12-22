@@ -379,7 +379,7 @@ class StupidUtilities {
         return newNode
 
         /*
-        Node newNode = new Node(parent, original.name(), original.attributes())
+        Node newNode = new Node(parent, original.name(), new HashMap(original.attributes()))
         for (Object child in original.children()) {
             if (child instanceof Node) {
                 newNode.append(deepCopyNode((Node) child, null))
