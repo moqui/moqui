@@ -244,7 +244,7 @@ class ScreenForm {
         boolean alreadyDisabled = ecfi.getExecutionContext().getArtifactExecution().disableAuthz()
         try {
             // find DbForm records and merge them in as well
-            String formName = sd.getLocation() + "#" + internalFormNode."@name"
+            String formName = sd.getLocation() + "#" + ((String) internalFormNode."@name")
             EntityList dbFormLookupList = this.ecfi.getEntityFacade().find("DbFormLookup")
                     .condition("userGroupId", EntityCondition.IN, ecfi.getExecutionContext().getUser().getUserGroupIdSet())
                     .condition("modifyXmlScreenForm", formName)
@@ -762,7 +762,7 @@ class ScreenForm {
             fieldSubNode.remove(widgetNode)
             addAutoWidgetEntityNode(baseFormNode, fieldNode, fieldSubNode, widgetNode)
         } else if (widgetNode.name() == "widget-template-include") {
-            List setNodeList = widgetNode."set"
+            List<Node> setNodeList = widgetNode."set"
 
             String templateLocation = widgetNode."@location"
             if (!templateLocation) throw new IllegalArgumentException("widget-template-include.@location cannot be empty")
@@ -773,21 +773,17 @@ class ScreenForm {
             Node widgetTemplatesNode = ecfi.getScreenFacade().getWidgetTemplatesNodeByLocation(fileLocation)
             Node widgetTemplateNode = (Node) widgetTemplatesNode?.find({ it."@name" == widgetTemplateName })
             if (widgetTemplateNode == null) throw new IllegalArgumentException("Could not find widget-template [${widgetTemplateName}] in [${fileLocation}]")
-            boolean isFirst = true
+
+            fieldSubNode.remove(widgetNode)
             for (Node widgetChildNode in (Collection<Node>) widgetTemplateNode.children()) {
-                if (isFirst) {
-                    widgetNode.replaceNode { node -> StupidUtilities.deepCopyNode(widgetChildNode, fieldSubNode) }
-                    isFirst = false
-                } else {
-                    fieldSubNode.append(StupidUtilities.deepCopyNode(widgetChildNode))
-                }
+                fieldSubNode.append((Node) widgetChildNode.clone())
             }
 
             for (Node setNode in setNodeList) fieldSubNode.append(StupidUtilities.deepCopyNode(setNode))
         }
     }
 
-    protected Node addAutoWidgetServiceNode(Node baseFormNode, Node fieldNode, Node fieldSubNode, Node widgetNode) {
+    protected void addAutoWidgetServiceNode(Node baseFormNode, Node fieldNode, Node fieldSubNode, Node widgetNode) {
         String serviceName = widgetNode."@service-name"
         if (isDynamic) serviceName = ecfi.resourceFacade.evaluateStringExpand(serviceName, "")
         ServiceDefinition serviceDef = ecfi.serviceFacade.getServiceDefinition(serviceName)
@@ -805,7 +801,6 @@ class ScreenForm {
             }
         }
         throw new IllegalArgumentException("Cound not find service [${serviceName}] or entity noun referred to in auto-fields-service of form [${newFormNode."@name"}] of screen [${sd.location}]")
-
     }
     void addAutoServiceField(ServiceDefinition sd, String parameterName, String fieldType,
                              Node newFieldNode, Node subFieldNode, Node baseFormNode) {

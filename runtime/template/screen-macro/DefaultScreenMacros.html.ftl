@@ -422,7 +422,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
           <#t><#if .node["@encode"]!"false" == "true">${sri.renderText(textLocation, textToUse["@template"]!)?html}<#else>${sri.renderText(textLocation, textToUse["@template"]!)}</#if>
           <#if sri.doBoundaryComments() && textToUse["@no-boundary-comment"]?if_exists != "true"><!-- END   render-mode.text[@location=${textLocation}][@template=${textToUse["@template"]?default("true")}] --></#if>
         </#if>
-        <#assign inlineTemplateSource = textToUse?string/>
+        <#assign inlineTemplateSource = textToUse.@@text/>
         <#if inlineTemplateSource?has_content>
           <#t><#if sri.doBoundaryComments() && textToUse["@no-boundary-comment"]?if_exists != "true"><!-- BEGIN render-mode.text[inline][@template=${textToUse["@template"]?default("true")}] --></#if>
           <#if !textToUse["@template"]?has_content || textToUse["@template"] == "true">
