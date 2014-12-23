@@ -283,3 +283,6 @@ form.editable-form button { background: white; color: #333; border: 1px solid; b
 /* Metis makes the scrollbar invisible in webkit unless you hover over it, make it always visible */
 ::-webkit-scrollbar-thumb { background-color: #888; }
 ::-webkit-scrollbar-track { background: rgba(110, 110, 110, 0.25); }
+
+/* #content has white-space: nowrap, which is an annoying thing for all to inherit */
+div { white-space: normal; }
