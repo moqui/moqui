@@ -233,6 +233,9 @@ input[type="text"].ui-autocomplete-input { width: auto; }
 #content { overflow: visible; background: transparent; }
 .inner { overflow: visible; background: transparent; }
 
+div.btn-group a.btn { margin-right: 0; }
+div.btn-group { margin-right: 4px; }
+
 /* get rid of the grey box, looks funny when screen isn't very tall */
 .inner { border: 0; }
 
