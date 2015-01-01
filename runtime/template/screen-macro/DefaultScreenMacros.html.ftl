@@ -1249,7 +1249,13 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
         </#if>
         <option value="0"<#if fvOffset == "0"> selected="selected"</#if>>This</option>
         <option value="-1"<#if fvOffset == "-1"> selected="selected"</#if>>Last</option>
+        <option value="-2"<#if fvOffset == "-2"> selected="selected"</#if>>-2</option>
+        <option value="-3"<#if fvOffset == "-3"> selected="selected"</#if>>-3</option>
+        <option value="-4"<#if fvOffset == "-4"> selected="selected"</#if>>-4</option>
         <option value="1"<#if fvOffset == "1"> selected="selected"</#if>>Next</option>
+        <option value="2"<#if fvOffset == "2"> selected="selected"</#if>>+2</option>
+        <option value="3"<#if fvOffset == "3"> selected="selected"</#if>>+3</option>
+        <option value="4"<#if fvOffset == "4"> selected="selected"</#if>>+4</option>
     </select>
     <select name="${curFieldName}_period" class="chosen-select" id="${id}_period"<#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
         <#if (allowEmpty! != "false")>
