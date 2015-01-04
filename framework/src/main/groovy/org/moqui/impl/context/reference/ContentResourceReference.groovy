@@ -119,11 +119,13 @@ class ContentResourceReference extends BaseResourceReference {
         return session.nodeExists(nodePath)
     }
 
-    boolean supportsLastModified() { false }
+    boolean supportsLastModified() { true }
     long getLastModified() {
-        // TODO: more research to see if we can get a last modified time
-        System.currentTimeMillis()
+        return getNode()?.getProperty("jcr:lastModified")?.getDate()?.getTimeInMillis() ?: System.currentTimeMillis()
     }
+
+    boolean supportsSize() { true }
+    long getSize() { getNode()?.getProperty("jcr:content/jcr:data")?.getLength() ?: 0 }
 
     boolean supportsWrite() { true }
 

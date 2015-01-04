@@ -59,6 +59,9 @@ public interface ResourceReference {
     boolean supportsLastModified();
     long getLastModified();
 
+    boolean supportsSize();
+    long getSize();
+
     boolean supportsWrite();
     void putText(String text);
     void putStream(InputStream stream);

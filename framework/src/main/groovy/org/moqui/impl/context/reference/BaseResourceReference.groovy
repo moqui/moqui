@@ -364,6 +364,9 @@ abstract class BaseResourceReference implements ResourceReference {
     abstract boolean supportsLastModified()
     abstract long getLastModified()
 
+    abstract boolean supportsSize()
+    abstract long getSize()
+
     @Override
     void destroy() { }
 

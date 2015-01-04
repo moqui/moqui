@@ -101,6 +101,13 @@ class DbResourceReference extends BaseResourceReference {
     boolean supportsLastModified() { true }
     long getLastModified() { return getDbResource()?.getTimestamp("lastUpdatedStamp")?.getTime() }
 
+    boolean supportsSize() { true }
+    long getSize() {
+        EntityValue dbrf = getDbResourceFile()
+        if (dbrf == null) return 0
+        return dbrf.getSerialBlob("fileData")?.length() ?: 0
+    }
+
     boolean supportsWrite() { true }
     void putText(String text) {
         SerialBlob sblob = text ? new SerialBlob(text.getBytes()) : null

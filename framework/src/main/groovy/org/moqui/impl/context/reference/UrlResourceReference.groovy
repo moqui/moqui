@@ -131,6 +131,9 @@ class UrlResourceReference extends BaseResourceReference {
         }
     }
 
+    boolean supportsSize() { isFileProtocol }
+    long getSize() { isFileProtocol ? getFile().length() : 0 }
+
     boolean supportsWrite() { isFileProtocol }
     void putText(String text) {
         // first make sure the directory exists that this is in

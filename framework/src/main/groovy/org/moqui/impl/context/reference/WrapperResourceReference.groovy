@@ -51,6 +51,9 @@ class WrapperResourceReference extends BaseResourceReference  {
     boolean supportsLastModified() { return rr.supportsLastModified() }
     long getLastModified() { return rr.getLastModified() }
 
+    boolean supportsSize() { return rr.supportsSize() }
+    long getSize() { return rr.getSize() }
+
     boolean supportsWrite() { return rr.supportsWrite() }
     void putText(String text) { rr.putText(text) }
     void putStream(InputStream stream) { rr.putStream(stream) }
