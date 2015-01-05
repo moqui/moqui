@@ -11,7 +11,7 @@
  */
 package org.moqui.impl.context.reference
 
-
+import org.apache.commons.fileupload.FileItem
 import org.moqui.context.ExecutionContext
 import org.moqui.context.ResourceReference
 
@@ -249,7 +249,14 @@ class ElFinderConnector {
             responseMap.added = [getLocationInfo(newLocation)]
             responseMap.removed = [target]
         } else if (cmd == "upload") {
-
+            if(!target) { responseMap.clear(); responseMap.error = "errOpen"; return }
+            String location = getLocation(target)
+            List<Map> added = []
+            for (FileItem item in otherParameters._fileUploadList) {
+                ResourceReference newRef = ec.resource.getLocationReference("${location}/${item.getName()}")
+                newRef.putStream(item.getInputStream())
+                added.add(getResourceInfo(newRef))
+            }
         } else if (cmd == "get") {
 
         } else if (cmd == "put") {
