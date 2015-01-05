@@ -142,18 +142,6 @@ class ContentResourceReference extends BaseResourceReference {
     void putStream(InputStream stream) {
         putObject(stream)
     }
-    @Override
-    ResourceReference makeDirectory(String name) {
-        Session session = ((ResourceFacadeImpl) ecf.resource).getContentRepositorySession(repositoryName)
-        findDirectoryNode(session, [name], true)
-        return new ContentResourceReference().init("${location}/${name}", ecf)
-    }
-    @Override
-    ResourceReference makeFile(String name) {
-        ContentResourceReference newRef = (ContentResourceReference) new ContentResourceReference().init("${location}/${name}", ecf)
-        newRef.putObject(null)
-        return newRef
-    }
 
     protected void putObject(Object obj) {
         if (obj == null) {
@@ -235,6 +223,26 @@ class ContentResourceReference extends BaseResourceReference {
         session.move(this.getNodePath(), newCrr.getNodePath())
 
         this.theNode = null
+    }
+
+    @Override
+    ResourceReference makeDirectory(String name) {
+        Session session = ((ResourceFacadeImpl) ecf.resource).getContentRepositorySession(repositoryName)
+        findDirectoryNode(session, [name], true)
+        return new ContentResourceReference().init("${location}/${name}", ecf)
+    }
+    @Override
+    ResourceReference makeFile(String name) {
+        ContentResourceReference newRef = (ContentResourceReference) new ContentResourceReference().init("${location}/${name}", ecf)
+        newRef.putObject(null)
+        return newRef
+    }
+    @Override
+    boolean delete() {
+        javax.jcr.Node curNode = getNode()
+        if (curNode == null) return false
+        curNode.remove()
+        return true
     }
 
     javax.jcr.Node getNode() {

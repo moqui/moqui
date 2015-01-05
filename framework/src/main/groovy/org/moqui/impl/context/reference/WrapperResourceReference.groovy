@@ -60,6 +60,7 @@ class WrapperResourceReference extends BaseResourceReference  {
     void move(String newLocation) { rr.move(newLocation) }
     ResourceReference makeDirectory(String name) { return rr.makeDirectory(name) }
     ResourceReference makeFile(String name) { return rr.makeFile(name) }
+    boolean delete() { return rr.delete() }
 
     void destroy() { rr.destroy() }
 }

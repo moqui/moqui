@@ -142,7 +142,7 @@ class UrlResourceReference extends BaseResourceReference {
     boolean supportsWrite() { isFileProtocol }
     @Override
     void putText(String text) {
-        if (!isFileProtocol) throw new IllegalArgumentException("Write not support for resource [${getLocation()}] with protocol [${locationUrl?.protocol}]")
+        if (!isFileProtocol) throw new IllegalArgumentException("Write not supported for resource [${getLocation()}] with protocol [${locationUrl?.protocol}]")
         // first make sure the directory exists that this is in
         if (!getFile().parentFile.exists()) getFile().parentFile.mkdirs()
         // now write the text to the file and close it
@@ -153,7 +153,7 @@ class UrlResourceReference extends BaseResourceReference {
     }
     @Override
     void putStream(InputStream stream) {
-        if (!isFileProtocol) throw new IllegalArgumentException("Write not support for resource [${getLocation()}] with protocol [${locationUrl?.protocol}]")
+        if (!isFileProtocol) throw new IllegalArgumentException("Write not supported for resource [${getLocation()}] with protocol [${locationUrl?.protocol}]")
         // first make sure the directory exists that this is in
         if (!getFile().parentFile.exists()) getFile().parentFile.mkdirs()
         OutputStream os = new FileOutputStream(getFile())
@@ -179,18 +179,23 @@ class UrlResourceReference extends BaseResourceReference {
 
     @Override
     ResourceReference makeDirectory(String name) {
-        if (!isFileProtocol) throw new IllegalArgumentException("Write not support for resource [${getLocation()}] with protocol [${locationUrl?.protocol}]")
+        if (!isFileProtocol) throw new IllegalArgumentException("Write not supported for resource [${getLocation()}] with protocol [${locationUrl?.protocol}]")
         UrlResourceReference newRef = (UrlResourceReference) new UrlResourceReference().init("${location}/${name}", ecf)
         newRef.getFile().mkdirs()
         return newRef
     }
     @Override
     ResourceReference makeFile(String name) {
-        if (!isFileProtocol) throw new IllegalArgumentException("Write not support for resource [${getLocation()}] with protocol [${locationUrl?.protocol}]")
+        if (!isFileProtocol) throw new IllegalArgumentException("Write not supported for resource [${getLocation()}] with protocol [${locationUrl?.protocol}]")
         UrlResourceReference newRef = (UrlResourceReference) new UrlResourceReference().init("${location}/${name}", ecf)
         // first make sure the directory exists that this is in
         if (!getFile().exists()) getFile().mkdirs()
         newRef.getFile().createNewFile()
         return newRef
+    }
+    @Override
+    boolean delete() {
+        if (!isFileProtocol) throw new IllegalArgumentException("Write not supported for resource [${getLocation()}] with protocol [${locationUrl?.protocol}]")
+        return getFile().delete()
     }
 }

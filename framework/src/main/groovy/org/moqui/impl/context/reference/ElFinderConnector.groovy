@@ -15,6 +15,8 @@ package org.moqui.impl.context.reference
 import org.moqui.context.ExecutionContext
 import org.moqui.context.ResourceReference
 
+import javax.annotation.Resource
+
 /** Used by the org.moqui.impl.ElFinderServices.run#Command service. */
 class ElFinderConnector {
 
@@ -141,6 +143,27 @@ class ElFinderConnector {
         return options
     }
 
+    List delete(String location) {
+        List<String> deleted = []
+        ResourceReference ref = ec.resource.getLocationReference(location)
+        if(!ref.isDirectory()) if(ref.delete()) deleted.add(hash(getPathRelativeToRoot(location)))
+        else deleted.addAll(deleteDir(ref))
+        return deleted
+    }
+
+    List deleteDir(ResourceReference dir) {
+        List deleted = []
+        for (ResourceReference child in dir.getDirectoryEntries()) {
+            if(child.isDirectory()) {
+                deleted.addAll(deleteDir(child))
+            } else {
+                if(child.delete()) deleted.add(hash(getPathRelativeToRoot(child.getLocation())))
+            }
+        }
+        if (dir.delete()) deleted.add(hash(getPathRelativeToRoot(dir.getLocation())))
+        return deleted
+    }
+
     void runCommand() {
         String cmd = ec.context.cmd
         String target = ec.context.target
@@ -208,7 +231,10 @@ class ElFinderConnector {
             ResourceReference newRef  = curDir.makeFile(name)
             responseMap.added = [getResourceInfo(newRef)]
         } else if (cmd == "rm") {
-
+            List<String> targets = otherParameters.targets
+            List<String> removed = []
+            for (String curTarget in targets) removed.addAll(delete(getLocation(curTarget)))
+            responseMap.removed = removed
         } else if (cmd == "rename") {
 
         } else if (cmd == "upload") {

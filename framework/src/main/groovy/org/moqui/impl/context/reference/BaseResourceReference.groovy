@@ -397,6 +397,8 @@ abstract class BaseResourceReference implements ResourceReference {
     abstract ResourceReference makeDirectory(String name)
     @Override
     abstract ResourceReference makeFile(String name)
+    @Override
+    abstract boolean delete()
 
     @Override
     void destroy() { }

@@ -72,6 +72,7 @@ public interface ResourceReference {
     void move(String newLocation);
     ResourceReference makeDirectory(String name);
     ResourceReference makeFile(String name);
+    boolean delete();
 
     void destroy();
 }
