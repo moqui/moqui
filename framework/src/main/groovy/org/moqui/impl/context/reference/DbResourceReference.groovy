@@ -101,7 +101,7 @@ class DbResourceReference extends BaseResourceReference {
     @Override
     boolean supportsLastModified() { true }
     @Override
-    long getLastModified() { return getDbResource()?.getTimestamp("lastUpdatedStamp")?.getTime() }
+    long getLastModified() { return getDbResource()?.getTimestamp("lastUpdatedStamp")?.getTime() ?: System.currentTimeMillis() }
 
     @Override
     boolean supportsSize() { true }
