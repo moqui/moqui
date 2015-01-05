@@ -236,7 +236,18 @@ class ElFinderConnector {
             for (String curTarget in targets) removed.addAll(delete(getLocation(curTarget)))
             responseMap.removed = removed
         } else if (cmd == "rename") {
+            String name = otherParameters.name
+            if(!target) { responseMap.clear(); responseMap.error = "errOpen"; return }
+            if(!name) { responseMap.clear(); responseMap.error = "No name specified for new directory"; return }
 
+            String location = getLocation(target)
+            String newLocation = location.substring(0, location.lastIndexOf("/") + 1) + name
+
+            ResourceReference curRef = ec.resource.getLocationReference(location)
+            curRef.move(newLocation)
+
+            responseMap.added = [getLocationInfo(newLocation)]
+            responseMap.removed = [target]
         } else if (cmd == "upload") {
 
         } else if (cmd == "get") {
