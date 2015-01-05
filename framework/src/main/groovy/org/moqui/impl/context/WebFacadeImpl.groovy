@@ -122,12 +122,16 @@ class WebFacadeImpl implements WebFacade {
             ServletFileUpload upload = new ServletFileUpload(factory)
 
             List<FileItem> items = (List<FileItem>) upload.parseRequest(request)
+            List<FileItem> fileUploadList = []
+            multiPartParameters.put("_fileUploadList", fileUploadList)
+
             for (FileItem item in items) {
                 if (item.isFormField()) {
                     multiPartParameters.put(item.getFieldName(), item.getString())
                 } else {
                     // put the FileItem itself in the Map to be used by the application code
                     multiPartParameters.put(item.getFieldName(), item)
+                    fileUploadList.add(item)
 
                     /* Stuff to do with the FileItem:
                       - get info about the uploaded file
