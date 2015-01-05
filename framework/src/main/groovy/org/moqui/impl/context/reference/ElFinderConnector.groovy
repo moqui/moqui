@@ -190,9 +190,23 @@ class ElFinderConnector {
             for (ResourceReference child in curDir.getDirectoryEntries()) fileList.add(child.getFileName())
             responseMap.list = fileList
         } else if (cmd == "mkdir") {
-
+            String name = otherParameters.name
+            if(!target) { responseMap.clear(); responseMap.error = "errOpen"; return }
+            if(!name) { responseMap.clear(); responseMap.error = "No name specified for new directory"; return }
+            String curLocation = getLocation(target)
+            ResourceReference curDir = ec.resource.getLocationReference(curLocation)
+            if (!curDir.supportsWrite()) { responseMap.clear(); responseMap.error = "Resource does not support write"; return }
+            ResourceReference newRef  = curDir.makeDirectory(name)
+            responseMap.added = [getResourceInfo(newRef)]
         } else if (cmd == "mkfile") {
-
+            String name = otherParameters.name
+            if(!target) { responseMap.clear(); responseMap.error = "errOpen"; return }
+            if(!name) { responseMap.clear(); responseMap.error = "No name specified for new file"; return }
+            String curLocation = getLocation(target)
+            ResourceReference curDir = ec.resource.getLocationReference(curLocation)
+            if (!curDir.supportsWrite()) { responseMap.clear(); responseMap.error = "Resource does not support write"; return }
+            ResourceReference newRef  = curDir.makeFile(name)
+            responseMap.added = [getResourceInfo(newRef)]
         } else if (cmd == "rm") {
 
         } else if (cmd == "rename") {

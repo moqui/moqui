@@ -375,11 +375,28 @@ abstract class BaseResourceReference implements ResourceReference {
     @Override
     abstract boolean getExists()
 
+    @Override
     abstract boolean supportsLastModified()
+    @Override
     abstract long getLastModified()
 
+    @Override
     abstract boolean supportsSize()
+    @Override
     abstract long getSize()
+
+    @Override
+    abstract boolean supportsWrite()
+    @Override
+    abstract void putText(String text)
+    @Override
+    abstract void putStream(InputStream stream)
+    @Override
+    abstract void move(String newLocation)
+    @Override
+    abstract ResourceReference makeDirectory(String name)
+    @Override
+    abstract ResourceReference makeFile(String name)
 
     @Override
     void destroy() { }

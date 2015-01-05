@@ -58,6 +58,8 @@ class WrapperResourceReference extends BaseResourceReference  {
     void putText(String text) { rr.putText(text) }
     void putStream(InputStream stream) { rr.putStream(stream) }
     void move(String newLocation) { rr.move(newLocation) }
+    ResourceReference makeDirectory(String name) { return rr.makeDirectory(name) }
+    ResourceReference makeFile(String name) { return rr.makeFile(name) }
 
     void destroy() { rr.destroy() }
 }

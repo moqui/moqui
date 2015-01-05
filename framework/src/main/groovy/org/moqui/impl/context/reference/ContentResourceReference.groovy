@@ -119,22 +119,42 @@ class ContentResourceReference extends BaseResourceReference {
         return session.nodeExists(nodePath)
     }
 
+    @Override
     boolean supportsLastModified() { true }
+    @Override
     long getLastModified() {
         return getNode()?.getProperty("jcr:lastModified")?.getDate()?.getTimeInMillis() ?: System.currentTimeMillis()
     }
 
+    @Override
     boolean supportsSize() { true }
+    @Override
     long getSize() { getNode()?.getProperty("jcr:content/jcr:data")?.getLength() ?: 0 }
 
+    @Override
     boolean supportsWrite() { true }
 
+    @Override
     void putText(String text) {
         putObject(text)
     }
+    @Override
     void putStream(InputStream stream) {
         putObject(stream)
     }
+    @Override
+    ResourceReference makeDirectory(String name) {
+        Session session = ((ResourceFacadeImpl) ecf.resource).getContentRepositorySession(repositoryName)
+        findDirectoryNode(session, [name], true)
+        return new ContentResourceReference().init("${location}/${name}", ecf)
+    }
+    @Override
+    ResourceReference makeFile(String name) {
+        ContentResourceReference newRef = (ContentResourceReference) new ContentResourceReference().init("${location}/${name}", ecf)
+        newRef.putObject(null)
+        return newRef
+    }
+
     protected void putObject(Object obj) {
         if (obj == null) {
             logger.warn("Data was null, not saving to resource [${getLocation()}]")
@@ -166,6 +186,8 @@ class ContentResourceReference extends BaseResourceReference {
                 fileContent.setProperty("jcr:data", session.valueFactory.createValue((String) obj))
             } else if (obj instanceof InputStream) {
                 fileContent.setProperty("jcr:data", session.valueFactory.createBinary((InputStream) obj))
+            } else if (obj == null) {
+                fileContent.setProperty("jcr:data", session.valueFactory.createValue(""))
             } else {
                 throw new IllegalArgumentException("Cannot save content for obj with type ${obj.class.name}")
             }

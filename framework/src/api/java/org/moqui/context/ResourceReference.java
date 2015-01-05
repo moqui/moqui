@@ -70,6 +70,8 @@ public interface ResourceReference {
     void putText(String text);
     void putStream(InputStream stream);
     void move(String newLocation);
+    ResourceReference makeDirectory(String name);
+    ResourceReference makeFile(String name);
 
     void destroy();
 }

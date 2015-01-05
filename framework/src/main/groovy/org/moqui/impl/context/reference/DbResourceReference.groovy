@@ -98,21 +98,28 @@ class DbResourceReference extends BaseResourceReference {
     @Override
     boolean getExists() { return getDbResource() != null }
 
+    @Override
     boolean supportsLastModified() { true }
+    @Override
     long getLastModified() { return getDbResource()?.getTimestamp("lastUpdatedStamp")?.getTime() }
 
+    @Override
     boolean supportsSize() { true }
+    @Override
     long getSize() {
         EntityValue dbrf = getDbResourceFile()
         if (dbrf == null) return 0
         return dbrf.getSerialBlob("fileData")?.length() ?: 0
     }
 
+    @Override
     boolean supportsWrite() { true }
+    @Override
     void putText(String text) {
         SerialBlob sblob = text ? new SerialBlob(text.getBytes()) : null
         this.putObject(sblob)
     }
+    @Override
     void putStream(InputStream stream) {
         if (stream == null) return
         ByteArrayOutputStream baos = new ByteArrayOutputStream()
@@ -120,6 +127,18 @@ class DbResourceReference extends BaseResourceReference {
         SerialBlob sblob = new SerialBlob(baos.toByteArray())
         this.putObject(sblob)
     }
+    @Override
+    ResourceReference makeDirectory(String name) {
+        findDirectoryId([name], true)
+        return new DbResourceReference().init("${location}/${name}", ecf)
+    }
+    @Override
+    ResourceReference makeFile(String name) {
+        DbResourceReference newRef = (DbResourceReference) new DbResourceReference().init("${location}/${name}", ecf)
+        newRef.putObject(null)
+        return newRef
+    }
+
     protected void putObject(Object fileObj) {
         EntityValue dbrf = getDbResourceFile()
 
