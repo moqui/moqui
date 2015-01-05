@@ -258,9 +258,15 @@ class ElFinderConnector {
                 added.add(getResourceInfo(newRef))
             }
         } else if (cmd == "get") {
-
+            String location = getLocation(target)
+            ResourceReference curRef = ec.resource.getLocationReference(location)
+            responseMap.content = curRef.getText()
         } else if (cmd == "put") {
-
+            String content = otherParameters.content
+            String location = getLocation(target)
+            ResourceReference curRef = ec.resource.getLocationReference(location)
+            curRef.putText(content)
+            responseMap.changed = [getResourceInfo(curRef)]
         }
     }
 }
