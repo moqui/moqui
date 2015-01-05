@@ -40,6 +40,7 @@ class ElFinderConnector {
     }
 
     static String unhash(String hashed) {
+        if (!hashed) return ""
         // NOTE: assumes a volume ID prefix with 3 characters
         hashed = hashed.substring(3)
         hashed = hashed.replace(".", "=")
