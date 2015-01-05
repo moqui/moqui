@@ -13,7 +13,7 @@ package org.moqui.impl.context.reference
 
 import org.moqui.context.ExecutionContextFactory
 import org.moqui.context.ResourceReference
-
+import org.moqui.impl.context.ResourceFacadeImpl
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -88,6 +88,20 @@ abstract class BaseResourceReference implements ResourceReference {
     abstract boolean isDirectory();
     @Override
     abstract List<ResourceReference> getDirectoryEntries();
+
+    @Override
+    ResourceReference getParent() {
+        String parentLocation = getLocation()
+        String strippedLocation = ResourceFacadeImpl.stripLocationPrefix(parentLocation)
+        if (!strippedLocation) return null
+        if (strippedLocation.startsWith("/")) strippedLocation = strippedLocation.substring(1)
+        if (strippedLocation.contains("/")) {
+            parentLocation = parentLocation.substring(0, parentLocation.lastIndexOf("/"))
+            return ecf.getResource().getLocationReference(parentLocation)
+        } else {
+            return null
+        }
+    }
 
     @Override
     ResourceReference getChild(String childName) {

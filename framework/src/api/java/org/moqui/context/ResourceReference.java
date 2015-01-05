@@ -41,7 +41,11 @@ public interface ResourceReference {
     boolean isFile();
     boolean isDirectory();
 
+    /** Get the entries of a directory */
     List<ResourceReference> getDirectoryEntries();
+    /** Get the parent directory, null if it is the root (no parent). */
+    ResourceReference getParent();
+
     /** Find the directory with a name that matches the current filename (minus the extension) */
     ResourceReference findMatchingDirectory();
     /** Get a reference to the child of this directory or this file in the matching directory */
