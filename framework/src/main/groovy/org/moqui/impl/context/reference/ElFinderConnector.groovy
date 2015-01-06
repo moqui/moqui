@@ -76,7 +76,7 @@ class ElFinderConnector {
 
     Map getResourceInfo(ResourceReference ref) {
         Map info = [:]
-        info.name = isRoot(ref.getLocation()) ? "root" : ref.getFileName()
+        info.name = isRoot(ref.getLocation()) ? resourceRoot.substring(0, resourceRoot.length() - 1) : ref.getFileName()
         String location = ref.getLocation()
         String relativePath = getPathRelativeToRoot(location)
         info.hash = hash(relativePath)
