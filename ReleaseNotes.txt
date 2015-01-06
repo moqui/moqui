@@ -34,6 +34,8 @@ New Features:
   from Osman Nuri Okumuş (onokumus), the author of Metis; this updates
   jQuery to 2.1.1, jQuery UI to 1.11.0, Bootstrap to 3.2.0, and various
   other updates
+- Added elFinder connector for the Moqui ResourceFacade
+- Added Tools screen to browse ResourceFacade resources using elFinder
 - Added cache warming on start (disabled in dev conf)
 - Various improvements to Tools screens for layout and pagination
 - Added convert#Uom service
