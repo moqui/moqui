@@ -14,6 +14,11 @@ This Work includes contributions authored by David E. Jones, not as a
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd"
         default-menu-title="elFinder">
 
+    <!-- TODO
+        - download button always disable, not working
+        - list view option not available, defaultView:list not working
+    -->
+
     <!-- set read-only=true because in spite of setting requestType:'post' some requests come as gets -->
     <transition name="command" read-only="true">
         <actions>
@@ -57,8 +62,7 @@ $(document).ready(function() {
                 ['info'],
                 ['rm'],
                 ['rename', 'edit'],
-                ['view'],
-                ['help']
+                ['view', 'help']
             ],
             navbar : { minWidth : 150, maxWidth : 800 }
         }
