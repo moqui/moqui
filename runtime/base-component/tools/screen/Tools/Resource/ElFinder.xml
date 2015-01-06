@@ -32,6 +32,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <script>footer_scripts.add("/assets/lib/elfinder-2.0-rc1/js/elfinder.min.js")</script>
         <script>html_stylesheets.add("/assets/lib/elfinder-2.0-rc1/css/elfinder.min.css")</script>
         <script>html_stylesheets.add("/assets/lib/elfinder-2.0-rc1/css/theme.css")</script>
+        <script>html_stylesheets.add("/assets/css/elfinder.css")</script>
     </pre-actions>
     <actions>
     </actions>
