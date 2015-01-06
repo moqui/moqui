@@ -78,7 +78,10 @@ class DbResourceReference extends BaseResourceReference {
     @Override
     boolean isFile() { return getDbResource()?.isFile == "Y" }
     @Override
-    boolean isDirectory() { return getDbResource() != null && getDbResource().isFile != "Y" }
+    boolean isDirectory() {
+        if (!getPath()) return true // consider root a directory
+        return getDbResource() != null && getDbResource().isFile != "Y"
+    }
     @Override
     List<ResourceReference> getDirectoryEntries() {
         List<ResourceReference> dirEntries = new LinkedList()

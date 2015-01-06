@@ -62,8 +62,8 @@ class ElFinderConnector {
     String getPathRelativeToRoot(String location) {
         String path = location.trim()
         path = path.substring(((String) resourceRoot).length())
-        if(path.endsWith("/")) path = path.substring(0, path.length() - 1)
-        if(path == "") return "root"
+        if (path.endsWith("/")) path = path.substring(0, path.length() - 1)
+        if (path == "") return "root"
         return path
     }
 
@@ -73,7 +73,7 @@ class ElFinderConnector {
 
     Map getResourceInfo(ResourceReference ref) {
         Map info = [:]
-        info.name = ref.getFileName()
+        info.name = isRoot(ref.getLocation()) ? "root" : ref.getFileName()
         String location = ref.getLocation()
         String relativePath = getPathRelativeToRoot(location)
         info.hash = hash(relativePath)
@@ -81,8 +81,8 @@ class ElFinderConnector {
         if (isRoot(ref.getLocation())) {
             info.volumeid = volumeId
         } else {
-            String parentPath = location.contains("/") ? location.substring(0, location.lastIndexOf("/")) : ""
-            info.phash = hash(getPathRelativeToRoot(parentPath))
+            String parentPath = relativePath.contains("/") ? relativePath.substring(0, relativePath.lastIndexOf("/")) : ""
+            info.phash = hash(parentPath)
         }
         info.mime = ref.isDirectory() ? "directory" : ref.getContentType()
         if (ref.supportsLastModified()) info.ts = ref.getLastModified()
@@ -114,10 +114,10 @@ class ElFinderConnector {
     List<Map> getTree(ResourceReference ref, int deep) {
         List<Map> dirs = []
         for (ResourceReference child in ref.getDirectoryEntries()) {
-            if(child.isDirectory()) {
+            if (child.isDirectory()) {
                 Map info = getResourceInfo(child)
                 dirs.add(info)
-                if(deep > 0) dirs.addAll(getTree(child, deep - 1))
+                if (deep > 0) dirs.addAll(getTree(child, deep - 1))
             }
         }
         return dirs
@@ -147,7 +147,7 @@ class ElFinderConnector {
     List delete(String location) {
         List<String> deleted = []
         ResourceReference ref = ec.resource.getLocationReference(location)
-        if(!ref.isDirectory()) if(ref.delete()) deleted.add(hash(getPathRelativeToRoot(location)))
+        if (!ref.isDirectory()) if (ref.delete()) deleted.add(hash(getPathRelativeToRoot(location)))
         else deleted.addAll(deleteDir(ref))
         return deleted
     }
@@ -155,10 +155,10 @@ class ElFinderConnector {
     List deleteDir(ResourceReference dir) {
         List deleted = []
         for (ResourceReference child in dir.getDirectoryEntries()) {
-            if(child.isDirectory()) {
+            if (child.isDirectory()) {
                 deleted.addAll(deleteDir(child))
             } else {
-                if(child.delete()) deleted.add(hash(getPathRelativeToRoot(child.getLocation())))
+                if (child.delete()) deleted.add(hash(getPathRelativeToRoot(child.getLocation())))
             }
         }
         if (dir.delete()) deleted.add(hash(getPathRelativeToRoot(dir.getLocation())))
@@ -185,7 +185,7 @@ class ElFinderConnector {
                 if (!target) target = hash("root")
             }
 
-            if(!target) {
+            if (!target) {
                 responseMap.clear()
                 responseMap.error = "File not found"
                 return
@@ -198,25 +198,25 @@ class ElFinderConnector {
             responseMap.files = getFiles(target, tree)
             responseMap.options = getOptions(unhash(target))
         } else if (cmd == "tree") {
-            if(!target) { responseMap.clear(); responseMap.error = "errOpen"; return }
+            if (!target) { responseMap.clear(); responseMap.error = "errOpen"; return }
 
             String location = getLocation(target)
             List<Map> tree = [getLocationInfo(location)]
             tree.addAll(getTree(location, 0))
             responseMap.tree = tree
         } else if (cmd == "parents") {
-            if(!target) { responseMap.clear(); responseMap.error = "errOpen"; return }
+            // if (!target) { responseMap.clear(); responseMap.error = "errOpen"; return }
             responseMap.tree = getParents(getLocation(target))
         } else if (cmd == "ls") {
-            if(!target) { responseMap.clear(); responseMap.error = "errOpen"; return }
+            if (!target) { responseMap.clear(); responseMap.error = "errOpen"; return }
             List<String> fileList = []
             ResourceReference curDir = ec.resource.getLocationReference(getLocation(target))
             for (ResourceReference child in curDir.getDirectoryEntries()) fileList.add(child.getFileName())
             responseMap.list = fileList
         } else if (cmd == "mkdir") {
             String name = otherParameters.name
-            if(!target) { responseMap.clear(); responseMap.error = "errOpen"; return }
-            if(!name) { responseMap.clear(); responseMap.error = "No name specified for new directory"; return }
+            if (!target) { responseMap.clear(); responseMap.error = "errOpen"; return }
+            if (!name) { responseMap.clear(); responseMap.error = "No name specified for new directory"; return }
             String curLocation = getLocation(target)
             ResourceReference curDir = ec.resource.getLocationReference(curLocation)
             if (!curDir.supportsWrite()) { responseMap.clear(); responseMap.error = "Resource does not support write"; return }
@@ -224,8 +224,8 @@ class ElFinderConnector {
             responseMap.added = [getResourceInfo(newRef)]
         } else if (cmd == "mkfile") {
             String name = otherParameters.name
-            if(!target) { responseMap.clear(); responseMap.error = "errOpen"; return }
-            if(!name) { responseMap.clear(); responseMap.error = "No name specified for new file"; return }
+            if (!target) { responseMap.clear(); responseMap.error = "errOpen"; return }
+            if (!name) { responseMap.clear(); responseMap.error = "No name specified for new file"; return }
             String curLocation = getLocation(target)
             ResourceReference curDir = ec.resource.getLocationReference(curLocation)
             if (!curDir.supportsWrite()) { responseMap.clear(); responseMap.error = "Resource does not support write"; return }
@@ -238,8 +238,8 @@ class ElFinderConnector {
             responseMap.removed = removed
         } else if (cmd == "rename") {
             String name = otherParameters.name
-            if(!target) { responseMap.clear(); responseMap.error = "errOpen"; return }
-            if(!name) { responseMap.clear(); responseMap.error = "No name specified for new directory"; return }
+            if (!target) { responseMap.clear(); responseMap.error = "errOpen"; return }
+            if (!name) { responseMap.clear(); responseMap.error = "No name specified for new directory"; return }
 
             String location = getLocation(target)
             String newLocation = location.substring(0, location.lastIndexOf("/") + 1) + name
@@ -250,7 +250,7 @@ class ElFinderConnector {
             responseMap.added = [getLocationInfo(newLocation)]
             responseMap.removed = [target]
         } else if (cmd == "upload") {
-            if(!target) { responseMap.clear(); responseMap.error = "errOpen"; return }
+            if (!target) { responseMap.clear(); responseMap.error = "errOpen"; return }
             String location = getLocation(target)
             List<Map> added = []
             for (FileItem item in otherParameters._fileUploadList) {
