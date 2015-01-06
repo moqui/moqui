@@ -88,7 +88,7 @@ class ElFinderConnector {
             info.volumeid = volumeId
         } else {
             String parentPath = relativePath.contains("/") ? relativePath.substring(0, relativePath.lastIndexOf("/")) : "root"
-            logger.warn("======= phash: location=${location}, relativePath=${relativePath}, parentPath=${parentPath}")
+            // logger.warn("======= phash: location=${location}, relativePath=${relativePath}, parentPath=${parentPath}")
             info.phash = hash(parentPath)
         }
         info.mime = ref.isDirectory() ? "directory" : ref.getContentType()

@@ -28,7 +28,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- set read-only=true because in spite of setting requestType:'post' some requests come as gets -->
     <transition name="command" read-only="true">
         <actions>
-            <log level="warn" message="============ resourceRoot=${resourceRoot}, ec.web.parameters=${ec.web.parameters}"/>
+            <!-- <log level="warn" message="============ resourceRoot=${resourceRoot}, ec.web.parameters=${ec.web.parameters}"/> -->
             <service-call name="org.moqui.impl.ElFinderServices.run#Command" out-map="context"
                     in-map="context + [otherParameters:ec.web.parameters]"/>
             <if condition="fileLocation">

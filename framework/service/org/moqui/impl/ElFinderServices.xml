@@ -28,10 +28,10 @@ This Work includes contributions authored by David E. Jones, not as a
         </out-parameters>
         <actions>
             <set field="elFinderConnector" from="new org.moqui.impl.context.reference.ElFinderConnector(ec, resourceRoot, volumeId)"/>
-            <log level="warn" message="============ cmd=${cmd}, target=${target}:${elFinderConnector.unhash(target)}:${elFinderConnector.getLocation(target)}"/>
+            <log level="info" message="elFinder cmd=${cmd}, target=${target}:${elFinderConnector.unhash(target)}:${elFinderConnector.getLocation(target)}"/>
             <script>elFinderConnector.runCommand()</script>
-            <log level="warn" message="============ fileLocation=${fileLocation}"/>
-            <log level="warn" message="============ responseMap=${responseMap}"/>
+            <!-- <log level="warn" message="============ fileLocation=${fileLocation}"/> -->
+            <!-- <log level="warn" message="============ responseMap=${responseMap}"/> -->
         </actions>
     </service>
 </services>
