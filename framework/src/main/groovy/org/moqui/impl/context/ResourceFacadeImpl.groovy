@@ -430,6 +430,18 @@ public class ResourceFacadeImpl implements ResourceFacade {
         return strippedLocation.toString()
     }
 
+    static String getLocationPrefix(String location) {
+        if (!location) return ""
+
+        if (location.contains("://")) {
+            return location.substring(0, location.indexOf(":")) + "://"
+        } else if (location.contains(":")) {
+            return location.substring(0, location.indexOf(":")) + ":"
+        } else {
+            return ""
+        }
+    }
+
     String getContentType(String filename) {
         if (!filename || !filename.contains(".")) return null
         String type = mimetypesFileTypeMap.getContentType(filename)
