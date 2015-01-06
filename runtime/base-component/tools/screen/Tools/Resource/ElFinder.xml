@@ -60,7 +60,6 @@ This Work includes contributions authored by David E. Jones, not as a
                 <div id="elfinder"></div>
                 <script>
 $(document).ready(function() {
-    // NOTE: defaultView:'list' is here but doesn't seem to work
     var elf_options = { url:'${sri.buildUrl('command').url}', customData:{ resourceRoot:'${resourceRoot}' },
         lang:'en', defaultView:'list', requestType:'post', rememberLastDir:false, height:600,
         commands : [ 'open', 'reload', 'home', 'up', 'back', 'forward', 'getfile', 'quicklook',
