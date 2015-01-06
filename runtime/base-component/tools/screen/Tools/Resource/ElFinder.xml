@@ -14,7 +14,8 @@ This Work includes contributions authored by David E. Jones, not as a
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd"
         default-menu-title="elFinder">
 
-    <transition name="command">
+    <!-- set read-only=true because in spite of setting requestType:'post' some requests come as gets -->
+    <transition name="command" read-only="true">
         <actions>
             <service-call name="org.moqui.impl.ElFinderServices.run#Command" out-map="context"
                     in-map="context + [otherParameters:ec.web.parameters]"/>
@@ -30,7 +31,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <pre-actions>
         <script>footer_scripts.add("/assets/lib/elfinder-2.0-rc1/js/elfinder.min.js")</script>
         <script>html_stylesheets.add("/assets/lib/elfinder-2.0-rc1/css/elfinder.min.css")</script>
-        <!-- <script>html_stylesheets.add("/assets/lib/elfinder-2.0-rc1/css/theme.css")</script> -->
+        <script>html_stylesheets.add("/assets/lib/elfinder-2.0-rc1/css/theme.css")</script>
     </pre-actions>
     <actions>
     </actions>
