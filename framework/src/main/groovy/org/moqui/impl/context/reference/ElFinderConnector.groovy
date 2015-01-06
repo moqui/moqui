@@ -14,11 +14,14 @@ package org.moqui.impl.context.reference
 import org.apache.commons.fileupload.FileItem
 import org.moqui.context.ExecutionContext
 import org.moqui.context.ResourceReference
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 import javax.annotation.Resource
 
 /** Used by the org.moqui.impl.ElFinderServices.run#Command service. */
 class ElFinderConnector {
+    protected final static Logger logger = LoggerFactory.getLogger(ElFinderConnector.class)
 
     ExecutionContext ec
     String volumeId
@@ -81,7 +84,7 @@ class ElFinderConnector {
         if (isRoot(ref.getLocation())) {
             info.volumeid = volumeId
         } else {
-            String parentPath = relativePath.contains("/") ? relativePath.substring(0, relativePath.lastIndexOf("/")) : ""
+            String parentPath = relativePath.contains("/") ? relativePath.substring(0, relativePath.lastIndexOf("/")) : "root"
             info.phash = hash(parentPath)
         }
         info.mime = ref.isDirectory() ? "directory" : ref.getContentType()

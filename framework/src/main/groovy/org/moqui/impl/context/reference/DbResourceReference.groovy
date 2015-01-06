@@ -86,12 +86,14 @@ class DbResourceReference extends BaseResourceReference {
     List<ResourceReference> getDirectoryEntries() {
         List<ResourceReference> dirEntries = new LinkedList()
         EntityValue dbr = getDbResource()
-        if (dbr == null) return dirEntries
+        if (getPath() && dbr == null) return dirEntries
 
-        EntityList childList = ecf.entity.find("moqui.resource.DbResource").condition([parentResourceId:dbr.resourceId])
+        // allow parentResourceId to be null for the root
+        EntityList childList = ecf.entity.find("moqui.resource.DbResource").condition([parentResourceId:dbr?.resourceId])
                 .useCache(true).list()
         for (EntityValue child in childList) {
-            dirEntries.add(new DbResourceReference().init("${location}/${child.filename}", child, ecf))
+            String childLoc = getPath() ? "${location}/${child.filename}" : "${location}${child.filename}"
+            dirEntries.add(new DbResourceReference().init(childLoc, child, ecf))
         }
         return dirEntries
     }
