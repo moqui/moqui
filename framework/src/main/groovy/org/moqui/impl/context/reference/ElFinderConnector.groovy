@@ -90,12 +90,19 @@ class ElFinderConnector {
         info.mime = ref.isDirectory() ? "directory" : ref.getContentType()
         if (ref.supportsLastModified()) info.ts = ref.getLastModified()
         if (ref.supportsSize()) info.size = ref.getSize()
-        info.dirs = ref.isDirectory() && ref.getDirectoryEntries() ? 1 : 0
+        info.dirs = hasChildDirectories(ref) ? 1 : 0
         info.read = 1
         info.write = ref.supportsWrite() ? 1 : 0
         info.locked = 0
 
         return info
+    }
+
+    static boolean hasChildDirectories(ResourceReference ref) {
+        if (!ref.isDirectory()) return false
+        List<ResourceReference> childList = ref.getDirectoryEntries()
+        for (ResourceReference child in childList) if (child.isDirectory()) return true
+        return false
     }
 
     List<Map> getFiles(String target, boolean tree) {
@@ -133,9 +140,9 @@ class ElFinderConnector {
         while (!isRoot(dir.getLocation())) {
             dir = dir.getParent()
             tree.add(0, getResourceInfo(dir))
-            if (!isRoot(dir.getLocation())) {
+            // if (!isRoot(dir.getLocation())) {
                 getTree(dir, 0).each { if (!tree.contains(it)) tree.add(it) }
-            }
+            // }
         }
         return tree ?: [getResourceInfo(ref)]
     }
