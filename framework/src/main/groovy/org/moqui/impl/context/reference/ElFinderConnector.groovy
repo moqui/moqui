@@ -178,7 +178,7 @@ class ElFinderConnector {
 
         if (cmd == "file") {
             ec.context.fileLocation = getLocation(target)
-            ec.context.fileInline = otherParameters.download == "0" // TODO: is this the right value for preview/inline?
+            ec.context.fileInline = otherParameters.download != "1"
         } else if (cmd == "open") {
             boolean init = otherParameters.init == "1"
             boolean tree = otherParameters.tree == "1"
