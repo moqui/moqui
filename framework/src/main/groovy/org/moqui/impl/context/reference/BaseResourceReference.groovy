@@ -91,14 +91,16 @@ abstract class BaseResourceReference implements ResourceReference {
 
     @Override
     ResourceReference getParent() {
-        String parentLocation = getLocation()
-        String strippedLocation = ResourceFacadeImpl.stripLocationPrefix(parentLocation)
+        String curLocation = getLocation()
+        if (curLocation.endsWith("/")) curLocation = curLocation.substring(0, curLocation.length() - 1)
+        String strippedLocation = ResourceFacadeImpl.stripLocationPrefix(curLocation)
         if (!strippedLocation) return null
         if (strippedLocation.startsWith("/")) strippedLocation = strippedLocation.substring(1)
         if (strippedLocation.contains("/")) {
-            parentLocation = parentLocation.substring(0, parentLocation.lastIndexOf("/"))
-            return ecf.getResource().getLocationReference(parentLocation)
+            return ecf.getResource().getLocationReference(curLocation.substring(0, curLocation.lastIndexOf("/")))
         } else {
+            String prefix = ResourceFacadeImpl.getLocationPrefix(curLocation)
+            if (prefix) return ecf.getResource().getLocationReference(prefix)
             return null
         }
     }
