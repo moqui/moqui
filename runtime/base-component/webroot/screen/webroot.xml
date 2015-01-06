@@ -17,6 +17,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <always-actions>
         <!-- TODO: implement way to only load base JS and CSS files and load others as needed on different screens! -->
         <set field="html_scripts" from="new LinkedHashSet(['/assets/lib/jquery/jquery.min.js',
+            '/assets/lib/jquery/jquery-migrate-1.2.1.min.js',
             '/assets/lib/jquery-ui/jquery-ui.min.js', '/assets/lib/bootstrap/js/bootstrap.min.js',
             '/assets/lib/form/jquery.form.js'])"/>
         <set field="footer_scripts" from="new LinkedHashSet([

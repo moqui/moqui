@@ -14,11 +14,6 @@ This Work includes contributions authored by David E. Jones, not as a
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd"
         default-menu-title="elFinder">
 
-    <!-- TODO
-        - download button always disabled, not working
-        - list view option not available, defaultView:list not working
-        - rm button not available
-    -->
     <parameter name="resourceRoot"/>
     <always-actions>
         <set field="mantleContentRoot" from="ec.user.getPreference('mantle.content.root') ?: 'dbresource://mantle/content'"/>
@@ -67,7 +62,7 @@ This Work includes contributions authored by David E. Jones, not as a
 $(document).ready(function() {
     // NOTE: defaultView:'list' is here but doesn't seem to work
     var elf_options = { url:'${sri.buildUrl('command').url}', customData:{ resourceRoot:'${resourceRoot}' },
-        lang:'en', defaultView:'list', requestType:'post', rememberLastDir:false,
+        lang:'en', defaultView:'list', requestType:'post', rememberLastDir:false, height:600,
         commands : [ 'open', 'reload', 'home', 'up', 'back', 'forward', 'getfile', 'quicklook',
             'download', 'rm', 'rename', 'mkdir', 'mkfile', 'upload', 'edit', 'info', 'view', 'help',
             'sort'],
@@ -79,8 +74,7 @@ $(document).ready(function() {
                 ['mkdir', 'mkfile', 'upload'],
                 ['open', 'download'],
                 ['info'],
-                ['rm'],
-                ['rename', 'edit'],
+                ['rm', 'rename', 'edit'],
                 ['view', 'help']
             ],
             navbar : { minWidth : 150, maxWidth : 800 }
