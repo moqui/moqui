@@ -15,8 +15,10 @@ This Work includes contributions authored by David E. Jones, not as a
         default-menu-title="elFinder">
 
     <!-- TODO
-        - download button always disable, not working
+        - add drop-down to select root
+        - download button always disabled, not working
         - list view option not available, defaultView:list not working
+        - rm button not available
     -->
 
     <!-- set read-only=true because in spite of setting requestType:'post' some requests come as gets -->
