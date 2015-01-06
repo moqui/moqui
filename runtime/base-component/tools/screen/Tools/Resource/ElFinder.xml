@@ -15,18 +15,22 @@ This Work includes contributions authored by David E. Jones, not as a
         default-menu-title="elFinder">
 
     <!-- TODO
-        - add drop-down to select root
         - download button always disabled, not working
         - list view option not available, defaultView:list not working
         - rm button not available
     -->
+    <parameter name="resourceRoot"/>
+    <always-actions>
+        <set field="mantleContentRoot" from="ec.user.getPreference('mantle.content.root') ?: 'dbresource://mantle/content'"/>
+        <set field="resourceRoot" from="resourceRoot ?: mantleContentRoot"/>
+    </always-actions>
 
     <!-- set read-only=true because in spite of setting requestType:'post' some requests come as gets -->
     <transition name="command" read-only="true">
         <actions>
+            <log level="warn" message="============ resourceRoot=${resourceRoot}, ec.web.parameters=${ec.web.parameters}"/>
             <service-call name="org.moqui.impl.ElFinderServices.run#Command" out-map="context"
                     in-map="context + [otherParameters:ec.web.parameters]"/>
-            <log level="warn" message="============ ec.web.parameters=${ec.web.parameters}"/>
             <if condition="fileLocation">
                 <script>ec.web.sendResourceResponse(fileLocation, fileInline ?: false)</script>
                 <else><script>ec.web.sendJsonResponse(responseMap)</script></else>
@@ -44,13 +48,26 @@ This Work includes contributions authored by David E. Jones, not as a
     <actions>
     </actions>
     <widgets>
+        <form-single name="SelectRoot" transition=".">
+            <field name="resourceRoot"><default-field title="">
+                <drop-down>
+                    <option key="${mantleContentRoot}"/>
+                    <option key="dbresource://"/>
+                    <option key="file:runtime"/>
+                    <option key="component://webroot"/>
+                </drop-down>
+            </default-field></field>
+            <field name="submitButton"><default-field title="Select Root"><submit/></default-field></field>
+            <field-layout><field-row-big><field-ref name="resourceRoot"/><field-ref name="submitButton"/></field-row-big></field-layout>
+        </form-single>
         <render-mode>
             <text type="html"><![CDATA[
                 <div id="elfinder"></div>
                 <script>
 $(document).ready(function() {
     // NOTE: defaultView:'list' is here but doesn't seem to work
-    var elf_options = { url:'${sri.buildUrl('command').url}', lang:'en', defaultView:'list', requestType:'post',
+    var elf_options = { url:'${sri.buildUrl('command').url}', customData:{ resourceRoot:'${resourceRoot}' },
+        lang:'en', defaultView:'list', requestType:'post', rememberLastDir:false,
         commands : [ 'open', 'reload', 'home', 'up', 'back', 'forward', 'getfile', 'quicklook',
             'download', 'rm', 'rename', 'mkdir', 'mkfile', 'upload', 'edit', 'info', 'view', 'help',
             'sort'],
