@@ -99,7 +99,7 @@ class UrlResourceReference extends BaseResourceReference {
             File f = getFile()
             List<ResourceReference> children = new LinkedList<ResourceReference>()
             for (File dirFile in f.listFiles()) {
-                children.add(new UrlResourceReference().init(dirFile.absolutePath, ecf))
+                children.add(new UrlResourceReference().init("${getLocation()}/${dirFile.getName()}", ecf))
             }
             return children
         } else {
