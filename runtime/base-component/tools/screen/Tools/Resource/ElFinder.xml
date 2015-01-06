@@ -30,7 +30,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <pre-actions>
         <script>footer_scripts.add("/assets/lib/elfinder-2.0-rc1/js/elfinder.min.js")</script>
         <script>html_stylesheets.add("/assets/lib/elfinder-2.0-rc1/css/elfinder.min.css")</script>
-        <script>html_stylesheets.add("/assets/lib/elfinder-2.0-rc1/css/theme.css")</script>
+        <!-- <script>html_stylesheets.add("/assets/lib/elfinder-2.0-rc1/css/theme.css")</script> -->
     </pre-actions>
     <actions>
     </actions>
@@ -40,18 +40,19 @@ This Work includes contributions authored by David E. Jones, not as a
                 <div id="elfinder"></div>
                 <script>
 $(document).ready(function() {
+    // NOTE: defaultView:'list' is here but doesn't seem to work
     var elf_options = { url:'${sri.buildUrl('command').url}', lang:'en', defaultView:'list', requestType:'post',
         commands : [ 'open', 'reload', 'home', 'up', 'back', 'forward', 'getfile', 'quicklook',
             'download', 'rm', 'rename', 'mkdir', 'mkfile', 'upload', 'edit', 'info', 'view', 'help',
             'sort'],
         uiOptions : {
-            // toolbar configuration
+            // toolbar configuration (NOTE: 'quicklook' doesn't seem to work)
             toolbar : [
                 ['back', 'forward'],
                 ['reload', 'home', 'up'],
                 ['mkdir', 'mkfile', 'upload'],
                 ['open', 'download'],
-                ['info', 'quicklook'],
+                ['info'],
                 ['rm'],
                 ['rename', 'edit'],
                 ['view'],
