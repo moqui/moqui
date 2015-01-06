@@ -17,8 +17,6 @@ import org.moqui.context.ResourceReference
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-import javax.annotation.Resource
-
 /** Used by the org.moqui.impl.ElFinderServices.run#Command service. */
 class ElFinderConnector {
     protected final static Logger logger = LoggerFactory.getLogger(ElFinderConnector.class)
@@ -57,15 +55,20 @@ class ElFinderConnector {
             String unhashedPath = unhash(hashed)
             if (unhashedPath == "/" || unhashedPath == "root") return resourceRoot
             if (unhashedPath.startsWith("/")) unhashedPath = unhashedPath.substring(1)
-            return resourceRoot + unhashedPath
+            return resourceRoot + (resourceRoot.endsWith("/") ? "" : "/") + unhashedPath
         }
         return resourceRoot
     }
 
     String getPathRelativeToRoot(String location) {
         String path = location.trim()
-        path = path.substring(((String) resourceRoot).length())
+        if (!location.startsWith(resourceRoot)) {
+            logger.warn("Location [${location}] does not start resourceRoot [${resourceRoot}]! Returning full location as relative path to root")
+            return location
+        }
+        path = path.substring(resourceRoot.length())
         if (path.endsWith("/")) path = path.substring(0, path.length() - 1)
+        if (path.startsWith("/")) path = path.substring(1)
         if (path == "") return "root"
         return path
     }
@@ -76,7 +79,7 @@ class ElFinderConnector {
 
     Map getResourceInfo(ResourceReference ref) {
         Map info = [:]
-        info.name = isRoot(ref.getLocation()) ? resourceRoot.substring(0, resourceRoot.length() - 1) : ref.getFileName()
+        info.name = isRoot(ref.getLocation()) ? (resourceRoot.endsWith("/") ? resourceRoot.substring(0, resourceRoot.length() - 1) : resourceRoot) : ref.getFileName()
         String location = ref.getLocation()
         String relativePath = getPathRelativeToRoot(location)
         info.hash = hash(relativePath)
@@ -85,6 +88,7 @@ class ElFinderConnector {
             info.volumeid = volumeId
         } else {
             String parentPath = relativePath.contains("/") ? relativePath.substring(0, relativePath.lastIndexOf("/")) : "root"
+            logger.warn("======= phash: location=${location}, relativePath=${relativePath}, parentPath=${parentPath}")
             info.phash = hash(parentPath)
         }
         info.mime = ref.isDirectory() ? "directory" : ref.getContentType()
@@ -138,11 +142,14 @@ class ElFinderConnector {
         List<Map> tree = []
         ResourceReference dir = ref
         while (!isRoot(dir.getLocation())) {
-            dir = dir.getParent()
+            ResourceReference parent = dir.getParent()
+            if (parent == null) {
+                logger.warn("Got null parent for [${dir.getLocation()}], starting location [${ref.getLocation()}]")
+                break
+            }
+            dir = parent
             tree.add(0, getResourceInfo(dir))
-            // if (!isRoot(dir.getLocation())) {
-                getTree(dir, 0).each { if (!tree.contains(it)) tree.add(it) }
-            // }
+            getTree(dir, 0).each { if (!tree.contains(it)) tree.add(it) }
         }
         return tree ?: [getResourceInfo(ref)]
     }
