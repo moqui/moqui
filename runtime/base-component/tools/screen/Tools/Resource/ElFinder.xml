@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This Work is in the public domain and is provided on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+including, without limitation, any warranties or conditions of TITLE,
+NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+You are solely responsible for determining the appropriateness of using
+this Work and assume any risks associated with your use of this Work.
+
+This Work includes contributions authored by David E. Jones, not as a
+"work for hire", who hereby disclaims any copyright to the same.
+-->
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd"
+        default-menu-title="elFinder">
+
+    <parameter name="resourceRoot"/>
+    <always-actions>
+        <set field="mantleContentRoot" from="ec.user.getPreference('mantle.content.root') ?: 'dbresource://mantle/content'"/>
+        <set field="resourceRoot" from="resourceRoot ?: mantleContentRoot"/>
+    </always-actions>
+
+    <!-- set read-only=true because in spite of setting requestType:'post' some requests come as gets -->
+    <transition name="command" read-only="true">
+        <actions>
+            <!-- <log level="warn" message="============ resourceRoot=${resourceRoot}, ec.web.parameters=${ec.web.parameters}"/> -->
+            <service-call name="org.moqui.impl.ElFinderServices.run#Command" out-map="context"
+                    in-map="context + [otherParameters:ec.web.parameters]"/>
+            <if condition="fileLocation">
+                <script>ec.web.sendResourceResponse(fileLocation, fileInline ?: false)</script>
+                <else><script>ec.web.sendJsonResponse(responseMap)</script></else>
+            </if>
+        </actions>
+        <default-response type="none"/>
+    </transition>
+
+    <pre-actions>
+        <script>footer_scripts.add("/assets/lib/elfinder-2.0-rc1/js/elfinder.min.js")</script>
+        <script>html_stylesheets.add("/assets/lib/elfinder-2.0-rc1/css/elfinder.min.css")</script>
+        <script>html_stylesheets.add("/assets/lib/elfinder-2.0-rc1/css/theme.css")</script>
+        <script>html_stylesheets.add("/assets/css/elfinder.css")</script>
+    </pre-actions>
+    <actions>
+    </actions>
+    <widgets>
+        <form-single name="SelectRoot" transition=".">
+            <field name="resourceRoot"><default-field title="">
+                <drop-down>
+                    <option key="${mantleContentRoot}"/>
+                    <option key="dbresource://"/>
+                    <option key="file:runtime"/>
+                    <option key="component://webroot"/>
+                </drop-down>
+            </default-field></field>
+            <field name="submitButton"><default-field title="Select Root"><submit/></default-field></field>
+            <field-layout><field-row-big><field-ref name="resourceRoot"/><field-ref name="submitButton"/></field-row-big></field-layout>
+        </form-single>
+        <render-mode>
+            <text type="html"><![CDATA[
+                <div id="elfinder"></div>
+                <script>
+$(document).ready(function() {
+    var elf_options = { url:'${sri.buildUrl('command').url}', customData:{ resourceRoot:'${resourceRoot}' },
+        lang:'en', defaultView:'list', requestType:'post', rememberLastDir:false, height:600,
+        commands : [ 'open', 'reload', 'home', 'up', 'back', 'forward', 'getfile', 'quicklook',
+            'download', 'rm', 'rename', 'mkdir', 'mkfile', 'upload', 'edit', 'info', 'view', 'help',
+            'sort'],
+        uiOptions : {
+            // toolbar configuration (NOTE: 'quicklook' doesn't seem to work)
+            toolbar : [
+                ['back', 'forward'],
+                ['reload', 'home', 'up'],
+                ['mkdir', 'mkfile', 'upload'],
+                ['open', 'download'],
+                ['info'],
+                ['rm', 'rename', 'edit'],
+                ['view', 'help']
+            ],
+            navbar : { minWidth : 150, maxWidth : 800 }
+        }
+    }
+    $('#elfinder').elfinder(elf_options);
+});
+                </script>
+            ]]></text>
+        </render-mode>
+    </widgets>
+</screen>

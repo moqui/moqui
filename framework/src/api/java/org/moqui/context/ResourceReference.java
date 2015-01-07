@@ -41,7 +41,11 @@ public interface ResourceReference {
     boolean isFile();
     boolean isDirectory();
 
+    /** Get the entries of a directory */
     List<ResourceReference> getDirectoryEntries();
+    /** Get the parent directory, null if it is the root (no parent). */
+    ResourceReference getParent();
+
     /** Find the directory with a name that matches the current filename (minus the extension) */
     ResourceReference findMatchingDirectory();
     /** Get a reference to the child of this directory or this file in the matching directory */
@@ -59,10 +63,16 @@ public interface ResourceReference {
     boolean supportsLastModified();
     long getLastModified();
 
+    boolean supportsSize();
+    long getSize();
+
     boolean supportsWrite();
     void putText(String text);
     void putStream(InputStream stream);
     void move(String newLocation);
+    ResourceReference makeDirectory(String name);
+    ResourceReference makeFile(String name);
+    boolean delete();
 
     void destroy();
 }

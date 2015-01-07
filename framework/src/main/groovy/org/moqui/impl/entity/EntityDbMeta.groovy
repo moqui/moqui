@@ -132,7 +132,7 @@ class EntityDbMeta {
                 boolean anyExist = false
                 for (Node memberEntityNode in ed.entityNode."member-entity") {
                     EntityDefinition med = efi.getEntityDefinition((String) memberEntityNode."@entity-name")
-                    if (tableExists(med)) anyExist = true
+                    if (tableExists(med)) { anyExist = true; break }
                 }
                 dbResult = anyExist
             } else {
@@ -171,7 +171,7 @@ class EntityDbMeta {
         }
         if (dbResult == null) throw new EntityException("No result checking if entity [${ed.getFullEntityName()}] table exists")
 
-        if (dbResult) {
+        if (dbResult && !ed.isViewEntity()) {
             // on the first check also make sure all columns/etc exist; we'll do this even on read/exist check otherwise query will blow up when doesn't exist
             ListOrderedSet mcs = getMissingColumns(ed)
             if (mcs) {
@@ -185,7 +185,9 @@ class EntityDbMeta {
                 }
             }
         }
-        entityTablesExist.put(ed.getFullEntityName(), dbResult)
+        // don't remember the result for view-entities, get if from member-entities... if we remember it we have to set
+        //     it for all view-entities when a member-entity is created
+        if (!ed.isViewEntity()) entityTablesExist.put(ed.getFullEntityName(), dbResult)
         return dbResult
     }
 
