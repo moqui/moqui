@@ -78,17 +78,22 @@ class DbResourceReference extends BaseResourceReference {
     @Override
     boolean isFile() { return getDbResource()?.isFile == "Y" }
     @Override
-    boolean isDirectory() { return getDbResource() != null && getDbResource().isFile != "Y" }
+    boolean isDirectory() {
+        if (!getPath()) return true // consider root a directory
+        return getDbResource() != null && getDbResource().isFile != "Y"
+    }
     @Override
     List<ResourceReference> getDirectoryEntries() {
         List<ResourceReference> dirEntries = new LinkedList()
         EntityValue dbr = getDbResource()
-        if (dbr == null) return dirEntries
+        if (getPath() && dbr == null) return dirEntries
 
-        EntityList childList = ecf.entity.find("DbResource").condition([parentResourceId:dbr.resourceId])
+        // allow parentResourceId to be null for the root
+        EntityList childList = ecf.entity.find("moqui.resource.DbResource").condition([parentResourceId:dbr?.resourceId])
                 .useCache(true).list()
         for (EntityValue child in childList) {
-            dirEntries.add(new DbResourceReference().init("${location}/${child.filename}", child, ecf))
+            String childLoc = getPath() ? "${location}/${child.filename}" : "${location}${child.filename}"
+            dirEntries.add(new DbResourceReference().init(childLoc, child, ecf))
         }
         return dirEntries
     }
@@ -98,14 +103,28 @@ class DbResourceReference extends BaseResourceReference {
     @Override
     boolean getExists() { return getDbResource() != null }
 
+    @Override
     boolean supportsLastModified() { true }
-    long getLastModified() { return getDbResource()?.getTimestamp("lastUpdatedStamp")?.getTime() }
+    @Override
+    long getLastModified() { return getDbResource()?.getTimestamp("lastUpdatedStamp")?.getTime() ?: System.currentTimeMillis() }
 
+    @Override
+    boolean supportsSize() { true }
+    @Override
+    long getSize() {
+        EntityValue dbrf = getDbResourceFile()
+        if (dbrf == null) return 0
+        return dbrf.getSerialBlob("fileData")?.length() ?: 0
+    }
+
+    @Override
     boolean supportsWrite() { true }
+    @Override
     void putText(String text) {
         SerialBlob sblob = text ? new SerialBlob(text.getBytes()) : null
         this.putObject(sblob)
     }
+    @Override
     void putStream(InputStream stream) {
         if (stream == null) return
         ByteArrayOutputStream baos = new ByteArrayOutputStream()
@@ -113,11 +132,12 @@ class DbResourceReference extends BaseResourceReference {
         SerialBlob sblob = new SerialBlob(baos.toByteArray())
         this.putObject(sblob)
     }
+
     protected void putObject(Object fileObj) {
         EntityValue dbrf = getDbResourceFile()
 
         if (dbrf != null) {
-            ecf.service.sync().name("update", "DbResourceFile")
+            ecf.service.sync().name("update", "moqui.resource.DbResourceFile")
                     .parameters([resourceId:dbrf.resourceId, fileData:fileObj]).call()
             dbResourceFile = null
         } else {
@@ -127,9 +147,9 @@ class DbResourceReference extends BaseResourceReference {
             String parentResourceId = findDirectoryId(filenameList, true)
 
             // now write the DbResource and DbResourceFile records
-            Map createDbrResult = ecf.service.sync().name("create", "DbResource")
+            Map createDbrResult = ecf.service.sync().name("create", "moqui.resource.DbResource")
                     .parameters([parentResourceId:parentResourceId, filename:getFileName(), isFile:"Y"]).call()
-            ecf.service.sync().name("create", "DbResourceFile")
+            ecf.service.sync().name("create", "moqui.resource.DbResourceFile")
                     .parameters([resourceId:createDbrResult.resourceId, mimeType:getContentType(), fileData:fileObj]).call()
             // clear out the local reference to the old file record
             dbResourceFile = null
@@ -139,12 +159,12 @@ class DbResourceReference extends BaseResourceReference {
         String parentResourceId = null
         if (pathList) {
             for (String filename in pathList) {
-                EntityValue directoryValue = ecf.entity.find("DbResource")
+                EntityValue directoryValue = ecf.entity.find("moqui.resource.DbResource")
                         .condition([parentResourceId:parentResourceId, filename:filename])
                         .useCache(true).list().getFirst()
                 if (directoryValue == null) {
                     if (create) {
-                        Map createResult = ecf.service.sync().name("create", "DbResource")
+                        Map createResult = ecf.service.sync().name("create", "moqui.resource.DbResource")
                                 .parameters([parentResourceId:parentResourceId, filename:filename, isFile:"N"]).call()
                         parentResourceId = createResult.resourceId
                         // logger.warn("=============== put text to ${location}, created dir ${filename}")
@@ -158,6 +178,7 @@ class DbResourceReference extends BaseResourceReference {
         return parentResourceId
     }
 
+    @Override
     void move(String newLocation) {
         EntityValue dbr = getDbResource()
         // if the current resource doesn't exist, nothing to move
@@ -183,6 +204,29 @@ class DbResourceReference extends BaseResourceReference {
         }
     }
 
+    @Override
+    ResourceReference makeDirectory(String name) {
+        findDirectoryId([name], true)
+        return new DbResourceReference().init("${location}/${name}", ecf)
+    }
+    @Override
+    ResourceReference makeFile(String name) {
+        DbResourceReference newRef = (DbResourceReference) new DbResourceReference().init("${location}/${name}", ecf)
+        newRef.putObject(null)
+        return newRef
+    }
+    @Override
+    boolean delete() {
+        EntityValue dbr = getDbResource()
+        if (dbr == null) return false
+        if (dbr.isFile == "Y") {
+            EntityValue dbrf = getDbResourceFile()
+            if (dbrf != null) dbrf.delete()
+        }
+        dbr.delete()
+        return true
+    }
+
     EntityValue getDbResource() {
         if (dbResource != null) return dbResource
 
@@ -192,7 +236,7 @@ class DbResourceReference extends BaseResourceReference {
         for (String filename in filenameList) {
             // NOTE: using .useCache(true).list().getFirst() because .useCache(true).one() tries to use the one cache
             // and that doesn't auto-clear correctly for non-pk queries
-            lastValue = ecf.entity.find("DbResource").condition([parentResourceId:parentResourceId, filename:filename])
+            lastValue = ecf.entity.find("moqui.resource.DbResource").condition([parentResourceId:parentResourceId, filename:filename])
                     .useCache(true).list().getFirst()
             if (lastValue == null) continue
             parentResourceId = lastValue.resourceId
@@ -208,7 +252,7 @@ class DbResourceReference extends BaseResourceReference {
         if (dbr == null) return null
 
         // don't cache this, can be big and will be cached below this as text if needed
-        EntityValue dbrf = ecf.entity.find("DbResourceFile").condition([resourceId:dbr.resourceId]).useCache(false).one()
+        EntityValue dbrf = ecf.entity.find("moqui.resource.DbResourceFile").condition([resourceId:dbr.resourceId]).useCache(false).one()
 
         dbResourceFile = dbrf
         return dbrf

@@ -51,10 +51,16 @@ class WrapperResourceReference extends BaseResourceReference  {
     boolean supportsLastModified() { return rr.supportsLastModified() }
     long getLastModified() { return rr.getLastModified() }
 
+    boolean supportsSize() { return rr.supportsSize() }
+    long getSize() { return rr.getSize() }
+
     boolean supportsWrite() { return rr.supportsWrite() }
     void putText(String text) { rr.putText(text) }
     void putStream(InputStream stream) { rr.putStream(stream) }
     void move(String newLocation) { rr.move(newLocation) }
+    ResourceReference makeDirectory(String name) { return rr.makeDirectory(name) }
+    ResourceReference makeFile(String name) { return rr.makeFile(name) }
+    boolean delete() { return rr.delete() }
 
     void destroy() { rr.destroy() }
 }

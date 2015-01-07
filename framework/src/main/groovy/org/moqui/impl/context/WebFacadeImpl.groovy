@@ -122,12 +122,16 @@ class WebFacadeImpl implements WebFacade {
             ServletFileUpload upload = new ServletFileUpload(factory)
 
             List<FileItem> items = (List<FileItem>) upload.parseRequest(request)
+            List<FileItem> fileUploadList = []
+            multiPartParameters.put("_fileUploadList", fileUploadList)
+
             for (FileItem item in items) {
                 if (item.isFormField()) {
                     multiPartParameters.put(item.getFieldName(), item.getString())
                 } else {
                     // put the FileItem itself in the Map to be used by the application code
                     multiPartParameters.put(item.getFieldName(), item)
+                    fileUploadList.add(item)
 
                     /* Stuff to do with the FileItem:
                       - get info about the uploaded file
@@ -422,11 +426,13 @@ class WebFacadeImpl implements WebFacade {
     }
 
     @Override
-    void sendResourceResponse(String location) {
+    void sendResourceResponse(String location) { }
+    void sendResourceResponse(String location, boolean inline) {
         ResourceReference rr = eci.resource.getLocationReference(location)
         if (rr == null) throw new IllegalArgumentException("Resource not found at: ${location}")
         response.setContentType(rr.contentType)
-        response.addHeader("Content-Disposition", "attachment; filename=\"${rr.getFileName()}\"")
+        if (inline) response.addHeader("Content-Disposition", "inline")
+        else response.addHeader("Content-Disposition", "attachment; filename=\"${rr.getFileName()}\"")
         InputStream is = rr.openStream()
         try {
             OutputStream os = response.outputStream

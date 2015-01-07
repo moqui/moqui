@@ -13,7 +13,7 @@ package org.moqui.impl.context.reference
 
 import org.moqui.context.ExecutionContextFactory
 import org.moqui.context.ResourceReference
-
+import org.moqui.impl.context.ResourceFacadeImpl
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -88,6 +88,22 @@ abstract class BaseResourceReference implements ResourceReference {
     abstract boolean isDirectory();
     @Override
     abstract List<ResourceReference> getDirectoryEntries();
+
+    @Override
+    ResourceReference getParent() {
+        String curLocation = getLocation()
+        if (curLocation.endsWith("/")) curLocation = curLocation.substring(0, curLocation.length() - 1)
+        String strippedLocation = ResourceFacadeImpl.stripLocationPrefix(curLocation)
+        if (!strippedLocation) return null
+        if (strippedLocation.startsWith("/")) strippedLocation = strippedLocation.substring(1)
+        if (strippedLocation.contains("/")) {
+            return ecf.getResource().getLocationReference(curLocation.substring(0, curLocation.lastIndexOf("/")))
+        } else {
+            String prefix = ResourceFacadeImpl.getLocationPrefix(curLocation)
+            if (prefix) return ecf.getResource().getLocationReference(prefix)
+            return null
+        }
+    }
 
     @Override
     ResourceReference getChild(String childName) {
@@ -361,8 +377,30 @@ abstract class BaseResourceReference implements ResourceReference {
     @Override
     abstract boolean getExists()
 
+    @Override
     abstract boolean supportsLastModified()
+    @Override
     abstract long getLastModified()
+
+    @Override
+    abstract boolean supportsSize()
+    @Override
+    abstract long getSize()
+
+    @Override
+    abstract boolean supportsWrite()
+    @Override
+    abstract void putText(String text)
+    @Override
+    abstract void putStream(InputStream stream)
+    @Override
+    abstract void move(String newLocation)
+    @Override
+    abstract ResourceReference makeDirectory(String name)
+    @Override
+    abstract ResourceReference makeFile(String name)
+    @Override
+    abstract boolean delete()
 
     @Override
     void destroy() { }

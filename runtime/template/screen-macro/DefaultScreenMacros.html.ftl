@@ -306,6 +306,7 @@ ${sri.renderSection(.node["@name"])}
     <#assign buttonText = ec.resource.evaluateStringExpand(.node["@button-text"], "")>
     <#assign divId><#if .node["@id"]?has_content>${ec.resource.evaluateStringExpand(.node["@id"], "")}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#if></#assign>
     <button id="${divId}-button" type="button" data-toggle="modal" data-target="#${divId}" data-original-title="${buttonText}" data-placement="bottom" class="btn btn-primary btn-sm"><i class="glyphicon glyphicon-share"></i> ${buttonText}</button>
+    <#if _openDialog! == divId><#assign afterScreenScript>$('#${divId}').modal('show'); </#assign><#t>${sri.appendToScriptWriter(afterScreenScript)}</#if>
     <div id="${divId}" class="modal fade container-dialog" aria-hidden="true" style="display: none;">
         <div class="modal-dialog" style="width: ${.node["@width"]!"600"}px;">
             <div class="modal-content">
@@ -320,6 +321,7 @@ ${sri.renderSection(.node["@name"])}
             </div>
         </div>
     </div>
+
     <#-- for jQuery dialog:
     <#assign afterScreenScript>
         $("#${.node["@id"]}").dialog({autoOpen:false, height:${.node["@height"]!"600"}, width:${.node["@width"]!"600"}, modal:false });
@@ -363,6 +365,8 @@ ${sri.renderSection(.node["@name"])}
         </div>
     </div>
     <script>$("#${divId}").on("show.bs.modal", function (e) { $("#${divId}-body").load('${urlInfo.urlWithParams}') })</script>
+    <#if _openDialog! == divId><#assign afterScreenScript>$('#${divId}').modal('show')</#assign><#t>${sri.appendToScriptWriter(afterScreenScript)}</#if>
+
     <#-- jQuery dialog:
     <button id="${divId}-button"><i class="glyphicon glyphicon-share"></i> ${buttonText}</button>
     <div id="${divId}" title="${buttonText}"></div>
@@ -418,7 +422,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
           <#t><#if .node["@encode"]!"false" == "true">${sri.renderText(textLocation, textToUse["@template"]!)?html}<#else>${sri.renderText(textLocation, textToUse["@template"]!)}</#if>
           <#if sri.doBoundaryComments() && textToUse["@no-boundary-comment"]?if_exists != "true"><!-- END   render-mode.text[@location=${textLocation}][@template=${textToUse["@template"]?default("true")}] --></#if>
         </#if>
-        <#assign inlineTemplateSource = textToUse?string/>
+        <#assign inlineTemplateSource = textToUse.@@text/>
         <#if inlineTemplateSource?has_content>
           <#t><#if sri.doBoundaryComments() && textToUse["@no-boundary-comment"]?if_exists != "true"><!-- BEGIN render-mode.text[inline][@template=${textToUse["@template"]?default("true")}] --></#if>
           <#if !textToUse["@template"]?has_content || textToUse["@template"] == "true">
@@ -1239,13 +1243,20 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#assign curFieldName><@fieldName .node/></#assign>
     <#assign fvOffset = ec.context.get(curFieldName + "_poffset")!>
     <#assign fvPeriod = ec.context.get(curFieldName + "_period")!?lower_case>
+    <#assign allowEmpty = .node["@allow-empty"]!"true">
     <select name="${curFieldName}_poffset" class="chosen-select" id="${id}_poffset"<#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
         <#if (allowEmpty! != "false")>
             <option value="">&nbsp;</option>
         </#if>
         <option value="0"<#if fvOffset == "0"> selected="selected"</#if>>This</option>
         <option value="-1"<#if fvOffset == "-1"> selected="selected"</#if>>Last</option>
+        <option value="-2"<#if fvOffset == "-2"> selected="selected"</#if>>-2</option>
+        <option value="-3"<#if fvOffset == "-3"> selected="selected"</#if>>-3</option>
+        <option value="-4"<#if fvOffset == "-4"> selected="selected"</#if>>-4</option>
         <option value="1"<#if fvOffset == "1"> selected="selected"</#if>>Next</option>
+        <option value="2"<#if fvOffset == "2"> selected="selected"</#if>>+2</option>
+        <option value="3"<#if fvOffset == "3"> selected="selected"</#if>>+3</option>
+        <option value="4"<#if fvOffset == "4"> selected="selected"</#if>>+4</option>
     </select>
     <select name="${curFieldName}_period" class="chosen-select" id="${id}_period"<#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
         <#if (allowEmpty! != "false")>

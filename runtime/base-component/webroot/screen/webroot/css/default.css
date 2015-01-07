@@ -233,6 +233,9 @@ input[type="text"].ui-autocomplete-input { width: auto; }
 #content { overflow: visible; background: transparent; }
 .inner { overflow: visible; background: transparent; }
 
+div.btn-group a.btn { margin-right: 0; }
+div.btn-group { margin-right: 4px; }
+
 /* get rid of the grey box, looks funny when screen isn't very tall */
 .inner { border: 0; }
 
@@ -246,9 +249,9 @@ input[type=radio], input[type=checkbox] { height: auto; }
 .chosen-single div b { margin-top: 5px; }
 .dynamic-dialog .chosen-container, .container-dialog .chosen-container, .field-row-item .chosen-container { min-width: 200px !important; }
 .dynamic-options { min-width: 200px !important; }
-.dynamic-dialog .chosen-container.chosen-wide, .container-dialog .chosen-container.chosen-wide { min-width: 300px !important; }
-.dynamic-dialog .chosen-container.chosen-wider, .container-dialog .chosen-container.chosen-wider { min-width: 400px !important; }
-.dynamic-dialog .chosen-container.chosen-widest, .container-dialog .chosen-container.chosen-widest { min-width: 600px !important; }
+.chosen-container.chosen-wide { min-width: 300px !important; }
+.chosen-container.chosen-wider { min-width: 400px !important; }
+.chosen-container.chosen-widest { min-width: 600px !important; }
 
 .bg-dark .chosen-container { color: black; }
 .bg-dark .datetimepicker { color: black; }
@@ -283,3 +286,6 @@ form.editable-form button { background: white; color: #333; border: 1px solid; b
 /* Metis makes the scrollbar invisible in webkit unless you hover over it, make it always visible */
 ::-webkit-scrollbar-thumb { background-color: #888; }
 ::-webkit-scrollbar-track { background: rgba(110, 110, 110, 0.25); }
+
+/* #content has white-space: nowrap, which is an annoying thing for all to inherit */
+div { white-space: normal; }

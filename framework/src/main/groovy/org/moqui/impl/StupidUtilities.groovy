@@ -374,15 +374,31 @@ class StupidUtilities {
 
     static Node deepCopyNode(Node original) { return deepCopyNode(original, null) }
     static Node deepCopyNode(Node original, Node parent) {
-        // always pass in a null parent and expect this to be appended to the parent node by the caller if desired
+        if (original == null) return null
+
+        /* NOTE: this approach doesn't work because parent nodes seem to get lost
+        Node newNode = (Node) original.clone()
+        if (parent != null) parent.append(newNode)
+        return newNode
+        */
+
         Node newNode = new Node(parent, original.name(), new HashMap(original.attributes()))
-        for (Object child in original.children()) {
-            if (child instanceof Node) {
-                newNode.append(deepCopyNode((Node) child, null))
-            } else {
-                newNode.value = child
+
+        Object newValue = original.value()
+        if (newValue != null && newValue instanceof List) {
+            NodeList childList = new NodeList()
+            for (Object child in newValue) {
+                if (child instanceof Node) {
+                    childList.add(deepCopyNode((Node) child, newNode))
+                } else if (child != null) {
+                    childList.add(child)
+                }
             }
+            newValue = childList
         }
+
+        if (newValue) newNode.setValue(newValue)
+
         return newNode
     }
     static String nodeText(Node theNode) {
