@@ -124,6 +124,8 @@ New Features:
     default for a field based on other fields, constants, etc
   - Added DataDocumentCondition.operator field, uses same operator values
     as XML Actions econdition.@operator
+  - Added update option to field.enable-audit-log to create audit records
+    for updates only, not creates
 
 Bug Fixes:
 
