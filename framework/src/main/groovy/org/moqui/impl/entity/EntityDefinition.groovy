@@ -133,14 +133,12 @@ public class EntityDefinition {
     boolean needsAuditLog() {
         if (needsAuditLogVal != null) return needsAuditLogVal
         needsAuditLogVal = false
-        for (Node fieldNode in getFieldNodes(true, true, false)) {
-            if (fieldNode."@enable-audit-log" == "true") needsAuditLogVal = true
-        }
+        for (Node fieldNode in getFieldNodes(true, true, false))
+            if (fieldNode."@enable-audit-log" == "true" || fieldNode."@enable-audit-log" == "update") needsAuditLogVal = true
         if (needsAuditLogVal) return true
 
-        for (Node fieldNode in getFieldNodes(false, false, true)) {
-            if (fieldNode."@enable-audit-log" == "true") needsAuditLogVal = true
-        }
+        for (Node fieldNode in getFieldNodes(false, false, true))
+            if (fieldNode."@enable-audit-log" == "true" || fieldNode."@enable-audit-log" == "update") needsAuditLogVal = true
         return needsAuditLogVal
     }
 
@@ -199,6 +197,7 @@ public class EntityDefinition {
 
         fieldNode.attributes().put("user-group-id", userField.userGroupId)
         if (userField.enableAuditLog == "Y") fieldNode.attributes().put("enable-audit-log", "true")
+        if (userField.enableAuditLog == "U") fieldNode.attributes().put("enable-audit-log", "update")
         if (userField.enableLocalization == "Y") fieldNode.attributes().put("enable-localization", "true")
         if (userField.encrypt == "Y") fieldNode.attributes().put("encrypt", "true")
 

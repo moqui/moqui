@@ -140,10 +140,17 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="encrypt" default="false" type="boolean"/>
             <xs:attribute name="enable-audit-log" default="false" type="boolean">
                 <xs:annotation><xs:documentation>
-                    If true whenever the value for this field on a record changes the Entity Facade will record the
-                    change in the moqui.entity.EntityAuditLog entity.
-                    Defaults to false.
+                    Defaults to false. If true whenever the value for this field on a record changes the Entity Facade
+                    will record the change (create or update) in the moqui.entity.EntityAuditLog entity. If set to
+                    update will not create an audit record for the initial create, only for updates.
                 </xs:documentation></xs:annotation>
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="true"/>
+                        <xs:enumeration value="false"/>
+                        <xs:enumeration value="update"/>
+                    </xs:restriction>
+                </xs:simpleType>
             </xs:attribute>
             <xs:attribute name="enable-localization" default="false" type="boolean">
                 <xs:annotation><xs:documentation>
