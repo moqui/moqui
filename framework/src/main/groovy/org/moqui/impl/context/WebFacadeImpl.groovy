@@ -426,7 +426,7 @@ class WebFacadeImpl implements WebFacade {
     }
 
     @Override
-    void sendResourceResponse(String location) { }
+    void sendResourceResponse(String location) { sendResourceResponse(location, false) }
     void sendResourceResponse(String location, boolean inline) {
         ResourceReference rr = eci.resource.getLocationReference(location)
         if (rr == null) throw new IllegalArgumentException("Resource not found at: ${location}")
