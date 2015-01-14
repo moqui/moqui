@@ -29,7 +29,7 @@ New Features:
   Apache Derby to 10.11.1.1, Apache FOP to 1.1 (now includes Batik 1.7),
   Apache Lucene to 4.9.1, Apache Shiro to 1.2.3, Ehcache to 2.8.3,
   ElasticSearch to 1.3.4, Freemarker to 2.3.21, Groovy to 2.3.7,
-  Liquibase to 3.2.2, OrientDB to 1.7.9, Winstone to 1.0.6
+  Liquibase to 3.2.2, OrientDB to 1.7.9, Winstone to 1.7.0
 - Updated Metis Admin Template to version 2.2.7, thanks to contribution
   from Osman Nuri Okumuş (onokumus), the author of Metis; this updates
   jQuery to 2.1.1, jQuery UI to 1.11.0, Bootstrap to 3.2.0, and various
