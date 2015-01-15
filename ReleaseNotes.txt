@@ -126,6 +126,8 @@ New Features:
     as XML Actions econdition.@operator
   - Added update option to field.enable-audit-log to create audit records
     for updates only, not creates
+  - Added entity.@sequence-primary-prefix attribute for a per-entity prefix
+    that can be and expanded string expression using field values, etc
 
 Bug Fixes:
 

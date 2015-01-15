@@ -68,6 +68,10 @@ This Work includes contributions authored by David E. Jones, not as a
                     be incremented by 1, otherwise the current sequence ID will be incremented by a value between 1 and
                     staggerMax.</xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="sequence-primary-prefix" type="xs:string">
+                <xs:annotation><xs:documentation>Prefix to apply to primary sequenced ID values for this entity.
+                    Can be an expression (string expansion) with the current value added to the context.</xs:documentation></xs:annotation>
+            </xs:attribute>
             <xs:attribute name="sequence-secondary-padded-length" type="xs:nonNegativeInteger" default="2">
                 <xs:annotation><xs:documentation>If specified front-pads the secondary sequenced value with zeroes
                     until it is this length. Defaults to 2.</xs:documentation></xs:annotation>
