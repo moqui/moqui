@@ -159,6 +159,9 @@ Bug Fixes:
 - Fixed issue with deepCopyNode copying attributes, the original Node's
   attribute Map was used instead of being copied allowing attributes to be
   modified in the copy of the Node
+- Fixed thread deadlock issue in dev mode (with ArtifactHit entity logging
+  enabled) caused by refreshing DataFeed and DataDocument settings in a
+  scheduled job and page request happening around the same time
 
 ===========================================================================
 Release 1.4.1 - 01 Aug 2014
