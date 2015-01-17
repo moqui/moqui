@@ -912,8 +912,8 @@ class EntityFacadeImpl implements EntityFacade {
             bank[0] += 1
         }
 
-        String prefix = this.ecfi.getConfXmlRoot()."entity-facade"[0]."@sequenced-id-prefix"
-        return (prefix?:"") + seqNum.toString()
+        String prefix = this.ecfi.getConfXmlRoot()."entity-facade"[0]."@sequenced-id-prefix" ?: ""
+        return prefix + seqNum.toString()
     }
 
     String getEntityGroupName(EntityDefinition ed) {
