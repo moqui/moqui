@@ -104,6 +104,11 @@ This Work includes contributions authored by David E. Jones, not as a
             partly documented here:
 
             http://lucene.apache.org/core/4_9_1/queryparser/org/apache/lucene/queryparser/classic/package-summary.html
+            http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html#query-string-syntax
+
+            Sort options are described here:
+
+            http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-request-sort.html
         </description>
         <in-parameters>
             <parameter name="indexName" required="true"/>

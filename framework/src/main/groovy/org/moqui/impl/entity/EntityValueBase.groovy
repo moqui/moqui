@@ -289,7 +289,13 @@ abstract class EntityValueBase implements EntityValue {
         Node entityNode = getEntityDefinition().getEntityNode()
         Long staggerMax = (entityNode."@sequence-primary-stagger" as Long) ?: 1
         Long bankSize = (entityNode."@sequence-bank-size" as Long) ?: 50
-        set(pkFields.get(0), getEntityFacadeImpl().sequencedIdPrimary(getEntityName(), staggerMax, bankSize))
+
+        // get the entity-specific prefix, support string expansion for it too
+        String entityPrefix = ""
+        String rawPrefix = getEntityDefinition().getEntityNode()?."@sequence-primary-prefix"
+        if (rawPrefix) entityPrefix = efi.getEcfi().getResourceFacade().evaluateStringExpand(rawPrefix, null, valueMap)
+
+        set(pkFields.get(0), entityPrefix + getEntityFacadeImpl().sequencedIdPrimary(getEntityName(), staggerMax, bankSize))
         return this
     }
 
@@ -409,7 +415,7 @@ abstract class EntityValueBase implements EntityValue {
         addThreeFieldPkValues(pksValueMap)
 
         for (Node fieldNode in ed.getFieldNodes(true, true, true)) {
-            if (fieldNode."@enable-audit-log" == "true") {
+            if (fieldNode."@enable-audit-log" == "true" || (isUpdate && fieldNode."@enable-audit-log" == "update")) {
                 String fieldName = fieldNode."@name"
 
                 // is there a new value? if not continue

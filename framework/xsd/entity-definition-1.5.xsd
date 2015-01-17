@@ -68,6 +68,10 @@ This Work includes contributions authored by David E. Jones, not as a
                     be incremented by 1, otherwise the current sequence ID will be incremented by a value between 1 and
                     staggerMax.</xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="sequence-primary-prefix" type="xs:string">
+                <xs:annotation><xs:documentation>Prefix to apply to primary sequenced ID values for this entity.
+                    Can be an expression (string expansion) with the current value added to the context.</xs:documentation></xs:annotation>
+            </xs:attribute>
             <xs:attribute name="sequence-secondary-padded-length" type="xs:nonNegativeInteger" default="2">
                 <xs:annotation><xs:documentation>If specified front-pads the secondary sequenced value with zeroes
                     until it is this length. Defaults to 2.</xs:documentation></xs:annotation>
@@ -102,6 +106,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="table-name" type="xs:string"/>
             <xs:attribute name="group-name" type="xs:string" use="optional"/>
             <xs:attribute name="sequence-bank-size" type="xs:string"/>
+            <xs:attribute name="sequence-primary-prefix" type="xs:string"/>
             <xs:attribute name="optimistic-lock" default="false" type="boolean"/>
             <xs:attribute name="no-update-stamp" default="false" type="boolean"/>
             <xs:attribute name="cache" default="false" type="cache-options"/>
@@ -140,10 +145,17 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="encrypt" default="false" type="boolean"/>
             <xs:attribute name="enable-audit-log" default="false" type="boolean">
                 <xs:annotation><xs:documentation>
-                    If true whenever the value for this field on a record changes the Entity Facade will record the
-                    change in the moqui.entity.EntityAuditLog entity.
-                    Defaults to false.
+                    Defaults to false. If true whenever the value for this field on a record changes the Entity Facade
+                    will record the change (create or update) in the moqui.entity.EntityAuditLog entity. If set to
+                    update will not create an audit record for the initial create, only for updates.
                 </xs:documentation></xs:annotation>
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="true"/>
+                        <xs:enumeration value="false"/>
+                        <xs:enumeration value="update"/>
+                    </xs:restriction>
+                </xs:simpleType>
             </xs:attribute>
             <xs:attribute name="enable-localization" default="false" type="boolean">
                 <xs:annotation><xs:documentation>
