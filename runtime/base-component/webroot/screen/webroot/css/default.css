@@ -130,6 +130,8 @@ white-space: normal;
 
 .form-text-find input, .form-range-find input { display: inline-block; }
 
+fieldset span.form-display { display: inline-block; padding-top: 7px; }
+
 /* This is the +/- in the header, use fixed width font for consistent sizing, Courier New has the best vertical alignment with + and - */
 a.form-order-by { margin: 0px; padding: 0px; font-family: "Courier New", monospace; font-weight: bold; font-size: 1.2em; vertical-align: top; }
 a.form-order-by:hover { color: blue; }

@@ -206,14 +206,16 @@ ${sri.renderSection(.node["@name"])}
 </#macro>
 
 <#-- ================ Containers ================ -->
+<#macro nodeId widgetNode><#if .node["@id"]?has_content>${ec.resource.evaluateStringExpand(widgetNode["@id"], "")}_${widgetNode["@id"]}<#if listEntryIndex?has_content>_${listEntryIndex}</#if><#if sectionEntryIndex?has_content>_${sectionEntryIndex}</#if></#if></#macro>
+
 <#macro container>
-    <#assign divId><#if .node["@id"]?has_content>${ec.resource.evaluateStringExpand(.node["@id"], "")}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#if></#assign>
+    <#assign divId><@nodeId .node/></#assign>
     <${.node["@type"]!"div"}<#if divId??> id="${divId}"</#if><#if .node["@style"]?has_content> class="${ec.resource.evaluateStringExpand(.node["@style"], "")}"</#if>><#recurse>
     </${.node["@type"]!"div"}>
 </#macro>
 
 <#macro "container-box">
-    <#assign divId><#if .node["@id"]?has_content>${ec.resource.evaluateStringExpand(.node["@id"], "")}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#if></#assign>
+    <#assign divId><@nodeId .node/></#assign>
     <div class="box"<#if divId??> id="${divId}"</#if>>
         <header>
             <#recurse .node["box-header"][0]>
@@ -231,7 +233,7 @@ ${sri.renderSection(.node["@name"])}
 </#macro>
 
 <#macro "container-row">
-    <#assign divId><#if .node["@id"]?has_content>${ec.resource.evaluateStringExpand(.node["@id"], "")}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#if></#assign>
+    <#assign divId><@nodeId .node/></#assign>
     <div class="row<#if .node["@style"]?has_content> ${ec.resource.evaluateStringExpand(.node["@style"], "")}</#if>"<#if divId?has_content> id="${divId}"</#if>>
         <#list .node["row-col"] as rowColNode>
             <div class="<#if rowColNode["@lg"]?has_content> col-lg-${rowColNode["@lg"]}</#if><#if rowColNode["@md"]?has_content> col-md-${rowColNode["@md"]}</#if><#if rowColNode["@sm"]?has_content> col-sm-${rowColNode["@sm"]}</#if><#if rowColNode["@xs"]?has_content> col-xs-${rowColNode["@xs"]}</#if><#if rowColNode["@style"]?has_content> ${ec.resource.evaluateStringExpand(rowColNode["@style"], "")}</#if>">
@@ -242,7 +244,7 @@ ${sri.renderSection(.node["@name"])}
 </#macro>
 
 <#macro "container-panel">
-    <#assign panelId><#if .node["@id"]?has_content>${ec.resource.evaluateStringExpand(.node["@id"], "")}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#if></#assign>
+    <#assign panelId><@nodeId .node/></#assign>
     <#-- DEJ 24 Jan 2014: disabling dynamic panels for now, need to research with new Metis admin theme:
     <#if .node["@dynamic"]! == "true">
         <#assign afterScreenScript>
@@ -304,7 +306,7 @@ ${sri.renderSection(.node["@name"])}
 
 <#macro "container-dialog">
     <#assign buttonText = ec.resource.evaluateStringExpand(.node["@button-text"], "")>
-    <#assign divId><#if .node["@id"]?has_content>${ec.resource.evaluateStringExpand(.node["@id"], "")}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#if></#assign>
+    <#assign divId><@nodeId .node/></#assign>
     <button id="${divId}-button" type="button" data-toggle="modal" data-target="#${divId}" data-original-title="${buttonText}" data-placement="bottom" class="btn btn-primary btn-sm"><i class="glyphicon glyphicon-share"></i> ${buttonText}</button>
     <#if _openDialog! == divId><#assign afterScreenScript>$('#${divId}').modal('show'); </#assign><#t>${sri.appendToScriptWriter(afterScreenScript)}</#if>
     <div id="${divId}" class="modal fade container-dialog" aria-hidden="true" style="display: none;">
@@ -334,7 +336,7 @@ ${sri.renderSection(.node["@name"])}
 </#macro>
 
 <#macro "dynamic-container">
-    <#assign divId><#if .node["@id"]?has_content>${ec.resource.evaluateStringExpand(.node["@id"], "")}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#if></#assign>
+    <#assign divId><@nodeId .node/></#assign>
     <#assign urlInfo = sri.makeUrlByType(.node["@transition"], "transition", .node, "true").addParameter("_dynamic_container_id", divId)>
     <div id="${divId}"><img src="/images/wait_anim_16x16.gif" alt="Loading..."></div>
     <#assign afterScreenScript>
@@ -347,7 +349,7 @@ ${sri.renderSection(.node["@name"])}
 <#macro "dynamic-dialog">
     <#assign buttonText = ec.resource.evaluateStringExpand(.node["@button-text"], "")>
     <#assign urlInfo = sri.makeUrlByType(.node["@transition"], "transition", .node, "true")>
-    <#assign divId><#if .node["@id"]?has_content>${ec.resource.evaluateStringExpand(.node["@id"], "")}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#if></#assign>
+    <#assign divId><@nodeId .node/></#assign>
 
     <button id="${divId}-button" type="button" data-toggle="modal" data-target="#${divId}" data-original-title="${buttonText}" data-placement="bottom" class="btn btn-primary btn-sm"><i class="glyphicon glyphicon-share"></i> ${buttonText}</button>
     <div id="${divId}" class="modal fade dynamic-dialog" aria-hidden="true" style="display: none;">
@@ -445,7 +447,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#if linkNode["@condition"]?has_content><#assign conditionResult = ec.resource.evaluateCondition(linkNode["@condition"], "")><#else><#assign conditionResult = true></#if>
     <#if conditionResult>
         <#assign urlInfo = sri.makeUrlByType(.node["@url"], .node["@url-type"]!"transition", .node, .node["@expand-transition-url"]!"true")>
-        <#assign divId><#if .node["@id"]?has_content>${ec.resource.evaluateStringExpand(.node["@id"], "")}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#if></#assign>
+        <#assign divId><@nodeId .node/></#assign>
         <@linkFormForm linkNode divId urlInfo/>
         <@linkFormLink linkNode divId urlInfo/>
     </#if>
@@ -513,7 +515,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#if conditionResult>
         <#assign labelType = .node["@type"]?default("span")/>
         <#assign labelValue = ec.resource.evaluateStringExpand(.node["@text"], "")/>
-        <#assign divId><#if .node["@id"]?has_content>${ec.resource.evaluateStringExpand(.node["@id"], "")}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#if></#assign>
+        <#assign divId><@nodeId .node/></#assign>
         <#if (labelValue?has_content && labelValue?length < 255)><#assign labelValue = ec.l10n.getLocalizedMessage(labelValue)/></#if>
         <#if labelValue?trim?has_content>
         <${labelType}<#if divId?has_content> id="${divId}"</#if><#if .node["@style"]?has_content> class="${ec.resource.evaluateStringExpand(.node["@style"], "")}"</#if>><#if !.node["@encode"]?has_content || .node["@encode"] == "true">${labelValue?html?replace("\n", "<br>")}<#else>${labelValue}</#if></${labelType}>
@@ -524,7 +526,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#-- for docs on JS usage see: http://www.appelsiini.net/projects/jeditable -->
     <#assign urlInfo = sri.makeUrlByType(.node["@transition"], "transition", .node, "true")>
     <#assign urlParms = urlInfo.getParameterMap()>
-    <#assign divId>${ec.resource.evaluateStringExpand(.node["@id"]?if_exists, "")}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#assign>
+    <#assign divId><@nodeId .node/></#assign>
     <#assign labelType = .node["@type"]?default("span")>
     <#assign labelValue = ec.resource.evaluateStringExpand(.node["@text"], "")>
     <#assign parameterName = .node["@parameter-name"]!"value">
@@ -558,8 +560,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#assign skipStart = (formNode["@skip-start"]! == "true")>
     <#assign skipEnd = (formNode["@skip-end"]! == "true")>
     <#assign urlInfo = sri.makeUrlByType(formNode["@transition"], "transition", null, "false")>
-    <#assign formId = ec.resource.evaluateStringExpand(formNode["@name"], "")>
-    <#-- shouldn't need this, and causes problems in section-iterate with single forms: <#assign listEntryIndex = ""> -->
+    <#assign formId>${ec.resource.evaluateStringExpand(formNode["@name"], "")}<#if sectionEntryIndex?has_content>_${sectionEntryIndex}</#if></#assign>
     <#assign inFieldRow = false>
     <#assign bigRow = false>
     <#if !skipStart>
@@ -836,7 +837,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
 <#if sri.doBoundaryComments()><!-- BEGIN form-list[@name=${.node["@name"]}] --></#if>
     <#-- Use the formNode assembled based on other settings instead of the straight one from the file: -->
     <#assign formNode = sri.getFtlFormNode(.node["@name"])>
-    <#assign formId = ec.resource.evaluateStringExpand(formNode["@name"], "")>
+    <#assign formId>${ec.resource.evaluateStringExpand(formNode["@name"], "")}<#if sectionEntryIndex?has_content>_${sectionEntryIndex}</#if></#assign>
     <#assign isMulti = formNode["@multi"]! == "true">
     <#assign isMultiFinalRow = false>
     <#assign skipStart = (formNode["@skip-start"]! == "true")>
@@ -1146,8 +1147,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
 </#macro>
 <#macro "row-actions"><#-- do nothing, these are run by the SRI --></#macro>
 
-<#macro fieldName widgetNode><#assign fieldNode=widgetNode?parent?parent/>${fieldNode["@name"]?html}<#if isMulti?exists && isMulti && listEntryIndex?has_content>_${listEntryIndex}</#if></#macro>
-<#macro fieldId widgetNode><#assign fieldNode=widgetNode?parent?parent/>${ec.resource.evaluateStringExpand(fieldNode?parent["@name"], "")}_${fieldNode["@name"]}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#macro>
+<#macro fieldName widgetNode><#assign fieldNode=widgetNode?parent?parent/>${fieldNode["@name"]?html}<#if isMulti?exists && isMulti && listEntryIndex?has_content>_${listEntryIndex}</#if><#if sectionEntryIndex?has_content>_${sectionEntryIndex}</#if></#macro>
+<#macro fieldId widgetNode><#assign fieldNode=widgetNode?parent?parent/>${ec.resource.evaluateStringExpand(fieldNode?parent["@name"], "")}_${fieldNode["@name"]}<#if listEntryIndex?has_content>_${listEntryIndex}</#if><#if sectionEntryIndex?has_content>_${sectionEntryIndex}</#if></#macro>
 <#macro fieldTitle fieldSubNode><#assign titleValue><#if fieldSubNode["@title"]?has_content>${ec.resource.evaluateStringExpand(fieldSubNode["@title"], "")}<#else><#list fieldSubNode?parent["@name"]?split("(?=[A-Z])", "r") as nameWord>${nameWord?cap_first?replace("Id", "ID")}<#if nameWord_has_next> </#if></#list></#if></#assign>${ec.l10n.getLocalizedMessage(titleValue)}</#macro>
 
 <#macro field><#-- shouldn't be called directly, but just in case --><#recurse/></#macro>
@@ -1367,7 +1368,7 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
     <#else>
         <#assign fieldValue = sri.getFieldValueString(.node?parent?parent, "", .node["@format"]!)>
     </#if>
-    <#t><span id="<@fieldId .node/>" class="${sri.getFieldValueClass(.node?parent?parent)}<#if .node["@currency-unit-field"]?has_content> currency</#if>"><#if .node["@encode"]! == "false">${fieldValue!"&nbsp;"}<#else>${(fieldValue!" ")?html?replace("\n", "<br>")}</#if></span>
+    <#t><span id="<@fieldId .node/>" class="form-display ${sri.getFieldValueClass(.node?parent?parent)}<#if .node["@currency-unit-field"]?has_content> currency</#if>"><#if .node["@encode"]! == "false">${fieldValue!"&nbsp;"}<#else>${(fieldValue!" ")?html?replace("\n", "<br>")}</#if></span>
     <#t><#if !.node["@also-hidden"]?has_content || .node["@also-hidden"] == "true">
         <#-- use getFieldValuePlainString() and not getFieldValueString() so we don't do timezone conversions, etc -->
         <input type="hidden" name="<@fieldName .node/>" value="${sri.getFieldValuePlainString(.node?parent?parent, fieldValue!"")?html}">
@@ -1375,7 +1376,7 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
 </#macro>
 <#macro "display-entity">
     <#assign fieldValue = ""/><#assign fieldValue = sri.getFieldEntityValue(.node)/>
-    <#t><#if formNode?node_name == "form-single"><span id="<@fieldId .node/>"></#if><#if .node["@encode"]!"true" == "false">${fieldValue!"&nbsp;"}<#else>${(fieldValue!" ")?html?replace("\n", "<br>")}</#if><#if formNode?node_name == "form-single"></span></#if>
+    <#t><#if formNode?node_name == "form-single"><span id="<@fieldId .node/>" class="form-display"></#if><#if .node["@encode"]!"true" == "false">${fieldValue!"&nbsp;"}<#else>${(fieldValue!" ")?html?replace("\n", "<br>")}</#if><#if formNode?node_name == "form-single"></span></#if>
     <#t><#if !.node["@also-hidden"]?has_content || .node["@also-hidden"] == "true"><input type="hidden" name="<@fieldName .node/>" value="${sri.getFieldValuePlainString(.node?parent?parent, fieldValue!"")?html}"></#if>
 </#macro>
 
