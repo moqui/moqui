@@ -79,19 +79,20 @@ class ElFinderConnector {
 
     Map getResourceInfo(ResourceReference ref) {
         Map info = [:]
-        info.name = isRoot(ref.getLocation()) ? (resourceRoot.endsWith("/") ? resourceRoot.substring(0, resourceRoot.length() - 1) : resourceRoot) : ref.getFileName()
+        boolean curRoot = isRoot(ref.getLocation())
+        info.name = curRoot ? (resourceRoot.endsWith("/") ? resourceRoot.substring(0, resourceRoot.length() - 1) : resourceRoot) : ref.getFileName()
         String location = ref.getLocation()
         String relativePath = getPathRelativeToRoot(location)
         info.hash = hash(relativePath)
 
-        if (isRoot(ref.getLocation())) {
+        if (curRoot) {
             info.volumeid = volumeId
         } else {
             String parentPath = relativePath.contains("/") ? relativePath.substring(0, relativePath.lastIndexOf("/")) : "root"
             // logger.warn("======= phash: location=${location}, relativePath=${relativePath}, parentPath=${parentPath}")
             info.phash = hash(parentPath)
         }
-        info.mime = ref.isDirectory() ? "directory" : ref.getContentType()
+        info.mime = curRoot || ref.isDirectory() ? "directory" : ref.getContentType()
         if (ref.supportsLastModified()) info.ts = ref.getLastModified()
         if (ref.supportsSize()) info.size = ref.getSize()
         info.dirs = hasChildDirectories(ref) ? 1 : 0
