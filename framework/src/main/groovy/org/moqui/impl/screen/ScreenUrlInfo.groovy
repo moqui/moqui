@@ -333,6 +333,9 @@ class ScreenUrlInfo {
             this.fromScreenPath = this.fromScreenPath.substring(0, this.fromScreenPath.indexOf("?"))
         }
 
+        // support string expansion if there is a "${"
+        if (fromScreenPath.contains('${')) fromScreenPath = ec.getResource().evaluateStringExpand(fromScreenPath, "")
+
         if (fromScreenPath.startsWith("//")) {
             // find the screen by name
             fromSd = rootSd
