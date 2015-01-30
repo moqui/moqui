@@ -547,7 +547,7 @@ class EntityFacadeImpl implements EntityFacade {
 
         List<EntityEcaRule> lst = eecaRulesByEntityName.get(entityName)
         for (EntityEcaRule eer in lst) {
-            eer.runIfMatches(entityName, fieldValues, operation, before, ecfi.executionContext)
+            eer.runIfMatches(entityName, fieldValues, operation, before, ecfi.getExecutionContext())
         }
 
         if (entityName == "moqui.entity.ServiceTrigger" && operation == "create" && !before) runServiceTrigger(fieldValues)
