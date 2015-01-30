@@ -102,13 +102,14 @@ public class ScreenFacadeImpl implements ScreenFacade {
                     screenRr.getLastModified() == permSd.sourceLastModified) {
                 //logger.warn("========= screen expired but hasn't changed so reusing: ${location}")
 
-                // call this just in case a new screen was added
+                // call this just in case a new screen was added, note this does slow things down just a bit, but only in dev (not in production)
                 permSd.populateSubscreens()
 
                 screenLocationCache.put(location, permSd)
                 return permSd
             } else {
                 screenLocationPermCache.remove(location)
+                logger.info("Screen modified since last loaded, reloading: ${location}")
             }
         }
 

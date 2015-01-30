@@ -11,6 +11,8 @@
  */
 package org.moqui.impl.context
 
+import org.moqui.impl.entity.EntityValueBase
+
 import java.sql.Timestamp
 
 import org.moqui.context.ArtifactAuthorizationException
@@ -21,10 +23,8 @@ import org.moqui.entity.EntityList
 import org.moqui.entity.EntityFind
 import org.moqui.entity.EntityCondition.ComparisonOperator
 import org.moqui.entity.EntityValue
-import org.moqui.entity.EntityCondition.JoinOperator
 import org.moqui.impl.entity.EntityDefinition
 import org.moqui.impl.entity.EntityFacadeImpl
-import org.moqui.entity.EntityConditionFactory
 import org.moqui.entity.EntityCondition
 
 import org.slf4j.Logger
@@ -48,6 +48,8 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
     protected Map<String, Boolean> artifactTypeAuthzEnabled = new HashMap()
     protected Map<String, Boolean> artifactTypeTarpitEnabled = new HashMap()
     protected EntityCondition nameIsPatternEqualsY
+    // this is used by ScreenUrlInfo.isPermitted() which is called a lot, but that is transient so put here to have one per EC instance
+    Map<String, Boolean> screenPermittedCache = [:]
 
     protected boolean authzDisabled = false
     protected boolean entityEcaDisabled = false
@@ -277,7 +279,6 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
             return true
         }
 
-        EntityList aacvList
         EntityValue denyAacv = null
 
         // don't check authz for these queries, would cause infinite recursion
@@ -301,6 +302,8 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
             */
 
             // The new way: get a basic list by UserGroups from the UserFacadeImpl, then filter it down
+
+            /* use custom logic here instead of EntityList.filterByCondition, this is run a lot so make it more efficient:
             EntityConditionFactory ecf = efi.getConditionFactory()
             EntityCondition aacvCond = ecf.makeCondition([
                         ecf.makeCondition("artifactTypeEnumId", ComparisonOperator.EQUALS, aeii.getTypeEnumId()),
@@ -308,9 +311,21 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                         ecf.makeCondition(
                             ecf.makeCondition("artifactName", ComparisonOperator.EQUALS, aeii.getName()),
                             JoinOperator.OR, nameIsPatternEqualsY)])
-            aacvList = ufi.getArtifactAuthzCheckList().cloneList()
+            EntityList aacvList = ufi.getArtifactAuthzCheckList().cloneList()
             // if ("AT_XML_SCREEN" == aeii.typeEnumId && aeii.getName().contains("FOO")) logger.warn("TOREMOVE artifact isPermitted aacvList before filter: ${aacvList}")
             aacvList = aacvList.filterByCondition(aacvCond, true)
+            */
+
+            EntityList origAacvList = ufi.getArtifactAuthzCheckList()
+            List<EntityValue> aacvList = []
+            for (EntityValue aacv in origAacvList) {
+                Map aacvMap = ((EntityValueBase) aacv).getValueMap()
+                if (aacvMap.get("artifactTypeEnumId") == aeii.getTypeEnumId() &&
+                        (aacvMap.get("authzActionEnumId") == "AUTHZA_ALL" ||  aacvMap.get("authzActionEnumId") == aeii.getActionEnumId()) &&
+                        (aacvMap.get("nameIsPattern") == "Y" || aacvMap.get("artifactName") == aeii.getName())) {
+                    aacvList.add(aacv)
+                }
+            }
 
             // if ("AT_XML_SCREEN" == aeii.typeEnumId && aeii.getName().contains("FOO")) logger.warn("TOREMOVE for aeii [${aeii}] artifact isPermitted aacvList: ${aacvList}; aacvCond: ${aacvCond}")
 
