@@ -110,7 +110,36 @@ This Work includes contributions authored by David E. Jones, not as a
                 </iterate>
             </iterate>
 
-            <!-- TODO combine include, exclude, and always Maps to single entityIncludeList -->
+            <!-- combine include, exclude, and always Maps to single entityIncludeList -->
+            <set field="entityIncludeList" from="[]"/>
+            <!-- NOTE: no reason to iterate excludeMap, if not in includeMap ignore it -->
+            <iterate list="includeMap" entry="incMapList" key="entityName">
+                <if condition="alwaysMap.containsKey(entityName)">
+                    <script>entityIncludeList.add([entityName:entityName, includeFilterList:alwaysMap.get(entityName)])</script>
+                    <!-- remove entity from alwaysMap -->
+                    <script>alwaysMap.remove(entityName)</script>
+
+                    <else>
+                        <set field="entryMap" from="[entityName:entityName, includeFilterList:incMapList]"/>
+                        <if condition="excludeMap.containsKey(entityName)">
+                            <set field="excMapList" from="excludeMap.get(entityName)"/>
+                            <if condition="excMapList">
+                                <script>entryMap.put('excludeFilterList', excMapList); entityIncludeList.add(entryMap)</script>
+                                <!-- otherwise if no filter on exclude leave out the whole entity, ie do nothing -->
+                            </if>
+
+                            <else>
+                                <!-- no exclude, add it as-is -->
+                                <script>entityIncludeList.add(entryMap)</script>
+                            </else>
+                        </if>
+                    </else>
+                </if>
+            </iterate>
+            <!-- iterate through what remains in alwaysMap and add it -->
+            <iterate list="alwaysMap" entry="alwMapList" key="entityName">
+                <script>entityIncludeList.add([entityName:entityName, includeFilterList:alwMapList])</script>
+            </iterate>
         </actions>
     </service>
 </services>
