@@ -1039,6 +1039,12 @@ class EntityFacadeImpl implements EntityFacade {
         return sqlType
     }
 
+    protected static final Map<String, Integer> fieldTypeIntMap = [
+            "id":1, "id-long":1, "text-indicator":1, "text-short":1, "text-medium":1, "text-long":1, "text-very-long":1,
+            "date-time":2, "time":3, "date":4,
+            "number-integer":6, "number-float":8,
+            "number-decimal":9, "currency-amount":9, "currency-precise":9,
+            "binary-very-long":12 ]
     protected static final Map<String, Integer> javaIntTypeMap = [
             "java.lang.String":1, "String":1, "org.codehaus.groovy.runtime.GStringImpl":1,
             "java.sql.Timestamp":2, "Timestamp":2,

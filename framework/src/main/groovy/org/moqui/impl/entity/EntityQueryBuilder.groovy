@@ -194,39 +194,48 @@ class EntityQueryBuilder {
     static void getResultSetValue(ResultSet rs, int index, Node fieldNode, EntityValueImpl entityValueImpl,
                                             EntityFacadeImpl efi) throws EntityException {
         String fieldName = fieldNode."@name"
-        String javaType = fieldNode."@type" ? efi.getFieldJavaType((String) fieldNode."@type", entityValueImpl.getEntityDefinition()) : "String"
-        int typeValue = EntityFacadeImpl.getJavaTypeInt(javaType)
+        String fieldType = fieldNode."@type"
+        // jump straight to the type int for common/OOTB field types for FAR better performance than hunting through conf elements
+        Integer directTypeInt = EntityFacadeImpl.fieldTypeIntMap.get(fieldType)
+        int typeValue
+        if (directTypeInt == null) {
+            String javaType = fieldType ? efi.getFieldJavaType(fieldType, entityValueImpl.getEntityDefinition()) : "String"
+            typeValue = EntityFacadeImpl.getJavaTypeInt(javaType)
+        } else {
+            typeValue = directTypeInt
+        }
 
         Object value = null
         try {
-            ResultSetMetaData rsmd = rs.getMetaData()
-            int colType = rsmd.getColumnType(index)
-
             switch (typeValue) {
             case 1:
-                if (Types.CLOB == colType) {
-                    // if the String is empty, try to get a text input stream, this is required for some databases
-                    // for larger fields, like CLOBs
-                    Clob valueClob = rs.getClob(index)
-                    Reader valueReader = null
-                    if (valueClob != null) {
-                        valueReader = valueClob.getCharacterStream()
-                    }
-
-                    if (valueReader != null) {
-                        // read up to 4096 at a time
-                        char[] inCharBuffer = new char[4096]
-                        StringBuilder strBuf = new StringBuilder()
-                        try {
-                            int charsRead
-                            while ((charsRead = valueReader.read(inCharBuffer, 0, 4096)) > 0) {
-                                strBuf.append(inCharBuffer, 0, charsRead)
+                // getMetaData and the column type are somewhat slow (based on profiling), and String values are VERY
+                //     common, so only do for text-very-long
+                if (fieldType == "text-very-long") {
+                    ResultSetMetaData rsmd = rs.getMetaData()
+                    if (Types.CLOB == rsmd.getColumnType(index)) {
+                        // if the String is empty, try to get a text input stream, this is required for some databases
+                        // for larger fields, like CLOBs
+                        Clob valueClob = rs.getClob(index)
+                        Reader valueReader = null
+                        if (valueClob != null) valueReader = valueClob.getCharacterStream()
+                        if (valueReader != null) {
+                            // read up to 4096 at a time
+                            char[] inCharBuffer = new char[4096]
+                            StringBuilder strBuf = new StringBuilder()
+                            try {
+                                int charsRead
+                                while ((charsRead = valueReader.read(inCharBuffer, 0, 4096)) > 0) {
+                                    strBuf.append(inCharBuffer, 0, charsRead)
+                                }
+                                valueReader.close()
+                            } catch (IOException e) {
+                                throw new EntityException("Error reading long character stream for field [${fieldName}] of entity [${entityValueImpl.getEntityName()}]", e)
                             }
-                            valueReader.close()
-                        } catch (IOException e) {
-                            throw new EntityException("Error reading long character stream for field [${fieldName}] of entity [${entityValueImpl.getEntityName()}]", e)
+                            value = strBuf.toString()
                         }
-                        value = strBuf.toString()
+                    } else {
+                        value = rs.getString(index)
                     }
                 } else {
                     value = rs.getString(index)
