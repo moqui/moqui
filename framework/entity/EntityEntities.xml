@@ -252,9 +252,9 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="applEnumId"/></relationship>
         <seed-data>
             <moqui.basic.EnumerationType description="Entity Sync Artifact Application Type" enumTypeId="EntitySyncArtifactAppl"/>
-            <moqui.basic.Enumeration description="Include" enumId="EgmaInclude" sequenceNum="1" enumTypeId="EntitySyncArtifactAppl"/>
-            <moqui.basic.Enumeration description="Exclude" enumId="EgmaExclude" sequenceNum="2" enumTypeId="EntitySyncArtifactAppl"/>
-            <moqui.basic.Enumeration description="Always Include" enumId="EgmaAlways" sequenceNum="3" enumTypeId="EntitySyncArtifactAppl"/>
+            <moqui.basic.Enumeration description="Include" enumId="EsaaInclude" sequenceNum="1" enumTypeId="EntitySyncArtifactAppl"/>
+            <moqui.basic.Enumeration description="Exclude" enumId="EsaaExclude" sequenceNum="2" enumTypeId="EntitySyncArtifactAppl"/>
+            <moqui.basic.Enumeration description="Always Include" enumId="EsaaAlways" sequenceNum="3" enumTypeId="EntitySyncArtifactAppl"/>
         </seed-data>
     </entity>
     <view-entity entity-name="EntitySyncArtifactDetail" package-name="moqui.entity.sync">
