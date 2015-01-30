@@ -44,8 +44,8 @@ This Work includes contributions authored by David E. Jones, not as a
             <parameter name="entityIncludeList" type="List">
                 <parameter name="entryMap" type="Map">
                     <parameter name="entityName"/>
-                    <parameter name="includeFilter" type="Map"/>
-                    <parameter name="excludeFilter" type="Map"/>
+                    <parameter name="includeFilterList" type="List"/><!-- List of Maps to be ORed together -->
+                    <parameter name="excludeFilterList" type="List"/><!-- List of Maps to be ORed together -->
                 </parameter>
             </parameter>
             <!-- maybe entityIncludeList directly is better for this, then remote system doesn't have to determine which to include/exclude/etc:
