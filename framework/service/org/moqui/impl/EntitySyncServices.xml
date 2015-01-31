@@ -31,7 +31,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </actions>
     </service>
 
-    <service verb="push" noun="EntitySyncData">
+    <service verb="set" noun="EntitySyncData">
         <in-parameters>
             <parameter name="entityData" required="true"/>
         </in-parameters>
@@ -39,27 +39,51 @@ This Work includes contributions authored by David E. Jones, not as a
             <!-- TODO -->
         </actions>
     </service>
-    <service verb="pull" noun="EntitySyncData">
+    <service verb="get" noun="EntitySyncData">
         <in-parameters>
             <parameter name="entityIncludeList" type="List">
                 <parameter name="entryMap" type="Map">
                     <parameter name="entityName"/>
                     <parameter name="includeFilterList" type="List"/><!-- List of Maps to be ORed together -->
-                    <parameter name="excludeFilterList" type="List"/><!-- List of Maps to be ORed together -->
+                    <parameter name="dependents" type="Boolean"/>
                 </parameter>
             </parameter>
-            <!-- maybe entityIncludeList directly is better for this, then remote system doesn't have to determine which to include/exclude/etc:
-            <parameter name="entitySyncArtifactDetailList" type="EntityList" required="true"><description>An EntityList
-                of EntitySyncArtifactDetail view-entity records to specify what to include/exclude from the data set.</description></parameter>
-            -->
-            <parameter name="lastSuccessfulSyncTime" type="Long" required="true"/>
-            <parameter name="syncSplitMillis" type="Long" default="100"/>
+            <parameter name="lastSuccessfulSyncTime" type="Timestamp" required="true"/>
+            <!-- TODO: support syncSplitMillis, just get records between last time and last time plus split -->
+            <parameter name="syncSplitMillis" type="Long" default="1000"/>
         </in-parameters>
         <out-parameters>
             <parameter name="entityData" required="true"/>
         </out-parameters>
         <actions>
-            <!-- TODO -->
+            <script><![CDATA[
+                import org.moqui.context.ExecutionContext
+                import org.moqui.entity.EntityCondition
+                import org.moqui.entity.EntityFind
+                import org.moqui.entity.EntityList
+
+                Writer entityWriter = new java.io.StringWriter()
+                entityWriter.append("<entity-facade-xml>")
+
+                ExecutionContext ec = context.ec
+
+                for (Map entryMap in entityIncludeList) {
+                    EntityFind find = ec.entity.makeFind((String) entryMap.entityName)
+                    find.condition("lastUpdatedStamp", EntityCondition.GREATER_THAN, lastSuccessfulSyncTime)
+
+                    List includeCondList = []
+                    for (Map filterMap in includeFilterList)
+                        includeCondList.add(ec.entity.conditionFactory.makeCondition(filterMap))
+                    if (includeCondList)
+                        find.condition(ec.entity.conditionFactory.makeCondition(includeCondList, EntityCondition.OR))
+
+                    EntityList resultList = find.list()
+                    resultList.writeXmlText((Writer) entityWriter, null, (Boolean) entryMap.dependents)
+                }
+
+                entityWriter.append("</entity-facade-xml>")
+                entityData = entityWriter.toString()
+            ]]></script>
         </actions>
     </service>
 
@@ -72,7 +96,6 @@ This Work includes contributions authored by David E. Jones, not as a
                 <parameter name="entryMap" type="Map">
                     <parameter name="entityName"/>
                     <parameter name="includeFilterList" type="List"/><!-- List of Maps to be ORed together -->
-                    <parameter name="excludeFilterList" type="List"/><!-- List of Maps to be ORed together -->
                 </parameter>
             </parameter>
         </out-parameters>
@@ -85,6 +108,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <set field="includeMap" from="new HashMap()"/>
             <set field="excludeMap" from="new HashMap()"/>
             <set field="alwaysMap" from="new HashMap()"/>
+            <set field="withDependentsSet" from="new HashSet()"/>
             <!-- get this once, iterate as needed for nameIsPattern -->
             <set field="allEntitySet" from="ec.entity.getAllEntityNames()"/>
             <iterate list="esadList" entry="esad">
@@ -99,46 +123,33 @@ This Work includes contributions authored by David E. Jones, not as a
                     <!-- add to Map based on applEnumId of EsaaInclude, EsaaExclude, EsaaAlways -->
                     <set field="curMap" from="esad.applEnumId == 'EsaaExclude' ? excludeMap : (esad.applEnumId == 'EsaaAlways' ? alwaysMap : includeMap)"/>
                     <set field="curMapList" from="curMap.get(entityName) ?: []"/>
-                    <!-- handle esad.filterMap expression
-                        Data structure is for each entity with includeFilter, excludeFilter, and unconditional include or exclude.
-                        If multiple include filters for an entity OR them together. If multiple exclude filters OR together.
-                        If include and exclude filters create condition with combined include AND NOT combined exclude.
-                    -->
                     <if condition="esad.filterMap">
                         <script>curMapList.add(ec.resource.evaluateContextField(esad.filterMap, null))</script></if>
                     <script>curMap.put(entiyName, curMapList)</script>
+                    <script>if (esad.dependents == 'Y') withDependentsSet.add(entityName)</script>
                 </iterate>
             </iterate>
 
-            <!-- combine include, exclude, and always Maps to single entityIncludeList -->
-            <set field="entityIncludeList" from="[]"/>
-            <!-- NOTE: no reason to iterate excludeMap, if not in includeMap ignore it -->
-            <iterate list="includeMap" entry="incMapList" key="entityName">
-                <if condition="alwaysMap.containsKey(entityName)">
-                    <script>entityIncludeList.add([entityName:entityName, includeFilterList:alwaysMap.get(entityName)])</script>
-                    <!-- remove entity from alwaysMap -->
-                    <script>alwaysMap.remove(entityName)</script>
-
-                    <else>
-                        <set field="entryMap" from="[entityName:entityName, includeFilterList:incMapList]"/>
-                        <if condition="excludeMap.containsKey(entityName)">
-                            <set field="excMapList" from="excludeMap.get(entityName)"/>
-                            <if condition="excMapList">
-                                <script>entryMap.put('excludeFilterList', excMapList); entityIncludeList.add(entryMap)</script>
-                                <!-- otherwise if no filter on exclude leave out the whole entity, ie do nothing -->
-                            </if>
-
-                            <else>
-                                <!-- no exclude, add it as-is -->
-                                <script>entityIncludeList.add(entryMap)</script>
-                            </else>
-                        </if>
-                    </else>
-                </if>
+            <!-- remove excludeMap entries from includeMap -->
+            <iterate list="excludeMap" entry="curMapList" key="entityName">
+                <script>includeMap.remove(entityName)</script></iterate>
+            <!-- now add always entries to the includeMap and use it to create the entityIncludeList -->
+            <iterate list="alwaysMap" entry="curMapList" key="entityName">
+                <script>
+                    if (includeMap.containsKey(entityName)) {
+                        List incMapList = includeMap.get(entityName)
+                        incMapList.addAll(curMapList)
+                    } else {
+                        includeMap.put(entityName, curMapList)
+                    }
+                </script>
             </iterate>
-            <!-- iterate through what remains in alwaysMap and add it -->
-            <iterate list="alwaysMap" entry="alwMapList" key="entityName">
-                <script>entityIncludeList.add([entityName:entityName, includeFilterList:alwMapList])</script>
+
+
+            <set field="entityIncludeList" from="[]"/>
+            <iterate list="includeMap" entry="incMapList" key="entityName">
+                <script>entityIncludeList.add([entityName:entityName, includeFilterList:incMapList,
+                                               dependents:(withDependentsSet.contains(entityName) ? 'Y' : 'N')])</script>
             </iterate>
         </actions>
     </service>

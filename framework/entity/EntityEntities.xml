@@ -242,10 +242,19 @@ This Work includes contributions authored by David E. Jones, not as a
         </seed-data>
     </entity>
     <entity entity-name="EntitySyncArtifact" package-name="moqui.entity.sync">
+        <description>
+            Associates a set of entities through ArtifactGroupMember records associated with an ArtifactGroup.
+            ArtifactGroupMember records may have filterMap value and may have nameIsPattern=Y.
+            The filterMap is ignored when the application type is Exclude, it simply excludes the entity altogether. To exclude records use a filterMap on an include.
+            If there are multiple ArtifactGroupMember records with filterMap value for an entity it will OR them together.
+            If include and exclude filters create condition with combined include AND NOT combined exclude.
+        </description>
         <field name="entitySyncId" type="id" is-pk="true"/>
         <field name="artifactGroupId" type="id"><description>Only entity artifacts (artifactTypeEnumId=AT_ENTITY) will
             be used, all others ignored.</description></field>
         <field name="applEnumId" type="id"/>
+        <field name="dependents" type="text-indicator"><description>If Y also include dependents of records, will apply
+            to all records for applicable entities.</description></field>
         <relationship type="one" related-entity-name="moqui.entity.sync.EntitySync"/>
         <relationship type="one" related-entity-name="moqui.security.ArtifactGroup"/>
         <relationship type="one" title="EntitySyncArtifactAppl" related-entity-name="moqui.basic.Enumeration">
@@ -267,6 +276,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <entity entity-name="EntitySyncHistory" package-name="moqui.entity.synchronization">
         <field name="entitySyncId" type="id" is-pk="true"/>
         <field name="startDate" type="date-time" is-pk="true"/>
+        <field name="finishDate" type="date-time"/>
         <field name="statusId" type="id"/>
         <field name="lastSuccessfulSyncTime" type="date-time"/>
         <field name="lastSplitStartTime" type="date-time"/>
