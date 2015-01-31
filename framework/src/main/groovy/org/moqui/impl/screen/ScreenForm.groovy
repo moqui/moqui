@@ -104,6 +104,12 @@ class ScreenForm {
                     ScreenDefinition esd = ecfi.screenFacade.getScreenDefinition(screenLocation)
                     ScreenForm esf = esd ? esd.getForm(formName) : null
                     formNode = esf?.formNode
+
+                    // see if the included section contains any SECTIONS, need to reference those here too!
+                    for (Node inclRefNode in (Collection<Node>) formNode.depthFirst()
+                            .findAll({ it instanceof Node && (it.name() == "section" || it.name() == "section-iterate") })) {
+                        this.sd.sectionByName.put((String) inclRefNode["@name"], esd.getSection((String) inclRefNode["@name"]))
+                    }
                 }
             } else {
                 ScreenForm esf = sd.getForm(extendsForm)

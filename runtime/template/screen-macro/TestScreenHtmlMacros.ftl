@@ -13,7 +13,7 @@ This Work includes contributions authored by David E. Jones, not as a
 <#include "DefaultScreenMacros.html.ftl"/>
 
 <#macro container>
-    <#assign divId><#if .node["@id"]?has_content>${ec.resource.evaluateStringExpand(.node["@id"], "")}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#if></#assign>
-    <${.node["@type"]!"div"}<#if divId??> id="${divId}"</#if><#if .node["@style"]?has_content> class="${.node["@style"]}"</#if>><#recurse>
+    <#assign divId><@nodeId .node/></#assign>
+    <${.node["@type"]!"div"}<#if divId??> id="${divId}"</#if><#if .node["@style"]?has_content> class="${ec.resource.evaluateStringExpand(.node["@style"], "")}"</#if>><#recurse>
     </${.node["@type"]!"div"}><!-- CONTAINER OVERRIDE FOR THE Example.xml screen -->
 </#macro>

@@ -728,9 +728,13 @@ public class EntityDefinition {
 
         Object outValue
         Node fieldNode = this.getFieldNode(name)
-        String javaType = this.efi.getFieldJavaType((String) fieldNode."@type", this)
+
+        String fieldType = fieldNode."@type"
+        String javaType = fieldType ? (EntityFacadeImpl.fieldTypeJavaMap.get(fieldType) ?: efi.getFieldJavaType(fieldType, this)) : "String"
+        Integer typeValue = (fieldType ? EntityFacadeImpl.fieldTypeIntMap.get(fieldType) : null) ?: EntityFacadeImpl.getJavaTypeInt(javaType)
+
         try {
-            switch (EntityFacadeImpl.getJavaTypeInt(javaType)) {
+            switch (typeValue) {
                 case 1: outValue = value; break
                 case 2: // outValue = java.sql.Timestamp.valueOf(value);
                     outValue = efi.getEcfi().getL10nFacade().parseTimestamp(value, null)
@@ -777,9 +781,13 @@ public class EntityDefinition {
 
         String outValue
         Node fieldNode = this.getFieldNode(name)
-        String javaType = this.efi.getFieldJavaType((String) fieldNode."@type", this)
+
+        String fieldType = fieldNode."@type"
+        String javaType = fieldType ? (EntityFacadeImpl.fieldTypeJavaMap.get(fieldType) ?: efi.getFieldJavaType(fieldType, this)) : "String"
+        Integer typeValue = (fieldType ? EntityFacadeImpl.fieldTypeIntMap.get(fieldType) : null) ?: EntityFacadeImpl.getJavaTypeInt(javaType)
+
         try {
-            switch (EntityFacadeImpl.getJavaTypeInt(javaType)) {
+            switch (typeValue) {
                 case 1: outValue = value; break
                 case 2:
                 case 3:

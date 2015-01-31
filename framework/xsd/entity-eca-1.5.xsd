@@ -41,10 +41,12 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="on-create" default="false" type="boolean"/>
             <xs:attribute name="on-update" default="false" type="boolean"/>
             <xs:attribute name="on-delete" default="false" type="boolean"/>
+            <!-- Find EECA rules are deprecated because never used and have a substantial performance hit
             <xs:attribute name="on-find-one" default="false" type="boolean"/>
             <xs:attribute name="on-find-list" default="false" type="boolean"/>
             <xs:attribute name="on-find-iterator" default="false" type="boolean"/>
             <xs:attribute name="on-find-count" default="false" type="boolean"/>
+            -->
             <xs:attribute name="run-before" default="false" type="boolean">
                 <xs:annotation><xs:documentation>If false (default) runs after the entity operation. If true runs before
                     the operation.</xs:documentation></xs:annotation>

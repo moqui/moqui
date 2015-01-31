@@ -155,12 +155,20 @@ class ScreenUrlInfo {
     }
 
     boolean isPermitted() {
-        Deque<ArtifactExecutionInfoImpl> artifactExecutionInfoStack = new LinkedList<ArtifactExecutionInfoImpl>()
+        ArtifactExecutionFacadeImpl aefi = (ArtifactExecutionFacadeImpl) ec.getArtifactExecution()
         String username = ec.getUser().getUsername()
+
+        // if a user is permitted to view a certain location once in a render/ec they can safely be always allowed to, so cache it
+        // add the username to the key just in case user changes during an EC instance
+        String permittedCacheKey = username + fullPathNameList.toString()
+        Boolean cachedPermitted = aefi.screenPermittedCache.get(permittedCacheKey)
+        if (cachedPermitted != null) return cachedPermitted
+
+        Deque<ArtifactExecutionInfoImpl> artifactExecutionInfoStack = new LinkedList<ArtifactExecutionInfoImpl>()
 
         int index = 1
         for (ScreenDefinition screenDef in screenPathDefList) {
-            ArtifactExecutionInfoImpl aeii = new ArtifactExecutionInfoImpl(screenDef.location, "AT_XML_SCREEN", "AUTHZA_VIEW")
+            ArtifactExecutionInfoImpl aeii = new ArtifactExecutionInfoImpl(screenDef.getLocation(), "AT_XML_SCREEN", "AUTHZA_VIEW")
 
             ArtifactExecutionInfoImpl lastAeii = artifactExecutionInfoStack.peekFirst()
 
@@ -172,19 +180,20 @@ class ScreenUrlInfo {
             // if screen is limited to certain tenants, and current tenant is not in the Set, it is not permitted
             if (screenDef.getTenantsAllowed() && !screenDef.getTenantsAllowed().contains(ec.getTenantId())) return false
 
-            if (!((ArtifactExecutionFacadeImpl) ec.getArtifactExecution()).isPermitted(username, aeii, lastAeii,
+            if (!aefi.isPermitted(username, aeii, lastAeii,
                     isLast ? (!screenNode."@require-authentication" || screenNode."@require-authentication" == "true") : false,
                     false, ec.getUser().getNowTimestamp())) {
                 // logger.warn("TOREMOVE user ${username} is NOT allowed to view screen at path ${this.fullPathNameList} because of screen at ${screenDef.location}")
+                aefi.screenPermittedCache.put(permittedCacheKey, false)
                 return false
             }
 
             artifactExecutionInfoStack.addFirst(aeii)
-
             index++
         }
 
         // logger.warn("TOREMOVE user ${username} IS allowed to view screen at path ${this.fullPathNameList}")
+        aefi.screenPermittedCache.put(permittedCacheKey, true)
         return true
     }
 
@@ -332,6 +341,9 @@ class ScreenUrlInfo {
             }
             this.fromScreenPath = this.fromScreenPath.substring(0, this.fromScreenPath.indexOf("?"))
         }
+
+        // support string expansion if there is a "${"
+        if (fromScreenPath.contains('${')) fromScreenPath = ec.getResource().evaluateStringExpand(fromScreenPath, "")
 
         if (fromScreenPath.startsWith("//")) {
             // find the screen by name

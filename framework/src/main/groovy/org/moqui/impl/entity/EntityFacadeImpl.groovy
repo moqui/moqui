@@ -547,7 +547,7 @@ class EntityFacadeImpl implements EntityFacade {
 
         List<EntityEcaRule> lst = eecaRulesByEntityName.get(entityName)
         for (EntityEcaRule eer in lst) {
-            eer.runIfMatches(entityName, fieldValues, operation, before, ecfi.executionContext)
+            eer.runIfMatches(entityName, fieldValues, operation, before, ecfi.getExecutionContext())
         }
 
         if (entityName == "moqui.entity.ServiceTrigger" && operation == "create" && !before) runServiceTrigger(fieldValues)
@@ -1039,6 +1039,20 @@ class EntityFacadeImpl implements EntityFacade {
         return sqlType
     }
 
+    protected static final Map<String, Integer> fieldTypeIntMap = [
+            "id":1, "id-long":1, "text-indicator":1, "text-short":1, "text-medium":1, "text-long":1, "text-very-long":1,
+            "date-time":2, "time":3, "date":4,
+            "number-integer":6, "number-float":8,
+            "number-decimal":9, "currency-amount":9, "currency-precise":9,
+            "binary-very-long":12 ]
+    protected static final Map<String, String> fieldTypeJavaMap = [
+            "id":"java.lang.String", "id-long":"java.lang.String",
+            "text-indicator":"java.lang.String", "text-short":"java.lang.String", "text-medium":"java.lang.String",
+            "text-long":"java.lang.String", "text-very-long":"java.lang.String",
+            "date-time":"java.sql.Timestamp", "time":"java.sql.Time", "date":"java.sql.Date",
+            "number-integer":"java.lang.Long", "number-float":"java.lang.Double",
+            "number-decimal":"java.math.BigDecimal", "currency-amount":"java.math.BigDecimal", "currency-precise":"java.math.BigDecimal",
+            "binary-very-long":"java.sql.Blob" ]
     protected static final Map<String, Integer> javaIntTypeMap = [
             "java.lang.String":1, "String":1, "org.codehaus.groovy.runtime.GStringImpl":1,
             "java.sql.Timestamp":2, "Timestamp":2,
