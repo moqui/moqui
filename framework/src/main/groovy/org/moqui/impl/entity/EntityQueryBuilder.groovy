@@ -197,7 +197,7 @@ class EntityQueryBuilder {
         String fieldType = fieldNode."@type"
         // jump straight to the type int for common/OOTB field types for FAR better performance than hunting through conf elements
         Integer directTypeInt = EntityFacadeImpl.fieldTypeIntMap.get(fieldType)
-        int typeValue
+        Integer typeValue
         if (directTypeInt == null) {
             String javaType = fieldType ? efi.getFieldJavaType(fieldType, entityValueImpl.getEntityDefinition()) : "String"
             typeValue = EntityFacadeImpl.getJavaTypeInt(javaType)

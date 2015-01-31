@@ -731,7 +731,7 @@ public class EntityDefinition {
 
         String fieldType = fieldNode."@type"
         String javaType = fieldType ? (EntityFacadeImpl.fieldTypeJavaMap.get(fieldType) ?: efi.getFieldJavaType(fieldType, this)) : "String"
-        int typeValue = EntityFacadeImpl.getJavaTypeInt(javaType)
+        Integer typeValue = (fieldType ? EntityFacadeImpl.fieldTypeIntMap.get(fieldType) : null) ?: EntityFacadeImpl.getJavaTypeInt(javaType)
 
         try {
             switch (typeValue) {
@@ -784,7 +784,7 @@ public class EntityDefinition {
 
         String fieldType = fieldNode."@type"
         String javaType = fieldType ? (EntityFacadeImpl.fieldTypeJavaMap.get(fieldType) ?: efi.getFieldJavaType(fieldType, this)) : "String"
-        int typeValue = EntityFacadeImpl.getJavaTypeInt(javaType)
+        Integer typeValue = (fieldType ? EntityFacadeImpl.fieldTypeIntMap.get(fieldType) : null) ?: EntityFacadeImpl.getJavaTypeInt(javaType)
 
         try {
             switch (typeValue) {

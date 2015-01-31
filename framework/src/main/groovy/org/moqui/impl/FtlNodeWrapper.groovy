@@ -51,17 +51,16 @@ class FtlNodeWrapper implements TemplateNodeModel, TemplateSequenceModel, Templa
     // TemplateHashModel methods
 
     TemplateModel get(String s) {
-        // first check for @text
-        if (s.startsWith("@@")) {
-            String specialHash = s.substring(2)
-            if (specialHash == "text") {
-                return textNode != null ? textNode : (textNode = new FtlTextWrapper(StupidUtilities.nodeText(groovyNode), this))
-            }
-            // TODO: handle other special hashes? (see http://www.freemarker.org/docs/xgui_imperative_formal.html)
-        }
         if (s.startsWith("@")) {
+            // check for @@text
+            if (s == "@@text") {
+                return textNode != null ? textNode : (textNode = new FtlTextWrapper(StupidUtilities.nodeText(groovyNode), this))
+                // TODO: handle other special hashes? (see http://www.freemarker.org/docs/xgui_imperative_formal.html)
+            }
+
             String key = s.substring(1)
-            return groovyNode.attribute(key) != null ? new FtlAttributeWrapper(key, groovyNode.attribute(key), this) : null
+            String attrValue = groovyNode.attribute(key)
+            return attrValue != null ? new FtlAttributeWrapper(key, attrValue, this) : null
         }
 
         // no @prefix, looking for a child node
