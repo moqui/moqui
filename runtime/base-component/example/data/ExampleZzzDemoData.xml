@@ -17,7 +17,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- password=moqui -->
     <moqui.security.UserAccount userId="EX_JOHN_DOE" username="john.doe" userFullName="John Doe"
             currentPassword="16ac58bbfa332c1c55bd98b53e60720bfa90d394" passwordHashType="SHA"
-            passwordHint="framework name, lowercase" currencyUomId="USD" locale="en_us" timeZone="US/Central"
+            passwordHint="framework name, lowercase" currencyUomId="USD" locale="en_US" timeZone="US/Central"
             emailAddress="john.doe@test.com"/>
     <moqui.security.UserGroupMember userGroupId="ADMIN" userId="EX_JOHN_DOE" fromDate="1265184000000"/>
     <moqui.security.UserPermission userPermissionId="ExamplePerm" description="Example Permission"/>

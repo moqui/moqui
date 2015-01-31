@@ -48,8 +48,10 @@ class UserFacadeImpl implements UserFacade {
     // keep a reference to a UserAccount for performance reasons, avoid repeated cached queries
     protected EntityValue internalUserAccount = null
     protected Set<String> internalUserGroupIdSet = null
+    // these two are used by ArtifactExecutionFacadeImpl but are maintained here to be cleared when user changes, are based on current user's groups
     protected EntityList internalArtifactTarpitCheckList = null
     protected EntityList internalArtifactAuthzCheckList = null
+
     protected Locale localeCache = null
 
     // these are used only when there is no logged in user

@@ -17,9 +17,9 @@ import org.moqui.impl.StupidUtilities
 
 class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
 
-    protected String name
-    protected String typeEnumId
-    protected String actionEnumId
+    protected final String name
+    protected final String typeEnumId
+    protected final String actionEnumId
     protected String actionDetail = ""
     protected Map<String, Object> parameters = null
     protected String authorizedUserId = null
