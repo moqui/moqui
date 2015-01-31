@@ -206,7 +206,7 @@ ${sri.renderSection(.node["@name"])}
 </#macro>
 
 <#-- ================ Containers ================ -->
-<#macro nodeId widgetNode><#if .node["@id"]?has_content>${ec.resource.evaluateStringExpand(widgetNode["@id"], "")}_${widgetNode["@id"]}<#if listEntryIndex?has_content>_${listEntryIndex}</#if><#if sectionEntryIndex?has_content>_${sectionEntryIndex}</#if></#if></#macro>
+<#macro nodeId widgetNode><#if .node["@id"]?has_content>${ec.resource.evaluateStringExpand(widgetNode["@id"], "")}<#if listEntryIndex?has_content>_${listEntryIndex}</#if><#if sectionEntryIndex?has_content>_${sectionEntryIndex}</#if></#if></#macro>
 
 <#macro container>
     <#assign divId><@nodeId .node/></#assign>
