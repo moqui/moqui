@@ -49,11 +49,13 @@ This Work includes contributions authored by David E. Jones, not as a
                 </parameter>
             </parameter>
             <parameter name="lastSuccessfulSyncTime" type="Timestamp" required="true"/>
-            <!-- TODO: support syncSplitMillis, just get records between last time and last time plus split -->
             <parameter name="syncSplitMillis" type="Long" default="1000"/>
+            <parameter name="recordThreshold" type="Long" default="1000"/>
+            <parameter name="delayBufferMillis" type="Long" default="300000"/><!-- default to 5 minutes -->
         </in-parameters>
         <out-parameters>
-            <parameter name="entityData" required="true"/>
+            <parameter name="entityData"/>
+            <parameter name="lastSuccessfulSyncTime" type="Timestamp"/>
         </out-parameters>
         <actions>
             <script><![CDATA[
@@ -62,27 +64,43 @@ This Work includes contributions authored by David E. Jones, not as a
                 import org.moqui.entity.EntityFind
                 import org.moqui.entity.EntityList
 
-                Writer entityWriter = new java.io.StringWriter()
+                long lastSyncLong = lastSuccessfulSyncTime.getTime()
+                long splitFromLong = lastSyncLong
+                long splitThruLong = splitFromLong + syncSplitMillis
+                long maxSyncLong = System.currentTimeMillis() - delayBufferMillis
+
+                Writer entityWriter = new StringWriter()
                 entityWriter.append("<entity-facade-xml>")
 
                 ExecutionContext ec = context.ec
 
-                for (Map entryMap in entityIncludeList) {
-                    EntityFind find = ec.entity.makeFind((String) entryMap.entityName)
-                    find.condition("lastUpdatedStamp", EntityCondition.GREATER_THAN, lastSuccessfulSyncTime)
+                long recordCount = 0
+                while (recordCount < recordThreshold && splitThruLong < maxSyncLong) {
+                    for (Map entryMap in entityIncludeList) {
+                        EntityFind find = ec.entity.makeFind((String) entryMap.entityName)
+                        find.condition("lastUpdatedStamp", EntityCondition.GREATER_THAN, new Timestamp(splitFromLong))
+                        find.condition("lastUpdatedStamp", EntityCondition.LESS_THAN_EQUAL_TO, new Timestamp(splitThruLong))
 
-                    List includeCondList = []
-                    for (Map filterMap in includeFilterList)
-                        includeCondList.add(ec.entity.conditionFactory.makeCondition(filterMap))
-                    if (includeCondList)
-                        find.condition(ec.entity.conditionFactory.makeCondition(includeCondList, EntityCondition.OR))
+                        List includeCondList = []
+                        for (Map filterMap in includeFilterList)
+                            includeCondList.add(ec.entity.conditionFactory.makeCondition(filterMap))
+                        if (includeCondList)
+                            find.condition(ec.entity.conditionFactory.makeCondition(includeCondList, EntityCondition.OR))
 
-                    EntityList resultList = find.list()
-                    resultList.writeXmlText((Writer) entityWriter, null, (Boolean) entryMap.dependents)
+                        EntityList resultList = find.list()
+                        recordCount += resultList.size()
+                        resultList.writeXmlText((Writer) entityWriter, null, (Boolean) entryMap.dependents)
+                    }
+
+                    // increment the split times
+                    splitFromLong = splitThruLong
+                    splitThruLong = splitFromLong + syncSplitMillis
                 }
 
                 entityWriter.append("</entity-facade-xml>")
                 entityData = entityWriter.toString()
+
+                lastSuccessfulSyncTime = splitThruLong
             ]]></script>
         </actions>
     </service>
