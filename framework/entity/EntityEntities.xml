@@ -223,6 +223,10 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="statusId" type="id"/>
         <field name="lastSuccessfulSyncTime" type="date-time"/>
         <field name="syncSplitMillis" type="number-integer"/>
+        <field name="recordThreshold" type="number-integer"><description>Keep retrieving time splits until the number of
+            records is greater then this threshold.</description></field>
+        <field name="delayBufferMillis" type="number-integer"><description>Newer retrieve records newer than this many
+            milliseconds in the past (leave a delay buffer for transactions in progress).</description></field>
         <field name="targetServerUrl" type="text-medium"/>
         <field name="targetUsername" type="text-medium"/>
         <field name="targetPassword" type="text-medium" encrypt="true"/>
@@ -245,7 +249,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <description>
             Associates a set of entities through ArtifactGroupMember records associated with an ArtifactGroup.
             ArtifactGroupMember records may have filterMap value and may have nameIsPattern=Y.
-            The filterMap is ignored when the application type is Exclude, it simply excludes the entity altogether. To exclude records use a filterMap on an include.
+            The filterMap is ignored when the application type is Exclude, it simply excludes the entity altogether.
+            To exclude records use a filterMap on an include.
             If there are multiple ArtifactGroupMember records with filterMap value for an entity it will OR them together.
             If include and exclude filters create condition with combined include AND NOT combined exclude.
         </description>
