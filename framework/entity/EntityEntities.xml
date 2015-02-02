@@ -283,23 +283,14 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="startDate" type="date-time" is-pk="true"/>
         <field name="finishDate" type="date-time"/>
         <field name="statusId" type="id"/>
-        <field name="lastSuccessfulSyncTime" type="date-time"/>
-        <field name="lastSplitStartTime" type="date-time"/>
-        <field name="toStoreInserted" type="number-integer"/>
-        <field name="toStoreUpdated" type="number-integer"/>
-        <field name="toStoreNotUpdated" type="number-integer"/>
+        <field name="exclusiveFromTime" type="date-time"/>
+        <field name="inclusiveThruTime" type="date-time"/>
+        <field name="recordsStored" type="number-integer"/>
         <field name="toRemoveDeleted" type="number-integer"/>
         <field name="toRemoveAlreadyDeleted" type="number-integer"/>
-        <field name="totalRowsExported" type="number-integer"/>
         <field name="totalRowsToStore" type="number-integer"/>
         <field name="totalRowsToRemove" type="number-integer"/>
-        <field name="totalSplits" type="number-integer"/>
-        <field name="totalStoreCalls" type="number-integer"/>
         <field name="runningTimeMillis" type="number-integer"/>
-        <field name="perSplitMinMillis" type="number-integer"/>
-        <field name="perSplitMaxMillis" type="number-integer"/>
-        <field name="perSplitMinItems" type="number-integer"/>
-        <field name="perSplitMaxItems" type="number-integer"/>
         <relationship type="one" related-entity-name="moqui.entity.sync.EntitySync"/>
         <relationship type="one" title="EntitySync" related-entity-name="moqui.basic.StatusItem"/>
     </entity>
