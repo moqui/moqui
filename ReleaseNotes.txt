@@ -21,7 +21,10 @@ TODO
 
 NOTE: The webroot, tools, and example components are now in the new
 runtime/base-component directory instead of the runtime/component directory
-to keep them separate from add-on components.
+to keep them separate from add-on components. There is also a new
+runtime/component-lib directory for library components that are loaded
+after mantle (if present) and before the components in the
+runtime/component directory.
 
 New Features:
 

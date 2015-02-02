@@ -556,7 +556,7 @@ class ScreenDefinition {
             // NOTE: if parent screen of transition does not require auth, don't require authz
             // NOTE: use the View authz action to leave it open, ie require minimal authz; restrictions are often more
             //    in the services/etc if/when needed, or specific transitions can have authz settings
-            ec.getArtifactExecution().push(new ArtifactExecutionInfoImpl(location,
+            ec.getArtifactExecution().push(new ArtifactExecutionInfoImpl("${parentScreen.location}/${name}",
                     "AT_XML_SCREEN_TRANS", "AUTHZA_VIEW"),
                     (!parentScreen.screenNode."@require-authentication" ||
                      parentScreen.screenNode."@require-authentication" == "true"))
