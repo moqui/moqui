@@ -31,12 +31,25 @@ This Work includes contributions authored by David E. Jones, not as a
         </actions>
     </service>
 
-    <service verb="set" noun="EntitySyncData">
+    <service verb="set" noun="EntitySyncData" transaction="ignore">
         <in-parameters>
             <parameter name="entityData" required="true"/>
+            <parameter name="timeout" type="Integer" default="600"/>
+            <parameter name="dummyFks" type="Boolean" default="true"/>
+            <parameter name="useTryInsert" type="Boolean" default="false"/>
         </in-parameters>
+        <out-parameters>
+            <parameter name="recordsStored" type="Long"/>
+        </out-parameters>
         <actions>
-            <!-- TODO -->
+            <script><![CDATA[
+                org.moqui.entity.EntityDataLoader edl = ec.entity.makeDataLoader()
+                edl.xmlText(entityData)
+                edl.transactionTimeout(timeout)
+                edl.dummyFks(dummyFks)
+                edl.useTryInsert(useTryInsert)
+                long recordsStored = edl.load()
+            ]]></script>
         </actions>
     </service>
     <service verb="get" noun="EntitySyncData">
@@ -55,7 +68,8 @@ This Work includes contributions authored by David E. Jones, not as a
         </in-parameters>
         <out-parameters>
             <parameter name="entityData"/>
-            <parameter name="lastSuccessfulSyncTime" type="Timestamp"/>
+            <parameter name="exclusiveFromTime" type="Timestamp"/>
+            <parameter name="inclusiveThruTime" type="Timestamp"/>
         </out-parameters>
         <actions>
             <script><![CDATA[
@@ -100,7 +114,8 @@ This Work includes contributions authored by David E. Jones, not as a
                 entityWriter.append("</entity-facade-xml>")
                 entityData = entityWriter.toString()
 
-                lastSuccessfulSyncTime = splitThruLong
+                exclusiveFromTime = lastSuccessfulSyncTime
+                inclusiveThruTime = new Timestamp(splitThruLong)
             ]]></script>
         </actions>
     </service>
