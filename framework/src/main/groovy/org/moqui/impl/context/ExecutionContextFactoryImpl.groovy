@@ -291,6 +291,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
         // now that everything is started up, if configured check all entity tables
         this.entityFacade.checkInitDatasourceTables()
+        // check the moqui.server.ArtifactHit entity to avoid conflicts during hit logging; if runtime check not enabled this will do nothing
+        this.entityFacade.getEntityDbMeta().checkTableRuntime(this.entityFacade.getEntityDefinition("moqui.server.ArtifactHit"))
 
         if (confXmlRoot."cache-list"[0]."@warm-on-start" != "false") warmCache()
 
