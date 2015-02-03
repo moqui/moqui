@@ -40,7 +40,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
             <!-- make sure delayBufferMillis have passed since lastSuccessfulSyncTime -->
             <if condition="entitySync.lastSuccessfulSyncTime &amp;&amp;
-                    (System.currentTimeMillis() - (entitySync.delayBufferMillis ?: 300000)) &lt; entitySync.lastSuccessfulSyncTime">
+                    entitySync.lastSuccessfulSyncTime &gt; (System.currentTimeMillis() - (entitySync.delayBufferMillis ?: 300000))">
                 <return/></if>
 
             <!-- validations done, save that we're running and get started! -->
@@ -68,11 +68,20 @@ This Work includes contributions authored by David E. Jones, not as a
                     in-map="[entitySyncId:entitySyncId, startDate:startDate, finishDate:new Timestamp(finishLong),
                         exclusiveFromTime:exclusiveFromTime, inclusiveThruTime:inclusiveThruTime,
                         recordsStored:recordsStored, runningTimeMillis:runningTimeMillis, errorMessage:errorMessage]"/>
+
+            <log level="info" message="EntitySync [${entitySyncId}] finished: startDate=${startDate}, lastSuccessfulSyncTime=${entitySync.lastSuccessfulSyncTime}, recordsStored=${recordsStored}, errorMessage=${errorMessage}"/>
+
+            <!-- if not yet up to delayBufferMillis trigger another async run -->
+            <if condition="entitySync.lastSuccessfulSyncTime &amp;&amp;
+                    entitySync.lastSuccessfulSyncTime &lt; (System.currentTimeMillis() - (entitySync.delayBufferMillis ?: 300000))">
+                <service-call name="org.moqui.impl.EntitySyncServices.run#EntitySync"
+                        in-map="[entitySyncId:entitySyncId]" async="true"/>
+            </if>
         </actions>
     </service>
     <service verb="internalRun" noun="EntitySync" transaction="force-new">
         <in-parameters>
-            <parameter name="entitySyncId" required="true"/>
+            <parameter name="entitySync" type="EntityValue" required="true"/>
         </in-parameters>
         <out-parameters>
             <parameter name="errorMessage"/>
@@ -81,28 +90,57 @@ This Work includes contributions authored by David E. Jones, not as a
             <parameter name="recordsStored" type="Long"/>
         </out-parameters>
         <actions>
-            <service-call name="org.moqui.impl.EntitySyncServices.get#EntitySyncIncludeList" out-map="context" in-map="context"/>
-            <if condition="entitySync.forPull == 'Y'">
-                <!-- get remotely, set locally -->
-                <!-- TODO: remote call -->
-                <service-call name="org.moqui.impl.EntitySyncServices.get#EntitySyncData" out-map="context"
-                        in-map="[entityIncludeList:entityIncludeList, lastSuccessfulSyncTime:entitySync.lastSuccessfulSyncTime,
+            <set field="entitySyncId" from="entitySync.entitySyncId"/>
+            <set field="authUsername" from="entitySync.targetUsername"/>
+            <set field="authPassword" from="entitySync.targetPassword"/>
+            <set field="authTenantId" from="entitySync.targetTenantId"/>
+
+            <set field="remoteInMap" from="[authUsername:authUsername, authPassword:authPassword, authTenantId:authTenantId]"/>
+
+            <set field="getInMap" from="[entityIncludeList:entityIncludeList, lastSuccessfulSyncTime:entitySync.lastSuccessfulSyncTime,
                             syncSplitMillis:entitySync.syncSplitMillis, recordThreshold:entitySync.recordThreshold,
                             delayBufferMillis:entitySync.delayBufferMillis]"/>
 
-                <service-call name="org.moqui.impl.EntitySyncServices.put#EntitySyncData" out-map="context"
-                        in-map="[entityData:entityData]"/>
+            <service-call name="org.moqui.impl.EntitySyncServices.get#EntitySyncIncludeList" out-map="context" in-map="context"/>
+            <if condition="entitySync.forPull == 'Y'">
+                <!-- get remotely, set locally -->
+                <!-- remote call -->
+                <set field="inMap" from="remoteInMap + getInMap"/>
+                <set field="serviceName" value="org.moqui.impl.EntitySyncServices.get#EntitySyncData"/>
+                <script>
+                    Map outMap = org.moqui.impl.service.runner.RemoteJsonRpcServiceRunner.runJsonService(null, entitySync.targetServerUrl, serviceName, inMap)
+                    context.putAll(outMap)
+                </script>
+
+                <if condition="recordCount">
+                    <service-call name="org.moqui.impl.EntitySyncServices.put#EntitySyncData" out-map="context"
+                            in-map="[entityData:entityData]"/>
+
+                    <else>
+                        <!-- no records to store, don't do the remote call -->
+                        <set field="recordsStored" from="0"/>
+                    </else>
+                </if>
 
                 <else>
                     <!-- get locally, set remotely -->
                     <service-call name="org.moqui.impl.EntitySyncServices.get#EntitySyncData" out-map="context"
-                            in-map="[entityIncludeList:entityIncludeList, lastSuccessfulSyncTime:entitySync.lastSuccessfulSyncTime,
-                                syncSplitMillis:entitySync.syncSplitMillis, recordThreshold:entitySync.recordThreshold,
-                                delayBufferMillis:entitySync.delayBufferMillis]"/>
+                            in-map="getInMap"/>
 
-                    <!-- TODO: remote call -->
-                    <service-call name="org.moqui.impl.EntitySyncServices.put#EntitySyncData" out-map="context"
-                            in-map="[entityData:entityData]"/>
+                    <!-- remote call -->
+                    <if condition="recordCount">
+                        <set field="inMap" from="remoteInMap + [entityData:entityData]"/>
+                        <set field="serviceName" value="org.moqui.impl.EntitySyncServices.put#EntitySyncData"/>
+                        <script>
+                            Map outMap = org.moqui.impl.service.runner.RemoteJsonRpcServiceRunner.runJsonService(null, entitySync.targetServerUrl, serviceName, inMap)
+                            context.putAll(outMap)
+                        </script>
+
+                        <else>
+                            <!-- no records to store, don't do the remote call -->
+                            <set field="recordsStored" from="0"/>
+                        </else>
+                    </if>
                 </else>
             </if>
 
@@ -150,6 +188,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </in-parameters>
         <out-parameters>
             <parameter name="entityData"/>
+            <parameter name="recordCount" type="Long"/>
             <parameter name="exclusiveFromTime" type="Timestamp"/>
             <parameter name="inclusiveThruTime" type="Timestamp"/>
         </out-parameters>
@@ -171,7 +210,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
                 ExecutionContext ec = context.ec
 
-                long recordCount = 0
+                recordCount = 0
                 while (recordCount < recordThreshold && splitThruLong < maxSyncLong) {
                     for (Map entryMap in entityIncludeList) {
                         EntityFind find = ec.entity.makeFind((String) entryMap.entityName)
