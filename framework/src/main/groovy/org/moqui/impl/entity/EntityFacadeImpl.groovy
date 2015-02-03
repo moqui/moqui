@@ -591,6 +591,16 @@ class EntityFacadeImpl implements EntityFacade {
         return allNames
     }
 
+    Set<String> getAllNonViewEntityNames() {
+        Set<String> allNames = getAllEntityNames()
+        Set<String> nonViewNames = new HashSet<>()
+        for (String name in allNames) {
+            EntityDefinition ed = getEntityDefinition(name)
+            if (ed != null && !ed.isViewEntity()) nonViewNames.add(name)
+        }
+        return nonViewNames
+    }
+
     List<Map> getAllEntityInfo(int levels) {
         Map<String, Map> entityInfoMap = [:]
         for (String entityName in getAllEntityNames()) {
