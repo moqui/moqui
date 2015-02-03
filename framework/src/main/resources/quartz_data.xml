@@ -42,4 +42,24 @@
             </cron>
         </trigger>
     </schedule>
+    <!-- uncomment this to run EntitySync
+    <schedule>
+        <job>
+            <name>run_EntitySyncAll_single</name>
+            <group>org.moqui.impl.EntitySyncServices.run#EntitySyncAll</group>
+            <description>Run All EntitySync</description>
+            <job-class>org.moqui.impl.service.ServiceQuartzJob</job-class>
+            <job-data-map><entry><key>daysToKeep</key><value>30</value></entry></job-data-map>
+        </job>
+        <trigger>
+            <cron>
+                <name>run_EntitySyncAll_frequent</name>
+                <group>EntitySyncServices</group>
+                <job-name>run_EntitySyncAll_single</job-name>
+                <job-group>org.moqui.impl.EntitySyncServices.run#EntitySyncAll</job-group>
+                <cron-expression>0 0/15 * * * ?</cron-expression><!- - run every 15 minutes - ->
+            </cron>
+        </trigger>
+    </schedule>
+    -->
 </job-scheduling-data>
