@@ -40,6 +40,11 @@ public class RemoteJsonRpcServiceRunner implements ServiceRunner {
         if (!location) throw new IllegalArgumentException("Cannot call remote service [${sd.serviceName}] because it has no location specified.")
         if (!method) throw new IllegalArgumentException("Cannot call remote service [${sd.serviceName}] because it has no method specified.")
 
+        return runJsonService(sd.getServiceName(), location, method, parameters, ec)
+    }
+
+    static Map<String, Object> runJsonService(String serviceName, String location, String method,
+                                              Map<String, Object> parameters, ExecutionContext ec) {
         Map jsonRequestMap = [jsonrpc:"2.0", id:1, method:method, params:parameters]
         JsonBuilder jb = new JsonBuilder()
         jb.call(jsonRequestMap)
@@ -61,7 +66,7 @@ public class RemoteJsonRpcServiceRunner implements ServiceRunner {
             // logger.warn("========== JSON-RPC response: ${jsonResponse}")
             jsonObj = slurper.parseText(jsonResponse)
         } catch (Throwable t) {
-            String errMsg = "Error parsing JSON-RPC response for service [${sd.getServiceName()}]: ${t.toString()}"
+            String errMsg = "Error parsing JSON-RPC response for service [${serviceName ?: method}]: ${t.toString()}"
             logger.error(errMsg, t)
             ec.message.addError(errMsg)
             return null
@@ -70,19 +75,19 @@ public class RemoteJsonRpcServiceRunner implements ServiceRunner {
         if (jsonObj instanceof Map) {
             Map responseMap = jsonObj
             if (responseMap.error) {
-                logger.error("JSON-RPC service [${sd.getServiceName()}] returned an error: ${responseMap.error}")
+                logger.error("JSON-RPC service [${serviceName ?: method}] returned an error: ${responseMap.error}")
                 ec.message.addError((String) responseMap.error?.message ?: "JSON-RPC error with no message, code [${responseMap.error?.code}]")
                 return null
             } else {
                 Object jr = responseMap.result
-                if (jr instanceof Map<String, Object>) {
+                if (jr instanceof Map) {
                     return jr
                 } else {
                     return [response:jr]
                 }
             }
         } else {
-            String errMsg = "JSON-RPC response was not a object/Map for service [${sd.getServiceName()}]: ${jsonObj}"
+            String errMsg = "JSON-RPC response was not a object/Map for service [${serviceName ?: method}]: ${jsonObj}"
             logger.error(errMsg)
             ec.message.addError(errMsg)
             return null
