@@ -32,7 +32,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- TODO: test & case for this -->
     <!-- entities matched by full name (package + name), so can match by package; this will also handle entity-implicit
          services which can be authorized by their entity authz -->
-    <moqui.security.ArtifactGroupMember artifactGroupId="EXAMPLE_APP" artifactName="org\.moqui\.example\..*"
+    <moqui.security.ArtifactGroupMember artifactGroupId="EXAMPLE_APP" artifactName="moqui\.example\..*"
             nameIsPattern="Y" artifactTypeEnumId="AT_ENTITY" inheritAuthz="Y"/>
 
     <!-- ========== Example with just view access for the ExampleApp ========== -->
@@ -82,7 +82,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <!-- ========== EntitySync Example ========== -->
     <moqui.entity.sync.EntitySync entitySyncId="EXAMPLE" statusId="EsNotStarted" lastStartDate="" lastSuccessfulSyncTime=""
-            syncSplitMillis="60000" recordThreshold="1000" delayBufferMillis="300000"
+            syncSplitMillis="60000" recordThreshold="1000" delayBufferMillis="60000"
             targetServerUrl="http://localhost:8080/rpc/json" targetUsername="john.doe" targetPassword="moqui"
             targetTenantId="EXAMPLE1" forPull="N"/>
     <moqui.entity.sync.EntitySyncArtifact entitySyncId="EXAMPLE" artifactGroupId="EXAMPLE_APP" applEnumId="EsaaInclude"
