@@ -23,6 +23,13 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- A default/automatic group for all users -->
     <moqui.security.UserGroup userGroupId="ALL_USERS" description="All Users (all users members by default)"/>
 
+    <!-- An artifact group for remote EntitySync calls; members of other groups like remote API only groups would use this as well -->
+    <moqui.security.ArtifactGroup artifactGroupId="EntitySyncServices" description="EntitySync Services"/>
+    <moqui.security.ArtifactGroupMember artifactGroupId="EntitySyncServices" artifactName="org\.moqui\.impl\.EntitySyncServices\..*"
+            nameIsPattern="Y" artifactTypeEnumId="AT_SERVICE" inheritAuthz="Y"/>
+    <moqui.security.ArtifactAuthz artifactAuthzId="EntitySyncServicesADMIN" userGroupId="ADMIN" artifactGroupId="EntitySyncServices"
+            authzTypeEnumId="AUTHZT_ALWAYS" authzActionEnumId="AUTHZA_ALL"/>
+
     <!-- Artifact Authz for UserAccount, user can view own info -->
     <!-- NOTE: Leaving this here as an example of a record-limited authz, but no longer needed or used:
     <moqui.security.ArtifactGroup artifactGroupId="UserAccount" description="UserAccount entity."/>

@@ -136,6 +136,9 @@ New Features:
   - Removed EECA triggers for find operations; these are not generally
     useful and add overhead to the typically significant number of find
     operations, including cached ones
+  - Initial implementation of EntitySync feature with example in the
+    example component; should be considered beta but has gone through
+    various tests in non-production environments
 
 Bug Fixes:
 
@@ -170,6 +173,14 @@ Bug Fixes:
 - Fixed thread deadlock issue in dev mode (with ArtifactHit entity logging
   enabled) caused by refreshing DataFeed and DataDocument settings in a
   scheduled job and page request happening around the same time
+- Fixed thread contention issue checking ArtifactHit near startup
+- Fixed issue with EntityValue.checkFks using find instead of findAll to
+  get type one relationships
+- Fixed issue with lastUpdatedStamp not getting set on updates
+- Fixed fairly recent issue with service auth* parameters being ignored
+- EntityFind.count() now selects all fields by default to match what list()
+  and iterator() do, and to not mess things up when calling count() before
+  calling iterator()
 
 ===========================================================================
 Release 1.4.1 - 01 Aug 2014

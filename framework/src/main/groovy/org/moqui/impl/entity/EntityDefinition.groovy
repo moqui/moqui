@@ -830,6 +830,8 @@ public class EntityDefinition {
         if (value instanceof Timestamp) {
             // use a Long number, no TZ issues
             outValue = ((Timestamp) value).getTime().toString()
+        } else if (value instanceof BigDecimal) {
+            outValue = ((BigDecimal) value).toPlainString()
         } else {
             outValue = getFieldString(name, value)
         }
