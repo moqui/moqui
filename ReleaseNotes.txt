@@ -175,6 +175,9 @@ Bug Fixes:
   get type one relationships
 - Fixed issue with lastUpdatedStamp not getting set on updates
 - Fixed fairly recent issue with service auth* parameters being ignored
+- EntityFind.count() now selects all fields by default to match what list()
+  and iterator() do, and to not mess things up when calling count() before
+  calling iterator()
 
 ===========================================================================
 Release 1.4.1 - 01 Aug 2014
