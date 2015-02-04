@@ -133,6 +133,9 @@ New Features:
     for updates only, not creates
   - Added entity.@sequence-primary-prefix attribute for a per-entity prefix
     that can be and expanded string expression using field values, etc
+  - Initial implementation of EntitySync feature with example in the
+    example component; should be considered beta but has gone through
+    various tests in non-production environments
 
 Bug Fixes:
 
@@ -167,6 +170,11 @@ Bug Fixes:
 - Fixed thread deadlock issue in dev mode (with ArtifactHit entity logging
   enabled) caused by refreshing DataFeed and DataDocument settings in a
   scheduled job and page request happening around the same time
+- Fixed thread contention issue checking ArtifactHit near startup
+- Fixed issue with EntityValue.checkFks using find instead of findAll to
+  get type one relationships
+- Fixed issue with lastUpdatedStamp not getting set on updates
+- Fixed fairly recent issue with service auth* parameters being ignored
 
 ===========================================================================
 Release 1.4.1 - 01 Aug 2014
