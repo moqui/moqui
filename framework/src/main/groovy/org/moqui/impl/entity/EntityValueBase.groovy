@@ -515,7 +515,7 @@ abstract class EntityValueBase implements EntityValue {
 
     @Override
     boolean checkFks(boolean insertDummy) {
-        for (Node oneRel in (Collection<Node>) getEntityDefinition().entityNode."relationship".find({ it."@type" == "one" })) {
+        for (Node oneRel in (Collection<Node>) getEntityDefinition().entityNode."relationship".findAll({ it."@type" == "one" })) {
             EntityValue value = findRelatedOne(oneRel, true, false)
             if (!value) {
                 if (insertDummy) {
