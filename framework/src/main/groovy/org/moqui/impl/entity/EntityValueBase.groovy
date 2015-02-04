@@ -572,7 +572,7 @@ abstract class EntityValueBase implements EntityValue {
     @Override
     Element makeXmlElement(Document document, String prefix) {
         Element element = null
-        if (document != null) element = document.createElement((prefix ? prefix : "") + entityName)
+        if (document != null) element = document.createElement((prefix ?: "") + entityName)
         if (!element) return null
 
         for (String fieldName in getEntityDefinition().getAllFieldNames()) {

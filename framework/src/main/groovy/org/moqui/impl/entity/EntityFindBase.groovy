@@ -822,7 +822,8 @@ abstract class EntityFindBase implements EntityFind {
         if (cacheCount != null) {
             count = cacheCount
         } else {
-            if (!this.fieldsToSelect) this.selectFields(ed.getFieldNames(false, true, false))
+            // select all pk and nonpk fields to match what list() or iterator() would do
+            if (!this.fieldsToSelect) this.selectFields(ed.getFieldNames(true, true, false))
             // TODO: this will not handle query conditions on UserFields, it will blow up in fact
 
             if (ed.isViewEntity() && ed.getEntityNode()."entity-condition"?.first?."@distinct" == "true") this.distinct(true)
