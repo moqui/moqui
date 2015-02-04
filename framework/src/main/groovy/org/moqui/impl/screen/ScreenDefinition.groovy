@@ -671,7 +671,7 @@ class ScreenDefinition {
         protected String name
         protected String location
         protected String menuTitle
-        protected int menuIndex
+        protected Integer menuIndex
         protected boolean menuInclude
         protected Class disableWhenGroovy = null
         protected String userGroupId = null
@@ -681,7 +681,7 @@ class ScreenDefinition {
             this.name = name
             this.location = location
             menuTitle = screen."@default-menu-title" as String ?: getDefaultTitle()
-            menuIndex = (screen."@default-menu-index" as String ?: "5") as Integer
+            menuIndex = screen."@default-menu-index"?.getAt(0) ? ((screen."@default-menu-index" as String) as Integer) : null
             menuInclude = (!screen."@default-menu-include"?.getAt(0) || screen."@default-menu-include"[0] == "true")
         }
 
@@ -690,7 +690,7 @@ class ScreenDefinition {
             name = subscreensItem."@name"
             location = subscreensItem."@location"
             menuTitle = subscreensItem."@menu-title" as String ?: getDefaultTitle()
-            menuIndex = (subscreensItem."@menu-index" as String ?: "5") as int
+            menuIndex = subscreensItem."@menu-index"?.getAt(0) ? ((subscreensItem."@menu-index" as String) as Integer) : null
             menuInclude = (!subscreensItem."@menu-include"?.getAt(0) || subscreensItem."@menu-include"[0] == "true")
 
             if (subscreensItem."@disable-when") disableWhenGroovy = new GroovyClassLoader().parseClass(
@@ -702,7 +702,7 @@ class ScreenDefinition {
             name = subscreensItem.subscreenName
             location = subscreensItem.subscreenLocation
             menuTitle = subscreensItem.menuTitle ?: getDefaultTitle()
-            menuIndex = (subscreensItem.menuIndex ?: 5) as int
+            menuIndex = subscreensItem.menuIndex ? subscreensItem.menuIndex as Integer : null
             menuInclude = (subscreensItem.menuInclude == "Y")
             userGroupId = subscreensItem.userGroupId
         }
@@ -719,7 +719,7 @@ class ScreenDefinition {
         String getName() { return name }
         String getLocation() { return location }
         String getMenuTitle() { return menuTitle }
-        int getMenuIndex() { return menuIndex }
+        Integer getMenuIndex() { return menuIndex }
         boolean getMenuInclude() { return menuInclude }
         boolean getDisable(ExecutionContext ec) {
             if (!disableWhenGroovy) return false
@@ -732,10 +732,14 @@ class ScreenDefinition {
         public SubscreensItemComparator() { }
         @Override
         public int compare(SubscreensItem ssi1, SubscreensItem ssi2) {
-            // order by index
-            int indexComp = ssi1.menuIndex.compareTo(ssi2.menuIndex)
-            if (indexComp != 0) return indexComp
-            // if index is the same, order by title
+            // order by index, null index first
+            if (ssi1.menuIndex == null && ssi2.menuIndex != null) return -1
+            if (ssi1.menuIndex != null && ssi2.menuIndex == null) return 1
+            if (ssi1.menuIndex != null && ssi2.menuIndex != null) {
+                int indexComp = ssi1.menuIndex.compareTo(ssi2.menuIndex)
+                if (indexComp != 0) return indexComp
+            }
+            // if index is the same or both null, order by title
             return ssi1.menuTitle.compareTo(ssi2.menuTitle)
         }
     }
