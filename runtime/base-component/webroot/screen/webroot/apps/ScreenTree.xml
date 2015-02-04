@@ -14,6 +14,8 @@ This Work includes contributions authored by David E. Jones, not as a
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd"
         require-authentication="true" default-menu-include="false" default-menu-title="Site Map">
 
+    <parameter name="showAll"/>
+
     <actions>
         <set field="currentScreenDef" from="sri.getRootScreenDef()"/>
         <set field="currentScreenPath" value=""/>
@@ -22,5 +24,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <label text="Site Map" type="h2"/>
         <include-screen location="component://webroot/screen/webroot/apps/ScreenTree/ScreenTreeNested.xml"
                 share-scope="false"/>
+
+        <link url="." text="Show All" parameter-map="[showAll:'true']" link-type="anchor" style="text-muted" condition="showAll != 'true'"/>
     </widgets>
 </screen>
