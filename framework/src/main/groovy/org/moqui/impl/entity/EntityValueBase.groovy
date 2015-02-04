@@ -1002,8 +1002,8 @@ abstract class EntityValueBase implements EntityValue {
         }
 
         Long lastUpdatedLong = ecfi.getTransactionFacade().getCurrentTransactionStartTime() ?: System.currentTimeMillis()
-        if (ed.isField("lastUpdatedStamp") && !this.getValueMap().lastUpdatedStamp)
-            this.set("lastUpdatedStamp", new Timestamp(lastUpdatedLong))
+        // not sure why this condition was there, doesn't make sense so removed: && !this.getValueMap().lastUpdatedStamp
+        if (ed.isField("lastUpdatedStamp")) this.set("lastUpdatedStamp", new Timestamp(lastUpdatedLong))
 
         // do this before the db change so modified flag isn't cleared
         getEntityFacadeImpl().getEntityDataFeed().dataFeedCheckAndRegister(this, true, valueMap, oldValues)
