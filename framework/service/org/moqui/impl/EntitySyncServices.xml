@@ -65,9 +65,10 @@ This Work includes contributions authored by David E. Jones, not as a
             <set field="finishLong" from="System.currentTimeMillis()"/>
             <set field="runningTimeMillis" from="finishLong - startDate.getTime()"/>
             <service-call name="create#moqui.entity.sync.EntitySyncHistory"
-                    in-map="[entitySyncId:entitySyncId, startDate:startDate, finishDate:new Timestamp(finishLong),
-                        exclusiveFromTime:exclusiveFromTime, inclusiveThruTime:inclusiveThruTime,
-                        recordsStored:recordsStored, runningTimeMillis:runningTimeMillis, errorMessage:errorMessage]"/>
+                    in-map="[entitySyncId:entitySyncId, statusId:entitySync.statusId, startDate:startDate,
+                        finishDate:new Timestamp(finishLong), exclusiveFromTime:exclusiveFromTime,
+                        inclusiveThruTime:inclusiveThruTime, recordsStored:recordsStored,
+                        runningTimeMillis:runningTimeMillis, errorMessage:errorMessage]"/>
 
             <log level="info" message="EntitySync [${entitySyncId}] finished: startDate=${startDate}, lastSuccessfulSyncTime=${entitySync.lastSuccessfulSyncTime}, recordsStored=${recordsStored}, errorMessage=${errorMessage}"/>
 
