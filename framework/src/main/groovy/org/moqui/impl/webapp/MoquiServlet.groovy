@@ -82,7 +82,9 @@ class MoquiServlet extends HttpServlet {
             ec.destroy()
         }
 
-        if (logger.infoEnabled) logger.info("Finished request to [${pathInfo}] of content type [${response.getContentType()}] in [${(System.currentTimeMillis()-startTime)/1000}] seconds in session [${request.session.id}] thread [${Thread.currentThread().id}:${Thread.currentThread().name}]")
+        String contentType = response.getContentType()
+        if (logger.isInfoEnabled() && contentType && contentType.contains("text/html")) logger.info("Finished request to [${pathInfo}] of content type [${response.getContentType()}] in [${(System.currentTimeMillis()-startTime)/1000}] seconds in session [${request.session.id}] thread [${Thread.currentThread().id}:${Thread.currentThread().name}]")
+        if (logger.isTraceEnabled()) logger.trace("Finished request to [${pathInfo}] of content type [${response.getContentType()}] in [${(System.currentTimeMillis()-startTime)/1000}] seconds in session [${request.session.id}] thread [${Thread.currentThread().id}:${Thread.currentThread().name}]")
 
         /* this is here just for kicks, uncomment to log a list of all artifacts hit/used in the screen render
         StringBuilder hits = new StringBuilder()
