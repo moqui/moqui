@@ -32,7 +32,7 @@ New Features:
   Apache Derby to 10.11.1.1, Apache FOP to 1.1 (now includes Batik 1.7),
   Apache Lucene to 4.9.1, Apache Shiro to 1.2.3, Ehcache to 2.8.3,
   ElasticSearch to 1.3.4, Freemarker to 2.3.21, Groovy to 2.3.7,
-  Liquibase to 3.2.2, OrientDB to 1.7.9, Winstone to 1.7.0
+  Liquibase to 3.3.2, OrientDB to 1.7.9, Winstone to 1.7.0
 - Updated Metis Admin Template to version 2.2.7, thanks to contribution
   from Osman Nuri Okumuş (onokumus), the author of Metis; this updates
   jQuery to 2.1.1, jQuery UI to 1.11.0, Bootstrap to 3.2.0, and various
@@ -133,6 +133,12 @@ New Features:
     for updates only, not creates
   - Added entity.@sequence-primary-prefix attribute for a per-entity prefix
     that can be and expanded string expression using field values, etc
+  - Removed EECA triggers for find operations; these are not generally
+    useful and add overhead to the typically significant number of find
+    operations, including cached ones
+  - Initial implementation of EntitySync feature with example in the
+    example component; should be considered beta but has gone through
+    various tests in non-production environments
 
 Bug Fixes:
 
@@ -167,6 +173,14 @@ Bug Fixes:
 - Fixed thread deadlock issue in dev mode (with ArtifactHit entity logging
   enabled) caused by refreshing DataFeed and DataDocument settings in a
   scheduled job and page request happening around the same time
+- Fixed thread contention issue checking ArtifactHit near startup
+- Fixed issue with EntityValue.checkFks using find instead of findAll to
+  get type one relationships
+- Fixed issue with lastUpdatedStamp not getting set on updates
+- Fixed fairly recent issue with service auth* parameters being ignored
+- EntityFind.count() now selects all fields by default to match what list()
+  and iterator() do, and to not mess things up when calling count() before
+  calling iterator()
 
 ===========================================================================
 Release 1.4.1 - 01 Aug 2014

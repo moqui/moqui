@@ -159,7 +159,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     <return/>
                 </if>
             </if>
-            <if condition="!uomConversionList"><return error="true" message="Could not convert from [${uomId}] to [${toUomId}], no UomConversion record found."/></if>
+            <if condition="!uomConversionList"><return error="true" message="Could not convert from [${uomId}] to [${toUomId}], no UOM Conversion found."/></if>
         </actions>
     </service>
 </services>

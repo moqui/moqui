@@ -1423,7 +1423,7 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
         <#assign formName = ec.resource.evaluateStringExpand(formNode["@name"], "")>
         <#assign afterFormScript>
             function populate_${id}() {
-                $.ajax({ type:'POST', url:'${sri.screenUrlInfo.url}/${doNode["@transition"]}', data:{ <#list depNodeList as depNode>'${depNode["@field"]}': $('#${formName}_${depNode["@field"]}').val()<#if depNode_has_next>, </#if></#list> }, dataType:'json' }).done(
+                $.ajax({ type:'POST', url:'${sri.screenUrlInfo.url}/${doNode["@transition"]}', data:{ <#list depNodeList as depNode>'${depNode["@field"]}': $('#${formName}_${depNode["@field"]}<#if listEntryIndex?has_content>_${listEntryIndex}</#if><#if sectionEntryIndex?has_content>_${sectionEntryIndex}</#if>').val()<#if depNode_has_next>, </#if></#list> }, dataType:'json' }).done(
                     function(list) {
                         if (list) {
                             $('#${id}').html(""); /* clear out the drop-down */
@@ -1442,7 +1442,7 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
                 }; } ); };
             $(document).ready(function() {
                 <#list depNodeList as depNode>
-                    $("#${formName}_${depNode["@field"]}").change(function() { populate_${id}(); });
+                    $("#${formName}_${depNode["@field"]}<#if listEntryIndex?has_content>_${listEntryIndex}</#if><#if sectionEntryIndex?has_content>_${sectionEntryIndex}</#if>").change(function() { populate_${id}(); });
                 </#list>
                 populate_${id}();
             });

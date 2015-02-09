@@ -185,6 +185,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                     reader.parse(new InputSource(new StringReader(this.xmlText)))
                 } catch (Throwable t) {
                     tf.rollback(beganTransaction, "Error loading XML entity data", t)
+                    throw t
                 } finally {
                     if (beganTransaction && tf.isTransactionInPlace()) tf.commit()
                 }
@@ -198,6 +199,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                     ech.loadFile("csvText", csvInputStream)
                 } catch (Throwable t) {
                     tf.rollback(beganTransaction, "Error loading CSV entity data", t)
+                    throw t
                 } finally {
                     if (csvInputStream != null) csvInputStream.close()
                     if (beganTransaction && tf.isTransactionInPlace()) tf.commit()

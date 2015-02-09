@@ -846,7 +846,7 @@ class ScreenRenderImpl implements ScreenRender {
             Node fieldNode = validateNode
             String type = fieldNode."@type"
             if (type && (type.startsWith("number-") || type.startsWith("currency-"))) vcs.add("number")
-            if (fieldNode."@is-pk" == "true") vcs.add("required")
+            // bad idea, for create forms with optional PK messes it up: if (fieldNode."@is-pk" == "true") vcs.add("required")
         }
 
         StringBuilder sb = new StringBuilder()

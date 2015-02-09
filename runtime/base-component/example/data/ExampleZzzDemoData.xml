@@ -32,7 +32,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- TODO: test & case for this -->
     <!-- entities matched by full name (package + name), so can match by package; this will also handle entity-implicit
          services which can be authorized by their entity authz -->
-    <moqui.security.ArtifactGroupMember artifactGroupId="EXAMPLE_APP" artifactName="org\.moqui\.example\..*"
+    <moqui.security.ArtifactGroupMember artifactGroupId="EXAMPLE_APP" artifactName="moqui\.example\..*"
             nameIsPattern="Y" artifactTypeEnumId="AT_ENTITY" inheritAuthz="Y"/>
 
     <!-- ========== Example with just view access for the ExampleApp ========== -->
@@ -63,4 +63,28 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- if more than 120 screens in 60 seconds, deny access for 60 seconds -->
     <moqui.security.ArtifactTarpit userGroupId="ALL_USERS" artifactGroupId="ALL_SCREENS"
             maxHitsCount="120" maxHitsDuration="60" tarpitDuration="60"/>
+
+    <!-- ========== Tenant Example ========== -->
+    <!-- To load data into this tenant use something like: gradle load -PtenantId=EXAMPLE1 -->
+    <moqui.tenant.Tenant tenantId="EXAMPLE1" tenantName="Example One" isEnabled="Y"
+            defaultCurrencyUomId="USD" defaultLocale="en" defaultTimeZone="" defaultCountryGeoId="USA"/>
+    <!-- Below are sample options to limit what is available to users, remove all records of any type to make all systems options available for that type -->
+    <!-- <moqui.tenant.TenantCurrency tenantId="EXAMPLE1" currencyUomId="USD"/> -->
+    <!-- <moqui.tenant.TenantLocale tenantId="EXAMPLE1" locale="en"/> -->
+    <!-- <moqui.tenant.TenantTimeZone tenantId="EXAMPLE1" timeZone="US/Central"/> -->
+    <!-- <moqui.tenant.TenantCountry tenantId="EXAMPLE1" countryGeoId="USA"/> -->
+
+    <moqui.tenant.TenantDataSource tenantId="EXAMPLE1" entityGroupName="transactional" jndiName="" jdbcUri="" jdbcUsername="" jdbcPassword=""/>
+    <moqui.tenant.TenantDataSourceXaProp tenantId="EXAMPLE1" entityGroupName="transactional"
+            propName="databaseName" propValue="${moqui.runtime}/db/derby/EXAMPLE1"/>
+    <moqui.tenant.TenantDataSourceXaProp tenantId="EXAMPLE1" entityGroupName="transactional"
+            propName="createDatabase" propValue="create"/>
+
+    <!-- ========== EntitySync Example ========== -->
+    <moqui.entity.sync.EntitySync entitySyncId="EXAMPLE" statusId="EsNotStarted" lastStartDate="" lastSuccessfulSyncTime=""
+            syncSplitMillis="60000" recordThreshold="1000" delayBufferMillis="60000"
+            targetServerUrl="http://localhost:8080/rpc/json" targetUsername="john.doe" targetPassword="moqui"
+            targetTenantId="EXAMPLE1" forPull="N"/>
+    <moqui.entity.sync.EntitySyncArtifact entitySyncId="EXAMPLE" artifactGroupId="EXAMPLE_APP" applEnumId="EsaaInclude"
+            dependents="N"/>
 </entity-facade-xml>

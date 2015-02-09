@@ -75,17 +75,16 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         ServiceDefinition sd = getServiceDefinition()
         ExecutionContextImpl eci = (ExecutionContextImpl) sfi.getEcfi().getExecutionContext()
 
-        Collection<String> inParameterNames = null
-        if (sd != null) {
-            inParameterNames = sd.getInParameterNames()
-        } else if (isEntityAutoPattern()) {
-            EntityDefinition ed = sfi.ecfi.entityFacade.getEntityDefinition(noun)
-            if (ed != null) inParameterNames = ed.getAllFieldNames()
-        }
-
         boolean enableAuthz = disableAuthz ? !eci.getArtifactExecution().disableAuthz() : false
         try {
             if (multi) {
+                Collection<String> inParameterNames = null
+                if (sd != null) {
+                    inParameterNames = sd.getInParameterNames()
+                } else if (isEntityAutoPattern()) {
+                    EntityDefinition ed = sfi.ecfi.entityFacade.getEntityDefinition(noun)
+                    if (ed != null) inParameterNames = ed.getAllFieldNames()
+                }
                 // run all service calls in a single transaction for multi form submits, ie all succeed or fail together
                 boolean beganTransaction = eci.getTransaction().begin(null)
                 try {
@@ -143,6 +142,11 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
 
         long callStartTime = System.currentTimeMillis()
 
+        // get these before cleaning up the parameters otherwise will be removed
+        String userId = currentParameters.authUserAccount?.userId ?: currentParameters.authUsername
+        String password = currentParameters.authUserAccount?.currentPassword ?: currentParameters.authPassword
+        String tenantId = currentParameters.authTenantId
+
         // in-parameter validation
         sfi.runSecaRules(getServiceName(), currentParameters, null, "pre-validate")
         if (sd != null) sd.convertValidateCleanParameters(currentParameters, eci)
@@ -155,10 +159,11 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         boolean userLoggedIn = false
 
         // always try to login the user if parameters are specified
-        String userId = currentParameters.authUserAccount?.userId ?: currentParameters.authUsername
-        String password = currentParameters.authUserAccount?.currentPassword ?: currentParameters.authPassword
-        String tenantId = currentParameters.authTenantId
-        if (userId && password) userLoggedIn = eci.getUser().loginUser(userId, password, tenantId)
+        if (userId && password) {
+            userLoggedIn = eci.getUser().loginUser(userId, password, tenantId)
+            // if user was not logged in we should already have an error message in place so just return
+            if (!userLoggedIn) return null
+        }
 
         // pre authentication and authorization SECA rules
         sfi.runSecaRules(getServiceName(), currentParameters, null, "pre-auth")
