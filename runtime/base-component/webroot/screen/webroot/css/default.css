@@ -167,7 +167,7 @@ span.shaded-area { display: inline-block; white-space: normal; }
 
 #VisitArtifactHitList-table tbody tr td div { font-size: 1em; }
 
-.ScreenTreeNested { margin-left: 16px; }
+.ScreenTreeNested { margin: 4px 0 4px 12px; padding: 0 0 0 12px; border-left: 1px dashed #DDDDDF; }
 
 /* ================ Overrides for jquery-ui theme ================ */
 

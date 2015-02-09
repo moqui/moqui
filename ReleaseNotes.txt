@@ -133,6 +133,9 @@ New Features:
     for updates only, not creates
   - Added entity.@sequence-primary-prefix attribute for a per-entity prefix
     that can be and expanded string expression using field values, etc
+  - Removed EECA triggers for find operations; these are not generally
+    useful and add overhead to the typically significant number of find
+    operations, including cached ones
   - Initial implementation of EntitySync feature with example in the
     example component; should be considered beta but has gone through
     various tests in non-production environments
