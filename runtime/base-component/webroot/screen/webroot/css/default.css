@@ -33,7 +33,7 @@ label { white-space: normal; }
 
 form { display: inline; }
 
-button.button-plain { border: 0px; padding: 0px; background: transparent; margin: 0px; color: #052f57; }
+button.button-plain { border: 0px; padding: 0px; background: transparent; margin: 0px; color: #428bca; }
 button.button-plain:hover { text-decoration: underline; }
 
 
