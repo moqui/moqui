@@ -181,6 +181,9 @@ Bug Fixes:
 - EntityFind.count() now selects all fields by default to match what list()
   and iterator() do, and to not mess things up when calling count() before
   calling iterator()
+- In XML Forms the display and display-entity field types no longer default
+  to the value from the @text attribute, if there is no direct entry value
+  the hidden field should be empty.
 
 ===========================================================================
 Release 1.4.1 - 01 Aug 2014
