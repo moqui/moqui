@@ -843,7 +843,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#assign skipStart = (formNode["@skip-start"]! == "true")>
     <#assign skipEnd = (formNode["@skip-end"]! == "true")>
     <#assign skipForm = (formNode["@skip-form"]! == "true")>
-    <#assign urlInfo = sri.makeUrlByType(formNode["@transition"], "transition", null, "false")>
+    <#assign formListUrlInfo = sri.makeUrlByType(formNode["@transition"], "transition", null, "false")>
     <#assign listName = formNode["@list"]>
     <#assign listObject = ec.resource.evaluateContextField(listName, "")!>
     <#assign formListColumnList = formNode["form-list-column"]!>
@@ -920,7 +920,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                 </#if>
             </div>
             <#if isMulti && !skipForm>
-                <form name="${formId}" id="${formId}" class="form-body" method="post" action="${urlInfo.url}">
+                <form name="${formId}" id="${formId}" class="form-body" method="post" action="${formListUrlInfo.url}">
                     <input type="hidden" name="moquiFormName" value="${formNode["@name"]}">
                     <input type="hidden" name="_isMulti" value="true">
             <#else>
@@ -934,7 +934,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
             <#if isMulti || skipForm>
             <div class="form-row">
             <#else>
-            <form name="${formId}_${listEntryIndex}" id="${formId}_${listEntryIndex}" class="form-row" method="post" action="${urlInfo.url}">
+            <form name="${formId}_${listEntryIndex}" id="${formId}_${listEntryIndex}" class="form-row" method="post" action="${formListUrlInfo.url}">
             </#if>
             <#assign nonReferencedFieldList = sri.getFtlFormListColumnNonReferencedHiddenFieldList(.node["@name"])>
             <#list nonReferencedFieldList as nonReferencedField><@formListSubField nonReferencedField/></#list>
@@ -1018,7 +1018,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                 </#if>
             </div>
             <#if isMulti && !skipForm>
-                <form name="${formId}" id="${formId}" class="form-body" method="post" action="${urlInfo.url}">
+                <form name="${formId}" id="${formId}" class="form-body" method="post" action="${formListUrlInfo.url}">
                     <input type="hidden" name="moquiFormName" value="${formNode["@name"]}">
                     <input type="hidden" name="_isMulti" value="true">
             <#else>
@@ -1032,7 +1032,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
             <#if isMulti || skipForm>
                 <div class="form-row">
             <#else>
-                <form name="${formId}_${listEntryIndex}" id="${formId}_${listEntryIndex}" class="form-row" method="post" action="${urlInfo.url}">
+                <form name="${formId}_${listEntryIndex}" id="${formId}_${listEntryIndex}" class="form-row" method="post" action="${formListUrlInfo.url}">
             </#if>
                 <#list formNode["field"] as fieldNode><@formListSubField fieldNode/></#list>
             <#if isMulti || skipForm>
