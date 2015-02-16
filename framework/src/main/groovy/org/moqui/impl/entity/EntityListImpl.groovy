@@ -185,6 +185,17 @@ class EntityListImpl implements EntityList {
     }
 
     @Override
+    EntityList addIfMissing(EntityValue value) {
+        if (!this.valueList.contains(value)) this.valueList.add(value)
+        return this
+    }
+    @Override
+    EntityList addAllIfMissing(EntityList el) {
+        for (EntityValue value in el) addIfMissing(value)
+        return this
+    }
+
+    @Override
     int writeXmlText(Writer writer, String prefix, boolean dependents) {
         int recordsWritten = 0
         for (EntityValue ev in this) recordsWritten += ev.writeXmlText(writer, prefix, dependents)
@@ -350,7 +361,9 @@ class EntityListImpl implements EntityList {
         int getPageSize() { return limit ?: 20 }
         EntityList orderByFields(List<String> fieldNames) { return this }
         int indexMatching(Map valueMap) { return -1 }
-        void move(int fromIndex, int toIndex) { }
+        void move(int fromIndex, int toIndex) { throw new IllegalArgumentException("EmptyEntityList does not support move") }
+        EntityList addIfMissing(EntityValue value) { throw new IllegalArgumentException("EmptyEntityList does not support add") }
+        EntityList addAllIfMissing(EntityList el) { throw new IllegalArgumentException("EmptyEntityList does not support add") }
         Iterator<EntityValue> iterator() { return emptyIterator }
         Object clone() { return this.cloneList() }
         int writeXmlText(Writer writer, String prefix, boolean dependents) { return 0 }

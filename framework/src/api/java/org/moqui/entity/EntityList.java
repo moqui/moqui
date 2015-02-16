@@ -90,6 +90,11 @@ public interface EntityList extends List<EntityValue>, Iterable<EntityValue>, Cl
     int indexMatching(Map valueMap);
     void move(int fromIndex, int toIndex);
 
+    /** Adds the value to this list if the value isn't already in it. Returns reference to this list. */
+    EntityList addIfMissing(EntityValue value);
+    /** Adds each value in the passed list to this list if the value isn't already in it. Returns reference to this list. */
+    EntityList addAllIfMissing(EntityList el);
+
     /** Writes XML text with an attribute or CDATA element for each field of each record. If dependents is true also
      * writes all dependent (descendant) records.
      * @param writer A Writer object to write to
