@@ -587,7 +587,7 @@ class ServiceFacadeImpl implements ServiceFacade {
                         eventDate:new Timestamp(context.getFireTime().getTime()),
                         triggerGroup:trigger.getKey().getGroup(), triggerName:trigger.getKey().getName(),
                         jobGroup:trigger.getJobKey().getGroup(), jobName:trigger.getJobKey().getName(),
-                        fireIntanceId:context.getFireInstanceId(), paramString:paramString]).disableAuthz().call()
+                        fireInstanceId:context.getFireInstanceId(), paramString:paramString]).disableAuthz().call()
         }
 
         @Override
@@ -614,7 +614,7 @@ class ServiceFacadeImpl implements ServiceFacade {
                         eventDate:new Timestamp(context.getFireTime().getTime()),
                         triggerGroup:trigger.getKey().getGroup(), triggerName:trigger.getKey().getName(),
                         jobGroup:trigger.getJobKey().getGroup(), jobName:trigger.getJobKey().getName(),
-                        fireIntanceId:context.getFireInstanceId(), paramString:paramString,
+                        fireInstanceId:context.getFireInstanceId(), paramString:paramString,
                         triggerInstructionCode:triggerInstructionCode.toString()]).disableAuthz().call()
         }
     }
