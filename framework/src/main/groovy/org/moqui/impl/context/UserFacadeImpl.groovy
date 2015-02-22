@@ -422,6 +422,10 @@ class UserFacadeImpl implements UserFacade {
             eci.message.addError("No username specified")
             return false
         }
+        if (!password) {
+            eci.message.addError("No password specified")
+            return false
+        }
         if (tenantId) {
             eci.changeTenant(tenantId)
             this.visitId = null
