@@ -156,18 +156,14 @@ class MoquiShiroRealm implements Realm {
                         newUserAccount.disabledDateTime != null || newUserAccount.hasLoggedOut != "N") {
                     Map<String, Object> uaParameters = (Map<String, Object>) [userId:userId, successiveFailedLogins:0,
                             disabled:"N", disabledDateTime:null, hasLoggedOut:"N"]
-                    // this is important to run in a separate TX so the UserAccount record isn't locked for the entire
-                    //    surrounding transaction, preventing other transactions by the same user
-                    ecfi.serviceFacade.sync().name("update", "moqui.security.UserAccount").parameters(uaParameters)
-                            .requireNewTransaction(true).call()
+                    ecfi.serviceFacade.sync().name("update", "moqui.security.UserAccount").parameters(uaParameters).call()
                 }
 
                 // update visit if no user in visit yet
                 EntityValue visit = ecfi.executionContext.user.visit
                 if (visit && !visit.userId) {
                     ecfi.serviceFacade.sync().name("update", "moqui.server.Visit")
-                            .parameters((Map<String, Object>) [visitId:visit.visitId, userId:userId])
-                            .requireNewTransaction(true).call()
+                            .parameters((Map<String, Object>) [visitId:visit.visitId, userId:userId]).call()
                 }
             } finally {
                 if (!alreadyDisabled) ecfi.executionContext.artifactExecution.enableAuthz()
