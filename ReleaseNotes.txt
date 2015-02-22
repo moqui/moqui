@@ -141,6 +141,8 @@ New Features:
     various tests in non-production environments
   - Added entity.@enable-audit-log attribute which is used as the default
     for all fields of the entity
+  - Added EntityAuditLog.artifactStack field with the artifact stack used
+    to do the audited update
 
 Bug Fixes:
 

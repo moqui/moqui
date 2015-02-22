@@ -431,9 +431,12 @@ abstract class EntityValueBase implements EntityValue {
 
                 // don't skip for this, if a field was reset then we want to record that: if (!value) continue
 
+                String stackNameString = ec.artifactExecution.getStackNameString()
+                if (stackNameString.length() > 4000) stackNameString = stackNameString.substring(0, 4000)
                 Map<String, Object> parms = (Map<String, Object>) [changedEntityName:getEntityName(),
                         changedFieldName:fieldName, newValueText:(value as String), changedDate:nowTimestamp,
-                        changedByUserId:ec.getUser().getUserId(), changedInVisitId:ec.getUser().getVisitId()]
+                        changedByUserId:ec.getUser().getUserId(), changedInVisitId:ec.getUser().getVisitId(),
+                        artifactStack:stackNameString]
                 parms.oldValueText = oldValue
                 parms.putAll(pksValueMap)
 

@@ -126,6 +126,16 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
 
     @Override
     Deque<ArtifactExecutionInfo> getStack() { return this.artifactExecutionInfoStack }
+    String getStackNameString() {
+        StringBuilder sb = new StringBuilder()
+        Iterator i = this.artifactExecutionInfoStack.iterator()
+        while (i.hasNext()) {
+            ArtifactExecutionInfo aei = i.next()
+            sb.append(aei.name)
+            if (i.hasNext()) sb.append(',')
+        }
+        return sb.toString()
+    }
     @Override
     List<ArtifactExecutionInfo> getHistory() { return this.artifactExecutionInfoHistory }
 
