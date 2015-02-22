@@ -29,6 +29,13 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:enumeration value="view-create"/>
         </xs:restriction>
     </xs:simpleType>
+    <xs:simpleType name="audit-log-options">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="true"/>
+            <xs:enumeration value="false"/>
+            <xs:enumeration value="update"/>
+        </xs:restriction>
+    </xs:simpleType>
 
     <!-- ====================== Root Element ======================= -->
     <xs:element name="entities">
@@ -91,6 +98,15 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:annotation><xs:documentation>If true values are immutable, can only be created and not updated
                     or deleted.</xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="enable-audit-log" type="audit-log-options">
+                <xs:annotation><xs:documentation>
+                    No default (effectively defaults to false). If set this value will be used for @enable-audit-log
+                    attribute on all fields without a value set (the field level value overrides this value).
+
+                    Note that this also sets the value for the automatically added field lastUpdatedStamp so if enabled
+                    there will be a record of all updates.
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="extend-entity">
@@ -111,6 +127,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="no-update-stamp" default="false" type="boolean"/>
             <xs:attribute name="cache" default="false" type="cache-options"/>
             <xs:attribute name="authorize-skip" type="authorize-skip-options" default="false"/>
+            <xs:attribute name="enable-audit-log" type="audit-log-options"/>
         </xs:complexType>
     </xs:element>
 
@@ -143,19 +160,12 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:attribute>
             <xs:attribute name="is-pk" default="false" type="boolean"/>
             <xs:attribute name="encrypt" default="false" type="boolean"/>
-            <xs:attribute name="enable-audit-log" default="false" type="boolean">
+            <xs:attribute name="enable-audit-log" default="false" type="audit-log-options">
                 <xs:annotation><xs:documentation>
                     Defaults to false. If true whenever the value for this field on a record changes the Entity Facade
                     will record the change (create or update) in the moqui.entity.EntityAuditLog entity. If set to
                     update will not create an audit record for the initial create, only for updates.
                 </xs:documentation></xs:annotation>
-                <xs:simpleType>
-                    <xs:restriction base="xs:token">
-                        <xs:enumeration value="true"/>
-                        <xs:enumeration value="false"/>
-                        <xs:enumeration value="update"/>
-                    </xs:restriction>
-                </xs:simpleType>
             </xs:attribute>
             <xs:attribute name="enable-localization" default="false" type="boolean">
                 <xs:annotation><xs:documentation>

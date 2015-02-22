@@ -139,6 +139,8 @@ New Features:
   - Initial implementation of EntitySync feature with example in the
     example component; should be considered beta but has gone through
     various tests in non-production environments
+  - Added entity.@enable-audit-log attribute which is used as the default
+    for all fields of the entity
 
 Bug Fixes:
 

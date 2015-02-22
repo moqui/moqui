@@ -134,12 +134,17 @@ public class EntityDefinition {
         if (needsAuditLogVal != null) return needsAuditLogVal
         needsAuditLogVal = false
         for (Node fieldNode in getFieldNodes(true, true, false))
-            if (fieldNode."@enable-audit-log" == "true" || fieldNode."@enable-audit-log" == "update") needsAuditLogVal = true
+            if (getFieldAuditLog(fieldNode) == "true" || getFieldAuditLog(fieldNode) == "update") needsAuditLogVal = true
         if (needsAuditLogVal) return true
 
         for (Node fieldNode in getFieldNodes(false, false, true))
-            if (fieldNode."@enable-audit-log" == "true" || fieldNode."@enable-audit-log" == "update") needsAuditLogVal = true
+            if (getFieldAuditLog(fieldNode) == "true" || getFieldAuditLog(fieldNode) == "update") needsAuditLogVal = true
         return needsAuditLogVal
+    }
+    String getFieldAuditLog(Node fieldNode) {
+        String fieldAuditLog = fieldNode."@enable-audit-log"
+        if (fieldAuditLog) return fieldAuditLog
+        return internalEntityNode."@enable-audit-log"
     }
 
     boolean needsEncrypt() {

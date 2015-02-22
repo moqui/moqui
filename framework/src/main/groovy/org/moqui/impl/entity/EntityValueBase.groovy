@@ -415,7 +415,7 @@ abstract class EntityValueBase implements EntityValue {
         addThreeFieldPkValues(pksValueMap)
 
         for (Node fieldNode in ed.getFieldNodes(true, true, true)) {
-            if (fieldNode."@enable-audit-log" == "true" || (isUpdate && fieldNode."@enable-audit-log" == "update")) {
+            if (ed.getFieldAuditLog(fieldNode) == "true" || (isUpdate && ed.getFieldAuditLog(fieldNode) == "update")) {
                 String fieldName = fieldNode."@name"
 
                 // is there a new value? if not continue
