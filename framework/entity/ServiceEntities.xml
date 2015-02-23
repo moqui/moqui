@@ -185,4 +185,79 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="schedName" type="text-medium" is-pk="true"/>
         <field name="lockName" type="text-short" is-pk="true"/>
     </entity>
+
+    <!-- ========================================================= -->
+    <!-- moqui.service.message -->
+    <!-- ========================================================= -->
+
+    <entity entity-name="SystemMessage" package-name="moqui.service.message">
+        <field name="systemMessageId" type="id" is-pk="true"/>
+        <field name="systemMessageTypeId" type="id"/>
+        <field name="statusId" type="id"/>
+        <field name="isOutgoing" type="text-indicator"/>
+        <field name="sentDate" type="date-time"/>
+        <field name="receivedDate" type="date-time"/>
+        <field name="messageText" type="text-very-long"/>
+        <field name="remoteMessageId" type="text-medium"/>
+        <field name="systemMessageRemoteId" type="id"/>
+        <!-- the follow are useful for many types of messages, but come specifically from the OAGIS specification -->
+        <field name="logicalId" type="text-medium"/>
+        <field name="component" type="text-medium"/>
+        <field name="task" type="text-medium"/>
+        <field name="referenceId" type="text-medium"/>
+        <field name="authId" type="text-medium"/>
+        <field name="bsrVerb" type="text-medium"/>
+        <field name="bsrNoun" type="text-medium"/>
+        <field name="bsrRevision" type="text-medium"/>
+        <relationship type="one" related-entity-name="moqui.service.message.SystemMessageType"/>
+        <relationship type="one" title="SystemMessage" related-entity-name="moqui.basic.StatusItem"/>
+        <relationship type="one" related-entity-name="moqui.service.message.SystemMessageRemote"/>
+        <seed-data>
+            <moqui.basic.StatusType description="System Message" statusTypeId="SystemMessage"/>
+            <moqui.basic.StatusItem description="Triggered" sequenceNum="1" statusId="SmsgTriggered" statusTypeId="SystemMessage"/>
+            <moqui.basic.StatusItem description="Produced" sequenceNum="2" statusId="SmsgProduced" statusTypeId="SystemMessage"/>
+            <moqui.basic.StatusItem description="Sent" sequenceNum="3" statusId="SmsgSent" statusTypeId="SystemMessage"/>
+            <moqui.basic.StatusItem description="Received" sequenceNum="4" statusId="SmsgReceived" statusTypeId="SystemMessage"/>
+            <moqui.basic.StatusItem description="Consumed" sequenceNum="5" statusId="SmsgConsumed" statusTypeId="SystemMessage"/>
+            <moqui.basic.StatusItem description="Confirmed" sequenceNum="6" statusId="SmsgConfirmed" statusTypeId="SystemMessage"/>
+            <moqui.basic.StatusItem description="Error" sequenceNum="7" statusId="SmsgError" statusTypeId="SystemMessage"/>
+
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgTriggered" toStatusId="SmsgProduced" transitionName="Produce"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgProduced" toStatusId="SmsgSent" transitionName="Send"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgSent" toStatusId="SmsgReceived" transitionName="Receive"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgReceived" toStatusId="SmsgConsumed" transitionName="Consume"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgConsumed" toStatusId="SmsgConfirmed" transitionName="Confirm"/>
+
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgTriggered" toStatusId="SmsgError" transitionName="Error"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgProduced" toStatusId="SmsgError" transitionName="Error"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgSent" toStatusId="SmsgError" transitionName="Error"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgReceived" toStatusId="SmsgError" transitionName="Error"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgConsumed" toStatusId="SmsgError" transitionName="Error"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgConfirmed" toStatusId="SmsgError" transitionName="Error"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgError" toStatusId="SmsgError" transitionName="Error"/>
+        </seed-data>
+    </entity>
+    <entity entity-name="SystemMessageType" package-name="moqui.service.message">
+        <field name="systemMessageTypeId" type="id" is-pk="true"/>
+        <field name="description" type="text-medium"/>
+        <field name="produceServiceName" type="text-medium"/>
+        <field name="consumeServiceName" type="text-medium"/>
+        <field name="sendServiceName" type="text-medium"/>
+        <field name="receiveServiceName" type="text-medium"/>
+    </entity>
+    <entity entity-name="SystemMessageRemote" package-name="moqui.service.message">
+        <field name="systemMessageRemoteId" type="id" is-pk="true"/>
+        <field name="sendUrl" type="text-medium"/>
+        <field name="authorizedIpAddresses" type="text-long"/>
+        <field name="username" type="text-medium"/>
+        <field name="password" type="text-short" encrypt="true"/>
+    </entity>
+    <entity entity-name="SystemMessageError" package-name="moqui.service.message">
+        <field name="systemMessageId" type="id" is-pk="true"/>
+        <field name="errorSeqId" type="id" is-pk="true"/>
+        <field name="attemptedStatusId" type="id"/>
+        <field name="reasonCode" type="text-short"/>
+        <field name="errorText" type="text-very-long"/>
+        <relationship type="one" related-entity-name="moqui.service.message.SystemMessage"/>
+    </entity>
 </entities>
