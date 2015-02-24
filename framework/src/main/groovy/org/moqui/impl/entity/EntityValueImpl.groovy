@@ -37,6 +37,16 @@ class EntityValueImpl extends EntityValueBase {
     }
 
     @Override
+    EntityValue cloneDbValue(boolean getOld) {
+        EntityValueImpl newObj = new EntityValueImpl(getEntityDefinition(), getEntityFacadeImpl())
+        newObj.getValueMap().putAll(getValueMap())
+        for (String fieldName in getEntityDefinition().getAllFieldNames())
+            newObj.put(fieldName, getOld ? getOldDbValue(fieldName) : getOriginalDbValue(fieldName))
+        newObj.setSyncedWithDb()
+        return newObj
+    }
+
+    @Override
     void createExtended(ListOrderedSet fieldList, Connection con) {
         EntityDefinition ed = getEntityDefinition()
 

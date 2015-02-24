@@ -143,6 +143,9 @@ New Features:
     for all fields of the entity
   - Added EntityAuditLog.artifactStack field with the artifact stack used
     to do the audited update
+  - Entity ECA rules that run after an update and have
+    get-original-value=true now really get the originalValue from before
+    the update even though they run after.
 
 Bug Fixes:
 
