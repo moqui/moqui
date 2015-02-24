@@ -188,6 +188,8 @@ Bug Fixes:
 - In XML Forms the display and display-entity field types no longer default
   to the value from the @text attribute, if there is no direct entry value
   the hidden field should be empty.
+- Fixed issue with the Content-Type HTTP header in JSON requests when it
+  has one or more parameters.
 
 ===========================================================================
 Release 1.4.1 - 01 Aug 2014
