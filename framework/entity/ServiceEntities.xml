@@ -252,14 +252,14 @@ This Work includes contributions authored by David E. Jones, not as a
     <entity entity-name="SystemMessageType" package-name="moqui.service.message">
         <field name="systemMessageTypeId" type="id" is-pk="true"/>
         <field name="description" type="text-medium"/>
-        <field name="produceServiceName" type="text-medium"/>
+        <!-- Needed? <field name="produceServiceName" type="text-medium"/> -->
         <field name="consumeServiceName" type="text-medium"><description>The service to call after a message is
             received to consume it. Should implement the org.moqui.impl.SystemMessageServices.consume#SystemMessage
             interface (just a systemMessageId in-parameter). Used by the receive#SystemMessage service.</description></field>
         <field name="sendServiceName" type="text-medium"><description>The service to call to send queued messages.
-            Should implement the org.moqui.impl.SystemMessageServices.consume#SystemMessage interface (just a
-            systemMessageId in-parameter). Used by the send#SystemMessage service, must be specified or will result in
-            an error.</description></field>
+            Should implement the org.moqui.impl.SystemMessageServices.send#SystemMessage interface (just a
+            systemMessageId in-parameter and remoteMessageId out-parameter). Used by the send#QueuedSystemMessage service,
+            and for that service must be specified or will result in an error.</description></field>
         <field name="receiveServiceName" type="text-medium"><description>When applicable, used by the send service as
             the service on the remote server to call to receive the message.</description></field>
     </entity>
@@ -269,6 +269,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="authorizedIpAddresses" type="text-long"/>
         <field name="username" type="text-medium"/>
         <field name="password" type="text-short" encrypt="true"/>
+        <field name="tenantId" type="text-short"/>
     </entity>
     <entity entity-name="SystemMessageError" package-name="moqui.service.message">
         <field name="systemMessageId" type="id" is-pk="true"/>
