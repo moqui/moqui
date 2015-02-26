@@ -20,13 +20,16 @@ JS, images, inserted text and templates, and much more.
 One major new feature in this release is EntitySync which duplicates data
 between systems based on update timestamps. This can move data between
 tenants, systems on different networks and used for different purposes, and
-so on. Another major feature is the system-system messaging that persists
-outgoing messages to allow retry in sending or even modify and retry, and
-incoming messages to allow retry in processing, modify and retry, etc. This
-approach keeps a log of all messages. It is configurable so that different
-services can be used to process different messages (send, receive, consume).
-Both EntitySync and System-System Messages are new and not yet vetted in
-production so should be considered beta features as of this release.
+so on. Another major feature is the system-system messaging that is a store
+and forward message queue, or in other words it persists outgoing messages
+to allow retry in sending or even modify and retry, and incoming messages
+to allow retry in processing, modify and retry, etc. This can be used along
+with or instead of a lower-level message queue to provide more visibility
+at a business level and to facilitate production support for messages with
+issues. It is configurable so that different services can be used to
+process different messages (send, receive, consume). Both EntitySync and
+System-System Messages are new and not yet vetted in production so should
+be considered beta features as of this release.
 
 TODO
 
