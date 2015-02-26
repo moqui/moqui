@@ -182,7 +182,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </service>
 
     <!-- ========== Scheduled services to handle incoming and outgoing messages ========== -->
-    <service verb="send" noun="AllProducedSystemMessages" authenticate="anonymous-view">
+    <service verb="send" noun="AllProducedSystemMessages" authenticate="anonymous-all">
         <description>Meant to be run scheduled, this service tries to send outgoing (isOutgoing=Y) messages in the
             SmsgProduced status. After retryLimit attempts will change the status to SmsgError.</description>
         <in-parameters>
@@ -203,7 +203,7 @@ This Work includes contributions authored by David E. Jones, not as a
             </iterate>
         </actions>
     </service>
-    <service verb="consume" noun="AllReceivedSystemMessages" authenticate="anonymous-view">
+    <service verb="consume" noun="AllReceivedSystemMessages" authenticate="anonymous-all">
         <description>Consume incoming (isOutgoing=N) SystemMessage records not already consumed (in the SmsgReceived
             status) and received more than delayMinutes in the past (to avoid conflict with attempt to consume
             immediately). Messages in this state will normally have had an error in consuming. After retryLimit attempts
