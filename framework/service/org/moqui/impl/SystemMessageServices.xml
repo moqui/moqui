@@ -15,6 +15,9 @@ This Work includes contributions authored by David E. Jones, not as a
     <service verb="consume" noun="SystemMessage" type="interface">
         <in-parameters><parameter name="systemMessageId"/></in-parameters>
     </service>
+    <service verb="send" noun="SystemMessage" type="interface">
+        <in-parameters><parameter name="systemMessageId"/></in-parameters>
+    </service>
 
     <service verb="queue" noun="SystemMessage">
         <description>Creates a SystemMessage record for the outgoing message in the SmsgProduced status. If sendNow=true
@@ -25,7 +28,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <parameter name="systemMessageTypeId" required="true"/>
             <parameter name="messageText" required="true"/>
             <parameter name="systemMessageRemoteId"><description>Required if the send service
-                (SystemMessageType.sendServiceName) requires it. The send#SystemMessage service does require it.</description></parameter>
+                (SystemMessageType.sendServiceName) requires it. The send#SystemMessageJsonRpc service does require it.</description></parameter>
         </in-parameters>
         <out-parameters><parameter name="systemMessageId"/></out-parameters>
         <actions>
@@ -44,9 +47,48 @@ This Work includes contributions authored by David E. Jones, not as a
         </actions>
     </service>
     <service verb="send" noun="SystemMessage">
+        <description>Calls the send service (SystemMessageType.sendServiceName). Sets the SystemMessage status to
+            SmsgSending while sending, then to SmsgSent if successful or back to original status if not. If the initial
+            status is not SmsgProduced or SmsgError returns an error (generally means message already sent). If you
+            want to resend a message that is in a later status, first change the status to SmsgProduced.</description>
         <in-parameters><parameter name="systemMessageId" required="true"/></in-parameters>
         <actions>
             <entity-find-one entity-name="moqui.service.message.SystemMessage" value-field="systemMessage"/>
+            <set field="initialStatusId" from="systemMessage.statusId"/>
+
+            <if condition="systemMessage.statusId != 'SmsgProduced' &amp;&amp; systemMessage.statusId != 'SmsgError'">
+                <return error="true" message="System message [${systemMessageId}] has status [${systemMessage.statusId}] and must be either SmsgProduced or SmsgError, not sending."/></if>
+
+            <if condition="!systemMessage.systemMessageTypeId">
+                <return error="true" message="System message [${systemMessageId}] has no systemMessageTypeId, not sending."/></if>
+            <set field="systemMessageType" from="systemMessage.'moqui.service.message.SystemMessageType'"/>
+
+            <if condition="!systemMessageType.sendServiceName">
+                <return error="true" message="While sending system message [${systemMessageId}] system message type [${systemMessageType.systemMessageTypeId}] has no sendServiceName, not sending."/></if>
+
+            <!-- update the status to SmsgSending, in a separate TX -->
+            <service-call name="update#moqui.service.message.SystemMessage" transaction="force-new"
+                    in-map="[systemMessageId:systemMessageId, statusId:'SmsgSending']"/>
+
+            <service-call name="${systemMessageType.sendServiceName}" in-map="[systemMessageId:systemMessageId]" transaction="force-new"/>
+
+            <!-- if successful set status to SmsgSent, otherwise set back to previous status -->
+            <if condition="ec.message.hasError()">
+                <service-call name="update#moqui.service.message.SystemMessage" transaction="force-new" ignore-error="true"
+                        in-map="[systemMessageId:systemMessageId, statusId:initialStatusId]"/>
+                <else>
+                    <service-call name="update#moqui.service.message.SystemMessage" transaction="force-new"
+                            in-map="[systemMessageId:systemMessageId, statusId:'SmsgSent']"/>
+                </else>
+            </if>
+        </actions>
+    </service>
+    <service verb="send" noun="SystemMessageJsonRpc">
+        <in-parameters><parameter name="systemMessageId" required="true"/></in-parameters>
+        <actions>
+            <if condition="!systemMessage.systemMessageRemoteId">
+                <return error="true" message="System message [${systemMessageId}] has no systemMessageRemoteId, not sending."/></if>
+            <set field="systemMessageRemote" from="systemMessage.'moqui.service.message.SystemMessageRemote'"/>
 
             <!-- TODO -->
         </actions>
