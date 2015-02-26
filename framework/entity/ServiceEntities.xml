@@ -214,17 +214,29 @@ This Work includes contributions authored by David E. Jones, not as a
         <relationship type="one" related-entity-name="moqui.service.message.SystemMessageRemote"/>
         <seed-data>
             <moqui.basic.StatusType description="System Message" statusTypeId="SystemMessage"/>
-            <moqui.basic.StatusItem description="Triggered" sequenceNum="1" statusId="SmsgTriggered" statusTypeId="SystemMessage"/>
-            <moqui.basic.StatusItem description="Produced" sequenceNum="2" statusId="SmsgProduced" statusTypeId="SystemMessage"/>
-            <moqui.basic.StatusItem description="Sent" sequenceNum="3" statusId="SmsgSent" statusTypeId="SystemMessage"/>
-            <moqui.basic.StatusItem description="Received" sequenceNum="4" statusId="SmsgReceived" statusTypeId="SystemMessage"/>
-            <moqui.basic.StatusItem description="Consumed" sequenceNum="5" statusId="SmsgConsumed" statusTypeId="SystemMessage"/>
-            <moqui.basic.StatusItem description="Confirmed" sequenceNum="6" statusId="SmsgConfirmed" statusTypeId="SystemMessage"/>
-            <moqui.basic.StatusItem description="Error" sequenceNum="7" statusId="SmsgError" statusTypeId="SystemMessage"/>
+            <!-- Is this needed? <moqui.basic.StatusItem description="Triggered" sequenceNum="1" statusId="SmsgTriggered" statusTypeId="SystemMessage"/> -->
+
+            <moqui.basic.StatusItem description="Produced" sequenceNum="10" statusId="SmsgProduced" statusTypeId="SystemMessage"/>
+            <moqui.basic.StatusItem description="Sending" sequenceNum="11" statusId="SmsgSending" statusTypeId="SystemMessage"/>
+            <moqui.basic.StatusItem description="Sent" sequenceNum="12" statusId="SmsgSent" statusTypeId="SystemMessage"/>
+
+            <moqui.basic.StatusItem description="Received" sequenceNum="20" statusId="SmsgReceived" statusTypeId="SystemMessage"/>
+            <moqui.basic.StatusItem description="Consuming" sequenceNum="21" statusId="SmsgConsuming" statusTypeId="SystemMessage"/>
+            <moqui.basic.StatusItem description="Consumed" sequenceNum="22" statusId="SmsgConsumed" statusTypeId="SystemMessage"/>
+
+            <!-- Confirmation sent -->
+            <moqui.basic.StatusItem description="Confirmed" sequenceNum="90" statusId="SmsgConfirmed" statusTypeId="SystemMessage"/>
+            <!-- Error, generally after retry limit -->
+            <moqui.basic.StatusItem description="Error" sequenceNum="99" statusId="SmsgError" statusTypeId="SystemMessage"/>
 
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgTriggered" toStatusId="SmsgProduced" transitionName="Produce"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgProduced" toStatusId="SmsgSending" transitionName="Sending"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgSending" toStatusId="SmsgSent" transitionName="Send"/>
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgProduced" toStatusId="SmsgSent" transitionName="Send"/>
-            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgSent" toStatusId="SmsgReceived" transitionName="Receive"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgSent" toStatusId="SmsgConfirmed" transitionName="Confirm"/>
+
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgReceived" toStatusId="SmsgConsuming" transitionName="Consuming"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgConsuming" toStatusId="SmsgConsumed" transitionName="Consume"/>
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgReceived" toStatusId="SmsgConsumed" transitionName="Consume"/>
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgConsumed" toStatusId="SmsgConfirmed" transitionName="Confirm"/>
 
@@ -241,9 +253,15 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="systemMessageTypeId" type="id" is-pk="true"/>
         <field name="description" type="text-medium"/>
         <field name="produceServiceName" type="text-medium"/>
-        <field name="consumeServiceName" type="text-medium"/>
-        <field name="sendServiceName" type="text-medium"/>
-        <field name="receiveServiceName" type="text-medium"/>
+        <field name="consumeServiceName" type="text-medium"><description>The service to call after a message is
+            received to consume it. Should implement the org.moqui.impl.SystemMessageServices.consume#SystemMessage
+            interface (just a systemMessageId in-parameter).</description></field>
+        <field name="sendServiceName" type="text-medium"><description>The service to call to send queued messages.
+            Defaults to org.moqui.impl.SystemMessageServices.send#SystemMessage. Used by the queue#SystemMessage and
+            send#ProducedSystemMessages services.</description></field>
+        <field name="receiveServiceName" type="text-medium"><description>When applicable, used by the send service as
+            the service on the remote server to call to receive the message. Defaults to
+            org.moqui.impl.SystemMessageServices.receive#SystemMessage.</description></field>
     </entity>
     <entity entity-name="SystemMessageRemote" package-name="moqui.service.message">
         <field name="systemMessageRemoteId" type="id" is-pk="true"/>
