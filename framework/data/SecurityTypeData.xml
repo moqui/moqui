@@ -25,9 +25,18 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <!-- An artifact group for remote EntitySync calls; members of other groups like remote API only groups would use this as well -->
     <moqui.security.ArtifactGroup artifactGroupId="EntitySyncServices" description="EntitySync Services"/>
-    <moqui.security.ArtifactGroupMember artifactGroupId="EntitySyncServices" artifactName="org\.moqui\.impl\.EntitySyncServices\..*"
-            nameIsPattern="Y" artifactTypeEnumId="AT_SERVICE" inheritAuthz="Y"/>
+    <moqui.security.ArtifactGroupMember artifactGroupId="EntitySyncServices" artifactName="org.moqui.impl.EntitySyncServices.put#EntitySyncData"
+            nameIsPattern="N" artifactTypeEnumId="AT_SERVICE" inheritAuthz="Y"/>
+    <moqui.security.ArtifactGroupMember artifactGroupId="EntitySyncServices" artifactName="org.moqui.impl.EntitySyncServices.get#EntitySyncData"
+            nameIsPattern="N" artifactTypeEnumId="AT_SERVICE" inheritAuthz="Y"/>
     <moqui.security.ArtifactAuthz artifactAuthzId="EntitySyncServicesADMIN" userGroupId="ADMIN" artifactGroupId="EntitySyncServices"
+            authzTypeEnumId="AUTHZT_ALWAYS" authzActionEnumId="AUTHZA_ALL"/>
+
+    <!-- An artifact group for remote SystemMessage calls; members of other groups like remote API only groups would use this as well -->
+    <moqui.security.ArtifactGroup artifactGroupId="SystemMessageServices" description="SystemMessage Services"/>
+    <moqui.security.ArtifactGroupMember artifactGroupId="SystemMessageServices" artifactName="org.moqui.impl.SystemMessageServices.receive#SystemMessage"
+            nameIsPattern="N" artifactTypeEnumId="AT_SERVICE" inheritAuthz="Y"/>
+    <moqui.security.ArtifactAuthz artifactAuthzId="SystemMessageServicesADMIN" userGroupId="ADMIN" artifactGroupId="SystemMessageServices"
             authzTypeEnumId="AUTHZT_ALWAYS" authzActionEnumId="AUTHZA_ALL"/>
 
     <!-- Artifact Authz for UserAccount, user can view own info -->
