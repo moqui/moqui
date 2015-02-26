@@ -128,4 +128,19 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:enumeration value="Serializable"/>
         </xs:restriction>
     </xs:simpleType>
+    <xs:simpleType name="transaction-options">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="ignore"><xs:annotation><xs:documentation>Don't do anything with
+                transactions (if one is in place use it, if no transaction in place don't begin one).</xs:documentation></xs:annotation></xs:enumeration>
+            <xs:enumeration value="use-or-begin"><xs:annotation><xs:documentation>Use active transaction or
+                if no active transaction begin one. This is the default.</xs:documentation></xs:annotation></xs:enumeration>
+            <xs:enumeration value="force-new"><xs:annotation><xs:documentation>Always begin a new
+                transaction, pausing/resuming the active transaction if there is one.</xs:documentation></xs:annotation></xs:enumeration>
+            <xs:enumeration value="cache"><xs:annotation><xs:documentation>Like use-or-begin but with a
+                write-through per-transaction cache in place (works even if active TX is in place). See notes and
+                warnings in the JavaDoc comments of the TransactionCache class for details.</xs:documentation></xs:annotation></xs:enumeration>
+            <xs:enumeration value="force-cache"><xs:annotation><xs:documentation>Like force-new with a
+                transaction cache in place like the cache option.</xs:documentation></xs:annotation></xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
 </xs:schema>

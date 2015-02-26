@@ -65,7 +65,11 @@ New Features:
   otherwise authz rule does not apply
 - Added System-System Message functionality with persisted outgoing and
   incoming messages and services to manage queueing, sending, receiving,
-  and consuming.
+  and consuming
+- Added sync service call transaction options (ignore and cache) to match
+  those available through the service definition
+- Made XML Actions service-call.@transaction options match those in the
+  service definition, added code generation for all options
 - Added ServiceFacade.callJsonRpc() method to more conveniently call remote
   JSON-RPC services
 - XML Screen:

@@ -31,7 +31,9 @@ import org.slf4j.LoggerFactory
 class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
     protected final static Logger logger = LoggerFactory.getLogger(ServiceCallSyncImpl.class)
 
+    protected boolean ignoreTransaction = false
     protected boolean requireNewTransaction = false
+    protected boolean useTransactionCache = false
     /* not supported by Atomikos/etc right now, consider for later: protected int transactionIsolation = -1 */
 
     protected boolean multi = false
@@ -57,7 +59,13 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
     ServiceCallSync parameter(String name, Object value) { parameters.put(name, value); return this }
 
     @Override
+    ServiceCallSync ignoreTransaction(boolean it) { this.ignoreTransaction = it; return this }
+
+    @Override
     ServiceCallSync requireNewTransaction(boolean rnt) { this.requireNewTransaction = rnt; return this }
+
+    @Override
+    ServiceCallSync useTransactionCache(boolean utc) { this.useTransactionCache = utc; return this }
 
     @Override
     ServiceCallSync multi(boolean mlt) { this.multi = mlt; return this }
@@ -210,16 +218,8 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         // start with the settings for the default: use-or-begin
         boolean pauseResumeIfNeeded = false
         boolean beginTransactionIfNeeded = true
-        if (requireNewTransaction) {
-            // if the setting for this service call is in place, use it regardless of the settings on the service
-            pauseResumeIfNeeded = true
-        } else {
-            if (sd.getTxIgnore()) {
-                beginTransactionIfNeeded = false
-            } else if (sd.getTxForceNew()) {
-                pauseResumeIfNeeded = true
-            }
-        }
+        if (ignoreTransaction || sd.getTxIgnore()) beginTransactionIfNeeded = false
+        if (requireNewTransaction || sd.getTxForceNew()) pauseResumeIfNeeded = true
 
         TransactionFacade tf = sfi.getEcfi().getTransactionFacade()
         boolean suspendedTransaction = false
@@ -233,7 +233,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
 
             if (pauseResumeIfNeeded && tf.isTransactionInPlace()) suspendedTransaction = tf.suspend()
             boolean beganTransaction = beginTransactionIfNeeded ? tf.begin(sd.getTxTimeout()) : false
-            if (sd.getTxUseCache()) tf.initTransactionCache()
+            if (useTransactionCache || sd.getTxUseCache()) tf.initTransactionCache()
             try {
                 // handle sd.serviceNode."@semaphore"; do this after local transaction created, etc.
                 checkAddSemaphore(sd, eci)
@@ -368,12 +368,19 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
 
         sfi.runSecaRules(getServiceName(), currentParameters, null, "pre-validate")
 
+        // start with the settings for the default: use-or-begin
+        boolean pauseResumeIfNeeded = false
+        boolean beginTransactionIfNeeded = true
+        if (ignoreTransaction) beginTransactionIfNeeded = false
+        if (requireNewTransaction) pauseResumeIfNeeded = true
+
         TransactionFacade tf = sfi.getEcfi().getTransactionFacade()
         boolean suspendedTransaction = false
         Map<String, Object> result = new HashMap()
         try {
-            if (requireNewTransaction && tf.isTransactionInPlace()) suspendedTransaction = tf.suspend()
-            boolean beganTransaction = tf.begin(null)
+            if (pauseResumeIfNeeded && tf.isTransactionInPlace()) suspendedTransaction = tf.suspend()
+            boolean beganTransaction = beginTransactionIfNeeded ? tf.begin(null) : false
+            if (useTransactionCache) tf.initTransactionCache()
             try {
                 sfi.runSecaRules(getServiceName(), currentParameters, null, "pre-service")
 
