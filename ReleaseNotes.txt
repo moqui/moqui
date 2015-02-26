@@ -31,8 +31,6 @@ process different messages (send, receive, consume). Both EntitySync and
 System-System Messages are new and not yet vetted in production so should
 be considered beta features as of this release.
 
-TODO
-
 NOTE: The webroot, tools, and example components are now in the new
 runtime/base-component directory instead of the runtime/component directory
 to keep them separate from add-on components. There is also a new
@@ -68,6 +66,8 @@ New Features:
 - Added System-System Message functionality with persisted outgoing and
   incoming messages and services to manage queueing, sending, receiving,
   and consuming.
+- Added ServiceFacade.callJsonRpc() method to more conveniently call remote
+  JSON-RPC services
 - XML Screen:
   - Added tree element for XML Screen that renders a lazy-loaded tree with
     links using jstree (currently version 3.0.3); see the wiki.xml screen
@@ -201,7 +201,8 @@ Bug Fixes:
 - Fixed issue with EntityValue.checkFks using find instead of findAll to
   get type one relationships
 - Fixed issue with lastUpdatedStamp not getting set on updates
-- Fixed fairly recent issue with service auth* parameters being ignored
+- Fixed fairly recent issue with service auth* parameters being ignored in
+  service calls, especially remote service calls
 - EntityFind.count() now selects all fields by default to match what list()
   and iterator() do, and to not mess things up when calling count() before
   calling iterator()
