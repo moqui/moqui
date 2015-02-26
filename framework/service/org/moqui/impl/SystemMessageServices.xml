@@ -66,7 +66,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
             <!-- update the status to SmsgSending, in a separate TX -->
             <service-call name="update#moqui.service.message.SystemMessage" transaction="force-new"
-                    in-map="[systemMessageId:systemMessageId, statusId:'SmsgSending']"/>
+                    in-map="[systemMessageId:systemMessageId, statusId:'SmsgSending', lastAttemptDate:ec.user.nowTimestamp]"/>
 
             <service-call name="${systemMessageType.sendServiceName}" in-map="[systemMessageId:systemMessageId]"
                     out-map="sendOut" transaction="force-new" ignore-error="true"/>
@@ -142,7 +142,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <set field="initialStatusId" from="systemMessage.statusId"/>
 
             <if condition="systemMessage.statusId != 'SmsgReceived' &amp;&amp; systemMessage.statusId != 'SmsgError'">
-                <return error="true" message="System message [${systemMessageId}] has status [${systemMessage.statusId}] and must be either SmsgProduced or SmsgError, not consuming."/></if>
+                <return error="true" message="System message [${systemMessageId}] has status [${systemMessage.statusId}] and must be either SmsgReceived or SmsgError, not consuming."/></if>
 
             <if condition="!systemMessage.systemMessageTypeId">
                 <return error="true" message="System message [${systemMessageId}] has no systemMessageTypeId, not consuming."/></if>
@@ -153,7 +153,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
             <!-- update the status to SmsgSending, in a separate TX -->
             <service-call name="update#moqui.service.message.SystemMessage" transaction="force-new"
-                    in-map="[systemMessageId:systemMessageId, statusId:'SmsgConsuming']"/>
+                    in-map="[systemMessageId:systemMessageId, statusId:'SmsgConsuming', lastAttemptDate:ec.user.nowTimestamp]"/>
 
             <service-call name="${systemMessageType.consumeServiceName}" in-map="[systemMessageId:systemMessageId]"
                     out-map="consumeOut" transaction="force-new" ignore-error="true"/>
