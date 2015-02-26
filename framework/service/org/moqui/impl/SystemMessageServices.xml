@@ -13,10 +13,11 @@ This Work includes contributions authored by David E. Jones, not as a
 <services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-1.5.xsd">
 
     <service verb="consume" noun="SystemMessage" type="interface">
-        <in-parameters><parameter name="systemMessageId"/></in-parameters>
+        <in-parameters><parameter name="systemMessageId" required="true"/></in-parameters>
     </service>
     <service verb="send" noun="SystemMessage" type="interface">
-        <in-parameters><parameter name="systemMessageId"/></in-parameters>
+        <in-parameters><parameter name="systemMessageId" required="true"/></in-parameters>
+        <out-parameters><parameter name="remoteMessageId"/></out-parameters>
     </service>
 
     <service verb="queue" noun="SystemMessage">
@@ -38,15 +39,12 @@ This Work includes contributions authored by David E. Jones, not as a
                     transaction="force-new"/>
 
             <if condition="sendNow">
-                <entity-find-one entity-name="moqui.service.message.SystemMessageType" value-field="systemMessageType"/>
-                <if condition="systemMessageType.sendServiceName">
-                    <service-call name="${systemMessageType.sendServiceName}" in-map="[systemMessageId:systemMessageId]" async="true"/>
-                    <else><log level="warn" message="Queued message of type [${systemMessageTypeId}] which has no sendServiceName so not calling send service."/></else>
-                </if>
+                <service-call name="org.moqui.impl.SystemMessageServices.send#QueuedSystemMessage"
+                        in-map="[systemMessageId:systemMessageId]" async="true"/>
             </if>
         </actions>
     </service>
-    <service verb="send" noun="SystemMessage">
+    <service verb="send" noun="QueuedSystemMessage">
         <description>Calls the send service (SystemMessageType.sendServiceName). Sets the SystemMessage status to
             SmsgSending while sending, then to SmsgSent if successful or back to original status if not. If the initial
             status is not SmsgProduced or SmsgError returns an error (generally means message already sent). If you
@@ -70,7 +68,8 @@ This Work includes contributions authored by David E. Jones, not as a
             <service-call name="update#moqui.service.message.SystemMessage" transaction="force-new"
                     in-map="[systemMessageId:systemMessageId, statusId:'SmsgSending']"/>
 
-            <service-call name="${systemMessageType.sendServiceName}" in-map="[systemMessageId:systemMessageId]" transaction="force-new"/>
+            <service-call name="${systemMessageType.sendServiceName}" in-map="[systemMessageId:systemMessageId]"
+                    out-map="sendOut" transaction="force-new"/>
 
             <!-- if successful set status to SmsgSent, otherwise set back to previous status -->
             <if condition="ec.message.hasError()">
@@ -78,19 +77,32 @@ This Work includes contributions authored by David E. Jones, not as a
                         in-map="[systemMessageId:systemMessageId, statusId:initialStatusId]"/>
                 <else>
                     <service-call name="update#moqui.service.message.SystemMessage" transaction="force-new"
-                            in-map="[systemMessageId:systemMessageId, statusId:'SmsgSent']"/>
+                            in-map="[systemMessageId:systemMessageId, statusId:'SmsgSent',
+                                remoteMessageId:sendOut.remoteMessageId]"/>
                 </else>
             </if>
         </actions>
     </service>
     <service verb="send" noun="SystemMessageJsonRpc">
-        <in-parameters><parameter name="systemMessageId" required="true"/></in-parameters>
+        <implements service="org.moqui.impl.SystemMessageServices.send#SystemMessage"/>
         <actions>
+            <entity-find-one entity-name="moqui.service.message.SystemMessage" value-field="systemMessage"/>
+            <set field="systemMessageType" from="systemMessage.'moqui.service.message.SystemMessageType'"/>
+
             <if condition="!systemMessage.systemMessageRemoteId">
                 <return error="true" message="System message [${systemMessageId}] has no systemMessageRemoteId, not sending."/></if>
             <set field="systemMessageRemote" from="systemMessage.'moqui.service.message.SystemMessageRemote'"/>
 
-            <!-- TODO -->
+            <set field="serviceName" from="systemMessageType.receiveServiceName ?: 'org.moqui.impl.SystemMessageServices.receive#SystemMessage'"/>
+            <set field="inMap" from="[systemMessageTypeId:systemMessageType.systemMessageTypeId,
+                    remoteMessageId:systemMessageId, messageText:systemMessage.messageText,
+                    authUsername:systemMessageRemote.username, authPassword:systemMessageRemote.password,
+                    authTenantId:systemMessageRemote.tenantId]"/>
+            <script>
+                receiveOutMap = org.moqui.impl.service.runner.RemoteJsonRpcServiceRunner
+                        .runJsonService(null, systemMessageRemote.sendUrl, serviceName, inMap, ec)
+            </script>
+            <set field="remoteMessageId" from="receiveOutMap.systemMessageId"/>
         </actions>
     </service>
 
