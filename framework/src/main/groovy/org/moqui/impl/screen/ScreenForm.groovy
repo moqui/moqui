@@ -520,7 +520,7 @@ class ScreenForm {
                         if (efType == "text-long" || efType == "text-very-long") {
                             subFieldNode.appendNode("text-area")
                         } else {
-                            subFieldNode.appendNode("text-line")
+                            subFieldNode.appendNode("text-line", ['default-value':parameterNode."@default-value"])
                         }
                     }
                 }
