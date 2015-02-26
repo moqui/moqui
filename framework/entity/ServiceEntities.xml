@@ -195,8 +195,10 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="systemMessageTypeId" type="id"/>
         <field name="statusId" type="id"/>
         <field name="isOutgoing" type="text-indicator"/>
+        <field name="producedDate" type="date-time"/>
         <field name="sentDate" type="date-time"/>
         <field name="receivedDate" type="date-time"/>
+        <field name="consumedDate" type="date-time"/>
         <field name="messageText" type="text-very-long"/>
         <field name="remoteMessageId" type="text-medium"/>
         <field name="systemMessageRemoteId" type="id"/>
@@ -229,7 +231,6 @@ This Work includes contributions authored by David E. Jones, not as a
             <!-- Error, generally after retry limit -->
             <moqui.basic.StatusItem description="Error" sequenceNum="99" statusId="SmsgError" statusTypeId="SystemMessage"/>
 
-            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgTriggered" toStatusId="SmsgProduced" transitionName="Produce"/>
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgProduced" toStatusId="SmsgSending" transitionName="Sending"/>
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgSending" toStatusId="SmsgSent" transitionName="Send"/>
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgProduced" toStatusId="SmsgSent" transitionName="Send"/>
@@ -240,7 +241,6 @@ This Work includes contributions authored by David E. Jones, not as a
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgReceived" toStatusId="SmsgConsumed" transitionName="Consume"/>
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgConsumed" toStatusId="SmsgConfirmed" transitionName="Confirm"/>
 
-            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgTriggered" toStatusId="SmsgError" transitionName="Error"/>
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgProduced" toStatusId="SmsgError" transitionName="Error"/>
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgSent" toStatusId="SmsgError" transitionName="Error"/>
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgReceived" toStatusId="SmsgError" transitionName="Error"/>
