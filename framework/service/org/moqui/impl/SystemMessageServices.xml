@@ -73,9 +73,15 @@ This Work includes contributions authored by David E. Jones, not as a
 
             <!-- if successful set status to SmsgSent, otherwise set back to previous status -->
             <if condition="ec.message.hasError()">
-                <service-call name="update#moqui.service.message.SystemMessage" transaction="force-new" ignore-error="true"
-                        in-map="[systemMessageId:systemMessageId, statusId:initialStatusId, lastAttemptDate:ec.user.nowTimestamp]"/>
-                <!-- TODO: create error record -->
+                <set field="errorDate" from="ec.user.nowTimestamp"/>
+                <set field="errorText" from="ec.message.getErrorsString()"/>
+                <!-- clear errors before calling services so they'll go through, and so this service won't blow up -->
+                <scrip>ec.message.clearErrors()</scrip>
+                <service-call name="update#moqui.service.message.SystemMessage" transaction="force-new"
+                        in-map="[systemMessageId:systemMessageId, statusId:initialStatusId, lastAttemptDate:errorDate]"/>
+                <service-call name="create#moqui.service.message.SystemMessageError" transaction="force-new"
+                        in-map="[systemMessageId:systemMessageId, errorDate:errorDate, attemptedStatusId:'SmsgSent',
+                            errorText:errorText]"/>
                 <else>
                     <service-call name="update#moqui.service.message.SystemMessage" transaction="force-new"
                             in-map="[systemMessageId:systemMessageId, statusId:'SmsgSent',
@@ -129,8 +135,10 @@ This Work includes contributions authored by David E. Jones, not as a
         </actions>
     </service>
     <service verb="consume" noun="ReceivedSystemMessage">
-        <description>Creates a SystemMessage record for the incoming message, then asynchronously calls the configured
-            consume service (SystemMessageType.consumeServiceName).</description>
+        <description>Calls the consume service (SystemMessageType.consumeServiceName). Sets the SystemMessage status to
+            SmsgConsuming while consuming, then to SmsgConsumed if successful or back to original status if not. If the initial
+            status is not SmsgReceived or SmsgError returns an error (generally means message already consumed). If you
+            want to resend a message that is in a later status, first change the status to SmsgReceived.</description>
         <in-parameters><parameter name="systemMessageId" required="true"/></in-parameters>
         <actions>
             <entity-find-one entity-name="moqui.service.message.SystemMessage" value-field="systemMessage"/>
@@ -153,11 +161,17 @@ This Work includes contributions authored by David E. Jones, not as a
             <service-call name="${systemMessageType.consumeServiceName}" in-map="[systemMessageId:systemMessageId]"
                     out-map="consumeOut" transaction="force-new"/>
 
-            <!-- if successful set status to SmsgSent, otherwise set back to previous status -->
+            <!-- if successful set status to SmsgConsumed, otherwise set back to previous status -->
             <if condition="ec.message.hasError()">
-                <service-call name="update#moqui.service.message.SystemMessage" transaction="force-new" ignore-error="true"
-                        in-map="[systemMessageId:systemMessageId, statusId:initialStatusId, lastAttemptDate:ec.user.nowTimestamp]"/>
-                <!-- TODO: create error record -->
+                <set field="errorDate" from="ec.user.nowTimestamp"/>
+                <set field="errorText" from="ec.message.getErrorsString()"/>
+                <!-- clear errors before calling services so they'll go through, and so this service won't blow up -->
+                <scrip>ec.message.clearErrors()</scrip>
+                <service-call name="update#moqui.service.message.SystemMessage" transaction="force-new"
+                        in-map="[systemMessageId:systemMessageId, statusId:initialStatusId, lastAttemptDate:errorDate]"/>
+                <service-call name="create#moqui.service.message.SystemMessageError" transaction="force-new"
+                        in-map="[systemMessageId:systemMessageId, errorDate:errorDate, attemptedStatusId:'SmsgConsumed',
+                            errorText:errorText]"/>
                 <else>
                     <service-call name="update#moqui.service.message.SystemMessage" transaction="force-new"
                             in-map="[systemMessageId:systemMessageId, statusId:'SmsgConsumed',
@@ -183,7 +197,10 @@ This Work includes contributions authored by David E. Jones, not as a
                 <econdition field-name="lastAttemptDate" operator="less" from="retryTimestamp" or-null="true"/>
                 <order-by field-name="producedDate"/><!-- get oldest first -->
             </entity-find>
-            <!-- TODO -->
+            <iterate list="smList" entry="sm">
+                <service-call name="org.moqui.impl.SystemMessageServices.send#ProducedSystemMessage"
+                        in-map="[systemMessageId:sm.systemMessageId]" async="true"/>
+            </iterate>
         </actions>
     </service>
     <service verb="consume" noun="AllReceivedSystemMessages" authenticate="anonymous-view">
@@ -204,7 +221,10 @@ This Work includes contributions authored by David E. Jones, not as a
                 <econdition field-name="lastAttemptDate" operator="less" from="retryTimestamp" or-null="true"/>
                 <order-by field-name="receivedDate"/><!-- get oldest first -->
             </entity-find>
-            <!-- TODO  -->
+            <iterate list="smList" entry="sm">
+                <service-call name="org.moqui.impl.SystemMessageServices.consume#ReceivedSystemMessage"
+                        in-map="[systemMessageId:sm.systemMessageId]" async="true"/>
+            </iterate>
         </actions>
     </service>
 

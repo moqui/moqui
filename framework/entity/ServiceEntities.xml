@@ -274,7 +274,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
     <entity entity-name="SystemMessageError" package-name="moqui.service.message">
         <field name="systemMessageId" type="id" is-pk="true"/>
-        <field name="errorSeqId" type="id" is-pk="true"/>
+        <field name="errorDate" type="date-time" is-pk="true"/>
         <field name="attemptedStatusId" type="id"/>
         <field name="reasonCode" type="text-short"/>
         <field name="errorText" type="text-very-long"/>
