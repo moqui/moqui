@@ -199,6 +199,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="sentDate" type="date-time"/>
         <field name="receivedDate" type="date-time"/>
         <field name="consumedDate" type="date-time"/>
+        <field name="lastAttemptDate" type="date-time"/>
         <field name="messageText" type="text-very-long"/>
         <field name="remoteMessageId" type="text-medium"/>
         <field name="systemMessageRemoteId" type="id"/>

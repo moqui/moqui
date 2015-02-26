@@ -106,7 +106,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </actions>
     </service>
 
-    <service verb="receive" noun="SystemMessage">
+    <service verb="receive" noun="SystemMessage" allow-remote="true">
         <description>Creates a SystemMessage record for the incoming message, then asynchronously calls the configured
             consume service (SystemMessageType.consumeServiceName).</description>
         <in-parameters>
@@ -132,18 +132,24 @@ This Work includes contributions authored by David E. Jones, not as a
     </service>
 
     <!-- ========== Scheduled services to handle incoming and outgoing messages ========== -->
-    <service verb="send" noun="ProducedSystemMessages">
+    <service verb="send" noun="ProducedSystemMessages" authenticate="anonymous-view">
         <description>Meant to be run scheduled, this service tries to send outgoing (isOutgoing=Y) messages in the
             SmsgProduced status. After retryLimit attempts will change the status to SmsgError.</description>
         <in-parameters>
-            <parameter name="retryMinutes" type="BigDecimal" default="30"/>
-            <parameter name="retryLimit" type="Integer" default="96"/><!-- by default try for 2 days -->
+            <parameter name="retryMinutes" type="BigDecimal" default="60"/>
+            <parameter name="retryLimit" type="Integer" default="24"/><!-- by default try for 1 day -->
         </in-parameters>
         <actions>
+            <set field="retryTimestamp" from="new Timestamp(System.currentTimeMillis() - (retryMinutes * 60000))"/>
+            <entity-find entity-name="moqui.service.message.SystemMessage" list="smList">
+                <econdition field-name="statusId" value="SmsgProduced"/>
+                <econdition field-name="isOutgoing" value="Y"/>
+                <econdition field-name="lastAttemptDate" operator="less" from="retryTimestamp"/>
+            </entity-find>
             <!-- TODO -->
         </actions>
     </service>
-    <service verb="consume" noun="OldSystemMessages">
+    <service verb="consume" noun="OldSystemMessages" authenticate="anonymous-view">
         <description>Consume incoming (isOutgoing=N) SystemMessage records not already consumed (in the SmsgReceived
             status) and received more than delayMinutes in the past (to avoid conflict with attempt to consume
             immediately). Messages in this state will normally have had an error in consuming. After retryLimit attempts
@@ -154,6 +160,12 @@ This Work includes contributions authored by David E. Jones, not as a
             <parameter name="retryLimit" type="Integer" default="3"/>
         </in-parameters>
         <actions>
+            <set field="retryTimestamp" from="new Timestamp(System.currentTimeMillis() - (retryMinutes * 60000))"/>
+            <entity-find entity-name="moqui.service.message.SystemMessage" list="smList">
+                <econdition field-name="statusId" value="SmsgProduced"/>
+                <econdition field-name="isOutgoing" value="Y"/>
+                <econdition field-name="lastAttemptDate" operator="less" from="retryTimestamp"/>
+            </entity-find>
             <!-- TODO -->
         </actions>
     </service>
