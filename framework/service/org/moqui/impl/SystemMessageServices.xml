@@ -105,10 +105,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     remoteMessageId:systemMessageId, messageText:systemMessage.messageText,
                     authUsername:systemMessageRemote.username, authPassword:systemMessageRemote.password,
                     authTenantId:systemMessageRemote.tenantId]"/>
-            <script>
-                receiveOutMap = org.moqui.impl.service.runner.RemoteJsonRpcServiceRunner
-                        .runJsonService(null, systemMessageRemote.sendUrl, serviceName, inMap, ec)
-            </script>
+            <script>receiveOutMap = ec.service.callJsonRpc(systemMessageRemote.sendUrl, serviceName, inMap)</script>
             <set field="remoteMessageId" from="receiveOutMap.systemMessageId"/>
         </actions>
     </service>
