@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This Work is in the public domain and is provided on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+including, without limitation, any warranties or conditions of TITLE,
+NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+You are solely responsible for determining the appropriateness of using
+this Work and assume any risks associated with your use of this Work.
+
+This Work includes contributions authored by David E. Jones, not as a
+"work for hire", who hereby disclaims any copyright to the same.
+-->
+<services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-1.5.xsd">
+
+    <service verb="consume" noun="SystemMessage" type="interface">
+        <in-parameters><parameter name="systemMessageId"/></in-parameters>
+    </service>
+
+    <service verb="queue" noun="SystemMessage">
+        <description>Creates a SystemMessage record for the outgoing message. If sendNow=true (default) will attempt to
+            send it immediately (though asynchronously), otherwise the message will be picked up the next time the
+            send#ProducedSystemMessages service runs.</description>
+        <in-parameters>
+            <parameter name="sendNow" type="Boolean" default="true"/>
+            <parameter name="systemMessageTypeId" required="true"/>
+            <parameter name="messageText" required="true"/>
+        </in-parameters>
+        <actions>
+            <!-- TODO -->
+        </actions>
+    </service>
+    <service verb="send" noun="SystemMessage">
+        <in-parameters><parameter name="systemMessageId" required="true"/></in-parameters>
+        <actions>
+            <!-- TODO -->
+        </actions>
+    </service>
+
+    <service verb="receive" noun="SystemMessage">
+        <description>Creates a SystemMessage record for the incoming message, then asynchronously calls the configured
+            consume service (SystemMessageType.consumeServiceName).</description>
+        <in-parameters>
+            <parameter name="systemMessageTypeId" required="true"/>
+            <parameter name="remoteMessageId"/>
+            <parameter name="messageText" required="true"/>
+        </in-parameters>
+        <out-parameters><parameter name="systemMessageId"/></out-parameters>
+        <actions>
+            <entity-find-one entity-name="moqui.service.message.SystemMessageType" value-field="systemMessageType"/>
+            <!-- while it shouldn't happen that the consume service is called before the tx for this service is
+                committed, run it in a separate tx to make sure -->
+            <service-call name="create#moqui.service.message.SystemMessage" out-map="context"
+                in-map="[systemMessageTypeId:systemMessageTypeId, messageText:messageText, statusId:'SmsgReceived',
+                    isOutgoing:'N', receivedDate:ec.user.nowTimestamp, remoteMessageId:remoteMessageId]"
+                transaction="force-new"/>
+
+            <if condition="systemMessageType.consumeServiceName">
+                <service-call name="${systemMessageType.consumeServiceName}" in-map="[systemMessageId:systemMessageId]" async="true"/>
+                <else><log level="warn" message="Received message of type [${systemMessageTypeId}] which has no consumeServiceName so not calling consume service. Remote message ID is [${remoteMessageId}]"/></else>
+            </if>
+        </actions>
+    </service>
+
+    <!-- ========== Scheduled services to handle incoming and outgoing messages ========== -->
+    <service verb="send" noun="ProducedSystemMessages">
+        <description>Meant to be run scheduled, this service tries to send outgoing (isOutgoing=Y) messages in the
+            SmsgProduced status. After retryLimit attempts will change the status to SmsgError.</description>
+        <in-parameters>
+            <parameter name="retryMinutes" type="BigDecimal" default="30"/>
+            <parameter name="retryLimit" type="Integer" default="96"/><!-- by default try for 2 days -->
+        </in-parameters>
+        <actions>
+            <!-- TODO -->
+        </actions>
+    </service>
+    <service verb="consume" noun="OldSystemMessages">
+        <description>Consume incoming (isOutgoing=N) SystemMessage records not already consumed (in the SmsgReceived
+            status) and received more than delayMinutes in the past (to avoid conflict with attempt to consume
+            immediately). Messages in this state will normally have had an error in consuming. After retryLimit attempts
+            will change the status to SmsgError.</description>
+        <in-parameters>
+            <parameter name="delayMinutes" type="BigDecimal" default="30"/>
+            <parameter name="retryMinutes" type="BigDecimal" default="30"/>
+            <parameter name="retryLimit" type="Integer" default="3"/>
+        </in-parameters>
+        <actions>
+            <!-- TODO -->
+        </actions>
+    </service>
+
+</services>
