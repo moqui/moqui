@@ -17,21 +17,37 @@ This Work includes contributions authored by David E. Jones, not as a
     </service>
 
     <service verb="queue" noun="SystemMessage">
-        <description>Creates a SystemMessage record for the outgoing message. If sendNow=true (default) will attempt to
-            send it immediately (though asynchronously), otherwise the message will be picked up the next time the
-            send#ProducedSystemMessages service runs.</description>
+        <description>Creates a SystemMessage record for the outgoing message in the SmsgProduced status. If sendNow=true
+            (default) will attempt to send it immediately (though asynchronously), otherwise the message will be picked
+            up the next time the send#ProducedSystemMessages service runs.</description>
         <in-parameters>
             <parameter name="sendNow" type="Boolean" default="true"/>
             <parameter name="systemMessageTypeId" required="true"/>
             <parameter name="messageText" required="true"/>
+            <parameter name="systemMessageRemoteId"><description>Required if the send service
+                (SystemMessageType.sendServiceName) requires it. The send#SystemMessage service does require it.</description></parameter>
         </in-parameters>
+        <out-parameters><parameter name="systemMessageId"/></out-parameters>
         <actions>
-            <!-- TODO -->
+            <service-call name="create#moqui.service.message.SystemMessage" out-map="context"
+                    in-map="[systemMessageTypeId:systemMessageTypeId, messageText:messageText, statusId:'SmsgProduced',
+                        isOutgoing:'Y', producedDate:ec.user.nowTimestamp, systemMessageRemoteId:systemMessageRemoteId]"
+                    transaction="force-new"/>
+
+            <if condition="sendNow">
+                <entity-find-one entity-name="moqui.service.message.SystemMessageType" value-field="systemMessageType"/>
+                <if condition="systemMessageType.sendServiceName">
+                    <service-call name="${systemMessageType.sendServiceName}" in-map="[systemMessageId:systemMessageId]" async="true"/>
+                    <else><log level="warn" message="Queued message of type [${systemMessageTypeId}] which has no sendServiceName so not calling send service."/></else>
+                </if>
+            </if>
         </actions>
     </service>
     <service verb="send" noun="SystemMessage">
         <in-parameters><parameter name="systemMessageId" required="true"/></in-parameters>
         <actions>
+            <entity-find-one entity-name="moqui.service.message.SystemMessage" value-field="systemMessage"/>
+
             <!-- TODO -->
         </actions>
     </service>
