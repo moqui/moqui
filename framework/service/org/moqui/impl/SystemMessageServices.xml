@@ -69,14 +69,14 @@ This Work includes contributions authored by David E. Jones, not as a
                     in-map="[systemMessageId:systemMessageId, statusId:'SmsgSending']"/>
 
             <service-call name="${systemMessageType.sendServiceName}" in-map="[systemMessageId:systemMessageId]"
-                    out-map="sendOut" transaction="force-new"/>
+                    out-map="sendOut" transaction="force-new" ignore-error="true"/>
 
             <!-- if successful set status to SmsgSent, otherwise set back to previous status -->
             <if condition="ec.message.hasError()">
                 <set field="errorDate" from="ec.user.nowTimestamp"/>
                 <set field="errorText" from="ec.message.getErrorsString()"/>
                 <!-- clear errors before calling services so they'll go through, and so this service won't blow up -->
-                <scrip>ec.message.clearErrors()</scrip>
+                <script>ec.message.clearErrors()</script>
                 <service-call name="update#moqui.service.message.SystemMessage" transaction="force-new"
                         in-map="[systemMessageId:systemMessageId, statusId:initialStatusId, lastAttemptDate:errorDate]"/>
                 <service-call name="create#moqui.service.message.SystemMessageError" transaction="force-new"
@@ -106,7 +106,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     authUsername:systemMessageRemote.username, authPassword:systemMessageRemote.password,
                     authTenantId:systemMessageRemote.tenantId]"/>
             <script>receiveOutMap = ec.service.callJsonRpc(systemMessageRemote.sendUrl, serviceName, inMap)</script>
-            <set field="remoteMessageId" from="receiveOutMap.systemMessageId"/>
+            <set field="remoteMessageId" from="receiveOutMap?.systemMessageId"/>
         </actions>
     </service>
 
@@ -156,14 +156,14 @@ This Work includes contributions authored by David E. Jones, not as a
                     in-map="[systemMessageId:systemMessageId, statusId:'SmsgConsuming']"/>
 
             <service-call name="${systemMessageType.consumeServiceName}" in-map="[systemMessageId:systemMessageId]"
-                    out-map="consumeOut" transaction="force-new"/>
+                    out-map="consumeOut" transaction="force-new" ignore-error="true"/>
 
             <!-- if successful set status to SmsgConsumed, otherwise set back to previous status -->
             <if condition="ec.message.hasError()">
                 <set field="errorDate" from="ec.user.nowTimestamp"/>
                 <set field="errorText" from="ec.message.getErrorsString()"/>
                 <!-- clear errors before calling services so they'll go through, and so this service won't blow up -->
-                <scrip>ec.message.clearErrors()</scrip>
+                <script>ec.message.clearErrors()</script>
                 <service-call name="update#moqui.service.message.SystemMessage" transaction="force-new"
                         in-map="[systemMessageId:systemMessageId, statusId:initialStatusId, lastAttemptDate:errorDate]"/>
                 <service-call name="create#moqui.service.message.SystemMessageError" transaction="force-new"
