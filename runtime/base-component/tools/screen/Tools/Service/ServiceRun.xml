@@ -17,9 +17,6 @@ This Work includes contributions authored by David E. Jones, not as a
     <parameter name="serviceName"/>
     <parameter name="doingRun"/>
 
-    <transition name="select">
-        <default-response url="."/>
-    </transition>
     <transition name="run">
         <actions>
             <service-call name="${serviceName}" in-map="context" out-map="serviceResults"/>
@@ -36,16 +33,13 @@ This Work includes contributions authored by David E. Jones, not as a
     </transition>
 
     <actions>
-        <set field="knownServiceNames" from="ec.service.knownServiceNames"/>
     </actions>
     <widgets>
-        <form-single name="SelectService" transition="select">
+        <form-single name="SelectServiceInput" transition=".">
             <field name="serviceName"><default-field title="Service Name (path.verb#noun)">
-                <drop-down allow-empty="true" current="selected">
-                    <list-options list="knownServiceNames" key="${entry}"/>
-                </drop-down>
+                <text-line size="80"/>
             </default-field></field>
-            <field name="submitButton"><default-field title="Select"><submit/></default-field></field>
+            <field name="submitButton"><default-field title="Select Service"><submit/></default-field></field>
             <field-layout><field-row-big><field-ref name="serviceName"/><field-ref name="submitButton"/></field-row-big></field-layout>
         </form-single>
         <section name="ServiceResultsSection">
@@ -66,7 +60,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     <auto-fields-service service-name="${serviceName}" field-type="edit"/>
                     <field name="serviceName"><default-field><hidden/></default-field></field>
                     <field name="doingRun"><default-field><hidden default-value="Y"/></default-field></field>
-                    <field name="submitButton"><default-field title="Submit"><submit/></default-field></field>
+                    <field name="submitButton"><default-field title="Run Service"><submit/></default-field></field>
                 </form-single>
             </widgets>
         </section>
