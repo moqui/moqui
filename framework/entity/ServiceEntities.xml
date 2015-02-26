@@ -193,7 +193,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <entity entity-name="SystemMessage" package-name="moqui.service.message">
         <field name="systemMessageId" type="id" is-pk="true"/>
         <field name="systemMessageTypeId" type="id"/>
-        <field name="statusId" type="id"/>
+        <field name="statusId" type="id" enable-audit-log="true"/>
         <field name="isOutgoing" type="text-indicator"/>
         <field name="producedDate" type="date-time"/>
         <field name="sentDate" type="date-time"/>
@@ -268,7 +268,9 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="systemMessageRemoteId" type="id" is-pk="true"/>
         <field name="sendUrl" type="text-medium"/>
         <field name="authorizedIpAddresses" type="text-long"/>
-        <field name="username" type="text-medium"/>
+        <field name="username" type="text-medium"><description>This user needs permission to run the remote service or
+            whatever on the remote system receives the message. For the the Moqui receive#SystemMessage service the user
+            should be in a group that has authz for the SystemMessageServices ArtifactGroup (see SecurityTypeData.xml).</description></field>
         <field name="password" type="text-short" encrypt="true"/>
         <field name="tenantId" type="text-short"/>
     </entity>
