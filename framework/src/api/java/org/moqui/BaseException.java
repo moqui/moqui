@@ -30,29 +30,34 @@ public class BaseException extends RuntimeException {
 
     @Override
     public void printStackTrace() {
-        this.setStackTrace(getFilteredStackTrace());
+        filterStackTrace(this);
         super.printStackTrace();
     }
 
     @Override
     public void printStackTrace(PrintStream printStream) {
-        this.setStackTrace(getFilteredStackTrace());
+        filterStackTrace(this);
         super.printStackTrace(printStream);
     }
 
     @Override
     public void printStackTrace(PrintWriter printWriter) {
-        this.setStackTrace(getFilteredStackTrace());
+        filterStackTrace(this);
         super.printStackTrace(printWriter);
     }
 
+    /* Shouldn't be needed and with new parameterized getFilteredStackTrace method needed for filterStackTrace causes infinite recursion
     @Override
-    public StackTraceElement[] getStackTrace() {
-        return getFilteredStackTrace();
+    public StackTraceElement[] getStackTrace() { return getFilteredStackTrace(this); }
+    */
+
+    public static void filterStackTrace(Throwable t) {
+        t.setStackTrace(getFilteredStackTrace(t));
+        if (t.getCause() != null) filterStackTrace(t.getCause());
     }
 
-    public StackTraceElement[] getFilteredStackTrace() {
-        StackTraceElement[] orig = super.getStackTrace();
+    public static StackTraceElement[] getFilteredStackTrace(Throwable t) {
+        StackTraceElement[] orig = t.getStackTrace();
         List<StackTraceElement> newList = new ArrayList<StackTraceElement>(orig.length);
         for (StackTraceElement ste: orig) {
             String cn = ste.getClassName();

@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.service
 
+import org.moqui.BaseException
 import org.moqui.context.ArtifactAuthorizationException
 import org.moqui.context.TransactionException
 import org.moqui.context.TransactionFacade
@@ -260,6 +261,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                 // this is a local call, pass certain exceptions through
                 throw e
             } catch (Throwable t) {
+                BaseException.filterStackTrace(t)
                 tf.rollback(beganTransaction, "Error running service [${getServiceName()}] (Throwable)", t)
                 logger.warn("Error running service [${getServiceName()}] (Throwable)", t)
                 // add all exception messages to the error messages list
