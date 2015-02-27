@@ -78,7 +78,8 @@ This Work includes contributions authored by David E. Jones, not as a
                 <!-- clear errors before calling services so they'll go through, and so this service won't blow up -->
                 <script>ec.message.clearErrors()</script>
                 <service-call name="update#moqui.service.message.SystemMessage" transaction="force-new"
-                        in-map="[systemMessageId:systemMessageId, statusId:initialStatusId, lastAttemptDate:errorDate]"/>
+                        in-map="[systemMessageId:systemMessageId, statusId:initialStatusId, lastAttemptDate:errorDate,
+                            failCount:((systemMessage.failCount ?: 0) + 1)]"/>
                 <service-call name="create#moqui.service.message.SystemMessageError" transaction="force-new"
                         in-map="[systemMessageId:systemMessageId, errorDate:errorDate, attemptedStatusId:'SmsgSent',
                             errorText:errorText]"/>
@@ -165,7 +166,8 @@ This Work includes contributions authored by David E. Jones, not as a
                 <!-- clear errors before calling services so they'll go through, and so this service won't blow up -->
                 <script>ec.message.clearErrors()</script>
                 <service-call name="update#moqui.service.message.SystemMessage" transaction="force-new"
-                        in-map="[systemMessageId:systemMessageId, statusId:initialStatusId, lastAttemptDate:errorDate]"/>
+                        in-map="[systemMessageId:systemMessageId, statusId:initialStatusId, lastAttemptDate:errorDate,
+                            failCount:((systemMessage.failCount ?: 0) + 1)]"/>
                 <service-call name="create#moqui.service.message.SystemMessageError" transaction="force-new"
                         in-map="[systemMessageId:systemMessageId, errorDate:errorDate, attemptedStatusId:'SmsgConsumed',
                             errorText:errorText]"/>
@@ -195,9 +197,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <order-by field-name="producedDate"/><!-- get oldest first -->
             </entity-find>
             <iterate list="smList" entry="sm">
-                <entity-find-count entity-name="moqui.service.message.SystemMessageError" count-field="errorCount">
-                    <econdition field-name="systemMessageId" from="sm.systemMessageId"/></entity-find-count>
-                <if condition="errorCount &lt; retryLimit">
+                <if condition="sm.failCount &lt; retryLimit">
                     <service-call name="org.moqui.impl.SystemMessageServices.send#ProducedSystemMessage"
                             in-map="[systemMessageId:sm.systemMessageId]" async="true"/>
                     <else>
@@ -226,9 +226,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <order-by field-name="receivedDate"/><!-- get oldest first -->
             </entity-find>
             <iterate list="smList" entry="sm">
-                <entity-find-count entity-name="moqui.service.message.SystemMessageError" count-field="errorCount">
-                    <econdition field-name="systemMessageId" from="sm.systemMessageId"/></entity-find-count>
-                <if condition="errorCount &lt; retryLimit">
+                <if condition="sm.failCount &lt; retryLimit">
                     <service-call name="org.moqui.impl.SystemMessageServices.consume#ReceivedSystemMessage"
                             in-map="[systemMessageId:sm.systemMessageId]" async="true"/>
                     <else>
