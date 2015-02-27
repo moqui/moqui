@@ -19,8 +19,14 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <transition name="run">
         <actions>
-            <service-call name="${serviceName}" in-map="context" out-map="serviceResults"/>
             <script>
+                org.moqui.context.ExecutionContext ec = context.ec
+                if (cronString) {
+                    ec.service.schedule().name(serviceName).parameters(context).cron(cronString).call()
+                } else {
+                    serviceResults = ec.service.sync().name(serviceName).parameters(context).call()
+                }
+
                 StringBuilder sb = new StringBuilder("Service Run Results:\n")
                 for (def resultEntry in serviceResults) sb.append("${resultEntry.key}: ${resultEntry.value?.toString()}\n")
                 ec.logger.info(sb.toString())
@@ -61,6 +67,9 @@ This Work includes contributions authored by David E. Jones, not as a
                     <field name="serviceName"><default-field><hidden/></default-field></field>
                     <field name="doingRun"><default-field><hidden default-value="Y"/></default-field></field>
                     <field name="submitButton"><default-field title="Run Service"><submit/></default-field></field>
+                    
+                    <field name="cronString"><default-field tooltip="Enter a cron string to schedule instead of running immediately">
+                        <text-line size="20"/></default-field></field>
                 </form-single>
             </widgets>
         </section>
