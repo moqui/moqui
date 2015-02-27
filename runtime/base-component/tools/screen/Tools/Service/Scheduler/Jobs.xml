@@ -56,8 +56,7 @@ This Work includes contributions authored by David E. Jones, not as a
                         if (triggers) {
                             for (Trigger trigger in triggers) {
                                 JsonBuilder psJb = new JsonBuilder()
-                                psJb.call(job.getJobDataMap())
-                                psJb.call(trigger.getJobDataMap())
+                                psJb.call([job.getJobDataMap(),trigger.getJobDataMap()])
                                 jobInfoList.add([triggerGroup:trigger.getKey().getGroup(), triggerName:trigger.getKey().getName(),
                                         jobGroup:job.getKey().getGroup(), jobName:job.getKey().getName(),
                                         nextFireTime:(trigger.getNextFireTime() ? new Timestamp(trigger.getNextFireTime().getTime()) : null),
