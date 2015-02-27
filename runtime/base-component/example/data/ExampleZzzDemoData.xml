@@ -97,4 +97,6 @@ This Work includes contributions authored by David E. Jones, not as a
             receiveServiceName=""/>
     <moqui.service.message.SystemMessageRemote systemMessageRemoteId="Example1Local" sendUrl="http://localhost:8080/rpc/json"
             username="john.doe" password="moqui"/><!-- to try a different tenant: tenantId="EXAMPLE1" -->
+    <moqui.service.message.SystemMessageRemote systemMessageRemoteId="Example1Direct"
+            sendServiceName="org.moqui.impl.SystemMessageServices.send#SystemMessageDirectLocal"/>
 </entity-facade-xml>
