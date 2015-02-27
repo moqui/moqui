@@ -44,7 +44,10 @@ This Work includes contributions authored by David E. Jones, not as a
             </if>
         </actions>
     </service>
-    <service verb="send" noun="ProducedSystemMessage">
+    <!-- TODO: this service called async by an anonymous-all scheduled job so needs anonymous-all here too, but should
+        find a way to restrict it when not called through the scheduled service so no anonymous-all service exists to do
+        this, tighten security on it a bit -->
+    <service verb="send" noun="ProducedSystemMessage" authenticate="anonymous-all">
         <description>Calls the send service (SystemMessageType.sendServiceName). Sets the SystemMessage status to
             SmsgSending while sending, then to SmsgSent if successful or back to original status if not. If the initial
             status is not SmsgProduced or SmsgError returns an error (generally means message already sent). If you
@@ -132,7 +135,10 @@ This Work includes contributions authored by David E. Jones, not as a
                     in-map="[systemMessageId:systemMessageId]" async="true"/>
         </actions>
     </service>
-    <service verb="consume" noun="ReceivedSystemMessage">
+    <!-- TODO: this service called async by an anonymous-all scheduled job so needs anonymous-all here too, but should
+        find a way to restrict it when not called through the scheduled service so no anonymous-all service exists to do
+        this, tighten security on it a bit -->
+    <service verb="consume" noun="ReceivedSystemMessage" authenticate="anonymous-all">
         <description>Calls the consume service (SystemMessageType.consumeServiceName). Sets the SystemMessage status to
             SmsgConsuming while consuming, then to SmsgConsumed if successful or back to original status if not. If the initial
             status is not SmsgReceived or SmsgError returns an error (generally means message already consumed). If you
