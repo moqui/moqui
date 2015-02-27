@@ -146,8 +146,9 @@ This Work includes contributions authored by David E. Jones, not as a
     <service verb="consume" noun="ExampleMessage">
         <implements service="org.moqui.impl.SystemMessageServices.consume#SystemMessage"/>
         <actions>
+            <!-- <return error="true" message="Test error!"/> -->
             <entity-find-one entity-name="moqui.service.message.SystemMessage" value-field="systemMessage"/>
-            <set field="exampleMap" from="new JsonSlurper().parseText(systemMessage.messageText)"/>
+            <set field="exampleMap" from="new groovy.json.JsonSlurper().parseText(systemMessage.messageText)"/>
             <service-call name="store#moqui.example.Example" in-map="exampleMap"/>
         </actions>
     </service>
