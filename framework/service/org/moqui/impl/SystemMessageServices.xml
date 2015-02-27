@@ -35,7 +35,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <actions>
             <service-call name="create#moqui.service.message.SystemMessage" out-map="context"
                     in-map="[systemMessageTypeId:systemMessageTypeId, messageText:messageText, statusId:'SmsgProduced',
-                        isOutgoing:'Y', producedDate:ec.user.nowTimestamp, systemMessageRemoteId:systemMessageRemoteId]"
+                        isOutgoing:'Y', initDate:ec.user.nowTimestamp, systemMessageRemoteId:systemMessageRemoteId]"
                     transaction="force-new"/>
 
             <if condition="sendNow">
@@ -71,25 +71,26 @@ This Work includes contributions authored by David E. Jones, not as a
             <service-call name="update#moqui.service.message.SystemMessage" transaction="force-new"
                     in-map="[systemMessageId:systemMessageId, statusId:'SmsgSending', lastAttemptDate:ec.user.nowTimestamp]"/>
 
+            <!-- TODO: put this in a try block with the follow up below in a finally and a Throwable catch to add message facade errors -->
             <service-call name="${systemMessageType.sendServiceName}" in-map="[systemMessageId:systemMessageId]"
                     out-map="sendOut" transaction="force-new" ignore-error="true"/>
 
             <!-- if successful set status to SmsgSent, otherwise set back to previous status -->
+            <set field="nowDate" from="ec.user.nowTimestamp"/>
             <if condition="ec.message.hasError()">
-                <set field="errorDate" from="ec.user.nowTimestamp"/>
                 <set field="errorText" from="ec.message.getErrorsString()"/>
                 <!-- clear errors before calling services so they'll go through, and so this service won't blow up -->
                 <script>ec.message.clearErrors()</script>
                 <service-call name="update#moqui.service.message.SystemMessage" transaction="force-new"
-                        in-map="[systemMessageId:systemMessageId, statusId:initialStatusId, lastAttemptDate:errorDate,
+                        in-map="[systemMessageId:systemMessageId, statusId:initialStatusId, lastAttemptDate:nowDate,
                             failCount:((systemMessage.failCount ?: 0) + 1)]"/>
                 <service-call name="create#moqui.service.message.SystemMessageError" transaction="force-new"
-                        in-map="[systemMessageId:systemMessageId, errorDate:errorDate, attemptedStatusId:'SmsgSent',
+                        in-map="[systemMessageId:systemMessageId, errorDate:nowDate, attemptedStatusId:'SmsgSent',
                             errorText:errorText]"/>
                 <else>
                     <service-call name="update#moqui.service.message.SystemMessage" transaction="force-new"
                             in-map="[systemMessageId:systemMessageId, statusId:'SmsgSent',
-                                remoteMessageId:sendOut.remoteMessageId, lastAttemptDate:ec.user.nowTimestamp]"/>
+                                remoteMessageId:sendOut.remoteMessageId, processedDate:nowDate, lastAttemptDate:nowDate]"/>
                 </else>
             </if>
         </actions>
@@ -128,7 +129,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 committed, run it in a separate tx to make sure -->
             <service-call name="create#moqui.service.message.SystemMessage" out-map="context"
                 in-map="[systemMessageTypeId:systemMessageTypeId, messageText:messageText, statusId:'SmsgReceived',
-                    isOutgoing:'N', receivedDate:ec.user.nowTimestamp, remoteMessageId:remoteMessageId]"
+                    isOutgoing:'N', initDate:ec.user.nowTimestamp, remoteMessageId:remoteMessageId]"
                 transaction="force-new"/>
 
             <service-call name="org.moqui.impl.SystemMessageServices.consume#ReceivedSystemMessage"
@@ -162,25 +163,26 @@ This Work includes contributions authored by David E. Jones, not as a
             <service-call name="update#moqui.service.message.SystemMessage" transaction="force-new"
                     in-map="[systemMessageId:systemMessageId, statusId:'SmsgConsuming', lastAttemptDate:ec.user.nowTimestamp]"/>
 
+            <!-- TODO: put this in a try block with the follow up below in a finally and a Throwable catch to add message facade errors -->
             <service-call name="${systemMessageType.consumeServiceName}" in-map="[systemMessageId:systemMessageId]"
                     out-map="consumeOut" transaction="force-new" ignore-error="true"/>
 
             <!-- if successful set status to SmsgConsumed, otherwise set back to previous status -->
+            <set field="nowDate" from="ec.user.nowTimestamp"/>
             <if condition="ec.message.hasError()">
-                <set field="errorDate" from="ec.user.nowTimestamp"/>
                 <set field="errorText" from="ec.message.getErrorsString()"/>
                 <!-- clear errors before calling services so they'll go through, and so this service won't blow up -->
                 <script>ec.message.clearErrors()</script>
                 <service-call name="update#moqui.service.message.SystemMessage" transaction="force-new"
-                        in-map="[systemMessageId:systemMessageId, statusId:initialStatusId, lastAttemptDate:errorDate,
+                        in-map="[systemMessageId:systemMessageId, statusId:initialStatusId, lastAttemptDate:nowDate,
                             failCount:((systemMessage.failCount ?: 0) + 1)]"/>
                 <service-call name="create#moqui.service.message.SystemMessageError" transaction="force-new"
-                        in-map="[systemMessageId:systemMessageId, errorDate:errorDate, attemptedStatusId:'SmsgConsumed',
+                        in-map="[systemMessageId:systemMessageId, errorDate:nowDate, attemptedStatusId:'SmsgConsumed',
                             errorText:errorText]"/>
                 <else>
                     <service-call name="update#moqui.service.message.SystemMessage" transaction="force-new"
                             in-map="[systemMessageId:systemMessageId, statusId:'SmsgConsumed',
-                                lastAttemptDate:ec.user.nowTimestamp]"/>
+                                processedDate:nowDate, lastAttemptDate:nowDate]"/>
                 </else>
             </if>
         </actions>
@@ -200,7 +202,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <econdition field-name="statusId" value="SmsgProduced"/>
                 <econdition field-name="isOutgoing" value="Y"/>
                 <econdition field-name="lastAttemptDate" operator="less" from="retryTimestamp" or-null="true"/>
-                <order-by field-name="producedDate"/><!-- get oldest first -->
+                <order-by field-name="initDate"/><!-- get oldest first -->
             </entity-find>
             <iterate list="smList" entry="sm">
                 <if condition="sm.failCount &lt; retryLimit">
@@ -229,7 +231,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <econdition field-name="statusId" value="SmsgReceived"/>
                 <econdition field-name="isOutgoing" value="N"/>
                 <econdition field-name="lastAttemptDate" operator="less" from="retryTimestamp" or-null="true"/>
-                <order-by field-name="receivedDate"/><!-- get oldest first -->
+                <order-by field-name="initDate"/><!-- get oldest first -->
             </entity-find>
             <iterate list="smList" entry="sm">
                 <if condition="sm.failCount &lt; retryLimit">

@@ -195,10 +195,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="systemMessageTypeId" type="id"/>
         <field name="statusId" type="id" enable-audit-log="true"/>
         <field name="isOutgoing" type="text-indicator"/>
-        <field name="producedDate" type="date-time"/>
-        <field name="sentDate" type="date-time"/>
-        <field name="receivedDate" type="date-time"/>
-        <field name="consumedDate" type="date-time"/>
+        <field name="initDate" type="date-time"><description>For incoming the received date, for outgoing the produced date.</description></field>
+        <field name="processedDate" type="date-time"><description>For incoming the consumed date, for outgoing the sent date.</description></field>
         <field name="lastAttemptDate" type="date-time"/>
         <field name="failCount" type="number-integer"/>
         <field name="messageText" type="text-very-long"/>
