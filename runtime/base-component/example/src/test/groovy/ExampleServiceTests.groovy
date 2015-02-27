@@ -17,8 +17,11 @@ import org.moqui.entity.EntityValue
 import org.moqui.Moqui
 import org.moqui.example.ExampleCompiled
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 class ExampleServiceTests extends Specification {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ExampleServiceTests.class)
+    protected final static Logger logger = LoggerFactory.getLogger(ExampleServiceTests.class)
 
     @Shared
     ExecutionContext ec
@@ -64,5 +67,21 @@ class ExampleServiceTests extends Specification {
     def "call ExampleCompiled echo method"() {
         expect:
         "Test String" == ExampleCompiled.echo("Test String")
+    }
+
+    def "send and consume ExampleMessage"() {
+        when:
+        // use the direct/local "remote" because no web server is running for local RPC call
+        Map result = ec.service.sync().name("org.moqui.example.ExampleServices.send#ExampleMessage")
+                .parameters([exampleId:'TEST2', systemMessageRemoteId:'Example1Direct']).call()
+        // message is sent async so wait 0.5 second, should be more than plenty for Quartz to pick it up, etc
+        sleep(500)
+        EntityValue sentMessage = ec.entity.find("moqui.service.message.SystemMessage").condition("systemMessageId", result.systemMessageId).one()
+        EntityValue receivedMessage = ec.entity.find("moqui.service.message.SystemMessage").condition("systemMessageId", sentMessage.remoteMessageId).one()
+
+        then:
+        result.systemMessageId
+        sentMessage.statusId == 'SmsgSent'
+        receivedMessage.statusId == 'SmsgConsumed'
     }
 }
