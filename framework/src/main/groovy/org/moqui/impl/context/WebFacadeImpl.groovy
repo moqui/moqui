@@ -356,15 +356,29 @@ class WebFacadeImpl implements WebFacade {
         if (responseObj instanceof String) {
             jsonStr = (String) responseObj
         } else {
+            if (eci.message.messages) {
+                if (responseObj == null) {
+                    responseObj = [messages:eci.message.getMessagesString()]
+                } else if (responseObj instanceof Map && !responseObj.containsKey("messages")) {
+                    Map responseMap = new HashMap()
+                    responseMap.putAll((Map) responseObj)
+                    responseObj.put("messages", eci.message.getMessagesString())
+                    responseObj = responseMap
+                }
+            }
+
             if (eci.getMessage().hasError()) {
                 JsonBuilder jb = new JsonBuilder()
                 // if the responseObj is a Map add all of it's data
                 if (responseObj instanceof Map) {
-                    Map responseMap = new HashMap()
-                    responseMap.putAll((Map) responseObj)
                     // only add an errors if it is not a jsonrpc response (JSON RPC has it's own error handling)
-                    if (!responseMap.containsKey("jsonrpc")) responseMap.put("errors", eci.message.errorsString)
-                    jb.call(responseMap)
+                    if (!responseObj.containsKey("jsonrpc")) {
+                        Map responseMap = new HashMap()
+                        responseMap.putAll(responseObj)
+                        responseMap.put("errors", eci.message.errorsString)
+                        responseObj = responseMap
+                    }
+                    jb.call(responseObj)
                 } else if (responseObj != null) {
                     jb.call(responseObj)
                 }
