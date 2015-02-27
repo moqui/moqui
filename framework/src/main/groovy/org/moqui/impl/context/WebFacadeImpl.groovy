@@ -97,7 +97,7 @@ class WebFacadeImpl implements WebFacade {
 
         // if there is a JSON document submitted consider those as parameters too
         String contentType = request.getHeader("Content-Type")
-        if (contentType == "application/json" || contentType == "text/json") {
+        if (contentType && (contentType.contains("application/json") || contentType.contains("text/json"))) {
             JsonSlurper slurper = new JsonSlurper()
             Object jsonObj = null
             try {

@@ -216,6 +216,8 @@ Bug Fixes:
   the hidden field should be empty
 - Fixed issue with Quartz service calls and job data associated with the
   trigger, now gets data map from job and trigger
+- Fixed issue with the Content-Type HTTP header in JSON requests when it
+  has one or more parameters.
 
 ===========================================================================
 Release 1.4.1 - 01 Aug 2014
