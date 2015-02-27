@@ -1816,18 +1816,26 @@ Features considered, but may not to be included in 1.x series
     - Use this in HiveMind to send notifications of project, task, and wiki changes (maybe?)
 
 - System-System Message
-  - System-System Message Sending
-    - persist outgoing message
-    - status dates (sent, received/confirmed)
-    - retry on fail (sync or async from confirmation message)
-    - keep status in separate transaction
+  x System-System Message Sending
+    x persist outgoing message
+    x status dates (sent, received/confirmed)
+    x retry on fail (sync or async from confirmation message)
+    x keep status in separate transaction
   - System-System Message Receiving
-    - persist incoming message, identify/link duplicate/retry messages
-    - trigger processing manually based on persisted message
-    - retry processing on fail (manual or automatic - number of retries and/or time delay before sending fail confirmation)
-    - send async success/fail confirmation
-    - keep status in separate transaction
+    x persist incoming message
+    - identify/link duplicate/retry messages (how?)
+    x retry processing on fail (manual or automatic - number of retries and/or time delay before sending fail confirmation)
+    n send async success/fail confirmation (maybe best left to consume service)
+    x keep status in separate transaction
   - Camel endpoint for sending and receiving (custom, or use service facade endpoint?)
   - Useful for OAGIS and many other system-to-system messages; idea similar to OAGIS services and entities in OFBiz
-  - updateSystemMessageStatus (require new transaction)
-  - addSystemMessageError (require new transaction, set status too?)
+  - Tools app UI
+    - Find SystemMessage screen
+    - SystemMessageDetail screen with
+      - button to reset from error (change status, zero out failCount)
+      - button to cancel
+      - button to manually send/consume as applicable
+      - message info, msg test edit
+      - message type info/edit
+      - message remote info/edit
+      - error list
