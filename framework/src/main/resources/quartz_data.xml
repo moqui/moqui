@@ -79,7 +79,7 @@
                 <group>SystemMessageServices</group>
                 <job-name>send_AllProducedSystemMessages_single</job-name>
                 <job-group>org.moqui.impl.SystemMessageServices.send#AllProducedSystemMessages</job-group>
-                <cron-expression>0 0/2 * * * ?</cron-expression>
+                <cron-expression>0 0/15 * * * ?</cron-expression>
             </cron>
         </trigger>
     </schedule>
