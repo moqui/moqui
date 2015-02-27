@@ -286,7 +286,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <entity entity-name="SystemMessageRemote" package-name="moqui.service.message">
         <field name="systemMessageRemoteId" type="id" is-pk="true"/>
         <field name="sendUrl" type="text-medium"/>
-        <field name="authorizedIpAddresses" type="text-long"/>
+        <!-- potential future use, restrict receive message: <field name="authorizedIpAddresses" type="text-long"/> -->
         <field name="username" type="text-medium"><description>This user needs permission to run the remote service or
             whatever on the remote system receives the message. For the the Moqui receive#SystemMessage service the user
             should be in a group that has authz for the SystemMessageServices ArtifactGroup (see SecurityTypeData.xml).</description></field>
@@ -297,7 +297,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="systemMessageId" type="id" is-pk="true"/>
         <field name="errorDate" type="date-time" is-pk="true"/>
         <field name="attemptedStatusId" type="id"/>
-        <field name="reasonCode" type="text-short"/>
+        <!-- maybe for future use: <field name="reasonCode" type="text-short"/> -->
         <field name="errorText" type="text-very-long"/>
         <relationship type="one" related-entity-name="moqui.service.message.SystemMessage"/>
     </entity>

@@ -71,9 +71,11 @@ This Work includes contributions authored by David E. Jones, not as a
             <service-call name="update#moqui.service.message.SystemMessage" transaction="force-new"
                     in-map="[systemMessageId:systemMessageId, statusId:'SmsgSending', lastAttemptDate:ec.user.nowTimestamp]"/>
 
-            <!-- TODO: put this in a try block with the follow up below in a finally and a Throwable catch to add message facade errors -->
+            <!-- put this in a try block with the follow up below in a finally and a Throwable catch to add message facade errors -->
+            <script>try {</script>
             <service-call name="${systemMessageType.sendServiceName}" in-map="[systemMessageId:systemMessageId]"
                     out-map="sendOut" transaction="force-new" ignore-error="true"/>
+            <script>} catch (Throwable t) { ec.message.addError(t.toString()) } finally {</script>
 
             <!-- if successful set status to SmsgSent, otherwise set back to previous status -->
             <set field="nowDate" from="ec.user.nowTimestamp"/>
@@ -93,6 +95,7 @@ This Work includes contributions authored by David E. Jones, not as a
                                 remoteMessageId:sendOut.remoteMessageId, processedDate:nowDate, lastAttemptDate:nowDate]"/>
                 </else>
             </if>
+            <script>}</script>
         </actions>
     </service>
     <service verb="send" noun="SystemMessageJsonRpc">
@@ -163,9 +166,11 @@ This Work includes contributions authored by David E. Jones, not as a
             <service-call name="update#moqui.service.message.SystemMessage" transaction="force-new"
                     in-map="[systemMessageId:systemMessageId, statusId:'SmsgConsuming', lastAttemptDate:ec.user.nowTimestamp]"/>
 
-            <!-- TODO: put this in a try block with the follow up below in a finally and a Throwable catch to add message facade errors -->
+            <!-- put this in a try block with the follow up below in a finally and a Throwable catch to add message facade errors -->
+            <script>try {</script>
             <service-call name="${systemMessageType.consumeServiceName}" in-map="[systemMessageId:systemMessageId]"
                     out-map="consumeOut" transaction="force-new" ignore-error="true"/>
+            <script>} catch (Throwable t) { ec.message.addError(t.toString()) } finally {</script>
 
             <!-- if successful set status to SmsgConsumed, otherwise set back to previous status -->
             <set field="nowDate" from="ec.user.nowTimestamp"/>
@@ -185,6 +190,7 @@ This Work includes contributions authored by David E. Jones, not as a
                                 processedDate:nowDate, lastAttemptDate:nowDate]"/>
                 </else>
             </if>
+            <script>}</script>
         </actions>
     </service>
 
