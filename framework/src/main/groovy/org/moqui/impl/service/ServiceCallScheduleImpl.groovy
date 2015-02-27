@@ -88,6 +88,8 @@ class ServiceCallScheduleImpl extends ServiceCallImpl implements ServiceCallSche
     void call() {
         // TODO maxRetry: any way to set and then track the number of retries?
 
+        if (!jobName) jobName = "${this.verb}${this.noun ? '_' + this.noun : ''}"
+
         ExecutionContextImpl eci = sfi.getEcfi().getEci()
 
         // Before scheduling the service check a few basic things so they show up sooner than later:
