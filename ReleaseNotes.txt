@@ -1709,8 +1709,8 @@ Features considered, but may not to be included in 1.x series
   - Dynamic Screens (database-driven: DynamicScreen* entities)
 - Entity Facade
   - LiquiBase integration, entity.change-set element
-  - EntitySync tool
-  - Add view log like current change audit log (AuditLogView?)
+  x EntitySync tool
+  - Add view log, like current change audit log (AuditLogView?)
 - Artifact Execution Facade
   - Call ArtifactExecutionFacade.push() (to track, check authz, etc) for
     other types of artifacts (if/as determined to be helpful), including:
@@ -1721,12 +1721,11 @@ Features considered, but may not to be included in 1.x series
     authz if can't add constraint
 - Tools Screens
   - Auto Screen
-    - Editable data grid, created by form-list, for detail and assoc
-      related entities
+    - Editable data grid, created by form-list, for detail and assoc related entities
   - Entity
+    - EntitySync UI in tools app
     - Entity model internal check (relationship, view-link.key-map, ?)
-    - Database meta-data check/report against entity definitions; NOTE:
-      use LiquiBase for this
+    - Database meta-data check/report against entity definitions; NOTE: use LiquiBase for this
   - Script Run (or groovy shell?)
   - Service
     - Configure and run chain of services (dynamic wizard)
