@@ -287,6 +287,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="systemMessageRemoteId" type="id" is-pk="true"/>
         <field name="sendUrl" type="text-medium"/>
         <!-- potential future use, restrict receive message: <field name="authorizedIpAddresses" type="text-long"/> -->
+        <field name="sendServiceName" type="text-medium"><description>Override for SystemMessageType.sendServiceName</description></field>
         <field name="username" type="text-medium"><description>This user needs permission to run the remote service or
             whatever on the remote system receives the message. For the the Moqui receive#SystemMessage service the user
             should be in a group that has authz for the SystemMessageServices ArtifactGroup (see SecurityTypeData.xml).</description></field>
