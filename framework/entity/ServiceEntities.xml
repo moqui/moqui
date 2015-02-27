@@ -230,6 +230,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
             <!-- Confirmation sent -->
             <moqui.basic.StatusItem description="Confirmed" sequenceNum="90" statusId="SmsgConfirmed" statusTypeId="SystemMessage"/>
+            <moqui.basic.StatusItem description="Cancelled" sequenceNum="98" statusId="SmsgCancelled" statusTypeId="SystemMessage"/>
             <!-- Error, generally after retry limit -->
             <moqui.basic.StatusItem description="Error" sequenceNum="99" statusId="SmsgError" statusTypeId="SystemMessage"/>
 
@@ -257,6 +258,17 @@ This Work includes contributions authored by David E. Jones, not as a
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgConsumed" toStatusId="SmsgError" transitionName="Error"/>
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgConfirmed" toStatusId="SmsgError" transitionName="Error"/>
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgError" toStatusId="SmsgError" transitionName="Error"/>
+
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgProduced" toStatusId="SmsgCancelled" transitionName="Cancel"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgSending" toStatusId="SmsgCancelled" transitionName="Cancel"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgSent" toStatusId="SmsgCancelled" transitionName="Cancel"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgReceived" toStatusId="SmsgCancelled" transitionName="Cancel"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgConsuming" toStatusId="SmsgCancelled" transitionName="Cancel"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgConsumed" toStatusId="SmsgCancelled" transitionName="Cancel"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgError" toStatusId="SmsgCancelled" transitionName="Cancel"/>
+
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgCancelled" toStatusId="SmsgProduced" transitionName="Back to Produced"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgCancelled" toStatusId="SmsgReceived" transitionName="Back to Received"/>
         </seed-data>
     </entity>
     <entity entity-name="SystemMessageType" package-name="moqui.service.message">
