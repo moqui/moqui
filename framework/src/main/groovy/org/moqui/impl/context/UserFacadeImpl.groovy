@@ -465,7 +465,7 @@ class UserFacadeImpl implements UserFacade {
         return true
     }
 
-    /** For internal framework use only, does a login with authc. */
+    /** For internal framework use only, does a login without authc. */
     boolean internalLoginUser(String username, String tenantId) {
         if (!username) {
             eci.message.addError("No username specified")
