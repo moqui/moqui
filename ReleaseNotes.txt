@@ -53,6 +53,7 @@ New Features:
   in the Entity and Screen Facades
 - Added elFinder connector for the Moqui ResourceFacade
 - Added Tools screen to browse ResourceFacade resources using elFinder
+- Can now schedule services with a cron string in Tools Run Service screen
 - Added cache warming on start (disabled in dev conf)
 - Various improvements to Tools screens for layout and pagination
 - Added convert#Uom service
