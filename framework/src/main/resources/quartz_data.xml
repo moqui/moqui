@@ -4,13 +4,19 @@
         xsi:schemaLocation="http://www.quartz-scheduler.org/xml/JobSchedulingData http://www.quartz-scheduler.org/xml/job_scheduling_data_1_8.xsd"
         version="1.8">
 
+    <!-- Handy cron strings:
+        [0 0 2 * * ?] every night at 2:00 am
+        [0 0/15 * * * ?] every 15 minutes
+        [0 0/2 * * * ?] every 2 minutes
+    -->
+
     <schedule>
         <job>
             <name>clean_ArtifactData_single</name>
             <group>org.moqui.impl.ServerServices.clean#ArtifactData</group>
             <description>Clean Artifact Data: ArtifactHit, ArtifactHitBin</description>
             <job-class>org.moqui.impl.service.ServiceQuartzJob</job-class>
-            <job-data-map><entry><key>daysToKeep</key><value>90</value></entry></job-data-map>
+            <job-data-map><entry><key>daysToKeep</key><value>2</value></entry></job-data-map>
         </job>
         <trigger>
             <cron>
@@ -18,8 +24,7 @@
                 <group>ServerServices</group>
                 <job-name>clean_ArtifactData_single</job-name>
                 <job-group>org.moqui.impl.ServerServices.clean#ArtifactData</job-group>
-                <cron-expression>0 0 2 * * ?</cron-expression><!-- trigger every night at 2:00 am -->
-                <!-- for testing, run every 2 minutes: <cron-expression>0 0/2 * * * ?</cron-expression> -->
+                <cron-expression>0 0 2 * * ?</cron-expression>
             </cron>
         </trigger>
     </schedule>
@@ -29,7 +34,7 @@
             <group>org.moqui.impl.ServiceServices.clean#SchedulerHistory</group>
             <description>Clean SchedulerHistory Data</description>
             <job-class>org.moqui.impl.service.ServiceQuartzJob</job-class>
-            <job-data-map><entry><key>daysToKeep</key><value>90</value></entry></job-data-map>
+            <job-data-map><entry><key>daysToKeep</key><value>2</value></entry></job-data-map>
         </job>
         <trigger>
             <cron>
@@ -37,19 +42,18 @@
                 <group>ServiceServices</group>
                 <job-name>clean_SchedulerHistory_single</job-name>
                 <job-group>org.moqui.impl.ServiceServices.clean#SchedulerHistory</job-group>
-                <cron-expression>0 0 2 * * ?</cron-expression><!-- trigger every night at 2:00 am -->
-                <!-- for testing, run every 2 minutes: <cron-expression>0 0/2 * * * ?</cron-expression> -->
+                <cron-expression>0 0 2 * * ?</cron-expression>
             </cron>
         </trigger>
     </schedule>
-    <!-- uncomment this to run EntitySync
+    <!-- Uncomment this to run the EntitySync job
     <schedule>
         <job>
             <name>run_EntitySyncAll_single</name>
             <group>org.moqui.impl.EntitySyncServices.run#EntitySyncAll</group>
             <description>Run All EntitySync</description>
             <job-class>org.moqui.impl.service.ServiceQuartzJob</job-class>
-            <job-data-map><entry><key>daysToKeep</key><value>30</value></entry></job-data-map>
+            <job-data-map><entry><key>daysToKeep</key><value>7</value></entry></job-data-map>
         </job>
         <trigger>
             <cron>
@@ -57,7 +61,45 @@
                 <group>EntitySyncServices</group>
                 <job-name>run_EntitySyncAll_single</job-name>
                 <job-group>org.moqui.impl.EntitySyncServices.run#EntitySyncAll</job-group>
-                <cron-expression>0 0/15 * * * ?</cron-expression><!- - run every 15 minutes - ->
+                <cron-expression>0 0/15 * * * ?</cron-expression>
+            </cron>
+        </trigger>
+    </schedule>
+    -->
+    <!-- Uncomment these to run SystemMessage jobs:
+    <schedule>
+        <job>
+            <name>send_AllProducedSystemMessages_single</name>
+            <group>org.moqui.impl.SystemMessageServices.send#AllProducedSystemMessages</group>
+            <description>Send All Produced SystemMessages</description>
+            <job-class>org.moqui.impl.service.ServiceQuartzJob</job-class>
+            <job-data-map><entry><key>daysToKeep</key><value>7</value></entry></job-data-map>
+        </job>
+        <trigger>
+            <cron>
+                <name>send_AllProducedSystemMessages_frequent</name>
+                <group>SystemMessageServices</group>
+                <job-name>send_AllProducedSystemMessages_single</job-name>
+                <job-group>org.moqui.impl.SystemMessageServices.send#AllProducedSystemMessages</job-group>
+                <cron-expression>0 0/15 * * * ?</cron-expression>
+            </cron>
+        </trigger>
+    </schedule>
+    <schedule>
+        <job>
+            <name>consume_AllReceivedSystemMessages_single</name>
+            <group>org.moqui.impl.SystemMessageServices.consume#AllReceivedSystemMessages</group>
+            <description>Consume All Received SystemMessages</description>
+            <job-class>org.moqui.impl.service.ServiceQuartzJob</job-class>
+            <job-data-map><entry><key>daysToKeep</key><value>7</value></entry></job-data-map>
+        </job>
+        <trigger>
+            <cron>
+                <name>consume_AllReceivedSystemMessages_frequent</name>
+                <group>SystemMessageServices</group>
+                <job-name>consume_AllReceivedSystemMessages_single</job-name>
+                <job-group>org.moqui.impl.SystemMessageServices.consume#AllReceivedSystemMessages</job-group>
+                <cron-expression>0 0/15 * * * ?</cron-expression>
             </cron>
         </trigger>
     </schedule>
