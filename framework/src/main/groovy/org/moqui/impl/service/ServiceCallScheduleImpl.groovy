@@ -122,6 +122,7 @@ class ServiceCallScheduleImpl extends ServiceCallImpl implements ServiceCallSche
         } else {
             JobBuilder jobBuilder = JobBuilder.newJob(ServiceQuartzJob.class)
                     .withIdentity(jobName, serviceName)
+                    .usingJobData(new JobDataMap(parameters))
                     .requestRecovery().storeDurably(jobName ? true : false)
             job = jobBuilder.build()
         }
@@ -129,7 +130,6 @@ class ServiceCallScheduleImpl extends ServiceCallImpl implements ServiceCallSche
         TriggerBuilder tb = TriggerBuilder.newTrigger()
                 .withIdentity(jobName, serviceName) // for now JobKey = TriggerKey, may want something different...
                 .withPriority(3)
-                .usingJobData(new JobDataMap(parameters))
                 .forJob(job)
         if (startTime) tb.startAt(new Date(startTime))
         if (endTime) tb.endAt(new Date(endTime))
