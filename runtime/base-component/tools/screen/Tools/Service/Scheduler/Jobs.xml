@@ -55,17 +55,20 @@ This Work includes contributions authored by David E. Jones, not as a
                         List triggers = scheduler.getTriggersOfJob(job.getKey())
                         if (triggers) {
                             for (Trigger trigger in triggers) {
-                                JsonBuilder jb = new JsonBuilder(); jb.call(trigger.getJobDataMap()); String paramString = jb.toString()
+                                JsonBuilder psJb = new JsonBuilder()
+                                psJb.call(job.getJobDataMap())
+                                psJb.call(trigger.getJobDataMap())
                                 jobInfoList.add([triggerGroup:trigger.getKey().getGroup(), triggerName:trigger.getKey().getName(),
                                         jobGroup:job.getKey().getGroup(), jobName:job.getKey().getName(),
                                         nextFireTime:(trigger.getNextFireTime() ? new Timestamp(trigger.getNextFireTime().getTime()) : null),
                                         previousFireTime:(trigger.getPreviousFireTime() ? new Timestamp(trigger.getPreviousFireTime().getTime()) : null),
-                                        triggerState:scheduler.getTriggerState(trigger.getKey()).toString(), paramString:paramString])
+                                        triggerState:scheduler.getTriggerState(trigger.getKey()).toString(), paramString:psJb.toString()])
                             }
                         } else {
-                            JsonBuilder jb = new JsonBuilder(); jb.call(job.getJobDataMap()); String paramString = jb.toString()
+                            JsonBuilder psJb = new JsonBuilder()
+                            psJb.call(job.getJobDataMap())
                             jobInfoList.add([jobGroup: job.getKey().getGroup(), jobName: job.getKey().getName(),
-                                    paramString:paramString])
+                                    paramString:psJb.toString()])
                         }
                     }
                 </script>
