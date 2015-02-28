@@ -30,12 +30,15 @@ public interface ServiceCallSync extends ServiceCall {
     /** Single name, value pairs to put in the context (in parameters) passed to the service. */
     ServiceCallSync parameter(String name, Object value);
 
-
+    /** By default a service uses the existing transaction or begins a new one if no tx is in place. Set this flag to
+     * ignore the transaction, not checking for one or starting one if no transaction is in place. */
+    ServiceCallSync ignoreTransaction(boolean ignoreTransaction);
     /** If true suspend/resume the current transaction (if a transaction is active) and begin a new transaction for the
      * scope of this service call.
      * @return Reference to this for convenience.
      */
     ServiceCallSync requireNewTransaction(boolean requireNewTransaction);
+    ServiceCallSync useTransactionCache(boolean useTransactionCache);
 
     /** If true expect multiple sets of parameters passed in a single map, each set with a suffix of an underscore
      * and the row of the number, ie something like "userId_8" for the userId parameter in the 8th row.

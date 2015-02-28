@@ -15,6 +15,7 @@ import groovy.json.JsonBuilder
 import org.moqui.context.Cache
 import org.moqui.context.ResourceReference
 import org.moqui.impl.StupidUtilities
+import org.moqui.impl.service.runner.RemoteJsonRpcServiceRunner
 import org.moqui.service.ServiceFacade
 import org.moqui.service.ServiceCallback
 import org.moqui.service.ServiceCallSync
@@ -431,6 +432,11 @@ class ServiceFacadeImpl implements ServiceFacade {
 
     @Override
     ServiceCallSpecial special() { return new ServiceCallSpecialImpl(this) }
+
+    @Override
+    Map<String, Object> callJsonRpc(String location, String method, Map<String, Object> parameters) {
+        return RemoteJsonRpcServiceRunner.runJsonService(null, location, method, parameters, ecfi.getExecutionContext())
+    }
 
     @Override
     synchronized void registerCallback(String serviceName, ServiceCallback serviceCallback) {

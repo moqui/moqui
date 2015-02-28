@@ -110,7 +110,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- Example ServiceTest Service -->
     <service verb="test" noun="CreateExampleService" type="script"
              location="component://example/script/org/moqui/example/testCreateExampleService.xml">
-        <implements service="testServiceInterface"/>
+        <!-- <implements service="testServiceInterface"/> -->
     </service>
 
     <!-- Example Camel services (one to call through Moqui Service Facade, one to be called when that service is called) -->
@@ -124,6 +124,32 @@ This Work includes contributions authored by David E. Jones, not as a
         <actions>
             <set field="testOutput" value="Here's the input: ${testInput}"/>
             <log level="warn" message="targetCamelExample testOutput: ${result.testOutput}"/>
+        </actions>
+    </service>
+    
+    <!-- ========== Example SystemMessage Services ========== -->
+    <service verb="send" noun="ExampleMessage">
+        <in-parameters>
+            <parameter name="exampleId" required="true"/>
+            <parameter name="systemMessageRemoteId" default-value="Example1Local"/>
+            <parameter name="sendNow" type="Boolean" default-value="true"/>
+        </in-parameters>
+        <out-parameters><parameter name="systemMessageId"/></out-parameters>
+        <actions>
+            <entity-find-one entity-name="moqui.example.Example" value-field="example"/>
+            <set field="exampleJson" from="groovy.json.JsonOutput.toJson(example)"/>
+            <service-call name="org.moqui.impl.SystemMessageServices.queue#SystemMessage" out-map="context"
+                    in-map="[systemMessageTypeId:'ExampleMessage', systemMessageRemoteId:systemMessageRemoteId,
+                        messageText:exampleJson, sendNow:sendNow]"/>
+        </actions>
+    </service>
+    <service verb="consume" noun="ExampleMessage">
+        <implements service="org.moqui.impl.SystemMessageServices.consume#SystemMessage"/>
+        <actions>
+            <!-- <return error="true" message="Test error!"/> -->
+            <entity-find-one entity-name="moqui.service.message.SystemMessage" value-field="systemMessage"/>
+            <set field="exampleMap" from="new groovy.json.JsonSlurper().parseText(systemMessage.messageText)"/>
+            <service-call name="store#moqui.example.Example" in-map="exampleMap"/>
         </actions>
     </service>
 </services>

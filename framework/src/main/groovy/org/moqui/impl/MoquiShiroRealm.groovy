@@ -176,15 +176,14 @@ class MoquiShiroRealm implements Realm {
                         (Map<String, Object>) [userId:userId, visitId:ecfi.executionContext.user.visitId,
                                 successfulLogin:(successful?"Y":"N")]
                 if (!successful && loginNode."@history-incorrect-password" != "false") ulhContext.passwordUsed = token.credentials
-                boolean alreadyDisabled = ecfi.executionContext.artifactExecution.disableAuthz()
                 try {
                     ecfi.serviceFacade.sync().name("create", "moqui.security.UserLoginHistory").parameters(ulhContext)
-                            .requireNewTransaction(true).call()
+                            .requireNewTransaction(true).disableAuthz().call()
+                    // we want to ignore errors from this, may happen in high-volume inserts where we don't care about the records so much anyway
+                    ecfi.getExecutionContext().getMessage().clearErrors()
                 } catch (EntityException ee) {
                     // this blows up on MySQL, may in other cases, and is only so important so log a warning but don't rethrow
                     logger.warn("UserLoginHistory create failed: ${ee.toString()}", ee)
-                } finally {
-                    if (!alreadyDisabled) ecfi.executionContext.artifactExecution.enableAuthz()
                 }
             }
         }

@@ -91,6 +91,16 @@ class OrientEntityValue extends EntityValueBase {
     }
 
     @Override
+    EntityValue cloneDbValue(boolean getOld) {
+        OrientEntityValue newObj = new OrientEntityValue(getEntityDefinition(), getEntityFacadeImpl(), odf)
+        newObj.getValueMap().putAll(getValueMap())
+        for (String fieldName in getEntityDefinition().getAllFieldNames())
+            newObj.put(fieldName, getOld ? getOldDbValue(fieldName) : getOriginalDbValue(fieldName))
+        newObj.setSyncedWithDb()
+        return newObj
+    }
+
+    @Override
     void createExtended(ListOrderedSet fieldList, Connection con) {
         EntityDefinition ed = getEntityDefinition()
         if (ed.isViewEntity()) throw new EntityException("Create not yet implemented for view-entity")

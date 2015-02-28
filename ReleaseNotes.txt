@@ -2,7 +2,7 @@
 Moqui Framework Release Notes
 
 ===========================================================================
-Release 1.5.0 - TBD
+Release 1.5.0 - 07 Mar 2015 (tentative)
 ===========================================================================
 
 Moqui Framework 1.5.0 is a major new feature and bug fix release.
@@ -10,14 +10,26 @@ Moqui Framework 1.5.0 is a major new feature and bug fix release.
 This release includes a number of UI improvements in XML Screens and Forms
 including lazy-loading trees (with jstree), more complete database-driven
 forms, general form response saving (together support DB-driven surveys,
-and can also be used with any XML Form), including entire screen sections
-in other screens, required screen parameters so explicit checking isn't
-necessary (most screens with parameters need this), significant style
+and can also be used with any XML Form), ability to include entire screen
+sections in other screens, required screen parameters so explicit checking
+isn't necessary (most screens with parameters need this), significant style
 improvements based on updated Metis (and Bootstrap, jquery, etc), a new
 dark/light style switcher, and restored use of screen themes to load CSS,
 JS, images, inserted text and templates, and much more.
 
-TODO
+One major new feature in this release is EntitySync which duplicates data
+between systems based on update timestamps. This can move data between
+tenants, systems on different networks and used for different purposes, and
+so on. Another major feature is the system-system messaging that is a store
+and forward message queue, or in other words it persists outgoing messages
+to allow retry in sending or even modify and retry, and incoming messages
+to allow retry in processing, modify and retry, etc. This can be used along
+with or instead of a lower-level message queue to provide more visibility
+at a business level and to facilitate production support for messages with
+issues. It is configurable so that different services can be used to
+process different messages (send, receive, consume). Both EntitySync and
+System-System Messages are new and not yet vetted in production so should
+be considered beta features as of this release.
 
 NOTE: The webroot, tools, and example components are now in the new
 runtime/base-component directory instead of the runtime/component directory
@@ -41,6 +53,7 @@ New Features:
   in the Entity and Screen Facades
 - Added elFinder connector for the Moqui ResourceFacade
 - Added Tools screen to browse ResourceFacade resources using elFinder
+- Can now schedule services with a cron string in Tools Run Service screen
 - Added cache warming on start (disabled in dev conf)
 - Various improvements to Tools screens for layout and pagination
 - Added convert#Uom service
@@ -51,6 +64,15 @@ New Features:
   and if new ArtifactGroupMember.filterMap field is populated checks each
   filter entry to see if it matches corresponding parameter entry,
   otherwise authz rule does not apply
+- Added System-System Message functionality with persisted outgoing and
+  incoming messages and services to manage queueing, sending, receiving,
+  and consuming
+- Added sync service call transaction options (ignore and cache) to match
+  those available through the service definition
+- Made XML Actions service-call.@transaction options match those in the
+  service definition, added code generation for all options
+- Added ServiceFacade.callJsonRpc() method to more conveniently call remote
+  JSON-RPC services
 - XML Screen:
   - Added tree element for XML Screen that renders a lazy-loaded tree with
     links using jstree (currently version 3.0.3); see the wiki.xml screen
@@ -143,6 +165,9 @@ New Features:
     for all fields of the entity
   - Added EntityAuditLog.artifactStack field with the artifact stack used
     to do the audited update
+  - Entity ECA rules that run after an update and have
+    get-original-value=true now really get the originalValue from before
+    the update even though they run after.
 
 Bug Fixes:
 
@@ -181,13 +206,16 @@ Bug Fixes:
 - Fixed issue with EntityValue.checkFks using find instead of findAll to
   get type one relationships
 - Fixed issue with lastUpdatedStamp not getting set on updates
-- Fixed fairly recent issue with service auth* parameters being ignored
+- Fixed fairly recent issue with service auth* parameters being ignored in
+  service calls, especially remote service calls
 - EntityFind.count() now selects all fields by default to match what list()
   and iterator() do, and to not mess things up when calling count() before
   calling iterator()
 - In XML Forms the display and display-entity field types no longer default
   to the value from the @text attribute, if there is no direct entry value
-  the hidden field should be empty.
+  the hidden field should be empty
+- Fixed issue with Quartz service calls and job data associated with the
+  trigger, now gets data map from job and trigger
 - Fixed issue with the Content-Type HTTP header in JSON requests when it
   has one or more parameters.
 
@@ -1683,8 +1711,8 @@ Features considered, but may not to be included in 1.x series
   - Dynamic Screens (database-driven: DynamicScreen* entities)
 - Entity Facade
   - LiquiBase integration, entity.change-set element
-  - EntitySync tool
-  - Add view log like current change audit log (AuditLogView?)
+  x EntitySync tool
+  - Add view log, like current change audit log (AuditLogView?)
 - Artifact Execution Facade
   - Call ArtifactExecutionFacade.push() (to track, check authz, etc) for
     other types of artifacts (if/as determined to be helpful), including:
@@ -1695,12 +1723,11 @@ Features considered, but may not to be included in 1.x series
     authz if can't add constraint
 - Tools Screens
   - Auto Screen
-    - Editable data grid, created by form-list, for detail and assoc
-      related entities
+    - Editable data grid, created by form-list, for detail and assoc related entities
   - Entity
+    - EntitySync UI in tools app
     - Entity model internal check (relationship, view-link.key-map, ?)
-    - Database meta-data check/report against entity definitions; NOTE:
-      use LiquiBase for this
+    - Database meta-data check/report against entity definitions; NOTE: use LiquiBase for this
   - Script Run (or groovy shell?)
   - Service
     - Configure and run chain of services (dynamic wizard)
@@ -1790,25 +1817,26 @@ Features considered, but may not to be included in 1.x series
     - Use this in HiveMind to send notifications of project, task, and wiki changes (maybe?)
 
 - System-System Message
-  - System-System Message Sending
-    - persist outgoing message
-    - status dates (sent, received/confirmed)
-    - retry on fail (sync or async from confirmation message)
-    - keep status in separate transaction
+  x System-System Message Sending
+    x persist outgoing message
+    x status dates (sent, received/confirmed)
+    x retry on fail (sync or async from confirmation message)
+    x keep status in separate transaction
   - System-System Message Receiving
-    - persist incoming message, identify/link duplicate/retry messages
-    - trigger processing manually based on persisted message
-    - retry processing on fail (manual or automatic - number of retries and/or time delay before sending fail confirmation)
-    - send async success/fail confirmation
-    - keep status in separate transaction
+    x persist incoming message
+    - identify/link duplicate/retry messages (how?)
+    x retry processing on fail (manual or automatic - number of retries and/or time delay before sending fail confirmation)
+    n send async success/fail confirmation (maybe best left to consume service)
+    x keep status in separate transaction
   - Camel endpoint for sending and receiving (custom, or use service facade endpoint?)
   - Useful for OAGIS and many other system-to-system messages; idea similar to OAGIS services and entities in OFBiz
-  - SystemMessage: systemMessageId*, systemMessageTypeId, statusId, isOutgoing (i), sentDate, receivedDate,
-    messageText (vl), remoteMessageId (text-medium), systemMessageRemoteId
-    - Message statuses: Triggered, Produced, Sent, Received, Consumed, Confirmed, Error
-  - SystemMessageType: systemMessageTypeId*, description, produceServiceName, consumeServiceName, sendServiceName, receiveServiceName
-  - SystemMessageRemote: systemMessageRemoteId*, sendUrl, authorizedIpAddresses, username, password (encrypted, not hashed)
-  - SystemMessageError: systemMessageId*, errorSeqId*, attemptedStatusId (same status set as SystemMessage.statusId), reasonCode, errorText (vl)
-  - SystemMessageOagis: systemMessageId*, logicalId, component, task, referenceId, authId, bsrVerb, bsrNoun, bsrRevision
-  - updateSystemMessageStatus (require new transaction)
-  - addSystemMessageError (require new transaction, set status too?)
+  - Tools app UI
+    - Find SystemMessage screen
+    - SystemMessageDetail screen with
+      - button to reset from error (change status, zero out failCount)
+      - button to cancel
+      - button to manually send/consume as applicable
+      - message info, msg test edit
+      - message type info/edit
+      - message remote info/edit
+      - error list

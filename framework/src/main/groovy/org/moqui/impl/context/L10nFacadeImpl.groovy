@@ -100,6 +100,8 @@ public class L10nFacadeImpl implements L10nFacade {
         if (cal == null) cal = calendarValidator.validate(input, "HH:mm", curLocale, curTz)
         if (cal == null) cal = calendarValidator.validate(input, "h:mm a", curLocale, curTz)
         if (cal == null) cal = calendarValidator.validate(input, "h:mm:ss a", curLocale, curTz)
+        // also try the full ISO-8601, times may come in that way (even if funny with a date of 1970-01-01)
+        if (cal == null) cal = calendarValidator.validate(input, "yyyy-MM-dd'T'HH:mm:ssZ", curLocale, curTz)
         if (cal != null) {
             Time time = new Time(cal.getTimeInMillis())
             // logger.warn("============== parseTime input=${input} cal=${cal} long=${cal.getTimeInMillis()} time=${time} time long=${time.getTime()} util date=${new java.util.Date(cal.getTimeInMillis())} timestamp=${new java.sql.Timestamp(cal.getTimeInMillis())}")
@@ -130,6 +132,8 @@ public class L10nFacadeImpl implements L10nFacade {
         if (!format) format = "yyyy-MM-dd"
         Calendar cal = calendarValidator.validate(input, format, curLocale, curTz)
         if (cal == null) cal = calendarValidator.validate(input, "MM/dd/yyyy", curLocale, curTz)
+        // also try the full ISO-8601, dates may come in that way
+        if (cal == null) cal = calendarValidator.validate(input, "yyyy-MM-dd'T'HH:mm:ssZ", curLocale, curTz)
         if (cal != null) {
             Date date = new Date(cal.getTimeInMillis())
             // logger.warn("============== parseDate input=${input} cal=${cal} long=${cal.getTimeInMillis()} date=${date} date long=${date.getTime()} util date=${new java.util.Date(cal.getTimeInMillis())} timestamp=${new java.sql.Timestamp(cal.getTimeInMillis())}")
