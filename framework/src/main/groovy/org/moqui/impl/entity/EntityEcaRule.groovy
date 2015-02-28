@@ -56,32 +56,46 @@ class EntityEcaRule {
         if (entityName != eecaNode."@entity") return
         if (ec.getMessage().hasError() && eecaNode."@run-on-error" != "true") return
 
+        EntityValue curValue = null
+
         // grab DB values before a delete so they are available after; this modifies fieldValues used by EntityValueBase
         if (before && operation == "delete" && eecaNode."@get-entire-entity" == "true") {
             // fill in any missing (unset) values from the DB
-            EntityValue ev = getDbValue(ec, fieldValues)
-            if (ev != null) {
+            if (curValue == null) curValue = getDbValue(ec, fieldValues)
+            if (curValue != null) {
                 // only add fields that fieldValues does not contain
-                for (Map.Entry entry in ev.entrySet())
+                for (Map.Entry entry in curValue.entrySet())
                     if (!fieldValues.containsKey(entry.getKey())) fieldValues.put(entry.getKey(), entry.getValue())
+            }
+        }
+
+        // do this before even if EECA rule runs after to get the original value from the DB and put in the entity's dbValue Map
+        EntityValue originalValue = null
+        if (before && (operation == "update" || operation == "delete") && eecaNode."@get-original-value" == "true") {
+            if (curValue == null) curValue = getDbValue(ec, fieldValues)
+            originalValue = curValue
+            // also put DB values in the fieldValues EntityValue if it isn't from DB (to have for future reference)
+            if (fieldValues instanceof EntityValueBase && !fieldValues.getIsFromDb()) {
+                // NOTE: fresh from the DB the valueMap will have clean values and the dbValueMap will be null
+                fieldValues.setDbValueMap(((EntityValueBase) originalValue).getValueMap())
             }
         }
 
         if (before && eecaNode."@run-before" != "true") return
         if (!before && eecaNode."@run-before" == "true") return
 
-        EntityValue originalValue = null
-        if (before && (operation == "update" || operation == "delete") && eecaNode."@get-original-value" == "true") {
-            originalValue = getDbValue(ec, fieldValues)
+        // now if we're running after the entity operation, pull the original value from the
+        if (!before && fieldValues instanceof EntityValueBase && fieldValues.getIsFromDb() &&
+                (operation == "update" || operation == "delete") && eecaNode."@get-original-value" == "true") {
+            originalValue = fieldValues.cloneDbValue(true)
         }
 
         if ((operation == "update" || operation == "delete") && eecaNode."@get-entire-entity" == "true") {
             // fill in any missing (unset) values from the DB
-            if (originalValue == null) originalValue = getDbValue(ec, fieldValues)
-            EntityValue ev = originalValue
-            if (ev != null) {
+            if (curValue == null) curValue = getDbValue(ec, fieldValues)
+            if (curValue != null) {
                 // only add fields that fieldValues does not contain
-                for (Map.Entry entry in ev.entrySet())
+                for (Map.Entry entry in curValue.entrySet())
                     if (!fieldValues.containsKey(entry.getKey())) fieldValues.put(entry.getKey(), entry.getValue())
             }
         }

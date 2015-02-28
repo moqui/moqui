@@ -30,18 +30,20 @@ ExecutionContextImpl ec = context.ec
 if (bodyParameters) context.putAll(bodyParameters)
 
 def emailTemplate = ec.entity.find("moqui.basic.email.EmailTemplate").condition("emailTemplateId", emailTemplateId).one()
+if (!emailTemplate) ec.message.addError("No EmailTemplate record found for ID [${emailTemplateId}]")
+if (ec.message.hasError()) return
+
 //def emailTemplateAttachmentList = ec.entity.find("moqui.basic.email.EmailTemplateAttachment").condition("emailTemplateId", emailTemplateId).list()
 def emailTemplateAttachmentList = emailTemplate."moqui.basic.email.EmailTemplateAttachment"
 def emailServer = emailTemplate."moqui.basic.email.EmailServer"
 
 // check a couple of required fields
-if (!emailTemplate) ec.message.addError("No EmailTemplate record found for ID [${emailTemplateId}]")
 if (!emailServer) ec.message.addError("No EmailServer record found for EmailTemplate [${emailTemplateId}]")
 if (emailServer && !emailServer.smtpHost)
     ec.message.addError("SMTP Host is empty for EmailServer [${emailServer.emailServerId}]")
 if (emailTemplate && !emailTemplate.fromAddress)
     ec.message.addError("From address is empty for EmailTemplate [${emailTemplateId}]")
-if (ec.message.errors) return
+if (ec.message.hasError()) return
 
 HtmlEmail email = new HtmlEmail()
 email.setHostName((String) emailServer.smtpHost)

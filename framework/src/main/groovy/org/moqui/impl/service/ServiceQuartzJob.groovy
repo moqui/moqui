@@ -26,9 +26,11 @@ class ServiceQuartzJob implements Job {
     void execute(JobExecutionContext jobExecutionContext) {
         String serviceName = jobExecutionContext.jobDetail.key.group
 
-        JobDataMap jdm = jobExecutionContext.jobDetail.jobDataMap
+        JobDataMap jdm = jobExecutionContext.getJobDetail().getJobDataMap()
+        JobDataMap tjdm = jobExecutionContext.getTrigger().getJobDataMap()
         Map parameters = new HashMap()
         for (String key in jdm.getKeys()) parameters.put(key, jdm.get(key))
+        for (String key in tjdm.getKeys()) parameters.put(key, tjdm.get(key))
 
         if (logger.traceEnabled) logger.trace("Calling async|scheduled service [${serviceName}] with parameters [${parameters}]")
 
@@ -38,6 +40,8 @@ class ServiceQuartzJob implements Job {
             String userId = parameters.authUserAccount?.userId ?: parameters.authUsername
             String password = parameters.authUserAccount?.currentPassword ?: parameters.authPassword
             String tenantId = parameters.authTenantId
+
+            // logger.warn("=========== running quartz job for ${serviceName}, userId=${userId}, parameters: ${parameters}")
 
             boolean needsAuthzEnable = false
             if (userId && password) {
@@ -49,6 +53,7 @@ class ServiceQuartzJob implements Job {
                 ec.getUser().internalLoginUser(userId, tenantId)
                 // authz check will be done when job is scheduled for this sort of case, so don't check authz here
                 needsAuthzEnable = !ec.getArtifactExecution().disableAuthz()
+                // logger.warn("=========== internalLoginUser in job for ${serviceName}, userId=${userId}, ec.user.username: ${ec.user.username}")
             } else if (tenantId) {
                 ec.changeTenant(tenantId)
             }

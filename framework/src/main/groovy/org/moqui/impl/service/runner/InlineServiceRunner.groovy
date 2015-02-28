@@ -56,9 +56,11 @@ public class InlineServiceRunner implements ServiceRunner {
                 }
                 return autoResult
             }
+        /* ServiceCallSyncImpl logs this anyway, no point logging it here:
         } catch (Throwable t) {
             logger.error("Error running inline XML Actions in service [${sd.serviceName}]: ", t)
             throw t
+         */
         } finally {
             // pop the entire context to get back to where we were before isolating the context with pushContext
             cs.popContext()

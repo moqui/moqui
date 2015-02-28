@@ -15,6 +15,7 @@ import groovy.json.JsonBuilder
 import org.moqui.context.Cache
 import org.moqui.context.ResourceReference
 import org.moqui.impl.StupidUtilities
+import org.moqui.impl.service.runner.RemoteJsonRpcServiceRunner
 import org.moqui.service.ServiceFacade
 import org.moqui.service.ServiceCallback
 import org.moqui.service.ServiceCallSync
@@ -433,6 +434,11 @@ class ServiceFacadeImpl implements ServiceFacade {
     ServiceCallSpecial special() { return new ServiceCallSpecialImpl(this) }
 
     @Override
+    Map<String, Object> callJsonRpc(String location, String method, Map<String, Object> parameters) {
+        return RemoteJsonRpcServiceRunner.runJsonService(null, location, method, parameters, ecfi.getExecutionContext())
+    }
+
+    @Override
     synchronized void registerCallback(String serviceName, ServiceCallback serviceCallback) {
         List<ServiceCallback> callbackList = callbackRegistry.get(serviceName)
         if (callbackList == null) {
@@ -587,7 +593,7 @@ class ServiceFacadeImpl implements ServiceFacade {
                         eventDate:new Timestamp(context.getFireTime().getTime()),
                         triggerGroup:trigger.getKey().getGroup(), triggerName:trigger.getKey().getName(),
                         jobGroup:trigger.getJobKey().getGroup(), jobName:trigger.getJobKey().getName(),
-                        fireIntanceId:context.getFireInstanceId(), paramString:paramString]).disableAuthz().call()
+                        fireInstanceId:context.getFireInstanceId(), paramString:paramString]).disableAuthz().call()
         }
 
         @Override
@@ -614,7 +620,7 @@ class ServiceFacadeImpl implements ServiceFacade {
                         eventDate:new Timestamp(context.getFireTime().getTime()),
                         triggerGroup:trigger.getKey().getGroup(), triggerName:trigger.getKey().getName(),
                         jobGroup:trigger.getJobKey().getGroup(), jobName:trigger.getJobKey().getName(),
-                        fireIntanceId:context.getFireInstanceId(), paramString:paramString,
+                        fireInstanceId:context.getFireInstanceId(), paramString:paramString,
                         triggerInstructionCode:triggerInstructionCode.toString()]).disableAuthz().call()
         }
     }

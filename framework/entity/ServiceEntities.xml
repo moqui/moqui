@@ -40,7 +40,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="triggerName" type="text-medium"/>
         <field name="jobGroup" type="text-medium"/>
         <field name="jobName" type="text-medium"/>
-        <field name="fireIntanceId" type="text-medium"/>
+        <field name="fireInstanceId" type="text-medium"/>
         <field name="message" type="text-medium"/>
         <field name="paramString" type="text-long"/>
         <field name="triggerInstructionCode" type="text-short"/>
@@ -184,5 +184,124 @@ This Work includes contributions authored by David E. Jones, not as a
     <entity entity-name="QrtzLocks" package-name="moqui.service.quartz">
         <field name="schedName" type="text-medium" is-pk="true"/>
         <field name="lockName" type="text-short" is-pk="true"/>
+    </entity>
+
+    <!-- ========================================================= -->
+    <!-- moqui.service.message -->
+    <!-- ========================================================= -->
+
+    <entity entity-name="SystemMessage" package-name="moqui.service.message">
+        <field name="systemMessageId" type="id" is-pk="true"/>
+        <field name="systemMessageTypeId" type="id"/>
+        <field name="statusId" type="id" enable-audit-log="true"/>
+        <field name="isOutgoing" type="text-indicator"/>
+        <field name="initDate" type="date-time"><description>For incoming the received date, for outgoing the produced date.</description></field>
+        <field name="processedDate" type="date-time"><description>For incoming the consumed date, for outgoing the sent date.</description></field>
+        <field name="lastAttemptDate" type="date-time"/>
+        <field name="failCount" type="number-integer"/>
+        <field name="messageText" type="text-very-long"/>
+        <field name="remoteMessageId" type="text-medium"/>
+        <field name="systemMessageRemoteId" type="id"/>
+        <!-- the follow are useful for many types of messages, but come specifically from the OAGIS specification -->
+        <field name="logicalId" type="text-medium"/>
+        <field name="component" type="text-medium"/>
+        <field name="task" type="text-medium"/>
+        <field name="referenceId" type="text-medium"/>
+        <field name="authId" type="text-medium"/>
+        <field name="bsrVerb" type="text-medium"/>
+        <field name="bsrNoun" type="text-medium"/>
+        <field name="bsrRevision" type="text-medium"/>
+        <relationship type="one" related-entity-name="moqui.service.message.SystemMessageType"/>
+        <relationship type="one" title="SystemMessage" related-entity-name="moqui.basic.StatusItem"/>
+        <relationship type="one" related-entity-name="moqui.service.message.SystemMessageRemote"/>
+        <seed-data>
+            <moqui.basic.StatusType description="System Message" statusTypeId="SystemMessage"/>
+            <!-- Is this needed? <moqui.basic.StatusItem description="Triggered" sequenceNum="1" statusId="SmsgTriggered" statusTypeId="SystemMessage"/> -->
+
+            <moqui.basic.StatusItem description="Produced" sequenceNum="10" statusId="SmsgProduced" statusTypeId="SystemMessage"/>
+            <moqui.basic.StatusItem description="Sending" sequenceNum="11" statusId="SmsgSending" statusTypeId="SystemMessage"/>
+            <moqui.basic.StatusItem description="Sent" sequenceNum="12" statusId="SmsgSent" statusTypeId="SystemMessage"/>
+
+            <moqui.basic.StatusItem description="Received" sequenceNum="20" statusId="SmsgReceived" statusTypeId="SystemMessage"/>
+            <moqui.basic.StatusItem description="Consuming" sequenceNum="21" statusId="SmsgConsuming" statusTypeId="SystemMessage"/>
+            <moqui.basic.StatusItem description="Consumed" sequenceNum="22" statusId="SmsgConsumed" statusTypeId="SystemMessage"/>
+
+            <!-- Confirmation sent -->
+            <moqui.basic.StatusItem description="Confirmed" sequenceNum="90" statusId="SmsgConfirmed" statusTypeId="SystemMessage"/>
+            <moqui.basic.StatusItem description="Cancelled" sequenceNum="98" statusId="SmsgCancelled" statusTypeId="SystemMessage"/>
+            <!-- Error, generally after retry limit -->
+            <moqui.basic.StatusItem description="Error" sequenceNum="99" statusId="SmsgError" statusTypeId="SystemMessage"/>
+
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgProduced" toStatusId="SmsgSending" transitionName="Sending"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgSending" toStatusId="SmsgSent" transitionName="Send"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgSending" toStatusId="SmsgProduced" transitionName="Back to Produced"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgProduced" toStatusId="SmsgSent" transitionName="Send"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgSent" toStatusId="SmsgConfirmed" transitionName="Confirm"/>
+
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgReceived" toStatusId="SmsgConsuming" transitionName="Consuming"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgConsuming" toStatusId="SmsgConsumed" transitionName="Consume"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgConsuming" toStatusId="SmsgReceived" transitionName="Back to Received"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgReceived" toStatusId="SmsgConsumed" transitionName="Consume"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgConsumed" toStatusId="SmsgConfirmed" transitionName="Confirm"/>
+
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgProduced" toStatusId="SmsgError" transitionName="Error"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgError" toStatusId="SmsgProduced" transitionName="Back to Produced"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgError" toStatusId="SmsgSending" transitionName="Sending"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgError" toStatusId="SmsgSent" transitionName="Send"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgSent" toStatusId="SmsgError" transitionName="Error"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgReceived" toStatusId="SmsgError" transitionName="Error"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgError" toStatusId="SmsgReceived" transitionName="Back to Received"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgError" toStatusId="SmsgConsuming" transitionName="Consuming"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgError" toStatusId="SmsgConsumed" transitionName="Consume"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgConsumed" toStatusId="SmsgError" transitionName="Error"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgConfirmed" toStatusId="SmsgError" transitionName="Error"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgError" toStatusId="SmsgError" transitionName="Error"/>
+
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgProduced" toStatusId="SmsgCancelled" transitionName="Cancel"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgSending" toStatusId="SmsgCancelled" transitionName="Cancel"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgSent" toStatusId="SmsgCancelled" transitionName="Cancel"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgReceived" toStatusId="SmsgCancelled" transitionName="Cancel"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgConsuming" toStatusId="SmsgCancelled" transitionName="Cancel"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgConsumed" toStatusId="SmsgCancelled" transitionName="Cancel"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgError" toStatusId="SmsgCancelled" transitionName="Cancel"/>
+
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgCancelled" toStatusId="SmsgProduced" transitionName="Back to Produced"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgCancelled" toStatusId="SmsgReceived" transitionName="Back to Received"/>
+        </seed-data>
+    </entity>
+    <entity entity-name="SystemMessageType" package-name="moqui.service.message">
+        <field name="systemMessageTypeId" type="id" is-pk="true"/>
+        <field name="description" type="text-medium"/>
+        <field name="produceServiceName" type="text-medium"><description>Not used in automated processing, but useful
+            for documentation and tools in some cases.</description></field>
+        <field name="consumeServiceName" type="text-medium"><description>The service to call after a message is
+            received to consume it. Should implement the org.moqui.impl.SystemMessageServices.consume#SystemMessage
+            interface (just a systemMessageId in-parameter). Used by the receive#SystemMessage service.</description></field>
+        <field name="sendServiceName" type="text-medium"><description>The service to call to send queued messages.
+            Should implement the org.moqui.impl.SystemMessageServices.send#SystemMessage interface (just a
+            systemMessageId in-parameter and remoteMessageId out-parameter). Used by the send#QueuedSystemMessage service,
+            and for that service must be specified or will result in an error.</description></field>
+        <field name="receiveServiceName" type="text-medium"><description>When applicable, used by the send service as
+            the service on the remote server to call to receive the message.</description></field>
+    </entity>
+    <entity entity-name="SystemMessageRemote" package-name="moqui.service.message">
+        <field name="systemMessageRemoteId" type="id" is-pk="true"/>
+        <field name="description" type="text-medium"/>
+        <field name="sendUrl" type="text-medium"/>
+        <!-- potential future use, restrict receive message: <field name="authorizedIpAddresses" type="text-long"/> -->
+        <field name="sendServiceName" type="text-medium"><description>Override for SystemMessageType.sendServiceName</description></field>
+        <field name="username" type="text-medium"><description>This user needs permission to run the remote service or
+            whatever on the remote system receives the message. For the the Moqui receive#SystemMessage service the user
+            should be in a group that has authz for the SystemMessageServices ArtifactGroup (see SecurityTypeData.xml).</description></field>
+        <field name="password" type="text-short" encrypt="true"/>
+        <field name="tenantId" type="text-short"/>
+    </entity>
+    <entity entity-name="SystemMessageError" package-name="moqui.service.message">
+        <field name="systemMessageId" type="id" is-pk="true"/>
+        <field name="errorDate" type="date-time" is-pk="true"/>
+        <field name="attemptedStatusId" type="id"/>
+        <!-- maybe for future use: <field name="reasonCode" type="text-short"/> -->
+        <field name="errorText" type="text-very-long"/>
+        <relationship type="one" related-entity-name="moqui.service.message.SystemMessage"/>
     </entity>
 </entities>

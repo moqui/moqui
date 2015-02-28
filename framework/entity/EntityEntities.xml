@@ -28,6 +28,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="changedDate" type="date-time"/>
         <field name="changedByUserId" type="text-medium"/>
         <field name="changedInVisitId" type="text-medium"/>
+        <field name="artifactStack" type="text-long"/>
         <index name="ENTAUDLOG_FLD1PK">
             <index-field name="changedEntityName"/><index-field name="changedFieldName"/><index-field name="pkPrimaryValue"/>
         </index>

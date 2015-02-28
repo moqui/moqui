@@ -54,6 +54,8 @@ abstract class EntityValueBase implements EntityValue {
     /* Original DB Value Map: not used unless the value has been modified from its original state from the DB */
     private Map<String, Object> dbValueMap = null
     private Map<String, Object> internalPkMap = null
+    /* Used to keep old field values such as before an update or other sync with DB; mostly useful for EECA rules */
+    private Map<String, Object> oldDbValueMap = null
 
     protected boolean modified = false
     protected boolean pkModified = false
@@ -84,9 +86,11 @@ abstract class EntityValueBase implements EntityValue {
     // NOTE: this is no longer protected so that external add-on code can set original values from a datasource
     Map<String, Object> getValueMap() { return valueMap }
     protected Map<String, Object> getDbValueMap() { return dbValueMap }
-    protected void setDbValueMap(Map<String, Object> map) { dbValueMap = map }
+    protected void setDbValueMap(Map<String, Object> map) { dbValueMap = map; isFromDb = true }
+    protected Map<String, Object> getOldDbValueMap() { return oldDbValueMap }
 
-    void setSyncedWithDb() { dbValueMap = null; modified = false; isFromDb = true }
+    void setSyncedWithDb() { oldDbValueMap = dbValueMap; dbValueMap = null; modified = false; isFromDb = true }
+    boolean getIsFromDb() { return isFromDb }
 
     @Override
     String getEntityName() { return entityName }
@@ -181,6 +185,16 @@ abstract class EntityValueBase implements EntityValue {
 
         return valueMap.get(name)
     }
+
+    @Override
+    Object getOriginalDbValue(String name) {
+        return (dbValueMap && dbValueMap.containsKey(name)) ? dbValueMap.get(name) : valueMap.get(name)
+    }
+    Object getOldDbValue(String name) {
+        if (oldDbValueMap && oldDbValueMap.containsKey(name)) return oldDbValueMap.get(name)
+        return getOriginalDbValue(name)
+    }
+
 
     @Override
     boolean containsPrimaryKey() { return this.getEntityDefinition().containsPrimaryKey(valueMap) }
@@ -415,7 +429,7 @@ abstract class EntityValueBase implements EntityValue {
         addThreeFieldPkValues(pksValueMap)
 
         for (Node fieldNode in ed.getFieldNodes(true, true, true)) {
-            if (fieldNode."@enable-audit-log" == "true" || (isUpdate && fieldNode."@enable-audit-log" == "update")) {
+            if (ed.getFieldAuditLog(fieldNode) == "true" || (isUpdate && ed.getFieldAuditLog(fieldNode) == "update")) {
                 String fieldName = fieldNode."@name"
 
                 // is there a new value? if not continue
@@ -431,9 +445,12 @@ abstract class EntityValueBase implements EntityValue {
 
                 // don't skip for this, if a field was reset then we want to record that: if (!value) continue
 
+                String stackNameString = ec.artifactExecution.getStackNameString()
+                if (stackNameString.length() > 4000) stackNameString = stackNameString.substring(0, 4000)
                 Map<String, Object> parms = (Map<String, Object>) [changedEntityName:getEntityName(),
                         changedFieldName:fieldName, newValueText:(value as String), changedDate:nowTimestamp,
-                        changedByUserId:ec.getUser().getUserId(), changedInVisitId:ec.getUser().getVisitId()]
+                        changedByUserId:ec.getUser().getUserId(), changedInVisitId:ec.getUser().getVisitId(),
+                        artifactStack:stackNameString]
                 parms.oldValueText = oldValue
                 parms.putAll(pksValueMap)
 
@@ -463,11 +480,6 @@ abstract class EntityValueBase implements EntityValue {
         if (firstPkField) parms.pkPrimaryValue = get(firstPkField)
         if (secondPkField) parms.pkSecondaryValue = get(secondPkField)
         if (pkText) parms.pkRestCombinedValue = pkText
-    }
-
-    @Override
-    Object getOriginalDbValue(String name) {
-        return (dbValueMap && dbValueMap.containsKey(name)) ? dbValueMap.get(name) : valueMap.get(name)
     }
 
     @Override
@@ -839,6 +851,7 @@ abstract class EntityValueBase implements EntityValue {
     public Object clone() { return this.cloneValue() }
 
     abstract EntityValue cloneValue();
+    abstract EntityValue cloneDbValue(boolean getOld);
 
     // =========== The CrUD and abstract methods ===========
 

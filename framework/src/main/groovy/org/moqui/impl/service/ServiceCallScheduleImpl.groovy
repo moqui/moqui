@@ -88,6 +88,8 @@ class ServiceCallScheduleImpl extends ServiceCallImpl implements ServiceCallSche
     void call() {
         // TODO maxRetry: any way to set and then track the number of retries?
 
+        if (!jobName) jobName = "${this.verb}${this.noun ? '_' + this.noun : ''}"
+
         ExecutionContextImpl eci = sfi.getEcfi().getEci()
 
         // Before scheduling the service check a few basic things so they show up sooner than later:
@@ -120,6 +122,7 @@ class ServiceCallScheduleImpl extends ServiceCallImpl implements ServiceCallSche
         } else {
             JobBuilder jobBuilder = JobBuilder.newJob(ServiceQuartzJob.class)
                     .withIdentity(jobName, serviceName)
+                    .usingJobData(new JobDataMap(parameters))
                     .requestRecovery().storeDurably(jobName ? true : false)
             job = jobBuilder.build()
         }
@@ -127,7 +130,6 @@ class ServiceCallScheduleImpl extends ServiceCallImpl implements ServiceCallSche
         TriggerBuilder tb = TriggerBuilder.newTrigger()
                 .withIdentity(jobName, serviceName) // for now JobKey = TriggerKey, may want something different...
                 .withPriority(3)
-                .usingJobData(new JobDataMap(parameters))
                 .forJob(job)
         if (startTime) tb.startAt(new Date(startTime))
         if (endTime) tb.endAt(new Date(endTime))

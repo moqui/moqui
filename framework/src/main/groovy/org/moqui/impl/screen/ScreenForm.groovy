@@ -517,10 +517,10 @@ class ScreenForm {
                     } else if (spType.endsWith("Timestamp") || spType == "java.util.Date") {
                         subFieldNode.appendNode("date-time", [type:"date-time", format:parameterNode."@format"])
                     } else {
-                        if (efType == "text-very-long") {
+                        if (efType == "text-long" || efType == "text-very-long") {
                             subFieldNode.appendNode("text-area")
                         } else {
-                            subFieldNode.appendNode("text-line")
+                            subFieldNode.appendNode("text-line", ['default-value':parameterNode."@default-value"])
                         }
                     }
                 }
@@ -618,7 +618,7 @@ class ScreenForm {
         Map oneRelKeyMap = null
         for (Node rn in ed.entityNode."relationship") {
             Map km = ed.getRelationshipExpandedKeyMap(rn)
-            if (km.size() == 1 && km.containsKey(fieldName) && rn."@type" != "many" && rn."@is-one-reverse" != "true") {
+            if (km.size() == 1 && km.containsKey(fieldName) && rn."@type" == "one" && rn."@is-one-reverse" != "true") {
                 oneRelNode = rn
                 oneRelKeyMap = km
             }
@@ -645,7 +645,7 @@ class ScreenForm {
                 if (efType.startsWith("date") || efType.startsWith("time")) {
                     Node dateTimeNode = subFieldNode.appendNode("date-time", [type:efType])
                     if (fieldName == "fromDate") dateTimeNode.attributes().put("default-value", "\${ec.l10n.format(ec.user.nowTimestamp, 'yyyy-MM-dd HH:mm')}")
-                } else if (efType == "text-very-long") {
+                } else if (efType == "text-long" || efType == "text-very-long") {
                     subFieldNode.appendNode("text-area")
                 } else if (efType == "text-indicator") {
                     Node dropDownNode = subFieldNode.appendNode("drop-down", ["allow-empty":"true"])

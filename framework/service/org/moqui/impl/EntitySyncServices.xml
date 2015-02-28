@@ -107,7 +107,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <set field="inMap" from="remoteInMap + getInMap"/>
                 <set field="serviceName" value="org.moqui.impl.EntitySyncServices.get#EntitySyncData"/>
                 <script>
-                    Map outMap = org.moqui.impl.service.runner.RemoteJsonRpcServiceRunner.runJsonService(null, entitySync.targetServerUrl, serviceName, inMap, ec)
+                    Map outMap = ec.service.callJsonRpc(entitySync.targetServerUrl, serviceName, inMap)
                     if (outMap) context.putAll(outMap)
                 </script>
 
@@ -132,7 +132,7 @@ This Work includes contributions authored by David E. Jones, not as a
                         <set field="serviceName" value="org.moqui.impl.EntitySyncServices.put#EntitySyncData"/>
                         <!-- <log level="warn" message="======= internalRun#EntitySync remote call inMap=${inMap}"/> -->
                         <script>
-                            Map outMap = org.moqui.impl.service.runner.RemoteJsonRpcServiceRunner.runJsonService(null, entitySync.targetServerUrl, serviceName, inMap, ec)
+                            Map outMap = ec.service.callJsonRpc(entitySync.targetServerUrl, serviceName, inMap)
                             if (outMap) context.putAll(outMap)
                         </script>
 
