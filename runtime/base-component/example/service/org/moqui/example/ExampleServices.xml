@@ -132,7 +132,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <in-parameters>
             <parameter name="exampleId" required="true"/>
             <parameter name="systemMessageRemoteId" default-value="Example1Local"/>
-            <parameter name="sendNow" type="Boolean" default="true"/>
+            <parameter name="sendNow" type="Boolean" default-value="true"/>
         </in-parameters>
         <out-parameters><parameter name="systemMessageId"/></out-parameters>
         <actions>
