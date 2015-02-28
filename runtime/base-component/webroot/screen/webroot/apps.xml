@@ -24,8 +24,10 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <subscreens default-item="AppList">
         <!-- refer to the various app roots here -->
+        <subscreens-item name="system" location="component://tools/screen/System.xml"
+                menu-title="System" menu-index="98"/>
         <subscreens-item name="tools" location="component://tools/screen/Tools.xml"
-                menu-title="Tools" menu-index="9"/>
+                menu-title="Tools" menu-index="99"/>
     </subscreens>
 
     <widgets>
