@@ -61,7 +61,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <link url="${linkUrl}" text="${dataDocumentLink.label}" link-type="anchor" url-type="plain"/>
             </default-field></field>
             <field name="viewDocument"><default-field>
-                <dynamic-dialog id="ViewDocument" button-text="View Document" transition="viewDocument">
+                <dynamic-dialog id="ViewDocument" button-text="View Document" transition="viewDocument" width="800">
                     <parameter name="_index"/><parameter name="_type"/><parameter name="_id"/>
                 </dynamic-dialog>
             </default-field></field>
