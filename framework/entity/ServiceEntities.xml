@@ -272,7 +272,8 @@ This Work includes contributions authored by David E. Jones, not as a
     <entity entity-name="SystemMessageType" package-name="moqui.service.message">
         <field name="systemMessageTypeId" type="id" is-pk="true"/>
         <field name="description" type="text-medium"/>
-        <!-- Needed? <field name="produceServiceName" type="text-medium"/> -->
+        <field name="produceServiceName" type="text-medium"><description>Not used in automated processing, but useful
+            for documentation and tools in some cases.</description></field>
         <field name="consumeServiceName" type="text-medium"><description>The service to call after a message is
             received to consume it. Should implement the org.moqui.impl.SystemMessageServices.consume#SystemMessage
             interface (just a systemMessageId in-parameter). Used by the receive#SystemMessage service.</description></field>
@@ -285,6 +286,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
     <entity entity-name="SystemMessageRemote" package-name="moqui.service.message">
         <field name="systemMessageRemoteId" type="id" is-pk="true"/>
+        <field name="description" type="text-medium"/>
         <field name="sendUrl" type="text-medium"/>
         <!-- potential future use, restrict receive message: <field name="authorizedIpAddresses" type="text-long"/> -->
         <field name="sendServiceName" type="text-medium"><description>Override for SystemMessageType.sendServiceName</description></field>
