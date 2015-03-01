@@ -14,11 +14,19 @@ This Work includes contributions authored by David E. Jones, not as a
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd"
         default-menu-include="false">
 
+    <parameter name="isOutgoing"/>
+    <parameter name="statusId"/>
+
     <transition name="messageDetail"><default-response url="../SystemMessageDetail"/></transition>
 
     <transition name="sendAllMessages"><service-call name="org.moqui.impl.SystemMessageServices.send#AllProducedSystemMessages"/>
         <default-response url="."/></transition>
     <transition name="consumeAllMessages"><service-call name="org.moqui.impl.SystemMessageServices.consume#AllReceivedSystemMessages"/>
+        <default-response url="."/></transition>
+
+    <transition name="sendMessage"><service-call name="org.moqui.impl.SystemMessageServices.send#ProducedSystemMessage"/>
+        <default-response url="."/></transition>
+    <transition name="consumeMessage"><service-call name="org.moqui.impl.SystemMessageServices.consume#ReceivedSystemMessage"/>
         <default-response url="."/></transition>
 
     <actions>
@@ -133,7 +141,15 @@ This Work includes contributions authored by David E. Jones, not as a
                         text="${description?:''} [${systemMessageRemoteId}]"/></default-field>
             </field>
 
-            <field name="find"><header-field title="Find"><submit/></header-field></field>
+            <field name="find">
+                <header-field title="Find"><submit/></header-field>
+                <conditional-field condition="isOutgoing == 'Y' &amp;&amp; (statusId == 'SmsgProduced' || statusId == 'SmsgError')">
+                    <link url="sendMessage" text="Send" parameter-map="[systemMessageId:systemMessageId, isOutgoing:isOutgoing, statusId:statusId]"/>
+                </conditional-field>
+                <conditional-field condition="isOutgoing == 'N' &amp;&amp; (statusId == 'SmsgReceived' || statusId == 'SmsgError')">
+                    <link url="consumeMessage" text="Consume" parameter-map="[systemMessageId:systemMessageId, isOutgoing:isOutgoing, statusId:statusId]"/>
+                </conditional-field>
+            </field>
             
             <form-list-column><field-ref name="systemMessageId"/><field-ref name="remoteMessageId"/></form-list-column>
             <form-list-column><field-ref name="statusId"/><field-ref name="isOutgoing"/></form-list-column>
