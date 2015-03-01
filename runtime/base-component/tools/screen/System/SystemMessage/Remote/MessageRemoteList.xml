@@ -24,7 +24,18 @@ This Work includes contributions authored by David E. Jones, not as a
         </entity-find>
     </actions>
     <widgets>
-        <form-list name="SystemMessageList" list="smrList" skip-form="true">
+        <container-dialog id="CreateRemoteDialog" button-text="Create Message Remote" width="800">
+            <form-single name="CreateMessageRemoteForm" transition="createMessageRemote">
+                <field name="description"><default-field><text-line size="40"/></default-field></field>
+                <field name="sendUrl"><default-field><text-line size="80"/></default-field></field>
+                <field name="sendServiceName"><default-field><text-line size="80"/></default-field></field>
+                <field name="username"><default-field><text-line size="30"/></default-field></field>
+                <field name="password"><default-field><text-line size="30"/></default-field></field>
+                <field name="tenantId"><default-field><text-line size="30"/></default-field></field>
+                <field name="submitButton"><default-field title="Create"><submit/></default-field></field>
+            </form-single>
+        </container-dialog>
+        <form-list name="SystemMessageRemoteList" list="smrList" skip-form="true">
             <field name="systemMessageRemoteId">
                 <default-field title="Remote ID"><link text="${systemMessageRemoteId}" url="remoteDetail"/></default-field>
             </field>

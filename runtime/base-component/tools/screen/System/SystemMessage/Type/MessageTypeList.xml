@@ -24,7 +24,15 @@ This Work includes contributions authored by David E. Jones, not as a
         </entity-find>
     </actions>
     <widgets>
-        <form-list name="SystemMessageList" list="smtList" skip-form="true">
+        <container-dialog id="CreateTypeDialog" button-text="Create Message Type" width="800">
+            <form-single name="CreateMessageTypeForm" transition="createMessageType">
+                <field name="description"><default-field><text-line size="40"/></default-field></field>
+                <field name="sendServiceName"><default-field><text-line size="80"/></default-field></field>
+                <field name="consumeServiceName"><default-field><text-line size="80"/></default-field></field>
+                <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
+            </form-single>
+        </container-dialog>
+        <form-list name="SystemMessageTypeList" list="smtList" skip-form="true">
             <field name="systemMessageTypeId">
                 <default-field title="Type ID"><link text="${systemMessageTypeId}" url="typeDetail"/></default-field>
             </field>

@@ -1796,7 +1796,7 @@ Features considered, but may not to be included in 1.x series
   x export screen (design similar to entity export screen; select documents, from/thru dates, file or browser output
   x DataDocumentRelationshipAlias (need shorter name) for more flexible output: dataDocumentId, relationshipName, documentAlias
 - Data Search
-  - different ElasticSearch instances or indexes per Tenant
+  x different ElasticSearch instances or indexes per Tenant
   x use elasticsearch.org
   x get data from Data Feed, Data Search index is a feed receive service
   x receive#DataFeed interface service implementation
@@ -1823,26 +1823,9 @@ Features considered, but may not to be included in 1.x series
     - Use this in HiveMind to send notifications of project, task, and wiki changes (maybe?)
 
 - System-System Message
-  x System-System Message Sending
-    x persist outgoing message
-    x status dates (sent, received/confirmed)
-    x retry on fail (sync or async from confirmation message)
-    x keep status in separate transaction
   - System-System Message Receiving
-    x persist incoming message
     - identify/link duplicate/retry messages (how?)
-    x retry processing on fail (manual or automatic - number of retries and/or time delay before sending fail confirmation)
     n send async success/fail confirmation (maybe best left to consume service)
-    x keep status in separate transaction
   - Camel endpoint for sending and receiving (custom, or use service facade endpoint?)
   - Useful for OAGIS and many other system-to-system messages; idea similar to OAGIS services and entities in OFBiz
-  - Tools app UI
-    x Find SystemMessage screen
-    - SystemMessageDetail screen with
-      x button to reset from error (change status, zero out failCount)
-      x button to cancel
-      x button to manually send/consume as applicable
-      x message info, msg text edit
-      - message type info/edit
-      - message remote info/edit
-      x error list
+  - Message purge after time period service and schedule for it
