@@ -1717,6 +1717,8 @@ Features considered, but may not to be included in 1.x series
   - LiquiBase integration, entity.change-set element
   x EntitySync tool
   - Add view log, like current change audit log (AuditLogView?)
+  - Improve entity cache auto-clear performance using ehcache search
+    http://ehcache.org/generated/2.9.0/html/ehc-all/#page/Ehcache_Documentation_Set%2Fto-srch_searching_a_cache.html%23
 - Artifact Execution Facade
   - Call ArtifactExecutionFacade.push() (to track, check authz, etc) for
     other types of artifacts (if/as determined to be helpful), including:
