@@ -16,11 +16,33 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <parameter name="systemMessageId" required="true"/>
 
+    <transition name="sendMessage"><service-call name="org.moqui.impl.SystemMessageServices.send#ProducedSystemMessage"/>
+        <default-response url="."/></transition>
+    <transition name="consumeMessage"><service-call name="org.moqui.impl.SystemMessageServices.consume#ReceivedSystemMessage"/>
+        <default-response url="."/></transition>
+
+    <transition name="updateMessage"><service-call name="update#moqui.service.message.SystemMessage"/>
+        <default-response url="."/></transition>
+
+    <transition name="resetError"><service-call name="org.moqui.impl.SystemMessageServices.reset#SystemMessageInError"/>
+        <default-response url="."/></transition>
+
     <actions>
         <entity-find-one entity-name="moqui.service.message.SystemMessage" value-field="systemMessage"/>
     </actions>
     <widgets>
         <dynamic-dialog id="EmtDialog" button-text="Edit Message Text" transition="EditMessageText" width="900"/>
+
+        <section name="SendSection"><condition><expression>systemMessage.isOutgoing == 'Y' &amp;&amp; (systemMessage.statusId == 'SmsgProduced' || systemMessage.statusId == 'SmsgError')</expression></condition>
+            <widgets><link url="sendMessage" text="Send Message" parameter-map="[systemMessageId:systemMessageId]"/></widgets></section>
+        <section name="ConsumeSection"><condition><expression>systemMessage.isOutgoing == 'N' &amp;&amp; (systemMessage.statusId == 'SmsgReceived' || systemMessage.statusId == 'SmsgError')</expression></condition>
+            <widgets><link url="consumeMessage" text="Consume Message" parameter-map="[systemMessageId:systemMessageId]"/></widgets></section>
+        <section name="CancelSection"><condition><expression>systemMessage.statusId in ['SmsgProduced', 'SmsgReceived', 'SmsgError']</expression></condition>
+            <widgets><link url="updateMessage" text="Cancel Message" parameter-map="[systemMessageId:systemMessageId, statusId:'SmsgCancelled']"/></widgets></section>
+
+        <section name="ResetErrorSection"><condition><expression>systemMessage.statusId == 'SmsgError'</expression></condition>
+            <widgets><link url="resetError" text="Reset from Error" parameter-map="[systemMessageId:systemMessageId]"/></widgets></section>
+
 
         <form-single name="SystemMessageForm" map="systemMessage">
             <field name="systemMessageId"><default-field title="ID"><display/></default-field></field>

@@ -278,4 +278,14 @@ This Work includes contributions authored by David E. Jones, not as a
             </iterate>
         </actions>
     </service>
+
+    <service verb="reset" noun="SystemMessageInError">
+        <in-parameters><parameter name="systemMessageId" required="true"/></in-parameters>
+        <actions>
+            <entity-find-one entity-name="moqui.service.message.SystemMessage" value-field="systemMessage"/>
+            <if condition="systemMessage.statusId != 'SmsgError'"><return/></if>
+            <service-call name="update#moqui.service.message.SystemMessage" in-map="[systemMessageId:systemMessageId,
+                    statusId:(systemMessage.isOutgoing == 'Y' ? 'SmsgProduced' : 'SmsgReceived'), failCount:0]"/>
+        </actions>
+    </service>
 </services>

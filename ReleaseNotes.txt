@@ -1839,9 +1839,9 @@ Features considered, but may not to be included in 1.x series
   - Tools app UI
     x Find SystemMessage screen
     - SystemMessageDetail screen with
-      - button to reset from error (change status, zero out failCount)
-      - button to cancel
-      - button to manually send/consume as applicable
+      x button to reset from error (change status, zero out failCount)
+      x button to cancel
+      x button to manually send/consume as applicable
       x message info, msg text edit
       - message type info/edit
       - message remote info/edit
