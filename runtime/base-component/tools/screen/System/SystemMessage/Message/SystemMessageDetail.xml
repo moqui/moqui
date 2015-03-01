@@ -15,6 +15,9 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <parameter name="systemMessageId" required="true"/>
 
+    <transition name="remoteDetail"><default-response url="../../Remote/MessageRemoteDetail"/></transition>
+    <transition name="typeDetail"><default-response url="../../Type/MessageTypeDetail"/></transition>
+
     <transition name="sendMessage"><service-call name="org.moqui.impl.SystemMessageServices.send#ProducedSystemMessage"/>
         <default-response url="."/></transition>
     <transition name="consumeMessage"><service-call name="org.moqui.impl.SystemMessageServices.consume#ReceivedSystemMessage"/>
@@ -58,13 +61,16 @@ This Work includes contributions authored by David E. Jones, not as a
                     <field name="failCount"><default-field><display/></default-field></field>
 
 
-                    <field name="systemMessageTypeId">
-                        <default-field title="Type"><display-entity entity-name="moqui.service.message.SystemMessageType"
-                                text="${description?:''} [${systemMessageTypeId}]"/></default-field>
+                    <field name="systemMessageTypeId"><default-field title="Type">
+                        <display-entity entity-name="moqui.service.message.SystemMessageType" text="${description?:''} [${systemMessageTypeId}]"/>
+                        <link url="typeDetail" text="Edit" parameter-map="[systemMessageTypeId:systemMessage.systemMessageTypeId]"/>
+                    </default-field>
                     </field>
-                    <field name="systemMessageRemoteId">
-                        <default-field title="Remote"><display-entity entity-name="moqui.service.message.SystemMessageRemote"
-                                text="${description?:''} [${systemMessageRemoteId}]"/></default-field>
+                    <field name="systemMessageRemoteId"><default-field title="Remote">
+                        <display-entity entity-name="moqui.service.message.SystemMessageRemote" text="${description?:''} [${systemMessageRemoteId}]"/>
+                        <link url="remoteDetail" text="Edit" parameter-map="[systemMessageRemoteId:systemMessage.systemMessageRemoteId]"
+                                condition="systemMessage.systemMessageRemoteId"/>
+                    </default-field>
                     </field>
                 </form-single>
             </row-col>
