@@ -1845,4 +1845,4 @@ Features considered, but may not to be included in 1.x series
       x message info, msg text edit
       - message type info/edit
       - message remote info/edit
-      - error list
+      x error list
