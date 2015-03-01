@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This Work is in the public domain and is provided on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+including, without limitation, any warranties or conditions of TITLE,
+NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+You are solely responsible for determining the appropriateness of using
+this Work and assume any risks associated with your use of this Work.
+
+This Work includes contributions authored by David E. Jones, not as a
+"work for hire", who hereby disclaims any copyright to the same.
+-->
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd"
+        default-menu-include="false">
+
+    <transition name="remoteDetail"><default-response url="../MessageRemoteDetail"/></transition>
+    <transition name="createMessageRemote"><service-call name="create#moqui.service.message.SystemMessageRemote"/>
+        <default-response url="."/></transition>
+
+    <actions>
+        <entity-find entity-name="moqui.service.message.SystemMessageRemote" list="smrList">
+            <search-form-inputs default-order-by="description,systemMessageRemoteId"/>
+        </entity-find>
+    </actions>
+    <widgets>
+        <form-list name="SystemMessageList" list="smrList" skip-form="true">
+            <field name="systemMessageRemoteId">
+                <default-field title="Remote ID"><link text="${systemMessageRemoteId}" url="remoteDetail"/></default-field>
+            </field>
+            <field name="description">
+                <header-field show-order-by="true"><text-find hide-options="true"/></header-field>
+                <default-field><display/></default-field>
+            </field>
+            <field name="sendUrl">
+                <header-field show-order-by="true"><text-find hide-options="true"/></header-field>
+                <default-field><display/></default-field>
+            </field>
+            <field name="username">
+                <header-field show-order-by="true"><text-find hide-options="true"/></header-field>
+                <default-field><display/></default-field>
+            </field>
+            <field name="tenantId">
+                <header-field show-order-by="true"><text-find hide-options="true"/></header-field>
+                <default-field><display/></default-field>
+            </field>
+        </form-list>
+    </widgets>
+</screen>
