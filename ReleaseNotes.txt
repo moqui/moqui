@@ -1837,12 +1837,12 @@ Features considered, but may not to be included in 1.x series
   - Camel endpoint for sending and receiving (custom, or use service facade endpoint?)
   - Useful for OAGIS and many other system-to-system messages; idea similar to OAGIS services and entities in OFBiz
   - Tools app UI
-    - Find SystemMessage screen
+    x Find SystemMessage screen
     - SystemMessageDetail screen with
       - button to reset from error (change status, zero out failCount)
       - button to cancel
       - button to manually send/consume as applicable
-      - message info, msg test edit
+      x message info, msg text edit
       - message type info/edit
       - message remote info/edit
       - error list
