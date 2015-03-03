@@ -34,6 +34,13 @@ This Work includes contributions authored by David E. Jones, not as a
     <transition name="deleteArtifactAuthz"><service-call name="delete#moqui.security.ArtifactAuthz"/>
         <default-response url="."/></transition>
 
+    <transition name="createArtifactTarpit"><service-call name="create#moqui.security.ArtifactTarpit"/>
+        <default-response url="."/></transition>
+    <transition name="updateArtifactTarpit"><service-call name="update#moqui.security.ArtifactTarpit"/>
+        <default-response url="."/></transition>
+    <transition name="deleteArtifactTarpit"><service-call name="delete#moqui.security.ArtifactTarpit"/>
+        <default-response url="."/></transition>
+
     <actions>
         <entity-find-one entity-name="moqui.security.ArtifactGroup" value-field="artifactGroup"/>
 
@@ -41,6 +48,8 @@ This Work includes contributions authored by David E. Jones, not as a
             <econdition field-name="artifactGroupId"/><order-by field-name="preferenceKey"/></entity-find>
         <entity-find entity-name="moqui.security.ArtifactAuthz" list="authzList">
             <econdition field-name="artifactGroupId"/><order-by field-name="userGroupId,authzTypeEnumId"/></entity-find>
+        <entity-find entity-name="moqui.security.ArtifactTarpit" list="tarpitList">
+            <econdition field-name="artifactGroupId"/><order-by field-name="userGroupId"/></entity-find>
     </actions>
     <widgets>
         <form-single name="ArtifactGroupForm" map="artifactGroup" transition="updateArtifactGroup">
@@ -169,6 +178,46 @@ This Work includes contributions authored by David E. Jones, not as a
                     <field name="deleteLink"><default-field title="">
                         <link url="deleteArtifactAuthz" text="X" confirmation="Really Delete?"
                                 parameter-map="[artifactAuthzId:artifactAuthzId]"/>
+                    </default-field></field>
+                </form-list>
+            </box-body>
+        </container-box>
+
+        <container-box>
+            <box-header><label text="Tarpits (Use Velocity Limits)" type="h5"/></box-header>
+            <box-toolbar>
+                <container-dialog id="AddTarpitDialog" button-text="Add Tarpit">
+                    <form-single name="CreateArtifactTarpit" transition="createArtifactTarpit">
+                        <field name="artifactGroupId"><default-field><hidden/></default-field></field>
+                        <field name="userGroupId"><default-field title="User Group">
+                            <drop-down style="chosen-wider">
+                                <entity-options key="${userGroupId}" text="${description} [${userGroupId}]">
+                                    <entity-find entity-name="moqui.security.UserGroup">
+                                        <order-by field-name="description"/></entity-find>
+                                </entity-options>
+                            </drop-down>
+                        </default-field></field>
+                        <field name="maxHitsCount"><default-field><text-line size="8"/></default-field></field>
+                        <field name="maxHitsDuration"><default-field tooltip="In seconds"><text-line size="8"/></default-field></field>
+                        <field name="tarpitDuration"><default-field tooltip="In seconds"><text-line size="8"/></default-field></field>
+                        <field name="submitButton"><default-field title="Add"><submit/></default-field></field>
+                    </form-single>
+                </container-dialog>
+            </box-toolbar>
+            <box-body>
+                <form-list name="ArtifactTarpitList" list="tarpitList" transition="updateArtifactTarpit">
+                    <field name="artifactGroupId"><default-field><hidden/></default-field></field>
+                    <field name="userGroupId"><default-field title="User Group">
+                        <display-entity entity-name="moqui.security.UserGroup" text="${description ?: ''} - "/>
+                        <link url="userGroupDetail" text="${userGroupId}" link-type="anchor"/>
+                    </default-field></field>
+                    <field name="maxHitsCount"><default-field><text-line size="8"/></default-field></field>
+                    <field name="maxHitsDuration"><default-field tooltip="In seconds"><text-line size="8"/></default-field></field>
+                    <field name="tarpitDuration"><default-field tooltip="In seconds"><text-line size="8"/></default-field></field>
+                    <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
+                    <field name="deleteLink"><default-field title="">
+                        <link url="deleteArtifactTarpit" text="X" confirmation="Really Delete?"
+                                parameter-map="[artifactGroupId:artifactGroupId, userGroupId:userGroupId]"/>
                     </default-field></field>
                 </form-list>
             </box-body>
