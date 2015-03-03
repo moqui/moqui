@@ -15,6 +15,7 @@ This Work includes contributions authored by David E. Jones, not as a
         default-menu-title="Artifact Groups" default-menu-index="3">
     <subscreens default-item="ArtifactGroupList"/>
     <widgets>
-        <subscreens-panel id="ArtifactGroupPanel" type="tab"/>
+        <!-- no tabs for now <subscreens-panel id="ArtifactGroupPanel" type="tab"/> -->
+        <subscreens-active/>
     </widgets>
 </screen>
