@@ -17,6 +17,8 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <transition name="updateUserAccount"><service-call name="update#moqui.security.UserAccount"/>
         <default-response url="."/></transition>
+    <transition name="visitList"><default-response url="../../../Visit/VisitList"/>
+    </transition>
 
     <actions>
         <entity-find-one entity-name="moqui.security.UserAccount" value-field="userAccount"/>
@@ -28,7 +30,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </actions>
     <widgets>
         <!-- TODO: update password form? or better not to allow here? -->
-        <!-- TODO: link to VisitList for userId  -->
+        <link url="visitList" text="Visits" parameter-map="[userId:userId]"/>
         <form-single name="UserAccountForm" map="userAccount" transition="updateUserAccount">
             <field name="userId"><default-field><display/></default-field></field>
             <field name="username"><default-field><text-line size="20"/></default-field></field>
@@ -44,7 +46,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="disabledDateTime"><default-field><display/></default-field></field>
 
             <field name="locale"><default-field>
-                <drop-down allow-empty="true"><list-options list="localeStringList" key="${locale}" text="${name}"/></drop-down>
+                <drop-down allow-empty="true"><list-options list="localeStringList" key="${locale}" text="${locale} - ${name}"/></drop-down>
             </default-field></field>
             <field name="timeZone"><default-field>
                 <!-- TODO: limit time zones to tenant zones -->
