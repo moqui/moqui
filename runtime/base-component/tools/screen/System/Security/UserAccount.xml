@@ -15,6 +15,6 @@ This Work includes contributions authored by David E. Jones, not as a
         default-menu-title="Users">
     <subscreens default-item="UserAccountList"/>
     <widgets>
-        <subscreens-panel id="UserAccountPanel" type="tab"/>
+        <subscreens-active/>
     </widgets>
 </screen>

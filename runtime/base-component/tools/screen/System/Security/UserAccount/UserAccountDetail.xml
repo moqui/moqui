@@ -21,6 +21,12 @@ This Work includes contributions authored by David E. Jones, not as a
     <transition name="visitList"><default-response url="../../../Visit/VisitList"/></transition>
     <transition name="visitDetail"><default-response url="../../../Visit/VisitDetail"/></transition>
 
+    <transition name="userGroupDetail"><default-response url="../../UserGroup/UserGroupDetail"/></transition>
+    <transition name="createUserGroupMember"><service-call name="create#moqui.security.UserGroupMember"/>
+        <default-response url="."/></transition>
+    <transition name="updateUserGroupMember"><service-call name="update#moqui.security.UserGroupMember"/>
+        <default-response url="."/></transition>
+
     <actions>
         <entity-find-one entity-name="moqui.security.UserAccount" value-field="userAccount"/>
 
@@ -29,7 +35,9 @@ This Work includes contributions authored by David E. Jones, not as a
         <iterate list="Locale.getAvailableLocales()" entry="lcl"><script>localeStringList.add([locale:lcl.toString(), name:lcl.getDisplayName()])</script></iterate>
         <order-map-list list="localeStringList"><order-by field-name="name"/></order-map-list>
 
-        <set field="pageSize" from="pageSize" default-value="30"/>
+        <entity-find entity-name="moqui.security.UserGroupMember" list="ugmList">
+            <econdition field-name="userId"/><order-by field-name="userGroupId"/></entity-find>
+
         <entity-find entity-name="moqui.security.UserLoginHistory" list="historyList">
             <search-form-inputs default-order-by="-fromDate"/>
             <econdition field-name="userId"/></entity-find>
@@ -37,21 +45,21 @@ This Work includes contributions authored by David E. Jones, not as a
     <widgets>
         <!-- TODO: update password form? or better not to allow here? -->
         <container-row>
-            <row-col lg="6">
+            <row-col lg="5">
                 <link url="visitList" text="Visits" parameter-map="[userId:userId]"/>
                 <form-single name="UserAccountForm" map="userAccount" transition="updateUserAccount">
                     <field name="userId"><default-field><display/></default-field></field>
                     <field name="username"><default-field><text-line size="20"/></default-field></field>
-                    <field name="emailAddress"><default-field title="Email"><text-line size="60"/></default-field></field>
+                    <field name="emailAddress"><default-field title="Email"><text-line size="50"/></default-field></field>
                     <field name="userFullName"><default-field title="Full Name"><text-line size="40"/></default-field></field>
 
                     <field name="passwordSetDate"><default-field><display/></default-field></field>
                     <field name="requirePasswordChange"><default-field>
                         <drop-down allow-empty="true"><option key="Y"/><option key="N"/></drop-down></default-field></field>
-                    <field name="successiveFailedLogins"><default-field><display/></default-field></field>
+                    <field name="successiveFailedLogins"><default-field title="Failed Logins"><display/></default-field></field>
                     <field name="disabled"><default-field>
                         <drop-down allow-empty="true"><option key="Y"/><option key="N"/></drop-down></default-field></field>
-                    <field name="disabledDateTime"><default-field><display/></default-field></field>
+                    <field name="disabledDateTime"><default-field title="Disabled Date"><display/></default-field></field>
 
                     <field name="locale"><default-field>
                         <drop-down allow-empty="true"><list-options list="localeStringList" key="${locale}" text="${locale} - ${name}"/></drop-down>
@@ -64,7 +72,46 @@ This Work includes contributions authored by David E. Jones, not as a
                     <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
                 </form-single>
             </row-col>
-            <row-col lg="6">
+            <row-col lg="7">
+                <container-box>
+                    <box-header><label text="Groups" type="h5"/></box-header>
+                    <box-toolbar>
+                        <container-dialog id="AddGroupMemberDialog" button-text="Add Group">
+                            <form-single name="CreateUserGroupMember" transition="createUserGroupMember">
+                                <field name="userId"><default-field><hidden/></default-field></field>
+                                <field name="userGroupId"><default-field title="Group">
+                                    <drop-down style="chosen-wider">
+                                        <entity-options key="${userGroupId}" text="${description} [${userGroupId}]">
+                                            <entity-find entity-name="moqui.security.UserGroup">
+                                                <order-by field-name="description"/></entity-find>
+                                        </entity-options>
+                                    </drop-down>
+                                </default-field></field>
+                                <field name="fromDate" entry-name="ec.user.nowTimestamp"><default-field><date-time/></default-field></field>
+                                <field name="submitButton"><default-field title="Add"><submit/></default-field></field>
+                            </form-single>
+                        </container-dialog>
+                    </box-toolbar>
+                    <box-body>
+                        <form-list name="UserGroupList" list="ugmList" transition="updateUserGroupMember">
+                            <field name="userId"><default-field><hidden/></default-field></field>
+                            <field name="userGroupId"><default-field title="Group">
+                                <display-entity entity-name="moqui.security.UserGroup"/>
+                                <link url="userGroupDetail" text="${userGroupId}" link-type="anchor"/>
+                            </default-field></field>
+                            <field name="fromDate">
+                                <header-field show-order-by="true"/>
+                                <default-field><display/></default-field>
+                            </field>
+                            <field name="thruDate">
+                                <header-field show-order-by="true"/>
+                                <default-field><date-time/></default-field>
+                            </field>
+                            <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
+                        </form-list>
+                    </box-body>
+                </container-box>
+
                 <label text="Login History" type="h5"/>
                 <form-list name="HistoryList" list="historyList" skip-form="true">
                     <field name="fromDate">

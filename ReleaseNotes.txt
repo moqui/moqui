@@ -1743,7 +1743,7 @@ Features considered, but may not to be included in 1.x series
     - Entity usage/reference section
     - Service usage/reference section on ServiceDetail screen
   - Security Setup (auto screens CAN be used for this, but purpose specific screens could be much better)
-    - User Accounts: User, Group Memberships, Permissions, Preferences
+    - User Accounts: User, Group Memberships, Preferences
     - User Groups: Group, Members, Permissions, Preferences, Authz, Tarpits
     - Artifact Groups: Group, Members, Authz, Tarpits
 
