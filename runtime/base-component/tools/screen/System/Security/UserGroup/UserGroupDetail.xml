@@ -19,6 +19,13 @@ This Work includes contributions authored by David E. Jones, not as a
     <transition name="updateUserGroup"><service-call name="update#moqui.security.UserGroup"/>
         <default-response url="."/></transition>
 
+    <transition name="createUserPermission"><service-call name="create#moqui.security.UserPermission"/>
+        <default-response url="."/></transition>
+    <transition name="createUserGroupPermission"><service-call name="create#moqui.security.UserGroupPermission"/>
+        <default-response url="."/></transition>
+    <transition name="updateUserGroupPermission"><service-call name="update#moqui.security.UserGroupPermission"/>
+        <default-response url="."/></transition>
+
     <transition name="createUserGroupPreference"><service-call name="create#moqui.security.UserGroupPreference"/>
         <default-response url="."/></transition>
     <transition name="updateUserGroupPreference"><service-call name="update#moqui.security.UserGroupPreference"/>
@@ -27,7 +34,9 @@ This Work includes contributions authored by David E. Jones, not as a
     <actions>
         <entity-find-one entity-name="moqui.security.UserGroup" value-field="userGroup"/>
 
-        <entity-find entity-name="moqui.security.UserGroupPreference" list="ugpList">
+        <entity-find entity-name="moqui.security.UserGroupPermission" list="ugPermList">
+            <econdition field-name="userGroupId"/><order-by field-name="userPermissionId"/></entity-find>
+        <entity-find entity-name="moqui.security.UserGroupPreference" list="ugPrefList">
             <econdition field-name="userGroupId"/><order-by field-name="preferenceKey"/></entity-find>
     </actions>
     <widgets>
@@ -39,8 +48,6 @@ This Work includes contributions authored by David E. Jones, not as a
 
                     <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
                 </form-single>
-            </row-col>
-            <row-col lg="7">
                 <container-box>
                     <box-header><label text="Preferences" type="h5"/></box-header>
                     <box-toolbar>
@@ -54,10 +61,61 @@ This Work includes contributions authored by David E. Jones, not as a
                         </container-dialog>
                     </box-toolbar>
                     <box-body>
-                        <form-list name="UserGroupPreferenceList" list="ugpList" transition="updateUserGroupPreference">
+                        <form-list name="UserGroupPreferenceList" list="ugPrefList" transition="updateUserGroupPreference">
                             <field name="userGroupId"><default-field><hidden/></default-field></field>
                             <field name="preferenceKey"><default-field title="Key"><display/></default-field></field>
                             <field name="preferenceValue"><default-field title="Value"><text-line size="30"/></default-field></field>
+                            <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
+                        </form-list>
+                    </box-body>
+                </container-box>
+            </row-col>
+            <row-col lg="7">
+                <container-box>
+                    <box-header><label text="Permissions" type="h5"/></box-header>
+                    <box-toolbar>
+                        <container-dialog id="AddAdHocPermissionDialog" button-text="Apply Ad-hoc Permission">
+                            <form-single name="CreateAdHocUserGroupPermission" transition="createUserGroupPermission">
+                                <field name="userGroupId"><default-field><hidden/></default-field></field>
+                                <field name="userPermissionId"><default-field title="Permission"><text-line size="30"/></default-field></field>
+                                <field name="fromDate" entry-name="ec.user.nowTimestamp"><default-field><date-time/></default-field></field>
+                                <field name="thruDate"><default-field><date-time/></default-field></field>
+                                <field name="submitButton"><default-field title="Apply"><submit/></default-field></field>
+                            </form-single>
+                        </container-dialog>
+                        <container-dialog id="AddExistingPermissionDialog" button-text="Apply Existing Permission">
+                            <form-single name="CreateExistingUserGroupPermission" transition="createUserGroupPermission">
+                                <field name="userGroupId"><default-field><hidden/></default-field></field>
+                                <field name="userPermissionId"><default-field title="Permission">
+                                    <drop-down style="chosen-wider">
+                                        <entity-options key="${userPermissionId}" text="${userPermissionId} - ${description}">
+                                            <entity-find entity-name="moqui.security.UserPermission">
+                                                <order-by field-name="userPermissionId"/></entity-find>
+                                        </entity-options>
+                                    </drop-down>
+                                </default-field></field>
+                                <field name="fromDate" entry-name="ec.user.nowTimestamp"><default-field><date-time/></default-field></field>
+                                <field name="thruDate"><default-field><date-time/></default-field></field>
+                                <field name="submitButton"><default-field title="Add"><submit/></default-field></field>
+                            </form-single>
+                        </container-dialog>
+                        <container-dialog id="AddUserPermissionDialog" button-text="New Permission">
+                            <form-single name="CreateUserPermission" transition="createUserPermission">
+                                <field name="userGroupId"><default-field><hidden/></default-field></field>
+                                <field name="userPermissionId"><default-field title="Permission ID"><text-line size="30"/></default-field></field>
+                                <field name="description"><default-field><text-line size="60"/></default-field></field>
+                                <field name="submitButton"><default-field title="Create"><submit/></default-field></field>
+                            </form-single>
+                        </container-dialog>
+                    </box-toolbar>
+                    <box-body>
+                        <form-list name="UserGroupPermissionList" list="ugPermList" transition="updateUserGroupPermission">
+                            <row-actions><entity-find-one entity-name="moqui.security.UserPermission" value-field="userPermission"/></row-actions>
+                            <field name="userGroupId"><default-field><hidden/></default-field></field>
+                            <field name="userPermissionId"><default-field title="Permission ID">
+                                <display text="${userPermissionId} - ${userPermission?.description ?: '(ad-hoc)'}"/></default-field></field>
+                            <field name="fromDate"><default-field><display/></default-field></field>
+                            <field name="thruDate"><default-field><date-time/></default-field></field>
                             <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
                         </form-list>
                     </box-body>
