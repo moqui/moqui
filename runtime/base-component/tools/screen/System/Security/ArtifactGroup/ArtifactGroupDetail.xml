@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This Work is in the public domain and is provided on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+including, without limitation, any warranties or conditions of TITLE,
+NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+You are solely responsible for determining the appropriateness of using
+this Work and assume any risks associated with your use of this Work.
+
+This Work includes contributions authored by David E. Jones, not as a
+"work for hire", who hereby disclaims any copyright to the same.
+-->
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd"
+        default-menu-index="1">
+
+    <parameter name="artifactGroupId" required="true"/>
+
+    <transition name="updateArtifactGroup"><service-call name="update#moqui.security.ArtifactGroup"/>
+        <default-response url="."/></transition>
+
+    <transition name="createArtifactGroupMember"><service-call name="create#moqui.security.ArtifactGroupMember"/>
+        <default-response url="."/></transition>
+    <transition name="updateArtifactGroupMember"><service-call name="update#moqui.security.ArtifactGroupMember"/>
+        <default-response url="."/></transition>
+    <transition name="deleteArtifactGroupMember"><service-call name="delete#moqui.security.ArtifactGroupMember"/>
+        <default-response url="."/></transition>
+
+    <actions>
+        <entity-find-one entity-name="moqui.security.ArtifactGroup" value-field="artifactGroup"/>
+
+        <entity-find entity-name="moqui.security.ArtifactGroupMember" list="memberList">
+            <econdition field-name="artifactGroupId"/><order-by field-name="preferenceKey"/></entity-find>
+    </actions>
+    <widgets>
+        <form-single name="ArtifactGroupForm" map="artifactGroup" transition="updateArtifactGroup">
+            <field name="artifactGroupId"><default-field><display/></default-field></field>
+            <field name="description"><default-field><text-line size="40"/></default-field></field>
+
+            <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
+        </form-single>
+        <container-box>
+            <box-header><label text="Artifact Members" type="h5"/></box-header>
+            <box-toolbar>
+                <container-dialog id="AddMemberDialog" button-text="Add Any Artifact/Pattern">
+                    <form-single name="CreateArtifactGroupMember" transition="createArtifactGroupMember">
+                        <field name="artifactGroupId"><default-field><hidden/></default-field></field>
+                        <field name="artifactTypeEnumId"><default-field title="Artifact Type">
+                            <drop-down>
+                                <entity-options key="${enumId}" text="${description}">
+                                    <entity-find entity-name="moqui.basic.Enumeration">
+                                        <econdition field-name="enumTypeId" value="ArtifactType"/>
+                                        <order-by field-name="description"/></entity-find>
+                                </entity-options>
+                            </drop-down>
+                        </default-field></field>
+                        <field name="artifactName"><default-field><text-line size="60"/></default-field></field>
+
+                        <field name="nameIsPattern"><default-field>
+                            <drop-down><option key="N"/><option key="Y"/></drop-down></default-field></field>
+                        <field name="inheritAuthz"><default-field>
+                            <drop-down><option key="N"/><option key="Y"/></drop-down></default-field></field>
+                        <field name="filterMap"><default-field title="Filter Map" tooltip="Groovy expression that evaluates to a Map">
+                            <text-line size="60"/></default-field></field>
+                        <field name="submitButton"><default-field title="Add"><submit/></default-field></field>
+                    </form-single>
+                </container-dialog>
+            </box-toolbar>
+            <box-body>
+                <form-list name="ArtifactGroupMemberList" list="memberList" transition="updateArtifactGroupMember">
+                    <field name="artifactGroupId"><default-field><hidden/></default-field></field>
+                    <field name="artifactTypeEnumId"><default-field title="Artifact Type">
+                        <display-entity entity-name="moqui.basic.Enumeration"/></default-field></field>
+                    <field name="artifactName"><default-field><display/></default-field></field>
+
+                    <field name="nameIsPattern"><default-field>
+                        <drop-down><option key="N"/><option key="Y"/></drop-down></default-field></field>
+                    <field name="inheritAuthz"><default-field>
+                        <drop-down><option key="N"/><option key="Y"/></drop-down></default-field></field>
+                    <field name="filterMap"><default-field title="Filter Map" tooltip="Groovy expression that evaluates to a Map">
+                        <text-line size="30"/></default-field></field>
+                    <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
+                    <field name="deleteLink"><default-field title="">
+                        <link url="deleteArtifactGroupMember" text="X" confirmation="Really Delete?"
+                                parameter-map="[artifactGroupId:artifactGroupId, artifactName:artifactName, artifactTypeEnumId:artifactTypeEnumId]"/>
+                    </default-field></field>
+                </form-list>
+            </box-body>
+        </container-box>
+    </widgets>
+</screen>
