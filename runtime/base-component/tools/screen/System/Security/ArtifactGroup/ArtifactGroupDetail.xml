@@ -75,9 +75,9 @@ This Work includes contributions authored by David E. Jones, not as a
                         <field name="submitButton"><default-field title="Add"><submit/></default-field></field>
                     </form-single>
                 </container-dialog>
-                <!-- TODO: add entity form -->
-                <!-- TODO: add service form -->
-                <!-- TODO: add screen form -->
+                <!-- TODO: add entity form (autocomplete to avoid large drop-down) -->
+                <!-- TODO: add service form (autocomplete to avoid large drop-down) -->
+                <!-- TODO: add screen form (autocomplete to avoid large drop-down) -->
             </box-toolbar>
             <box-body>
                 <form-list name="ArtifactGroupMemberList" list="memberList" transition="updateArtifactGroupMember">
@@ -140,8 +140,8 @@ This Work includes contributions authored by David E. Jones, not as a
             </box-toolbar>
             <box-body>
                 <form-list name="ArtifactAuthzList" list="authzList" transition="updateArtifactAuthz">
-                    <field name="artifactGroupId"><default-field><hidden/></default-field></field>
                     <field name="artifactAuthzId"><default-field><display/></default-field></field>
+                    <field name="artifactGroupId"><default-field><hidden/></default-field></field>
                     <field name="userGroupId"><default-field title="User Group">
                         <display-entity entity-name="moqui.security.UserGroup" text="${description ?: ''} - "/>
                         <link url="userGroupDetail" text="${userGroupId}" link-type="anchor"/>

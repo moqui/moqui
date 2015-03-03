@@ -31,6 +31,14 @@ This Work includes contributions authored by David E. Jones, not as a
     <transition name="updateUserGroupPreference"><service-call name="update#moqui.security.UserGroupPreference"/>
         <default-response url="."/></transition>
 
+    <transition name="artifactGroupDetail"><default-response url="../../ArtifactGroup/ArtifactGroupDetail"/></transition>
+    <transition name="createArtifactAuthz"><service-call name="create#moqui.security.ArtifactAuthz"/>
+        <default-response url="."/></transition>
+    <transition name="updateArtifactAuthz"><service-call name="update#moqui.security.ArtifactAuthz"/>
+        <default-response url="."/></transition>
+    <transition name="deleteArtifactAuthz"><service-call name="delete#moqui.security.ArtifactAuthz"/>
+        <default-response url="."/></transition>
+
     <actions>
         <entity-find-one entity-name="moqui.security.UserGroup" value-field="userGroup"/>
 
@@ -38,6 +46,8 @@ This Work includes contributions authored by David E. Jones, not as a
             <econdition field-name="userGroupId"/><order-by field-name="userPermissionId"/></entity-find>
         <entity-find entity-name="moqui.security.UserGroupPreference" list="ugPrefList">
             <econdition field-name="userGroupId"/><order-by field-name="preferenceKey"/></entity-find>
+        <entity-find entity-name="moqui.security.ArtifactAuthz" list="authzList">
+            <econdition field-name="userGroupId"/><order-by field-name="artifactGroupId,authzTypeEnumId"/></entity-find>
     </actions>
     <widgets>
         <container-row>
@@ -122,5 +132,35 @@ This Work includes contributions authored by David E. Jones, not as a
                 </container-box>
             </row-col>
         </container-row>
+
+        <container-box>
+            <box-header><label text="Authorizations" type="h5"/></box-header>
+            <box-toolbar>
+                <container-dialog id="AddAuthzDialog" button-text="Add Authorization">
+                    <form-single name="CreateArtifactAuthz" transition="createArtifactAuthz"
+                            extends="component://tools/screen/System/Security/ArtifactGroup/ArtifactGroupDetail.xml#CreateArtifactAuthz">
+                        <field name="userGroupId"><default-field><hidden/></default-field></field>
+                        <field name="artifactGroupId"><default-field title="Artifact Group">
+                            <drop-down style="chosen-wider">
+                                <entity-options key="${artifactGroupId}" text="${description} [${artifactGroupId}]">
+                                    <entity-find entity-name="moqui.security.ArtifactGroup">
+                                        <order-by field-name="description"/></entity-find>
+                                </entity-options>
+                            </drop-down>
+                        </default-field></field>
+                    </form-single>
+                </container-dialog>
+            </box-toolbar>
+            <box-body>
+                <form-list name="ArtifactAuthzList" list="authzList" transition="updateArtifactAuthz"
+                        extends="component://tools/screen/System/Security/ArtifactGroup/ArtifactGroupDetail.xml#ArtifactAuthzList">
+                    <field name="userGroupId"><default-field><hidden/></default-field></field>
+                    <field name="artifactGroupId"><default-field title="Artifact Group">
+                        <display-entity entity-name="moqui.security.ArtifactGroup" text="${description ?: ''} - "/>
+                        <link url="artifactGroupDetail" text="${artifactGroupId}" link-type="anchor"/>
+                    </default-field></field>
+                </form-list>
+            </box-body>
+        </container-box>
     </widgets>
 </screen>
