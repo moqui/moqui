@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This Work is in the public domain and is provided on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+including, without limitation, any warranties or conditions of TITLE,
+NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+You are solely responsible for determining the appropriateness of using
+this Work and assume any risks associated with your use of this Work.
+
+This Work includes contributions authored by David E. Jones, not as a
+"work for hire", who hereby disclaims any copyright to the same.
+-->
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd">
+
+    <parameter name="userGroupId" required="true"/>
+
+    <transition name="updateUserGroup"><service-call name="update#moqui.security.UserGroup"/>
+        <default-response url="."/></transition>
+
+    <actions>
+        <entity-find-one entity-name="moqui.security.UserGroup" value-field="userGroup"/>
+    </actions>
+    <widgets>
+        <form-single name="UserGroupForm" map="userGroup" transition="updateUserGroup">
+            <field name="userGroupId"><default-field><display/></default-field></field>
+            <field name="description"><default-field><text-line size="40"/></default-field></field>
+
+            <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
+        </form-single>
+    </widgets>
+</screen>
