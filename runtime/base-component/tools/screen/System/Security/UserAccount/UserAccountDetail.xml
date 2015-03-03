@@ -32,6 +32,11 @@ This Work includes contributions authored by David E. Jones, not as a
     <transition name="updateUserPreference"><service-call name="update#moqui.security.UserPreference"/>
         <default-response url="."/></transition>
 
+    <transition name="releaseTarpitNow">
+        <service-call name="update#moqui.security.ArtifactTarpitLock"
+                in-map="[artifactTarpitLockId:artifactTarpitLockId, releaseDateTime:ec.user.nowTimestamp]"/>
+        <default-response url="."/></transition>
+
     <actions>
         <entity-find-one entity-name="moqui.security.UserAccount" value-field="userAccount"/>
 
@@ -49,6 +54,11 @@ This Work includes contributions authored by David E. Jones, not as a
         <entity-find entity-name="moqui.security.UserLoginHistory" list="historyList">
             <search-form-inputs default-order-by="-fromDate"/>
             <econdition field-name="userId"/></entity-find>
+
+        <entity-find entity-name="moqui.security.ArtifactTarpitLock" list="artifactTarpitLockList" limit="20">
+            <econdition field-name="userId"/><order-by field-name="-releaseDateTime"/></entity-find>
+        <entity-find-count entity-name="moqui.security.ArtifactTarpitLock" count-field="allTarpitLocksCount">
+            <econdition field-name="userId"/></entity-find-count>
     </actions>
     <widgets>
         <!-- TODO: update password form? or better not to allow here? -->
@@ -155,5 +165,17 @@ This Work includes contributions authored by David E. Jones, not as a
                 </form-list>
             </row-col>
         </container-row>
+
+        <label text="Tarpit Locks (Velocity Limits Reached)" type="h5"/>
+        <label text="Showing ${artifactTarpitLockList?.size() ?: ''} most recent, user has a history of ${allTarpitLocksCount} locks"/>
+        <form-list name="ArtifactTarpitLockList" list="artifactTarpitLockList">
+            <field name="artifactTypeEnumId"><default-field><display-entity entity-name="moqui.basic.Enumeration"/></default-field></field>
+            <field name="artifactName"><default-field><display/></default-field></field>
+            <field name="releaseDateTime"><default-field><display/></default-field></field>
+            <field name="releaseNow"><default-field>
+                <link url="releaseTarpitNow" text="Release Now" parameter-map="[artifactTarpitLockId:artifactTarpitLockId]"
+                        condition="releaseDateTime &gt; ec.user.nowTimestamp"/>
+            </default-field></field>
+        </form-list>
     </widgets>
 </screen>
