@@ -27,6 +27,11 @@ This Work includes contributions authored by David E. Jones, not as a
     <transition name="updateUserGroupMember"><service-call name="update#moqui.security.UserGroupMember"/>
         <default-response url="."/></transition>
 
+    <transition name="createUserPreference"><service-call name="create#moqui.security.UserPreference"/>
+        <default-response url="."/></transition>
+    <transition name="updateUserPreference"><service-call name="update#moqui.security.UserPreference"/>
+        <default-response url="."/></transition>
+
     <actions>
         <entity-find-one entity-name="moqui.security.UserAccount" value-field="userAccount"/>
 
@@ -37,6 +42,9 @@ This Work includes contributions authored by David E. Jones, not as a
 
         <entity-find entity-name="moqui.security.UserGroupMember" list="ugmList">
             <econdition field-name="userId"/><order-by field-name="userGroupId"/></entity-find>
+
+        <entity-find entity-name="moqui.security.UserPreference" list="upList">
+            <econdition field-name="userId"/><order-by field-name="preferenceKey"/></entity-find>
 
         <entity-find entity-name="moqui.security.UserLoginHistory" list="historyList">
             <search-form-inputs default-order-by="-fromDate"/>
@@ -107,6 +115,28 @@ This Work includes contributions authored by David E. Jones, not as a
                                 <header-field show-order-by="true"/>
                                 <default-field><date-time/></default-field>
                             </field>
+                            <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
+                        </form-list>
+                    </box-body>
+                </container-box>
+
+                <container-box>
+                    <box-header><label text="Preferences" type="h5"/></box-header>
+                    <box-toolbar>
+                        <container-dialog id="AddPreferenceDialog" button-text="Add Preference">
+                            <form-single name="CreateUserPreference" transition="createUserPreference">
+                                <field name="userId"><default-field><hidden/></default-field></field>
+                                <field name="preferenceKey"><default-field><text-line size="30"/></default-field></field>
+                                <field name="preferenceValue"><default-field><text-line size="60"/></default-field></field>
+                                <field name="submitButton"><default-field title="Add"><submit/></default-field></field>
+                            </form-single>
+                        </container-dialog>
+                    </box-toolbar>
+                    <box-body>
+                        <form-list name="UserPreferenceList" list="upList" transition="updateUserPreference">
+                            <field name="userId"><default-field><hidden/></default-field></field>
+                            <field name="preferenceKey"><default-field title="Key"><display/></default-field></field>
+                            <field name="preferenceValue"><default-field title="Value"><text-line size="30"/></default-field></field>
                             <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
                         </form-list>
                     </box-body>
