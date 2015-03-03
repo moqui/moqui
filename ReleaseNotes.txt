@@ -1743,13 +1743,9 @@ Features considered, but may not to be included in 1.x series
     - Entity usage/reference section
     - Service usage/reference section on ServiceDetail screen
   - Security Setup (auto screens CAN be used for this, but purpose specific screens could be much better)
-    - User Accounts
-    - User Groups and Group Members
-    - User Group Permissions
-    - User and Group Preferences
-    - Artifact Groups
-    - Artifact Authz
-    - Artifact Tarpits
+    - User Accounts: User, Group Memberships, Permissions, Preferences
+    - User Groups: Group, Members, Permissions, Preferences, Authz, Tarpits
+    - Artifact Groups: Group, Members, Authz, Tarpits
 
 - Email verification by random code on registration and email change
 - Login through Google, Facebook, etc
@@ -1757,8 +1753,8 @@ Features considered, but may not to be included in 1.x series
   - https://developers.facebook.com/docs/facebook-login/login-flow-for-web/v2.0
 
 
-- Workflow that manages activity flow with screens and service attached to
-  activities and tasks based on them taking users to defined or automatic
+- Workflow that manages activity flow with screens and services attached to
+  activities, and tasks based on them taking users to defined or automatic
   screen; see BonitaSoft.com Open Source BPM for similar concept; generally
   workflow without requiring implementation of an entire app once the
   workflow itself is defined
