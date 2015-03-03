@@ -1728,7 +1728,6 @@ Features considered, but may not to be included in 1.x series
   - Dynamic Screens (database-driven: DynamicScreen* entities)
 - Entity Facade
   - LiquiBase integration, entity.change-set element
-  x EntitySync tool
   - Add view log, like current change audit log (AuditLogView?)
   - Improve entity cache auto-clear performance using ehcache search
     http://ehcache.org/generated/2.9.0/html/ehc-all/#page/Ehcache_Documentation_Set%2Fto-srch_searching_a_cache.html%23
@@ -1755,10 +1754,6 @@ Features considered, but may not to be included in 1.x series
     - Entity info screen
     - Entity usage/reference section
     - Service usage/reference section on ServiceDetail screen
-  - Security Setup (auto screens CAN be used for this, but purpose specific screens could be much better)
-    x User Accounts: User, Group Memberships, Preferences
-    - User Groups: Group, Members, Permissions, Preferences, Authz, Tarpits
-    - Artifact Groups: Group, Members, Authz, Tarpits
 
 - Email verification by random code on registration and email change
 - Login through Google, Facebook, etc
@@ -1801,16 +1796,6 @@ Features considered, but may not to be included in 1.x series
       - for notifications from DataFeeds can add DataFeed.emailTemplateId (or not, what about toAddresses, etc?)
       - maybe have a more general way to configure details of topics, including emailTemplateId and screenLocation...
 
-- Data Document
-  x export screen (design similar to entity export screen; select documents, from/thru dates, file or browser output
-  x DataDocumentRelationshipAlias (need shorter name) for more flexible output: dataDocumentId, relationshipName, documentAlias
-- Data Search
-  x different ElasticSearch instances or indexes per Tenant
-  x use elasticsearch.org
-  x get data from Data Feed, Data Search index is a feed receive service
-  x receive#DataFeed interface service implementation
-  x search includes dataDocumentId as a search term, key search term to constrain to results to dataDocumentId; limit search to specific indexName
-  x _index = indexName, _type = dataDocumentId, _id = (pk field values, double-colon separated), use version?
 - Data Feed
   x API get outstanding data changes (EntityDataFeed.getFeedLatestDocuments())
   X need external API for EntityDataFeed.getFeedLatestDocuments()? - done as service
