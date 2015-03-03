@@ -17,8 +17,8 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <transition name="updateUserAccount"><service-call name="update#moqui.security.UserAccount"/>
         <default-response url="."/></transition>
-    <transition name="visitList"><default-response url="../../../Visit/VisitList"/>
-    </transition>
+    <transition name="visitList"><default-response url="../../../Visit/VisitList"/></transition>
+    <transition name="visitDetail"><default-response url="../../../Visit/VisitDetail"/></transition>
 
     <actions>
         <entity-find-one entity-name="moqui.security.UserAccount" value-field="userAccount"/>
@@ -27,33 +27,55 @@ This Work includes contributions authored by David E. Jones, not as a
         <set field="localeStringList" from="[]"/>
         <iterate list="Locale.getAvailableLocales()" entry="lcl"><script>localeStringList.add([locale:lcl.toString(), name:lcl.getDisplayName()])</script></iterate>
         <order-map-list list="localeStringList"><order-by field-name="name"/></order-map-list>
+
+        <set field="pageSize" from="pageSize" default-value="30"/>
+        <entity-find entity-name="moqui.security.UserLoginHistory" list="historyList">
+            <search-form-inputs default-order-by="-fromDate"/>
+            <econdition field-name="userId"/></entity-find>
     </actions>
     <widgets>
         <!-- TODO: update password form? or better not to allow here? -->
-        <link url="visitList" text="Visits" parameter-map="[userId:userId]"/>
-        <form-single name="UserAccountForm" map="userAccount" transition="updateUserAccount">
-            <field name="userId"><default-field><display/></default-field></field>
-            <field name="username"><default-field><text-line size="20"/></default-field></field>
-            <field name="emailAddress"><default-field title="Email"><text-line size="60"/></default-field></field>
-            <field name="userFullName"><default-field title="Full Name"><text-line size="40"/></default-field></field>
+        <container-row>
+            <row-col lg="6">
+                <link url="visitList" text="Visits" parameter-map="[userId:userId]"/>
+                <form-single name="UserAccountForm" map="userAccount" transition="updateUserAccount">
+                    <field name="userId"><default-field><display/></default-field></field>
+                    <field name="username"><default-field><text-line size="20"/></default-field></field>
+                    <field name="emailAddress"><default-field title="Email"><text-line size="60"/></default-field></field>
+                    <field name="userFullName"><default-field title="Full Name"><text-line size="40"/></default-field></field>
 
-            <field name="passwordSetDate"><default-field><display/></default-field></field>
-            <field name="requirePasswordChange"><default-field>
-                <drop-down allow-empty="true"><option key="Y"/><option key="N"/></drop-down></default-field></field>
-            <field name="successiveFailedLogins"><default-field><display/></default-field></field>
-            <field name="disabled"><default-field>
-                <drop-down allow-empty="true"><option key="Y"/><option key="N"/></drop-down></default-field></field>
-            <field name="disabledDateTime"><default-field><display/></default-field></field>
+                    <field name="passwordSetDate"><default-field><display/></default-field></field>
+                    <field name="requirePasswordChange"><default-field>
+                        <drop-down allow-empty="true"><option key="Y"/><option key="N"/></drop-down></default-field></field>
+                    <field name="successiveFailedLogins"><default-field><display/></default-field></field>
+                    <field name="disabled"><default-field>
+                        <drop-down allow-empty="true"><option key="Y"/><option key="N"/></drop-down></default-field></field>
+                    <field name="disabledDateTime"><default-field><display/></default-field></field>
 
-            <field name="locale"><default-field>
-                <drop-down allow-empty="true"><list-options list="localeStringList" key="${locale}" text="${locale} - ${name}"/></drop-down>
-            </default-field></field>
-            <field name="timeZone"><default-field>
-                <!-- TODO: limit time zones to tenant zones -->
-                <drop-down allow-empty="true"><list-options list="new TreeSet(TimeZone.getAvailableIDs().collect())"/></drop-down>
-            </default-field></field>
+                    <field name="locale"><default-field>
+                        <drop-down allow-empty="true"><list-options list="localeStringList" key="${locale}" text="${locale} - ${name}"/></drop-down>
+                    </default-field></field>
+                    <field name="timeZone"><default-field>
+                        <!-- TODO: limit time zones to tenant zones -->
+                        <drop-down allow-empty="true"><list-options list="new TreeSet(TimeZone.getAvailableIDs().collect())"/></drop-down>
+                    </default-field></field>
 
-            <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
-        </form-single>
+                    <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
+                </form-single>
+            </row-col>
+            <row-col lg="6">
+                <label text="Login History" type="h5"/>
+                <form-list name="HistoryList" list="historyList" skip-form="true">
+                    <field name="fromDate">
+                        <header-field title="Date" show-order-by="true"/>
+                        <default-field><display/></default-field>
+                    </field>
+                    <field name="successfulLogin"><default-field title="Successful"><display/></default-field></field>
+                    <field name="visitId"><default-field title="Visit">
+                        <link url="visitDetail" text="${visitId}" link-type="anchor" condition="visitId"/>
+                    </default-field></field>
+                </form-list>
+            </row-col>
+        </container-row>
     </widgets>
 </screen>
