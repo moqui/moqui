@@ -52,10 +52,10 @@ This Work includes contributions authored by David E. Jones, not as a
                 <header-field show-order-by="true"><text-find size="20" hide-options="true"/></header-field>
                 <default-field><display/></default-field>
             </field>
-            <field name="passwordSetDate">
+            <!--<field name="passwordSetDate">
                 <header-field show-order-by="true"><date-period allow-empty="true"/></header-field>
                 <default-field><display/></default-field>
-            </field>
+            </field>-->
             <field name="requirePasswordChange">
                 <header-field title="Req PW Change" show-order-by="true"><drop-down allow-empty="true"><option key="Y"/><option key="N"/></drop-down></header-field>
                 <default-field><display/></default-field>
