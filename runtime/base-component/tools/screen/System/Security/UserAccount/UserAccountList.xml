@@ -39,17 +39,19 @@ This Work includes contributions authored by David E. Jones, not as a
         </container-dialog>
         <form-list name="UserAccountList" list="userAccountList" skip-form="true">
             <field name="userId">
-                <default-field title="ID"><link text="${userId}" url="userAccountDetail" link-type="anchor"/></default-field>
+                <header-field title="ID" show-order-by="true"><text-find size="10" hide-options="true"/></header-field>
+                <default-field><link text="${userId}" url="userAccountDetail" link-type="anchor"/></default-field>
             </field>
             <field name="username">
+                <header-field show-order-by="true"><text-find size="10" hide-options="true"/></header-field>
                 <default-field><link text="${username}" url="userAccountDetail" link-type="anchor"/></default-field>
             </field>
             <field name="emailAddress">
-                <header-field show-order-by="true"><text-find size="20" hide-options="true"/></header-field>
+                <header-field show-order-by="true"><text-find size="15" hide-options="true"/></header-field>
                 <default-field><display/></default-field>
             </field>
             <field name="userFullName">
-                <header-field show-order-by="true"><text-find size="20" hide-options="true"/></header-field>
+                <header-field show-order-by="true"><text-find size="15" hide-options="true"/></header-field>
                 <default-field><display/></default-field>
             </field>
             <!--<field name="passwordSetDate">
@@ -73,8 +75,11 @@ This Work includes contributions authored by David E. Jones, not as a
                 <default-field><display/></default-field>
             </field>
             <field name="timeZone">
-                <header-field show-order-by="true"><text-find size="10" hide-options="true"/></header-field>
+                <header-field show-order-by="true"><text-find size="8" hide-options="true"/></header-field>
                 <default-field><display/></default-field>
+            </field>
+            <field name="find">
+                <header-field title="Find"><submit/></header-field>
             </field>
         </form-list>
     </widgets>
