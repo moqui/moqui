@@ -83,7 +83,8 @@ This Work includes contributions authored by David E. Jones, not as a
             propName="createDatabase" propValue="create"/>
 
     <!-- ========== EntitySync Example ========== -->
-    <moqui.entity.sync.EntitySync entitySyncId="EXAMPLE" statusId="EsNotStarted" lastStartDate="" lastSuccessfulSyncTime=""
+    <moqui.entity.sync.EntitySync entitySyncId="EXAMPLE" description="Example sync to EXAMPLE1 tenant"
+            statusId="EsNotStarted" lastStartDate="" lastSuccessfulSyncTime=""
             syncSplitMillis="60000" recordThreshold="1000" delayBufferMillis="60000"
             targetServerUrl="http://localhost:8080/rpc/json" targetUsername="john.doe" targetPassword="moqui"
             targetTenantId="EXAMPLE1" forPull="N"/>
