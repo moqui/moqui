@@ -221,6 +221,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <entity entity-name="EntitySync" package-name="moqui.entity.sync">
         <field name="entitySyncId" type="id" is-pk="true"/>
+        <field name="description" type="text-medium"/>
         <field name="statusId" type="id"/>
         <field name="lastStartDate" type="date-time"/>
         <field name="lastSuccessfulSyncTime" type="date-time"/>
@@ -257,7 +258,7 @@ This Work includes contributions authored by David E. Jones, not as a
             If include and exclude filters create condition with combined include AND NOT combined exclude.
         </description>
         <field name="entitySyncId" type="id" is-pk="true"/>
-        <field name="artifactGroupId" type="id"><description>Only entity artifacts (artifactTypeEnumId=AT_ENTITY) will
+        <field name="artifactGroupId" type="id" is-pk="true"><description>Only entity artifacts (artifactTypeEnumId=AT_ENTITY) will
             be used, all others ignored.</description></field>
         <field name="applEnumId" type="id"/>
         <field name="dependents" type="text-indicator"><description>If Y also include dependents of records, will apply
