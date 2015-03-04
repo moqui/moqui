@@ -18,6 +18,9 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <transition name="updateEntitySync"><service-call name="update#moqui.entity.sync.EntitySync"/>
         <default-response url="."/></transition>
+    <transition name="resetNotStarted">
+        <service-call name="update#moqui.entity.sync.EntitySync" in-map="[entitySyncId:entitySyncId, statusId:'EsNotStarted']"/>
+        <default-response url="."/></transition>
 
     <transition name="artifactGroupDetail"><default-response url="../../Security/ArtifactGroup/ArtifactGroupDetail"/></transition>
     <transition name="createEntitySyncArtifact"><service-call name="create#moqui.entity.sync.EntitySyncArtifact"/>
@@ -37,12 +40,17 @@ This Work includes contributions authored by David E. Jones, not as a
     <widgets>
         <container-row>
             <row-col lg="5">
+                <link url="resetNotStarted" text="Reset From Running (do ONLY if Last Start is old or verified not running)"
+                        condition="entitySync.statusId == 'EsRunning'"/>
                 <form-single name="EntitySyncForm" map="entitySync" transition="updateEntitySync">
                     <field name="entitySyncId"><default-field><display/></default-field></field>
                     <field name="description"><default-field><text-line size="50"/></default-field></field>
 
                     <field name="statusId"><default-field title="Status">
-                        <display-entity entity-name="moqui.basic.StatusItem"/></default-field></field>
+                        <display-entity entity-name="moqui.basic.StatusItem"/>
+                        <label text="If not really running, ie running and recovery failed, will try again in 24 hours"
+                                condition="entitySync.statusId == 'EsRunning'" type="p"/>
+                    </default-field></field>
                     <field name="lastStartDate"><default-field title="Last Start"><display/></default-field></field>
                     <field name="lastSuccessfulSyncTime"><default-field title="Last Successful Time"><display/></default-field></field>
 
