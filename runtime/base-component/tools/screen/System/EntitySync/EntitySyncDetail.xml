@@ -41,6 +41,23 @@ This Work includes contributions authored by David E. Jones, not as a
                     <field name="entitySyncId"><default-field><display/></default-field></field>
                     <field name="description"><default-field><text-line size="50"/></default-field></field>
 
+                    <field name="statusId"><default-field title="Status">
+                        <display-entity entity-name="moqui.basic.StatusItem"/></default-field></field>
+                    <field name="lastStartDate"><default-field title="Last Start"><display/></default-field></field>
+                    <field name="lastSuccessfulSyncTime"><default-field title="Last Successful Time"><display/></default-field></field>
+
+                    <field name="syncSplitMillis"><default-field title="Sync Split" tooltip="Time period in milliseconds for each query across included entities">
+                        <text-line size="8"/></default-field></field>
+                    <field name="recordThreshold"><default-field title="Records" tooltip="Keep querying splits until at least this many records are sent">
+                        <text-line size="8"/></default-field></field>
+                    <field name="delayBufferMillis"><default-field title="Delay Buffer" tooltip="Don't send records newer than this many milliseconds old">
+                        <text-line size="8"/></default-field></field>
+
+                    <field name="targetServerUrl"><default-field><text-line size="50"/></default-field></field>
+                    <field name="targetUsername"><default-field title="Username"><text-line size="30"/></default-field></field>
+                    <field name="targetPassword"><default-field title="Password"><text-line size="20"/></default-field></field>
+                    <field name="targetTenantId"><default-field title="Tenant ID"><text-line size="20"/></default-field></field>
+
                     <field name="forPull"><default-field tooltip="Y for pull from remote, N for push to remote">
                         <drop-down><option key="N"/><option key="Y"/></drop-down>
                     </default-field></field>
