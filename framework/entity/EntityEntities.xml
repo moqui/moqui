@@ -242,10 +242,20 @@ This Work includes contributions authored by David E. Jones, not as a
             <moqui.basic.StatusType description="Entity Sync" parentTypeId="" statusTypeId="EntitySync"/>
             <moqui.basic.StatusItem description="Not Started" sequenceNum="1" statusId="EsNotStarted" statusTypeId="EntitySync"/>
             <moqui.basic.StatusItem description="Running" sequenceNum="2" statusId="EsRunning" statusTypeId="EntitySync"/>
-            <moqui.basic.StatusItem description="Offline Pending" sequenceNum="3" statusId="EsOfflinePending" statusTypeId="EntitySync"/>
             <moqui.basic.StatusItem description="Complete" sequenceNum="4" statusId="EsComplete" statusTypeId="EntitySync"/>
             <moqui.basic.StatusItem description="Other Error" sequenceNum="98" statusId="EsOtherError" statusTypeId="EntitySync"/>
+            <!-- support these later?
+            <moqui.basic.StatusItem description="Offline Pending" sequenceNum="3" statusId="EsOfflinePending" statusTypeId="EntitySync"/>
             <moqui.basic.StatusItem description="Data Error" sequenceNum="99" statusId="EsDataError" statusTypeId="EntitySync"/>
+            -->
+
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="EsNotStarted" toStatusId="EsRunning" transitionName="Running"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="EsRunning" toStatusId="EsComplete" transitionName="Complete"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="EsRunning" toStatusId="EsOtherError" transitionName="Error"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="EsRunning" toStatusId="EsNotStarted" transitionName="Reset Not Started"/>
+
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="EsComplete" toStatusId="EsRunning" transitionName="Running"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="EsOtherError" toStatusId="EsRunning" transitionName="Running"/>
         </seed-data>
     </entity>
     <entity entity-name="EntitySyncArtifact" package-name="moqui.entity.sync">
