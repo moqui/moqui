@@ -34,12 +34,13 @@ be considered beta features as of this release.
 The Tools application has been split into System and Tools applications
 targeted at the different roles of system administrators and developers.
 There are new screens in the System app for security (users, user groups,
-and artifact groups with preferences, permissions, authz, tarpits) and
-for System-System Messages to review incoming and outgoing messages and
-handle issues with messages. There are also improvements in the Tools
-screens for developers including various Auto Screen improvements, an
-Artifact Statistics screen with counts of various artifacts and improved
-service detail with highlighted display of actual and generated source.
+and artifact groups with preferences, permissions, authz, tarpits), for
+Entity Sync to review status and create/maintain, and for System-System
+Messages to review incoming and outgoing messages and handle issues with
+messages. There are also improvements in the Tools screens for developers
+including various Auto Screen improvements, an Artifact Statistics screen
+with counts of various artifacts and improved service detail with
+highlighted display of actual and generated source.
 
 NOTE: This release, just as the previous, required JDK 7 to run. It also
 includes the invoke dynamic variation of Groovy (which requires Java 7)
@@ -84,6 +85,7 @@ New Features:
 - Added UI for administration of System-System Messages
 - Added UI for Security administration (users, user groups, and artifact
   groups with preferences, permissions, authz, tarpits)
+- Added UI for EntitySync administration
 - Added sync service call transaction options (ignore and cache) to match
   those available through the service definition
 - Made XML Actions service-call.@transaction options match those in the
@@ -1796,11 +1798,11 @@ Features considered, but may not to be included in 1.x series
       - for notifications from DataFeeds can add DataFeed.emailTemplateId (or not, what about toAddresses, etc?)
       - maybe have a more general way to configure details of topics, including emailTemplateId and screenLocation...
 
-- Data Feed
+- Data Document and Feed
   x API get outstanding data changes (EntityDataFeed.getFeedLatestDocuments())
   X need external API for EntityDataFeed.getFeedLatestDocuments()? - done as service
   x API push matching data change
-  - API (or service?) push outstanding data changes (registration/connection, time trigger)
+  - API (or service?) push outstanding data changes (registration/connection, time trigger; tie to SystemMessage)
   - API (or service?) receive/persist data change messages - going reverse of generation for DataDocuments... should be interesting
   - Consumer System Registry
     x register service for push (service to call, ID), another for pull (ID) (in DataFeed entity)
