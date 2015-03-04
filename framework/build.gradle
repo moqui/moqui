@@ -135,7 +135,7 @@ dependencies {
 
     compile module(name: 'fop', version: '1.1') { // Apache 2.0
         dependencies module(name: 'avalon-framework', version: '4.2.0'), module(name: 'xmlgraphics-commons', version: '1.5'), // Apache 2.0
-                module(name: 'batik-all', version: '1.7') // Apache 2.0
+                module(name: 'barcode4j', version: '2.1-barcode4j-fop-ext-complete'), module(name: 'batik-all', version: '1.7') // Apache 2.0
     }
 
     // ElasticSearch Libraries, including Lucene
