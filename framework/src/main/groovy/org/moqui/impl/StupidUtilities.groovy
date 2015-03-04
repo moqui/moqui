@@ -495,12 +495,16 @@ class StupidUtilities {
         while (desiredLength > outStrBfr.length()) outStrBfr.insert(0, '0')
         return outStrBfr.toString()
     }
-    static String paddedString(String input, Integer desiredLength, boolean rightPad) {
+    static String paddedString(String input, Integer desiredLength, Character padChar, boolean rightPad) {
+        if (!padChar) padChar = ' '
         if (input == null) input = ""
         StringBuilder outStrBfr = new StringBuilder(input)
         if (!desiredLength) return outStrBfr.toString()
-        while (desiredLength > outStrBfr.length()) if (rightPad) outStrBfr.append(' ') else outStrBfr.insert(0, ' ')
+        while (desiredLength > outStrBfr.length()) if (rightPad) outStrBfr.append(padChar) else outStrBfr.insert(0, padChar)
         return outStrBfr.toString()
+    }
+    static String paddedString(String input, Integer desiredLength, boolean rightPad) {
+        return paddedString(input, desiredLength, (Character) ' ', rightPad)
     }
 
     static String getRandomString(int length) {

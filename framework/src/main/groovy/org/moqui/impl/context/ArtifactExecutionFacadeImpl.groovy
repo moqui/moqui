@@ -267,6 +267,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                         eci.getService().sync().name("create", "moqui.security.ArtifactTarpitLock").parameters((Map<String, Object>)
                                 [userId:userId, artifactName:aeii.getName(), artifactTypeEnumId:aeii.getTypeEnumId(),
                                 releaseDateTime:(new Timestamp(checkTime + (lockForSeconds*1000)))]).call()
+                        tarpitHitCache.remove(tarpitKey)
                     }
                 }
             }

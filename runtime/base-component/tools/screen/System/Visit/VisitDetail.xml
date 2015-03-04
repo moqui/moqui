@@ -47,10 +47,10 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="artifactSubType"><default-field title="Sub Type"><display text="${artifactSubType?.replace('/',' / ')}" also-hidden="false"/></default-field></field>
 
             <field name="artifactName"><default-field><display also-hidden="false"/></default-field></field>
-            <field name="parameterString"><default-field><display text="${parameterString?.replace(',',' , ')}" also-hidden="false"/></default-field></field>
+            <field name="parameterString"><default-field><display text="${parameterString?.replace(',',' , ') ?: ''}" also-hidden="false"/></default-field></field>
 
-            <field name="runningTimeMillis"><default-field title="Time"><display text="[${runningTimeMillis}]" also-hidden="false"/></default-field></field>
-            <field name="outputSize"><default-field title="Size"><display text="[${outputSize}]" also-hidden="false"/></default-field></field>
+            <field name="runningTimeMillis"><default-field title="Time"><display text="${runningTimeMillis}ms" also-hidden="false"/></default-field></field>
+            <field name="outputSize"><default-field title="Size"><display text="${outputSize ?: 'Unknown'}" also-hidden="false"/></default-field></field>
 
             <field name="wasError"><default-field title="Error"><display also-hidden="false"/></default-field></field>
             <field name="errorMessage"><default-field title="Message"><display also-hidden="false"/></default-field></field>

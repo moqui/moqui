@@ -12,7 +12,7 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <entity-facade-xml type="seed">
     <!-- Let all users use the ScreenTree (add other webroot screens here as needed) -->
-    <moqui.security.ArtifactGroup artifactGroupId="SCREEN_TREE" description="Tools App (via root screen)"/>
+    <moqui.security.ArtifactGroup artifactGroupId="SCREEN_TREE" description="Screen Tree (via root screen)"/>
     <moqui.security.ArtifactGroupMember artifactGroupId="SCREEN_TREE" artifactName="component://webroot/screen/webroot/apps/ScreenTree.xml"
                          artifactTypeEnumId="AT_XML_SCREEN" inheritAuthz="Y"/>
     <moqui.security.ArtifactGroupMember artifactGroupId="SCREEN_TREE" artifactName="component://webroot/screen/webroot/apps/AppList.xml"

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This Work is in the public domain and is provided on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+including, without limitation, any warranties or conditions of TITLE,
+NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+You are solely responsible for determining the appropriateness of using
+this Work and assume any risks associated with your use of this Work.
+
+This Work includes contributions authored by David E. Jones, not as a
+"work for hire", who hereby disclaims any copyright to the same.
+-->
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd"
+        default-menu-include="false">
+
+    <transition name="userAccountDetail"><default-response url="../UserAccountDetail"/></transition>
+    <transition name="createUserAccount"><service-call name="org.moqui.impl.UserServices.create#UserAccount"/>
+        <default-response url="."/></transition>
+
+    <actions>
+        <entity-find entity-name="moqui.security.UserAccount" list="userAccountList">
+            <search-form-inputs default-order-by="username"/>
+        </entity-find>
+    </actions>
+    <widgets>
+        <container-dialog id="CreateUserAccountDialog" button-text="Create User Account">
+            <form-single name="CreateUserAccount" transition="createUserAccount">
+                <field name="partyId"><default-field><hidden/></default-field></field>
+                <field name="username"><default-field><text-line size="20"/></default-field></field>
+                <field name="emailAddress"><default-field title="Email"><text-line size="60"/></default-field></field>
+                <field name="userFullName"><default-field title="Full Name"><text-line size="40"/></default-field></field>
+                <field name="newPassword"><default-field title="Password"><password size="15"/></default-field></field>
+                <field name="newPasswordVerify"><default-field title="Password Verify"><password size="15"/></default-field></field>
+                <field name="requirePasswordChange"><default-field>
+                    <drop-down><option key="Y"/><option key="N"/></drop-down></default-field></field>
+                <field name="submitButton"><default-field title="Create"><submit/></default-field></field>
+            </form-single>
+        </container-dialog>
+        <form-list name="UserAccountList" list="userAccountList" skip-form="true">
+            <field name="userId">
+                <header-field title="ID" show-order-by="true"><text-find size="10" hide-options="true"/></header-field>
+                <default-field><link text="${userId}" url="userAccountDetail" link-type="anchor"/></default-field>
+            </field>
+            <field name="username">
+                <header-field show-order-by="true"><text-find size="10" hide-options="true"/></header-field>
+                <default-field><link text="${username}" url="userAccountDetail" link-type="anchor"/></default-field>
+            </field>
+            <field name="emailAddress">
+                <header-field show-order-by="true"><text-find size="15" hide-options="true"/></header-field>
+                <default-field><display/></default-field>
+            </field>
+            <field name="userFullName">
+                <header-field show-order-by="true"><text-find size="15" hide-options="true"/></header-field>
+                <default-field><display/></default-field>
+            </field>
+            <!--<field name="passwordSetDate">
+                <header-field show-order-by="true"><date-period allow-empty="true"/></header-field>
+                <default-field><display/></default-field>
+            </field>-->
+            <field name="requirePasswordChange">
+                <header-field title="Req PW Change" show-order-by="true"><drop-down allow-empty="true"><option key="Y"/><option key="N"/></drop-down></header-field>
+                <default-field><display/></default-field>
+            </field>
+            <field name="successiveFailedLogins">
+                <header-field title="Failed Logins" show-order-by="true"/>
+                <default-field><display/></default-field>
+            </field>
+            <field name="disabled">
+                <header-field show-order-by="true"><drop-down allow-empty="true"><option key="Y"/><option key="N"/></drop-down></header-field>
+                <default-field><display text="${disabled ?: 'N'} ${disabledDateTime ?: ''}"/></default-field>
+            </field>
+            <field name="locale">
+                <header-field show-order-by="true"><text-find size="6" hide-options="true"/></header-field>
+                <default-field><display/></default-field>
+            </field>
+            <field name="timeZone">
+                <header-field show-order-by="true"><text-find size="8" hide-options="true"/></header-field>
+                <default-field><display/></default-field>
+            </field>
+            <field name="find">
+                <header-field title="Find"><submit/></header-field>
+            </field>
+        </form-list>
+    </widgets>
+</screen>

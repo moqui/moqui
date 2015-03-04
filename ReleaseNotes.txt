@@ -31,6 +31,21 @@ process different messages (send, receive, consume). Both EntitySync and
 System-System Messages are new and not yet vetted in production so should
 be considered beta features as of this release.
 
+The Tools application has been split into System and Tools applications
+targeted at the different roles of system administrators and developers.
+There are new screens in the System app for security (users, user groups,
+and artifact groups with preferences, permissions, authz, tarpits), for
+Entity Sync to review status and create/maintain, and for System-System
+Messages to review incoming and outgoing messages and handle issues with
+messages. There are also improvements in the Tools screens for developers
+including various Auto Screen improvements, an Artifact Statistics screen
+with counts of various artifacts and improved service detail with
+highlighted display of actual and generated source.
+
+NOTE: This release, just as the previous, required JDK 7 to run. It also
+includes the invoke dynamic variation of Groovy (which requires Java 7)
+for significantly enhanced performance.
+
 NOTE: The webroot, tools, and example components are now in the new
 runtime/base-component directory instead of the runtime/component directory
 to keep them separate from add-on components. There is also a new
@@ -40,10 +55,10 @@ runtime/component directory.
 
 New Features:
 
-- Updated Apache Camel to 2.14.0, Apache CSV to 1.1,
+- Updated Apache Camel to 2.14.1, Apache CSV to 1.1,
   Apache Derby to 10.11.1.1, Apache FOP to 1.1 (now includes Batik 1.7),
-  Apache Lucene to 4.9.1, Apache Shiro to 1.2.3, Ehcache to 2.8.3,
-  ElasticSearch to 1.3.4, Freemarker to 2.3.21, Groovy to 2.3.7,
+  Apache Lucene to 4.10.3, Apache Shiro to 1.2.3, Ehcache to 2.9.0,
+  ElasticSearch to 1.4.4, Freemarker to 2.3.21, Groovy to 2.4.1 (indy),
   Liquibase to 3.3.2, OrientDB to 1.7.9, Winstone to 1.7.0
 - Updated Metis Admin Template to version 2.2.7, thanks to contribution
   from Osman Nuri Okumuş (onokumus), the author of Metis; this updates
@@ -67,6 +82,10 @@ New Features:
 - Added System-System Message functionality with persisted outgoing and
   incoming messages and services to manage queueing, sending, receiving,
   and consuming
+- Added UI for administration of System-System Messages
+- Added UI for Security administration (users, user groups, and artifact
+  groups with preferences, permissions, authz, tarpits)
+- Added UI for EntitySync administration
 - Added sync service call transaction options (ignore and cache) to match
   those available through the service definition
 - Made XML Actions service-call.@transaction options match those in the
@@ -1711,8 +1730,9 @@ Features considered, but may not to be included in 1.x series
   - Dynamic Screens (database-driven: DynamicScreen* entities)
 - Entity Facade
   - LiquiBase integration, entity.change-set element
-  x EntitySync tool
   - Add view log, like current change audit log (AuditLogView?)
+  - Improve entity cache auto-clear performance using ehcache search
+    http://ehcache.org/generated/2.9.0/html/ehc-all/#page/Ehcache_Documentation_Set%2Fto-srch_searching_a_cache.html%23
 - Artifact Execution Facade
   - Call ArtifactExecutionFacade.push() (to track, check authz, etc) for
     other types of artifacts (if/as determined to be helpful), including:
@@ -1736,14 +1756,6 @@ Features considered, but may not to be included in 1.x series
     - Entity info screen
     - Entity usage/reference section
     - Service usage/reference section on ServiceDetail screen
-  - Security Setup (auto screens CAN be used for this, but purpose specific screens could be much better)
-    - User Accounts
-    - User Groups and Group Members
-    - User Group Permissions
-    - User and Group Preferences
-    - Artifact Groups
-    - Artifact Authz
-    - Artifact Tarpits
 
 - Email verification by random code on registration and email change
 - Login through Google, Facebook, etc
@@ -1751,8 +1763,8 @@ Features considered, but may not to be included in 1.x series
   - https://developers.facebook.com/docs/facebook-login/login-flow-for-web/v2.0
 
 
-- Workflow that manages activity flow with screens and service attached to
-  activities and tasks based on them taking users to defined or automatic
+- Workflow that manages activity flow with screens and services attached to
+  activities, and tasks based on them taking users to defined or automatic
   screen; see BonitaSoft.com Open Source BPM for similar concept; generally
   workflow without requiring implementation of an entire app once the
   workflow itself is defined
@@ -1786,21 +1798,11 @@ Features considered, but may not to be included in 1.x series
       - for notifications from DataFeeds can add DataFeed.emailTemplateId (or not, what about toAddresses, etc?)
       - maybe have a more general way to configure details of topics, including emailTemplateId and screenLocation...
 
-- Data Document
-  x export screen (design similar to entity export screen; select documents, from/thru dates, file or browser output
-  x DataDocumentRelationshipAlias (need shorter name) for more flexible output: dataDocumentId, relationshipName, documentAlias
-- Data Search
-  - different ElasticSearch instances or indexes per Tenant
-  x use elasticsearch.org
-  x get data from Data Feed, Data Search index is a feed receive service
-  x receive#DataFeed interface service implementation
-  x search includes dataDocumentId as a search term, key search term to constrain to results to dataDocumentId; limit search to specific indexName
-  x _index = indexName, _type = dataDocumentId, _id = (pk field values, double-colon separated), use version?
-- Data Feed
+- Data Document and Feed
   x API get outstanding data changes (EntityDataFeed.getFeedLatestDocuments())
   X need external API for EntityDataFeed.getFeedLatestDocuments()? - done as service
   x API push matching data change
-  - API (or service?) push outstanding data changes (registration/connection, time trigger)
+  - API (or service?) push outstanding data changes (registration/connection, time trigger; tie to SystemMessage)
   - API (or service?) receive/persist data change messages - going reverse of generation for DataDocuments... should be interesting
   - Consumer System Registry
     x register service for push (service to call, ID), another for pull (ID) (in DataFeed entity)
@@ -1817,26 +1819,9 @@ Features considered, but may not to be included in 1.x series
     - Use this in HiveMind to send notifications of project, task, and wiki changes (maybe?)
 
 - System-System Message
-  x System-System Message Sending
-    x persist outgoing message
-    x status dates (sent, received/confirmed)
-    x retry on fail (sync or async from confirmation message)
-    x keep status in separate transaction
   - System-System Message Receiving
-    x persist incoming message
     - identify/link duplicate/retry messages (how?)
-    x retry processing on fail (manual or automatic - number of retries and/or time delay before sending fail confirmation)
     n send async success/fail confirmation (maybe best left to consume service)
-    x keep status in separate transaction
   - Camel endpoint for sending and receiving (custom, or use service facade endpoint?)
   - Useful for OAGIS and many other system-to-system messages; idea similar to OAGIS services and entities in OFBiz
-  - Tools app UI
-    - Find SystemMessage screen
-    - SystemMessageDetail screen with
-      - button to reset from error (change status, zero out failCount)
-      - button to cancel
-      - button to manually send/consume as applicable
-      - message info, msg test edit
-      - message type info/edit
-      - message remote info/edit
-      - error list
+  - Message purge after time period service and schedule for it

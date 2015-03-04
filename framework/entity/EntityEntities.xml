@@ -221,6 +221,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <entity entity-name="EntitySync" package-name="moqui.entity.sync">
         <field name="entitySyncId" type="id" is-pk="true"/>
+        <field name="description" type="text-medium"/>
         <field name="statusId" type="id"/>
         <field name="lastStartDate" type="date-time"/>
         <field name="lastSuccessfulSyncTime" type="date-time"/>
@@ -241,10 +242,20 @@ This Work includes contributions authored by David E. Jones, not as a
             <moqui.basic.StatusType description="Entity Sync" parentTypeId="" statusTypeId="EntitySync"/>
             <moqui.basic.StatusItem description="Not Started" sequenceNum="1" statusId="EsNotStarted" statusTypeId="EntitySync"/>
             <moqui.basic.StatusItem description="Running" sequenceNum="2" statusId="EsRunning" statusTypeId="EntitySync"/>
-            <moqui.basic.StatusItem description="Offline Pending" sequenceNum="3" statusId="EsOfflinePending" statusTypeId="EntitySync"/>
             <moqui.basic.StatusItem description="Complete" sequenceNum="4" statusId="EsComplete" statusTypeId="EntitySync"/>
             <moqui.basic.StatusItem description="Other Error" sequenceNum="98" statusId="EsOtherError" statusTypeId="EntitySync"/>
+            <!-- support these later?
+            <moqui.basic.StatusItem description="Offline Pending" sequenceNum="3" statusId="EsOfflinePending" statusTypeId="EntitySync"/>
             <moqui.basic.StatusItem description="Data Error" sequenceNum="99" statusId="EsDataError" statusTypeId="EntitySync"/>
+            -->
+
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="EsNotStarted" toStatusId="EsRunning" transitionName="Running"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="EsRunning" toStatusId="EsComplete" transitionName="Complete"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="EsRunning" toStatusId="EsOtherError" transitionName="Error"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="EsRunning" toStatusId="EsNotStarted" transitionName="Reset Not Started"/>
+
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="EsComplete" toStatusId="EsRunning" transitionName="Running"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="EsOtherError" toStatusId="EsRunning" transitionName="Running"/>
         </seed-data>
     </entity>
     <entity entity-name="EntitySyncArtifact" package-name="moqui.entity.sync">
@@ -257,7 +268,7 @@ This Work includes contributions authored by David E. Jones, not as a
             If include and exclude filters create condition with combined include AND NOT combined exclude.
         </description>
         <field name="entitySyncId" type="id" is-pk="true"/>
-        <field name="artifactGroupId" type="id"><description>Only entity artifacts (artifactTypeEnumId=AT_ENTITY) will
+        <field name="artifactGroupId" type="id" is-pk="true"><description>Only entity artifacts (artifactTypeEnumId=AT_ENTITY) will
             be used, all others ignored.</description></field>
         <field name="applEnumId" type="id"/>
         <field name="dependents" type="text-indicator"><description>If Y also include dependents of records, will apply
