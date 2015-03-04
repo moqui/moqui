@@ -362,7 +362,7 @@ class WebFacadeImpl implements WebFacade {
                 } else if (responseObj instanceof Map && !responseObj.containsKey("messages")) {
                     Map responseMap = new HashMap()
                     responseMap.putAll((Map) responseObj)
-                    responseObj.put("messages", eci.message.getMessagesString())
+                    responseMap.put("messages", eci.message.getMessagesString())
                     responseObj = responseMap
                 }
             }
