@@ -283,13 +283,15 @@ class ScreenDefinition {
         // breadth first by looking at subscreens of each subscreen on a first pass
         for (Map.Entry<String, SubscreensItem> entry in subscreensByName.entrySet()) {
             ScreenDefinition subSd = sfi.getScreenDefinition(entry.getValue().getLocation())
-            SubscreensItem subSsi = getSubscreensItem(curName)
+            SubscreensItem subSsi = subSd.getSubscreensItem(curName)
             if (subSsi != null) {
                 if (remainingPathNameList.size() > 1) {
+                    // if there are still more path elements, recurse to find them
                     List<String> subPathNameList = new ArrayList<>(remainingPathNameList)
                     subPathNameList.remove(0)
                     ScreenDefinition subSubSd = sfi.getScreenDefinition(subSsi.getLocation())
                     List<String> subPath = subSubSd.findSubscreenPath(subPathNameList, requestMethod)
+                    // found a partial match, not the full thing, no match so give up
                     if (!subPath) return null
                     // we've found it two deep, add both names, sub name first
                     subPath.add(0, curName)
@@ -310,16 +312,21 @@ class ScreenDefinition {
             }
         }
 
-        // is this a file under the screen?
+        // is this a resource (file) under the screen?
         ResourceReference existingFileRef = getSubContentRef(remainingPathNameList)
         if (existingFileRef && existingFileRef.supportsExists() && existingFileRef.exists) {
             return remainingPathNameList
         }
 
+        /* Used mainly for transition responses where the final path element is a screen, transition, or resource with
+            no extra path elements; allowing extra path elements causes problems only solvable by first searching without
+            allowing extra path elements, then searching the full tree for all possible paths that include extra elements
+            and choosing the maximal match (highest number of original sparse path elements matching actual screens)
         if (screenNode."@allow-extra-path" == "true") {
             // call it good
             return remainingPathNameList
         }
+        */
 
         // nothing found, return null by default
         return null
