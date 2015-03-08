@@ -122,7 +122,8 @@ class ScreenTree {
                     String urlText = urlInfo.getUrlWithParams()
                     if (tn.linkNode."@dynamic-load-id") {
                         String loadId = tn.linkNode."@dynamic-load-id"
-                        urlText = "javascript:\$('#${loadId}').load('${urlText}')"
+                        // NOTE: the void(0) is needed for Firefox and other browsers that render the result of the JS expression
+                        urlText = "javascript:{\$('#${loadId}').load('${urlText}'); void(0);}"
                     }
 
                     Map subNodeMap = [id:id, text:text, a_attr:[href:urlText], li_attr:["treeNodeName":tn.treeNodeNode."@name"]]

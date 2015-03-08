@@ -461,7 +461,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
             ((!linkNode["@link-type"]?has_content || linkNode["@link-type"] == "auto") &&
              ((linkNode["@url-type"]?has_content && linkNode["@url-type"] != "transition") || (!urlInfo.hasActions)))>
             <#if linkNode["@dynamic-load-id"]?has_content>
-                <#assign urlText>javascript:$('#${linkNode["@dynamic-load-id"]}').load('${urlInfo.urlWithParams}')</#assign>
+                <#-- NOTE: the void(0) is needed for Firefox and other browsers that render the result of the JS expression -->
+                <#assign urlText>javascript:{$('#${linkNode["@dynamic-load-id"]}').load('${urlInfo.urlWithParams}'); void(0);}</#assign>
             <#else>
                 <#assign urlText = urlInfo.urlWithParams/>
             </#if>
