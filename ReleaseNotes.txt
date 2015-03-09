@@ -24,6 +24,9 @@ Bug Fixes:
   intended use of sparse paths to specify target screens, transitions, and
   sub-screen resources; extra path elements generally come in request URLs
   where sparse paths are not allowed anyway
+- Fixed issue where adding ".xml" to a request URL for a screen would treat
+  the screen XML file as a sub-screen resource and return the contents; now
+  treats screen XMl files as if they don't exist, ie results in a 404 error
 
 
 ===========================================================================

@@ -12,14 +12,10 @@
 package org.moqui.impl.screen
 
 import freemarker.template.Template
-import net.sf.ehcache.Element
-import org.moqui.context.ExecutionContext
 import org.moqui.context.ResourceReference
 import org.moqui.context.ScreenFacade
 import org.moqui.context.ScreenRender
 import org.moqui.context.Cache
-import org.moqui.impl.StupidUtilities
-import org.moqui.impl.context.CacheImpl
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.impl.screen.ScreenDefinition.SubscreensItem
 import org.moqui.impl.screen.ScreenDefinition.TransitionItem
@@ -79,6 +75,20 @@ public class ScreenFacadeImpl implements ScreenFacade {
             }
         }
         return allLocations
+    }
+
+    boolean isScreen(String location) {
+        if (!location.endsWith(".xml")) return false
+        if (screenLocationCache.containsKey(location)) return true
+
+        try {
+            ScreenDefinition checkSd = getScreenDefinition(location)
+            return (checkSd != null)
+        } catch (Throwable t) {
+            // ignore the error, just checking to see if it is a screen
+            if (logger.isInfoEnabled()) logger.info("Error when checking to see if [${location}] is a XML Screen: ${t.toString()}")
+            return false
+        }
     }
 
     ScreenDefinition getScreenDefinition(String location) {

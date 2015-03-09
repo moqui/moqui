@@ -444,8 +444,11 @@ class ScreenUrlInfo {
                 // is this a file under the screen?
                 ResourceReference existingFileRef = lastSd.getSubContentRef(extraPathNameList)
                 if (existingFileRef && existingFileRef.supportsExists() && existingFileRef.exists) {
-                    fileResourceRef = existingFileRef
-                    break
+                    // exclude screen files, don't want to treat them as resources and let them be downloaded
+                    if (!sfi.isScreen(existingFileRef.getLocation())) {
+                        fileResourceRef = existingFileRef
+                        break
+                    }
                 }
 
                 if (lastSd.screenNode."@allow-extra-path" == "true") {
