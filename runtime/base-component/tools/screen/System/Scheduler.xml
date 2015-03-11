@@ -12,7 +12,7 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd"
-        default-menu-title="Scheduler" default-menu-index="3">
+        default-menu-title="Scheduler">
     <subscreens default-item="SchedulerDetail"/>
     <widgets>
         <subscreens-panel id="scheduler-panel" type="tab"/>
