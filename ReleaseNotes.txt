@@ -1784,12 +1784,19 @@ Features considered, but may not to be included in 1.x series
     - Entity info screen
     - Entity usage/reference section
     - Service usage/reference section on ServiceDetail screen
+  - Screen to install a component (upload and register, load data from it; require special permission for this, not enabled on the demo server)
+
+- RESTful endpoint for arbitrary entity operations
+  - support URL and HTTP request method patterns for get, find, create, update, delete
+  - configure aliases for entity names, and of course allow plain entity names without the package
+  - separate plural aliases to get multiple or all records for an entity?
+  - configure aliases for entity relationships; full or even plain entity name plus title relationship names may be problematic
+  - support for path elements such entity name/alias, entity PK value(s), then a chain of relationship names/aliases to get one or many values
 
 - Email verification by random code on registration and email change
 - Login through Google, Facebook, etc
   - OpenID, SAML, OAuth, ...
   - https://developers.facebook.com/docs/facebook-login/login-flow-for-web/v2.0
-
 
 - Workflow that manages activity flow with screens and services attached to
   activities, and tasks based on them taking users to defined or automatic
