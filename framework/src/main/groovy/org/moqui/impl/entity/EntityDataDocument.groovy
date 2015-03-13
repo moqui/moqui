@@ -210,7 +210,7 @@ class EntityDataDocument {
                     // add special entries
                     docMap = (Map<String, Object>) [_type:dataDocumentId, _id:docId]
                     docMap.put("_timestamp", efi.ecfi.getL10nFacade().format(
-                            thruUpdatedStamp ?: new Timestamp(System.currentTimeMillis()), "yyyy-MM-dd'T'HH:mm:ss"))
+                            thruUpdatedStamp ?: new Timestamp(System.currentTimeMillis()), "yyyy-MM-dd'T'HH:mm:ssZ"))
                     String _index = efi.getEcfi().getExecutionContext().getTenantId()
                     if (dataDocument.indexName) _index = _index + "__" + dataDocument.indexName
                     docMap.put("_index", _index.toLowerCase())
