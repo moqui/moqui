@@ -11,7 +11,7 @@ TODO
 
 New Features:
 
-TODO
+- More consistent handling of is-null; support for is-not-null, not-between
 
 Bug Fixes:
 

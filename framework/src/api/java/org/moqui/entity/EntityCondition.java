@@ -32,15 +32,18 @@ public interface EntityCondition extends Serializable {
     public static final ComparisonOperator IN = ComparisonOperator.IN;
     public static final ComparisonOperator NOT_IN = ComparisonOperator.NOT_IN;
     public static final ComparisonOperator BETWEEN = ComparisonOperator.BETWEEN;
+    public static final ComparisonOperator NOT_BETWEEN = ComparisonOperator.NOT_BETWEEN;
     public static final ComparisonOperator LIKE = ComparisonOperator.LIKE;
     public static final ComparisonOperator NOT_LIKE = ComparisonOperator.NOT_LIKE;
+    public static final ComparisonOperator IS_NULL = ComparisonOperator.IS_NULL;
+    public static final ComparisonOperator IS_NOT_NULL = ComparisonOperator.IS_NOT_NULL;
 
     public static final JoinOperator AND = JoinOperator.AND;
     public static final JoinOperator OR = JoinOperator.OR;
 
     public enum ComparisonOperator { EQUALS, NOT_EQUAL,
         LESS_THAN, GREATER_THAN, LESS_THAN_EQUAL_TO, GREATER_THAN_EQUAL_TO,
-        IN, NOT_IN, BETWEEN, LIKE, NOT_LIKE }
+        IN, NOT_IN, BETWEEN, NOT_BETWEEN, LIKE, NOT_LIKE, IS_NULL, IS_NOT_NULL }
 
     public enum JoinOperator { AND, OR }
 

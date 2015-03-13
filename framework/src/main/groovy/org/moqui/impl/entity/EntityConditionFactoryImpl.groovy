@@ -112,8 +112,11 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
             case "ENTCO_IN": return EntityCondition.IN
             case "ENTCO_NOT_IN": return EntityCondition.NOT_IN
             case "ENTCO_BETWEEN": return EntityCondition.BETWEEN
+            case "ENTCO_NOT_BETWEEN": return EntityCondition.NOT_BETWEEN
             case "ENTCO_LIKE": return EntityCondition.LIKE
             case "ENTCO_NOT_LIKE": return EntityCondition.NOT_LIKE
+            case "ENTCO_IS_NULL": return EntityCondition.IS_NULL
+            case "ENTCO_IS_NOT_NULL": return EntityCondition.IS_NOT_NULL
             default: return null
         }
     }
@@ -176,8 +179,11 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
         comparisonOperatorStringMap.put(ComparisonOperator.IN, "IN")
         comparisonOperatorStringMap.put(ComparisonOperator.NOT_IN, "NOT IN")
         comparisonOperatorStringMap.put(ComparisonOperator.BETWEEN, "BETWEEN")
+        comparisonOperatorStringMap.put(ComparisonOperator.BETWEEN, "NOT BETWEEN")
         comparisonOperatorStringMap.put(ComparisonOperator.LIKE, "LIKE")
         comparisonOperatorStringMap.put(ComparisonOperator.NOT_LIKE, "NOT LIKE")
+        comparisonOperatorStringMap.put(ComparisonOperator.IS_NULL, "IS NULL")
+        comparisonOperatorStringMap.put(ComparisonOperator.IS_NOT_NULL, "IS NOT NULL")
     }
     protected static final Map<String, ComparisonOperator> stringComparisonOperatorMap = [
             "=":ComparisonOperator.EQUALS,
@@ -213,11 +219,20 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
             "between":ComparisonOperator.BETWEEN,
             "BETWEEN":ComparisonOperator.BETWEEN,
 
+            "not-between":ComparisonOperator.NOT_BETWEEN,
+            "NOT BETWEEN":ComparisonOperator.NOT_BETWEEN,
+
             "like":ComparisonOperator.LIKE,
             "LIKE":ComparisonOperator.LIKE,
 
             "not-like":ComparisonOperator.NOT_LIKE,
-            "NOT LIKE":ComparisonOperator.NOT_LIKE
+            "NOT LIKE":ComparisonOperator.NOT_LIKE,
+
+            "is-null":ComparisonOperator.IS_NULL,
+            "IS NULL":ComparisonOperator.IS_NULL,
+
+            "is-not-null":ComparisonOperator.IS_NOT_NULL,
+            "IS NOT NULL":ComparisonOperator.IS_NOT_NULL
     ]
 
     static String getJoinOperatorString(JoinOperator op) {
@@ -277,10 +292,23 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
             } else {
                 return false
             }
+        case ComparisonOperator.NOT_BETWEEN:
+            if (value2 instanceof Collection && ((Collection) value2).size() == 2) {
+                Iterator iterator = ((Collection) value2).iterator()
+                Object lowObj = iterator.next()
+                Object highObj = iterator.next()
+                return lowObj > value1 && value1 >= highObj
+            } else {
+                return false
+            }
         case ComparisonOperator.LIKE:
             return StupidUtilities.compareLike(value1, value2)
         case ComparisonOperator.NOT_LIKE:
             return !StupidUtilities.compareLike(value1, value2)
+        case ComparisonOperator.IS_NULL:
+            return value2 == null
+        case ComparisonOperator.IS_NOT_NULL:
+            return value2 != null
         }
         // default return false
         return false

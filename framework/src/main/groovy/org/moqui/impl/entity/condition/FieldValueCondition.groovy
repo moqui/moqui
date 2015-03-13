@@ -47,13 +47,17 @@ class FieldValueCondition extends EntityConditionImplBase {
         sql.append(' ')
         boolean valueDone = false
         if (this.value == null) {
-            if (this.operator == EQUALS || this.operator == LIKE || this.operator == IN) {
+            if (this.operator == EQUALS || this.operator == LIKE || this.operator == IN || this.operator == BETWEEN) {
                 sql.append(" IS NULL")
                 valueDone = true
-            } else if (this.operator == NOT_EQUAL || this.operator == NOT_LIKE || this.operator == NOT_IN) {
+            } else if (this.operator == NOT_EQUAL || this.operator == NOT_LIKE || this.operator == NOT_IN || this.operator == NOT_BETWEEN) {
                 sql.append(" IS NOT NULL")
                 valueDone = true
             }
+        }
+        if (this.operator == IS_NULL || this.operator == IS_NOT_NULL) {
+            sql.append(EntityConditionFactoryImpl.getComparisonOperatorString(this.operator))
+            valueDone = true
         }
         if (!valueDone) {
             sql.append(EntityConditionFactoryImpl.getComparisonOperatorString(this.operator))
@@ -77,7 +81,7 @@ class FieldValueCondition extends EntityConditionImplBase {
                     sql.append(" (?)")
                     eqb.getParameters().add(new EntityConditionParameter(field.getFieldNode(eqb.mainEntityDefinition), this.value, eqb))
                 }
-            } else if (this.operator == BETWEEN && this.value instanceof Collection &&
+            } else if ((this.operator == BETWEEN || this.operator == NOT_BETWEEN) && this.value instanceof Collection &&
                     ((Collection) this.value).size() == 2) {
                 sql.append(" ? AND ?")
                 Iterator iterator = ((Collection) this.value).iterator()

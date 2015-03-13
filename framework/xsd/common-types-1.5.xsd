@@ -80,9 +80,11 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:enumeration value="in"/>
             <xs:enumeration value="not-in"/>
             <xs:enumeration value="between"/>
+            <xs:enumeration value="not-between"/>
             <xs:enumeration value="like"/>
             <xs:enumeration value="not-like"/>
             <xs:enumeration value="is-null"/>
+            <xs:enumeration value="is-not-null"/>
         </xs:restriction>
     </xs:simpleType>
 
