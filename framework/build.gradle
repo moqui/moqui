@@ -144,6 +144,7 @@ dependencies {
     // ElasticSearch Libraries, including Lucene
     apiCompile name: 'elasticsearch', version: '1.4.4' // Apache 2.0
     compile name: 'elasticsearch', version: '1.4.4' // Apache 2.0
+    compile name: 'elasticsearch-groovy', version: '1.4.4' // Apache 2.0
     compile name: 'lucene-analyzers-common', version: '4.10.3' // Apache 2.0
     compile name: 'lucene-core', version: '4.10.3' // Apache 2.0
     compile name: 'lucene-grouping', version: '4.10.3' // Apache 2.0
