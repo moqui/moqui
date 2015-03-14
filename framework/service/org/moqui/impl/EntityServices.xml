@@ -31,7 +31,7 @@ This Work includes contributions authored by David E. Jones, not as a
             import org.slf4j.LoggerFactory
             import org.moqui.context.ExecutionContext
             ExecutionContext ec = context.ec
-            Logger logger = LoggerFactory.getLogger("index_DataDocuments")
+            Logger logger = LoggerFactory.getLogger("org.moqui.impl.EntityServices.indexDataDocuments")
 
             documentVersionList = []
             originalDocumentList = getOriginalDocuments ? [] : null
@@ -48,11 +48,16 @@ This Work includes contributions authored by David E. Jones, not as a
                         originalDocumentList.add([:])
                     }
                 }
-                IndexResponse response = ec.elasticSearchClient
-                        .prepareIndex((String) document._index, (String) document._type, (String) document._id)
-                        .setSource(document).execute().actionGet()
+                // Groovy DSL version
+                IndexResponse response = ec.elasticSearchClient.index { index document._index; type document._type;
+                    id document._id; source document; }.actionGet()
+                // Java API version
+                //IndexResponse response = ec.elasticSearchClient
+                //        .prepareIndex((String) document._index, (String) document._type, (String) document._id)
+                //        .setSource(document).execute().actionGet()
+
                 documentVersionList.add(response.getVersion())
-                // logger.warn("============ indexed [${document._index}, ${document._type}, ${document._id}] version [${response.getVersion()}]")
+                if (logger.isTraceEnabled()) logger.trace("Indexed [${document._index}, ${document._type}, ${document._id}] version [${response.getVersion()}]")
             }
             </script>
         </actions>
