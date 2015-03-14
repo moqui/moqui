@@ -69,7 +69,7 @@ class BasicJoinCondition extends EntityConditionImplBase {
     @Override
     String toString() {
         // general SQL where clause style text with values included
-        return "(" + lhs.toString() + " " + EntityConditionFactoryImpl.getJoinOperatorString(this.operator) + " " + rhs.toString() + ")"
+        return "(" + lhs.toString() + ") " + EntityConditionFactoryImpl.getJoinOperatorString(this.operator) + " (" + rhs.toString() + ")"
     }
 
     @Override

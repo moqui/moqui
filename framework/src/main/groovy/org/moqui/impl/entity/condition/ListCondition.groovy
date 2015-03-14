@@ -81,7 +81,7 @@ class ListCondition extends EntityConditionImplBase {
         StringBuilder sb = new StringBuilder()
         for (EntityConditionImplBase condition in this.conditionList) {
             if (sb.length() > 0) sb.append(' ').append(EntityConditionFactoryImpl.getJoinOperatorString(this.operator)).append(' ')
-            sb.append(condition.toString())
+            sb.append('(').append(condition.toString()).append(')')
         }
         return sb.toString()
     }
