@@ -27,6 +27,9 @@ Bug Fixes:
 - Fixed issue where adding ".xml" to a request URL for a screen would treat
   the screen XML file as a sub-screen resource and return the contents; now
   treats screen XMl files as if they don't exist, ie results in a 404 error
+- Fixed issue with EntityFind where if a ListCondition with an OR operator
+  was passed before passing other conditions then the top-level conditions
+  would be OR'ed together instead of AND'ed
 
 
 ===========================================================================

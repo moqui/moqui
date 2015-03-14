@@ -35,6 +35,8 @@ class ListCondition extends EntityConditionImplBase {
 
     void addCondition(EntityConditionImplBase condition) { if (condition != null) conditionList.add(condition) }
 
+    EntityCondition.JoinOperator getOperator() { return operator }
+
     @Override
     void makeSqlWhere(EntityQueryBuilder eqb) {
         if (!this.conditionList) return
