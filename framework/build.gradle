@@ -13,6 +13,9 @@
 tasks.withType(JavaCompile) {
     options.compilerArgs << "-Xlint:unchecked"
 }
+tasks.withType(GroovyCompile) {
+    groovyOptions.optimizationOptions.indy = true
+}
 
 apply plugin: 'groovy'
 apply plugin: 'war'
