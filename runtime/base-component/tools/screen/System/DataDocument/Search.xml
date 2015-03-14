@@ -58,7 +58,8 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="id"><default-field><display text="${_id}"/></default-field></field>
             <field name="documentTitle"><default-field title="Title"><display/></default-field></field>
             <field name="link"><default-field>
-                <link url="${linkUrl}" text="${dataDocumentLink.label}" link-type="anchor" url-type="plain"/>
+                <link url="${linkUrl}" text="${dataDocumentLink.label}" link-type="anchor" url-type="plain"
+                        condition="dataDocumentLink"/>
             </default-field></field>
             <field name="viewDocument"><default-field>
                 <dynamic-dialog id="ViewDocument" button-text="View Document" transition="viewDocument" width="800">
