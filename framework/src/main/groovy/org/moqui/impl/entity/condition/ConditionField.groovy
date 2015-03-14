@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.entity.condition
 
+import org.moqui.BaseException
 import org.moqui.impl.entity.EntityDefinition
 import org.moqui.impl.StupidJavaUtilities
 
@@ -20,8 +21,12 @@ class ConditionField {
     EntityDefinition aliasEntityDef = null
     String aliasEntityName = null
 
-    ConditionField(String fieldName) { this.fieldName = fieldName.intern() }
+    ConditionField(String fieldName) {
+        if (!fieldName) throw new BaseException("Empty fieldName not allowed")
+        this.fieldName = fieldName.intern()
+    }
     ConditionField(String entityAlias, String fieldName, EntityDefinition aliasEntityDef) {
+        if (!fieldName) throw new BaseException("Empty fieldName not allowed")
         this.entityAlias = entityAlias.intern()
         this.fieldName = fieldName.intern()
         this.aliasEntityDef = aliasEntityDef
