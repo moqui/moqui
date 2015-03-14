@@ -440,7 +440,8 @@ class EntityFacadeImpl implements EntityFacade {
             EntityDefinition ed = getEntityDefinition(entityName)
             List<String> pkSet = ed.getPkFieldNames()
             for (Node relNode in ed.entityNode."relationship") {
-                if (relNode."@type" == "many") continue
+                // don't create reverse for auto reference relationships
+                if (relNode."@is-auto-reverse" == "true") continue
 
                 EntityDefinition reverseEd
                 try {
@@ -463,19 +464,20 @@ class EntityFacadeImpl implements EntityFacade {
                         { (it."@related-entity-name" == ed.entityName || it."@related-entity-name" == ed.fullEntityName) &&
                                 it."@type" == relType && ((!title && !it."@title") || it."@title" == title) })
                 if (reverseRelNode != null) {
+                    // NOTE DEJ 20150314 Just track auto-reverse, not one-reverse
                     // make sure has is-one-reverse="true"
-                    reverseRelNode.attributes().put("is-one-reverse", "true")
+                    // reverseRelNode.attributes().put("is-one-reverse", "true")
                     continue
                 }
 
-                // track the fact that the related entity has others pointing back to it
-                if (!ed.isViewEntity()) reverseEd.entityNode.attributes().put("has-dependents", "true")
+                // track the fact that the related entity has others pointing back to it, unless original relationship is type many (doesn't qualify)
+                if (!ed.isViewEntity() && relNode."@type" != "many") reverseEd.entityNode.attributes().put("has-dependents", "true")
 
                 // create a new reverse-many relationship
                 Map keyMap = ed.getRelationshipExpandedKeyMap(relNode)
 
                 Node newRelNode = reverseEd.entityNode.appendNode("relationship",
-                        ["related-entity-name":ed.fullEntityName, "type":relType, "is-one-reverse":"true"])
+                        ["related-entity-name":ed.fullEntityName, "type":relType, "is-auto-reverse":"true"])
                 if (relNode."@title") newRelNode.attributes().title = title
                 for (Map.Entry keyEntry in keyMap) {
                     // add a key-map with the reverse fields
