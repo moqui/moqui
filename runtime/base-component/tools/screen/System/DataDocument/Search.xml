@@ -14,7 +14,6 @@ This Work includes contributions authored by David E. Jones, not as a
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd"
         default-menu-title="Search" default-menu-index="1">
 
-    <transition name="submitSearch"><default-response url="."/></transition>
     <transition name="viewDocument"><default-response url="../ViewDocument"/></transition>
 
     <actions>
@@ -23,7 +22,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </if>
     </actions>
     <widgets>
-        <form-single name="SearchOptions" transition="submitSearch">
+        <form-single name="SearchOptions" transition=".">
             <field name="indexName"><default-field title="">
                 <drop-down>
                     <entity-options key="${indexName}" text="${indexName}">
