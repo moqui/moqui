@@ -149,14 +149,18 @@ class EntityDataDocument {
         StupidUtilities.Incrementer incrementer = new StupidUtilities.Incrementer()
         addDataDocRelatedEntity(dynamicView, "PRIM_ENT", fieldTree, incrementer)
 
-        // logger.warn("=========== ${dataDocumentId} fieldAliasPathMap=${((EntityDynamicViewImpl) dynamicView).getViewEntityNode()}")
+        // logger.warn("=========== ${dataDocumentId} ViewEntityNode=${((EntityDynamicViewImpl) dynamicView).getViewEntityNode()}")
 
         // add conditions
         if (condition) mainFind.condition(condition)
-        for (EntityValue dataDocumentCondition in dataDocumentConditionList)
-            if (dataDocumentCondition.postQuery != "Y")
+        for (EntityValue dataDocumentCondition in dataDocumentConditionList) {
+            if (!fieldAliasPathMap.containsKey(dataDocumentCondition.fieldNameAlias))
+                throw new EntityException("Found DataDocumentCondition with fieldNameAlias [${dataDocumentCondition.fieldNameAlias}] that is not aliased in DataDocument [${dataDocumentId}]")
+            if (dataDocumentCondition.postQuery != "Y") {
                 mainFind.condition((String) dataDocumentCondition.fieldNameAlias, (String) dataDocumentCondition.operator ?: 'equals',
                         dataDocumentCondition.fieldValue)
+            }
+        }
 
         // create a condition with an OR list of date range comparisons to check that at least one member-entity has lastUpdatedStamp in range
         if (fromUpdateStamp != null || thruUpdatedStamp != null) {
