@@ -1795,6 +1795,8 @@ Features considered, but may not to be included in 1.x series
   - separate plural aliases to get multiple or all records for an entity?
   - configure aliases for entity relationships; full or even plain entity name plus title relationship names may be problematic
   - support for path elements such entity name/alias, entity PK value(s), then a chain of relationship names/aliases to get one or many values
+  - http://blog.mwaysolutions.com/2014/06/05/10-best-practices-for-better-restful-api/
+  - http://www.vinaysahni.com/best-practices-for-a-pragmatic-restful-api
 
 - Email verification by random code on registration and email change
 - Login through Google, Facebook, etc
