@@ -69,6 +69,10 @@ This Work includes contributions authored by David E. Jones, not as a
             </script>
         </actions>
     </service>
+    <service verb="put" noun="DataDocumentMappings">
+        <in-parameters><parameter name="indexName" required="true"/></in-parameters>
+        <actions><script>ec.entity.getEntityDataDocument().putIndexMappings(indexName)</script></actions>
+    </service>
 
     <service verb="index" noun="DataFeedDocuments" authenticate="false">
         <in-parameters>
@@ -230,13 +234,14 @@ This Work includes contributions authored by David E. Jones, not as a
         </description>
         <in-parameters>
             <parameter name="indexName" required="true"/>
-            <parameter name="documentType"><description>The ElasticSearch document type. For DataDocument based docs
+            <parameter name="documentTypeList" type="List"><description>The ElasticSearch document type. For DataDocument based docs
                 this is the dataDocumentId.</description></parameter>
             <parameter name="sourceJson"/>
             <parameter name="sourceMap" type="Map"/>
         </in-parameters>
         <out-parameters>
-
+            <parameter name="sr" type="org.elasticsearch.action.search.SearchResponse"/>
+            <parameter name="responseString"/>
         </out-parameters>
         <actions>
             <script>
@@ -246,25 +251,21 @@ This Work includes contributions authored by David E. Jones, not as a
 
                 ExecutionContext ec = context.ec
 
-                if (!indexName.contains("__")) indexName = "${ec.tenantId}__${indexName}".toLowerCase()
+                if (!indexName.contains('__')) indexName = "${ec.tenantId}__${indexName}".toLowerCase()
 
                 // make sure index exists
                 ec.entity.getEntityDataDocument().checkCreateIndex(indexName)
 
                 // get the search hits
-                SearchRequestBuilder srb = ec.elasticSearchClient.prepareSearch().setIndices((String) indexName).setSearchType("count")
-                if (documentType) srb.setTypes((String) documentType)
+                SearchRequestBuilder srb = ec.elasticSearchClient.prepareSearch().setIndices((String) indexName).setSearchType('count')
+                if (documentTypeList) srb.setTypes((String[]) documentTypeList.toArray(new String[documentTypeList.size()]))
                 if (sourceJson) srb.setExtraSource((String) sourceJson)
                 if (sourceMap) srb.setExtraSource((Map) sourceMap)
 
-                SearchResponse sr = srb.execute().actionGet()
+                sr = srb.execute().actionGet()
                 aggregations = sr.getAggregations().getAsMap()
                 responseString = sr.toString()
-
-
             </script>
-            <log level="warn" message="========== aggregations Map: ${aggregations}"/>
-            <log level="warn" message="========== responseString: ${responseString}"/>
         </actions>
     </service>
 

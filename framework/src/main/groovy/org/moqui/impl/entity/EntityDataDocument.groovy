@@ -421,7 +421,7 @@ class EntityDataDocument {
         cirb.execute().actionGet()
     }
 
-    void addIndexMappings(String indexName) {
+    void putIndexMappings(String indexName) {
         String baseIndexName = indexName.contains("__") ? indexName.substring(indexName.indexOf("__") + 2) : indexName
 
         Client client = efi.getEcfi().getElasticSearchClient()
@@ -434,7 +434,7 @@ class EntityDataDocument {
         for (EntityValue dd in ddList) {
             Map docMapping = makeElasticSearchMapping((String) dd.dataDocumentId)
             client.admin().indices().preparePutMapping(indexName).setType((String) dd.dataDocumentId)
-                    .setSource(docMapping).execute().actionGet()
+                    .setSource(docMapping).setIgnoreConflicts(true).execute().actionGet()
         }
     }
 
@@ -502,8 +502,11 @@ class EntityDataDocument {
                     String fieldName = dataDocumentField.fieldNameAlias ?: fieldPathElement
                     Node fieldNode = currentEd.getFieldNode(fieldPathElement)
                     if (fieldNode == null) throw new EntityException("Could not find field [${fieldPathElement}] for entity [${currentEd.getFullEntityName()}] in DataDocument [${dataDocumentId}]")
-                    String mappingType = esTypeMap.get(fieldNode."@type") ?: 'string'
-                    currentProperties.put(fieldName, [type:mappingType])
+                    String fieldType = fieldNode."@type"
+                    String mappingType = esTypeMap.get(fieldType) ?: 'string'
+                    Map propertyMap = [type:mappingType]
+                    if (fieldType.startsWith("id")) propertyMap.index = 'not_analyzed'
+                    currentProperties.put(fieldName, propertyMap)
                 }
             }
         }
