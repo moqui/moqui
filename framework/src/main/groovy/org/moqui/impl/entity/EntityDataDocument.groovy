@@ -12,7 +12,9 @@
 package org.moqui.impl.entity
 
 import groovy.json.JsonOutput
-import groovy.mock.interceptor.Ignore
+import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder
+import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsRequest
+import org.elasticsearch.client.Client
 import org.moqui.entity.EntityCondition
 import org.moqui.entity.EntityDynamicView
 import org.moqui.entity.EntityException
@@ -371,7 +373,7 @@ class EntityDataDocument {
                 if (setFields) {
                     // set the field
                     String fieldName = fieldTreeEntry.getValue()
-                    if (ev.get(fieldName)) parentDocMap.put(fieldName, ev.get(fieldName))
+                    if (ev.get(fieldName) != null) parentDocMap.put(fieldName, ev.get(fieldName))
                 }
             }
         }
@@ -395,5 +397,115 @@ class EntityDataDocument {
                 dynamicView.addAlias(entityAlias, (String) fieldTreeEntry.getValue(), (String) fieldTreeEntry.getKey(), null)
             }
         }
+    }
+
+    void checkCreateIndex(String indexName) {
+        String baseIndexName = indexName.contains("__") ? indexName.substring(indexName.indexOf("__") + 2) : indexName
+
+        Client client = efi.getEcfi().getElasticSearchClient()
+        boolean hasIndex = client.admin().indices().exists(new IndicesExistsRequest(indexName)).actionGet().exists
+        logger.warn("========== Checking index ${indexName} (${baseIndexName}), hasIndex=${hasIndex}")
+        if (hasIndex) return
+
+        logger.info("Creating ElasticSearch index ${indexName} (${baseIndexName}) and adding document mappings")
+
+        CreateIndexRequestBuilder cirb = client.admin().indices().prepareCreate(indexName)
+
+        EntityList ddList = efi.find("moqui.entity.document.DataDocument").condition("indexName", baseIndexName).list()
+        for (EntityValue dd in ddList) {
+            Map docMapping = makeElasticSearchMapping((String) dd.dataDocumentId)
+            cirb.addMapping((String) dd.dataDocumentId, docMapping)
+            logger.warn("========== Added mapping for ${dd.dataDocumentId} to index ${indexName}:\n${docMapping}")
+
+        }
+        cirb.execute().actionGet()
+    }
+
+    void addIndexMappings(String indexName) {
+        Client client = efi.getEcfi().getElasticSearchClient()
+        boolean hasIndex = client.admin().indices().exists(new IndicesExistsRequest(indexName)).actionGet().isExists()
+        if (!hasIndex) {
+            client.admin().indices().prepareCreate(indexName).execute().actionGet()
+        }
+
+        EntityList ddList = efi.find("moqui.entity.document.DataDocument").condition("indexName", indexName).list()
+        for (EntityValue dd in ddList) {
+            Map docMapping = makeElasticSearchMapping((String) dd.dataDocumentId)
+            client.admin().indices().preparePutMapping(indexName).setType((String) dd.dataDocumentId)
+                    .setSource(docMapping).execute().actionGet()
+        }
+    }
+
+    static final Map<String, String> esTypeMap = [id:'string', 'id-long':'string', date:'date', time:'string',
+        'date-time':'date', 'number-integer':'long', 'number-decimal':'double', 'number-float':'double',
+        'currency-amount':'double', 'currency-precise':'double', 'text-indicator':'string', 'text-short':'string',
+        'text-medium':'string', 'text-long':'string', 'text-very-long':'string', 'binary-very-long':'binary']
+
+    Map makeElasticSearchMapping(String dataDocumentId) {
+        EntityValue dataDocument = efi.find("moqui.entity.document.DataDocument")
+                .condition("dataDocumentId", dataDocumentId).useCache(true).one()
+        if (dataDocument == null) throw new EntityException("No DataDocument found with ID [${dataDocumentId}]")
+        EntityList dataDocumentFieldList = dataDocument.findRelated("moqui.entity.document.DataDocumentField", null, null, true, false)
+        EntityList dataDocumentRelAliasList = dataDocument.findRelated("moqui.entity.document.DataDocumentRelAlias", null, null, true, false)
+
+        Map<String, String> relationshipAliasMap = [:]
+        for (EntityValue dataDocumentRelAlias in dataDocumentRelAliasList)
+            relationshipAliasMap.put((String) dataDocumentRelAlias.relationshipName, (String) dataDocumentRelAlias.documentAlias)
+
+        String primaryEntityName = dataDocument.primaryEntityName
+        String primaryEntityAlias = relationshipAliasMap.get(primaryEntityName) ?: primaryEntityName
+        EntityDefinition primaryEd = efi.getEntityDefinition(primaryEntityName)
+
+        Map rootProperties = [:]
+        Map mappingMap = [properties:rootProperties]
+
+        Map primaryProperties = [:]
+        rootProperties.put(primaryEntityAlias, [properties:primaryProperties])
+
+        for (EntityValue dataDocumentField in dataDocumentFieldList) {
+            String fieldPath = dataDocumentField.fieldPath
+            if (!fieldPath.contains(':')) {
+                // is a field on the primary entity, put it there
+                String fieldName = dataDocumentField.fieldNameAlias ?: dataDocumentField.fieldPath
+                Node fieldNode = primaryEd.getFieldNode((String) dataDocumentField.fieldPath)
+                if (fieldNode == null) throw new EntityException("Could not find field [${dataDocumentField.fieldPath}] for entity [${primaryEd.getFullEntityName()}] in DataDocument [${dataDocumentId}]")
+                String mappingType = esTypeMap.get(fieldNode."@type") ?: 'string'
+                primaryProperties.put(fieldName, [type:mappingType])
+                continue
+            }
+
+            Iterator<String> fieldPathElementIter = fieldPath.split(":").iterator()
+            Map currentProperties = rootProperties
+            EntityDefinition currentEd = primaryEd
+            while (fieldPathElementIter.hasNext()) {
+                String fieldPathElement = fieldPathElementIter.next()
+                if (fieldPathElementIter.hasNext()) {
+                    Node relNode = currentEd.getRelationshipNode(fieldPathElement)
+                    if (relNode == null) throw new EntityException("Could not find relationship [${fieldPathElement}] for entity [${currentEd.getFullEntityName()}] in DataDocument [${dataDocumentId}]")
+                    currentEd = efi.getEntityDefinition((String) relNode."@related-entity-name")
+                    if (currentEd == null) throw new EntityException("Could not find entity [${relNode."@related-entity-name"}] in DataDocument [${dataDocumentId}]")
+
+                    String objectName = relationshipAliasMap.get(fieldPathElement) ?: fieldPathElement
+                    Map subObject = (Map) currentProperties.get(objectName)
+                    Map subProperties
+                    if (subObject == null) {
+                        subProperties = [:]
+                        subObject = [properties:subProperties]
+                        currentProperties.put(objectName, subObject)
+                    } else {
+                        subProperties = subObject.properties
+                    }
+                    currentProperties = subProperties
+                } else {
+                    String fieldName = dataDocumentField.fieldNameAlias ?: fieldPathElement
+                    Node fieldNode = currentEd.getFieldNode(fieldPathElement)
+                    if (fieldNode == null) throw new EntityException("Could not find field [${fieldPathElement}] for entity [${currentEd.getFullEntityName()}] in DataDocument [${dataDocumentId}]")
+                    String mappingType = esTypeMap.get(fieldNode."@type") ?: 'string'
+                    currentProperties.put(fieldName, [type:mappingType])
+                }
+            }
+        }
+
+        return mappingMap
     }
 }
