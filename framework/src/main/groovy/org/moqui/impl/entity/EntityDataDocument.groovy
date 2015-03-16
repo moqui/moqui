@@ -404,7 +404,7 @@ class EntityDataDocument {
 
         Client client = efi.getEcfi().getElasticSearchClient()
         boolean hasIndex = client.admin().indices().exists(new IndicesExistsRequest(indexName)).actionGet().exists
-        logger.warn("========== Checking index ${indexName} (${baseIndexName}), hasIndex=${hasIndex}")
+        // logger.warn("========== Checking index ${indexName} (${baseIndexName}), hasIndex=${hasIndex}")
         if (hasIndex) return
 
         logger.info("Creating ElasticSearch index ${indexName} (${baseIndexName}) and adding document mappings")
@@ -415,20 +415,22 @@ class EntityDataDocument {
         for (EntityValue dd in ddList) {
             Map docMapping = makeElasticSearchMapping((String) dd.dataDocumentId)
             cirb.addMapping((String) dd.dataDocumentId, docMapping)
-            logger.warn("========== Added mapping for ${dd.dataDocumentId} to index ${indexName}:\n${docMapping}")
+            // logger.warn("========== Added mapping for ${dd.dataDocumentId} to index ${indexName}:\n${docMapping}")
 
         }
         cirb.execute().actionGet()
     }
 
     void addIndexMappings(String indexName) {
+        String baseIndexName = indexName.contains("__") ? indexName.substring(indexName.indexOf("__") + 2) : indexName
+
         Client client = efi.getEcfi().getElasticSearchClient()
         boolean hasIndex = client.admin().indices().exists(new IndicesExistsRequest(indexName)).actionGet().isExists()
         if (!hasIndex) {
             client.admin().indices().prepareCreate(indexName).execute().actionGet()
         }
 
-        EntityList ddList = efi.find("moqui.entity.document.DataDocument").condition("indexName", indexName).list()
+        EntityList ddList = efi.find("moqui.entity.document.DataDocument").condition("indexName", baseIndexName).list()
         for (EntityValue dd in ddList) {
             Map docMapping = makeElasticSearchMapping((String) dd.dataDocumentId)
             client.admin().indices().preparePutMapping(indexName).setType((String) dd.dataDocumentId)
