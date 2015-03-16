@@ -240,8 +240,8 @@ This Work includes contributions authored by David E. Jones, not as a
             <parameter name="sourceMap" type="Map"/>
         </in-parameters>
         <out-parameters>
-            <parameter name="sr" type="org.elasticsearch.action.search.SearchResponse"/>
-            <parameter name="responseString"/>
+            <parameter name="searchResponse" type="org.elasticsearch.action.search.SearchResponse"/>
+            <!-- Get this with "searchResponse.toString()" if needed: <parameter name="responseString"/> -->
         </out-parameters>
         <actions>
             <script>
@@ -262,9 +262,9 @@ This Work includes contributions authored by David E. Jones, not as a
                 if (sourceJson) srb.setExtraSource((String) sourceJson)
                 if (sourceMap) srb.setExtraSource((Map) sourceMap)
 
-                sr = srb.execute().actionGet()
-                aggregations = sr.getAggregations().getAsMap()
-                responseString = sr.toString()
+                searchResponse = srb.execute().actionGet()
+                // aggregations = searchResponse.getAggregations().getAsMap()
+                // responseString = searchResponse.toString()
             </script>
         </actions>
     </service>
