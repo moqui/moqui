@@ -12,6 +12,13 @@ TODO
 New Features:
 
 - More consistent handling of is-null; support for is-not-null, not-between
+- Document mappings (type definitions, etc) are now put automatically when
+  a DataDocument indexed with ElasticSearch is first used (by index or
+  search) with types for numbers, dates, etc needed for analytics and also
+  not_analyzed set for all id* type entity fields
+- Added EntityServices.search#CountBySource service to do analytics
+  searches using ElasticSearch; there is a real-world example of the use of
+  this service in Mantle for current and projected inventory data
 
 Bug Fixes:
 
