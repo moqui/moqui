@@ -459,7 +459,7 @@ class ServiceDefinition {
             // do type conversion if possible
             String format = parameterNode."@format"
             Object converted = null
-            boolean isString = parameterValue instanceof String
+            boolean isString = parameterValue instanceof String || parameterValue instanceof GString
             boolean isEmptyString = isString && ((String) parameterValue).length() == 0
             if (isString && !isEmptyString) {
                 // try some String to XYZ specific conversions for parsing with format, locale, etc
