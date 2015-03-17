@@ -471,8 +471,12 @@ class EntityDataDocument {
                 String fieldName = dataDocumentField.fieldNameAlias ?: dataDocumentField.fieldPath
                 Node fieldNode = primaryEd.getFieldNode((String) dataDocumentField.fieldPath)
                 if (fieldNode == null) throw new EntityException("Could not find field [${dataDocumentField.fieldPath}] for entity [${primaryEd.getFullEntityName()}] in DataDocument [${dataDocumentId}]")
-                String mappingType = esTypeMap.get(fieldNode."@type") ?: 'string'
-                primaryProperties.put(fieldName, [type:mappingType])
+
+                String fieldType = fieldNode."@type"
+                String mappingType = esTypeMap.get(fieldType) ?: 'string'
+                Map propertyMap = [type:mappingType]
+                if (fieldType.startsWith("id")) propertyMap.index = 'not_analyzed'
+                primaryProperties.put(fieldName, propertyMap)
                 continue
             }
 
