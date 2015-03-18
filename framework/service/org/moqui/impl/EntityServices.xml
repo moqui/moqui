@@ -43,6 +43,8 @@ This Work includes contributions authored by David E. Jones, not as a
             documentVersionList = []
             originalDocumentList = getOriginalDocuments ? [] : null
             for (Map document in documentList) {
+                // logger.warn("====== indexing document: ${document}")
+
                 if (getOriginalDocuments) {
                     // this may fail for a number of reasons, like index doesn't exist yet, so catch the exception
                     try {
@@ -236,6 +238,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <parameter name="indexName" required="true"/>
             <parameter name="documentTypeList" type="List"><description>The ElasticSearch document type. For DataDocument based docs
                 this is the dataDocumentId.</description></parameter>
+            <parameter name="maxResults" type="Integer" default="1000"/>
             <parameter name="sourceJson"/>
             <parameter name="sourceMap" type="Map"/>
         </in-parameters>
@@ -257,7 +260,8 @@ This Work includes contributions authored by David E. Jones, not as a
                 ec.entity.getEntityDataDocument().checkCreateIndex(indexName)
 
                 // get the search hits
-                SearchRequestBuilder srb = ec.elasticSearchClient.prepareSearch().setIndices((String) indexName).setSearchType('count')
+                SearchRequestBuilder srb = ec.elasticSearchClient.prepareSearch().setIndices((String) indexName)
+                        .setSearchType('count').setSize(maxResults)
                 if (documentTypeList) srb.setTypes((String[]) documentTypeList.toArray(new String[documentTypeList.size()]))
                 if (sourceJson) srb.setExtraSource((String) sourceJson)
                 if (sourceMap) srb.setExtraSource((Map) sourceMap)
