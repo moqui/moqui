@@ -14,8 +14,6 @@ This Work includes contributions authored by David E. Jones, not as a
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd"
         default-menu-title="SQL" begin-transaction="true">
 
-    <transition name="run"><default-response url="."/></transition>
-
     <pre-actions>
         <script><![CDATA[
             import java.sql.Connection
@@ -71,7 +69,7 @@ This Work includes contributions authored by David E. Jones, not as a
         ]]></script>
     </pre-actions>
     <widgets>
-        <form-single name="SqlOptions" transition="run">
+        <form-single name="SqlOptions" transition=".">
             <field name="groupName"><default-field>
                 <drop-down allow-empty="false" no-current-selected-key="transactional">
                     <list-options list="ec.entity.getDatasourceGroupNames()"/></drop-down>
@@ -85,10 +83,10 @@ This Work includes contributions authored by David E. Jones, not as a
         <render-mode><text type="html" template="true"><![CDATA[
             <div>
             <#if columns?has_content>
-                <table cellspacing="0">
+                <table class="table table-striped table-hover">
                     <tr class="header-row"><#list columns as column><td>${column}</td></#list></tr>
                     <#if records?has_content><#list records as record>
-                        <tr><#list record as curField><td>${curField!"&nbsp;"}</td></#list></tr>
+                        <tr><#list record as curField><td>${ec.l10n.format(curField, '')!"&nbsp;"}</td></#list></tr>
                     </#list></#if>
                 </table>
             </#if>
