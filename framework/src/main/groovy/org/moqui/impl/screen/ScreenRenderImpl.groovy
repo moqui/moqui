@@ -1062,9 +1062,11 @@ class ScreenRenderImpl implements ScreenRender {
                 if (logger.isTraceEnabled()) logger.trace("Ignoring entity exception for non-field: ${e.toString()}")
             }
         }
-        if (!value) value = ec.getContext().get(fieldName)
+        if (value == null || (value instanceof String && value.length() == 0)) value = ec.getContext().get(fieldName)
         // this isn't needed since the parameters are copied to the context: if (!isError && isWebAndSameForm && !value) value = ec.getWeb().parameters.get(fieldName)
-        if (value) return value
+
+        boolean valueIsString = value instanceof String || value instanceof GString
+        if (value != null && (!valueIsString || (valueIsString && value.length() > 0))) return value
         String defaultStr = ec.getResource().evaluateStringExpand(defaultValue, null)
         if (defaultStr) return defaultStr
         return value
