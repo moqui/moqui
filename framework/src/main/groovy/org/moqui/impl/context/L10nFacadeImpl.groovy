@@ -73,8 +73,8 @@ public class L10nFacadeImpl implements L10nFacade {
     @Override
     String formatCurrency(Object amount, String uomId, Integer fractionDigits) {
         if (amount == null) return ""
-        if (amount instanceof String) {
-            if (((String) amount).length() == 0) {
+        if (amount instanceof CharSequence) {
+            if (amount.length() == 0) {
                 return ""
             } else {
                 amount = parseNumber((String) amount, null)

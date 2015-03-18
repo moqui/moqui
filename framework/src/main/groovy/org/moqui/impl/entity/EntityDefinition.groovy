@@ -696,10 +696,10 @@ public class EntityDefinition {
 
             if (ev != null ? ev.isFieldSet(sourceFieldName) : src.containsKey(sourceFieldName)) {
                 Object value = src.get(sourceFieldName)
-                if (value) {
-                    if (value instanceof String) {
+                if (!StupidUtilities.isEmpty(value)) {
+                    if (value instanceof CharSequence) {
                         try {
-                            this.setString(fieldName, (String) value, dest)
+                            this.setString(fieldName, value.toString(), dest)
                         } catch (BaseException be) {
                             this.efi.ecfi.executionContext.message.addValidationError(null, fieldName, null, be.getMessage(), be)
                         }
@@ -708,7 +708,7 @@ public class EntityDefinition {
                     }
                 } else if (setIfEmpty) {
                     // treat empty String as null, otherwise set as whatever null or empty type it is
-                    if (value != null && value instanceof String) {
+                    if (value != null && value instanceof CharSequence) {
                         dest.put(fieldName, null)
                     } else {
                         dest.put(fieldName, value)

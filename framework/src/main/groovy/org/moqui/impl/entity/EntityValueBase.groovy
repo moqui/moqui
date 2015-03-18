@@ -756,17 +756,17 @@ abstract class EntityValueBase implements EntityValue {
     boolean isEmpty() { return valueMap.isEmpty() }
 
     @Override
-    boolean containsKey(Object o) { return o instanceof String ? valueMap.containsKey((String) o) : false }
+    boolean containsKey(Object o) { return o instanceof CharSequence ? valueMap.containsKey(o.toString()) : false }
 
     @Override
     boolean containsValue(Object o) { return values().contains(o) }
 
     @Override
     Object get(Object o) {
-        if (o instanceof String) {
+        if (o instanceof CharSequence) {
             // This may throw an exception, and let it; the Map interface doesn't provide for EntityException
             //   but it is far more useful than a log message that is likely to be ignored.
-            return this.get((String) o)
+            return this.get(o.toString())
         } else {
             return null
         }
@@ -866,7 +866,7 @@ abstract class EntityValueBase implements EntityValue {
             if (!defaultStr) continue
             String fieldName = fieldNode."@name"
             Object curVal = valueMap.get(fieldName)
-            if (curVal == null || (curVal instanceof String && curVal.length() == 0)) {
+            if (StupidUtilities.isEmpty(curVal)) {
                 ec.getContext().push(valueMap)
                 try {
                     Object newVal = ec.getResource().evaluateContextField(defaultStr, "")

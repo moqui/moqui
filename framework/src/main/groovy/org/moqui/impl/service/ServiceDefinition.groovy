@@ -314,7 +314,7 @@ class ServiceDefinition {
 
             // do this after the convert so defaults are in place
             // check if required and empty - use groovy non-empty rules for String only
-            if (parameterValue == null || (parameterValue instanceof String && !parameterValue)) {
+            if (StupidUtilities.isEmpty(parameterValue)) {
                 if (validate && parameterNode."@required" == "true") {
                     eci.message.addValidationError(null, "${namePrefix}${parameterName}", getServiceName(), "Field cannot be empty", null)
                 }
@@ -437,14 +437,15 @@ class ServiceDefinition {
     protected Object checkConvertType(Node parameterNode, String namePrefix, String parameterName, Object parameterValue,
                                       Map<String, Object> rootParameters, ExecutionContextImpl eci) {
         // set the default if applicable
-        if ((parameterValue == null || (parameterValue instanceof String && !parameterValue)) && parameterNode."@default") {
+        boolean parameterIsEmpty = StupidUtilities.isEmpty(parameterValue)
+        if (parameterIsEmpty && parameterNode."@default") {
             ((ContextStack) eci.context).push(rootParameters)
             parameterValue = eci.getResource().evaluateContextField((String) parameterNode."@default", "${this.location}_${parameterName}_default")
             // logger.warn("For parameter ${namePrefix}${parameterName} new value ${parameterValue} from default [${parameterNode.'@default'}] and context: ${eci.context}")
             ((ContextStack) eci.context).pop()
         }
         // set the default-value if applicable
-        if ((parameterValue == null || (parameterValue instanceof String && !parameterValue)) && parameterNode."@default-value") {
+        if (parameterIsEmpty && parameterNode."@default-value") {
             ((ContextStack) eci.context).push(rootParameters)
             parameterValue = eci.getResource().evaluateStringExpand((String) parameterNode."@default-value", "${this.location}_${parameterName}_default_value")
             // logger.warn("For parameter ${namePrefix}${parameterName} new value ${parameterValue} from default-value [${parameterNode.'@default-value'}] and context: ${eci.context}")
@@ -459,8 +460,8 @@ class ServiceDefinition {
             // do type conversion if possible
             String format = parameterNode."@format"
             Object converted = null
-            boolean isString = parameterValue instanceof String || parameterValue instanceof GString
-            boolean isEmptyString = isString && ((String) parameterValue).length() == 0
+            boolean isString = parameterValue instanceof CharSequence
+            boolean isEmptyString = isString && ((CharSequence) parameterValue).length() == 0
             if (isString && !isEmptyString) {
                 // try some String to XYZ specific conversions for parsing with format, locale, etc
                 switch (type) {
@@ -540,18 +541,19 @@ class ServiceDefinition {
     protected void validateParameterHtml(Node parameterNode, String namePrefix, String parameterName, Object parameterValue,
                                          ExecutionContextImpl eci) {
         // check for none/safe/any HTML
-        if ((parameterValue instanceof String || parameterValue instanceof List) &&
+        boolean isString = parameterValue instanceof CharSequence
+        if ((isString || parameterValue instanceof List) &&
                 parameterNode."@allow-html" != "any") {
             boolean allowSafe = (parameterNode."@allow-html" == "safe")
 
-            if (parameterValue instanceof String) {
-                canonicalizeAndCheckHtml(parameterName, parameterValue, allowSafe, eci)
+            if (isString) {
+                canonicalizeAndCheckHtml(parameterName, parameterValue.toString(), allowSafe, eci)
             } else {
                 List lst = parameterValue as List
                 parameterValue = new ArrayList(lst.size())
                 for (Object obj in lst) {
-                    if (obj instanceof String)
-                        parameterValue.add(canonicalizeAndCheckHtml(parameterName, obj, allowSafe, eci))
+                    if (obj instanceof CharSequence)
+                        parameterValue.add(canonicalizeAndCheckHtml(parameterName, obj.toString(), allowSafe, eci))
                 }
             }
         }
@@ -561,7 +563,7 @@ class ServiceDefinition {
         // run through validations under parameter node
 
         // no validation done if value is empty, that should be checked with the required attribute only
-        if (!pv && !(pv instanceof Boolean)) return true
+        if (StupidUtilities.isEmpty(pv)) return true
 
         boolean allPass = true
         for (Node child in (Collection<Node>) vpNode.children()) {
@@ -593,11 +595,12 @@ class ServiceDefinition {
             for (Node child in (Collection<Node>) valNode.children()) if (!validateParameterSingle(child, parameterName, pv, eci)) allPass = false
             return !allPass
         case "matches":
-            if (!(pv instanceof String)) {
+            if (!(pv instanceof CharSequence)) {
                 eci.message.addValidationError(null, parameterName, getServiceName(), "Value [${pv}] is not a String, cannot do matches validation.", null)
                 return false
             }
-            if (valNode."@regexp" && !((String) pv).matches((String) valNode."@regexp")) {
+            String pvString = pv.toString()
+            if (valNode."@regexp" && !pvString.matches((String) valNode."@regexp")) {
                 // a message attribute should always be there, but just in case we'll have a default
                 eci.message.addValidationError(null, parameterName, getServiceName(), valNode."@message" ?: "Value [${pv}] did not match expression [${valNode."@regexp"}]", null)
                 return false
@@ -705,8 +708,8 @@ class ServiceDefinition {
         case "time-range":
             Calendar cal
             String format = valNode."@format"
-            if (pv instanceof String) {
-                cal = eci.getL10n().parseDateTime((String) pv, format)
+            if (pv instanceof CharSequence) {
+                cal = eci.getL10n().parseDateTime(pv.toString(), format)
             } else {
                 // try letting groovy convert it
                 cal = Calendar.getInstance()
@@ -790,11 +793,11 @@ class ServiceDefinition {
 
     protected void checkSubtype(String parameterName, Node typeParentNode, Object value, ExecutionContextImpl eci) {
         if (typeParentNode."subtype") {
-            if (value instanceof List) {
+            if (value instanceof Collection) {
                 // just check the first value in the list
-                if (((List) value).size() > 0) {
+                if (((Collection) value).size() > 0) {
                     String subType = typeParentNode."subtype"[0]."@type"
-                    Object subValue = ((List) value).get(0)
+                    Object subValue = ((Collection) value).iterator().next()
                     if (!StupidUtilities.isInstanceOf(subValue, subType)) {
                         eci.message.addError("Parameter [${parameterName}] passed to service [${getServiceName()}] had a subtype [${subValue.class.name}], expecting subtype [${subType}]")
                     } else {

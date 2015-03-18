@@ -96,14 +96,12 @@ public class ContextStack implements Map<String, Object> {
         return newStack;
     }
 
-    @Override
     public int size() {
         // use the keySet since this gets a set of all unique keys for all Maps in the stack
         Set keys = keySet();
         return keys.size();
     }
 
-    @Override
     public boolean isEmpty() {
         for (Map curMap: stackList) {
             if (!curMap.isEmpty()) return false;
@@ -111,7 +109,6 @@ public class ContextStack implements Map<String, Object> {
         return true;
     }
 
-    @Override
     public boolean containsKey(Object key) {
         for (Map curMap: stackList) {
             if (key == null && curMap instanceof Hashtable) continue;
@@ -120,7 +117,6 @@ public class ContextStack implements Map<String, Object> {
         return false;
     }
 
-    @Override
     public boolean containsValue(Object value) {
         // this keeps track of keys looked at for values at each level of the stack so that the same key is not
         // considered more than once (the earlier Maps overriding later ones)
@@ -140,10 +136,9 @@ public class ContextStack implements Map<String, Object> {
         return false;
     }
 
-    @Override
     public Object get(Object keyObj) {
-        if (keyObj != null && !(keyObj instanceof String)) return null;
-        String key = (String) keyObj;
+        if (keyObj != null && !(keyObj instanceof CharSequence)) return null;
+        String key = keyObj != null ? keyObj.toString(): null;
         // the "context" key always gets a self-reference, effectively the top of the stack
         if ("context".equals(key)) return this;
         if (firstMap.containsKey(key)) {
@@ -166,23 +161,18 @@ public class ContextStack implements Map<String, Object> {
         }
     }
 
-    @Override
     public Object put(String key, Object value) {
         return firstMap.put(key, value);
     }
 
-    @Override
     public Object remove(Object key) {
         return firstMap.remove(key);
     }
 
-    @Override
     public void putAll(Map<? extends String, ? extends Object> arg0) { firstMap.putAll(arg0); }
 
-    @Override
     public void clear() { firstMap.clear(); }
 
-    @Override
     public Set<String> keySet() {
         Set<String> resultSet = new HashSet<String>();
         resultSet.add("context");
@@ -192,7 +182,6 @@ public class ContextStack implements Map<String, Object> {
         return Collections.unmodifiableSet(resultSet);
     }
 
-    @Override
     public Collection<Object> values() {
         Set<Object> keysObserved = new HashSet<Object>();
         List<Object> resultValues = new LinkedList<Object>();
@@ -227,7 +216,7 @@ public class ContextStack implements Map<String, Object> {
         StringBuilder fullMapString = new StringBuilder();
         int curLevel = 0;
         for (Map<String, Object> curMap: stackList) {
-            fullMapString.append("============================== Start stack level ").append(curLevel).append("\n");
+            fullMapString.append("========== Start stack level ").append(curLevel).append("\n");
             for (Map.Entry curEntry: curMap.entrySet()) {
                 fullMapString.append("==>[");
                 fullMapString.append(curEntry.getKey());
@@ -240,7 +229,7 @@ public class ContextStack implements Map<String, Object> {
                 }
                 fullMapString.append("\n");
             }
-            fullMapString.append("============================== End stack level ").append(curLevel).append("\n");
+            fullMapString.append("========== End stack level ").append(curLevel).append("\n");
             curLevel++;
         }
         return fullMapString.toString();

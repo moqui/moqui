@@ -230,8 +230,8 @@ abstract class EntityFindBase implements EntityFind {
                     case "in":
                         if (value) {
                             Collection valueList = null
-                            if (value instanceof String) {
-                                valueList = value.split(",")
+                            if (value instanceof CharSequence) {
+                                valueList = value.toString().split(",")
                             } else if (value instanceof Collection) {
                                 valueList = value
                             }
@@ -253,9 +253,9 @@ abstract class EntityFindBase implements EntityFind {
             } else {
                 // these will handle range-find and date-find
                 Object fromValue = inf.get(fn + "_from")
-                if (fromValue && fromValue instanceof String) fromValue = ed.convertFieldString(fn, fromValue)
+                if (fromValue && fromValue instanceof CharSequence) fromValue = ed.convertFieldString(fn, fromValue.toString())
                 Object thruValue = inf.get(fn + "_thru")
-                if (thruValue && thruValue instanceof String) thruValue = ed.convertFieldString(fn, thruValue)
+                if (thruValue && thruValue instanceof CharSequence) thruValue = ed.convertFieldString(fn, thruValue.toString())
 
                 if (inf.get(fn + "_from")) this.condition(efi.conditionFactory.makeCondition(fn,
                         EntityCondition.GREATER_THAN_EQUAL_TO, fromValue))

@@ -103,8 +103,8 @@ class EmailEcaRule {
     protected List<String> makeBodyPartList(Part part) {
         List<String> bodyPartList = []
         Object content = part.getContent()
-        if (content instanceof String) {
-            bodyPartList.add(content)
+        if (content instanceof CharSequence) {
+            bodyPartList.add(content.toString())
         } else if (content instanceof Multipart) {
             int count = ((Multipart) content).getCount()
             for (int i = 0; i < count; i++) {

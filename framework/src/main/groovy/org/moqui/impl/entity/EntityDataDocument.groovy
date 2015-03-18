@@ -199,7 +199,7 @@ class EntityDataDocument {
                 StringBuffer pkCombinedSb = new StringBuffer()
                 for (String pkFieldName in primaryPkFieldNames) {
                     if (pkCombinedSb.length() > 0) pkCombinedSb.append("::")
-                    pkCombinedSb.append(ev.get(pkFieldName))
+                    pkCombinedSb.append(ev.getString(pkFieldName))
                 }
                 String docId = pkCombinedSb.toString()
 
