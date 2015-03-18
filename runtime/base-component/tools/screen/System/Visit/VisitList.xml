@@ -14,6 +14,7 @@ This Work includes contributions authored by David E. Jones, not as a
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd">
 
     <transition name="visitDetail"><default-response url="../VisitDetail"/></transition>
+    <transition name="userAccountDetail"><default-response url="//system/Security/UserAccountDetail"/></transition>
 
     <actions>
         <entity-find entity-name="moqui.server.Visit" list="visitList">
@@ -21,35 +22,43 @@ This Work includes contributions authored by David E. Jones, not as a
         </entity-find>
     </actions>
     <widgets>
-        <form-list name="VisitList" list="visitList">
+        <form-list name="VisitList" list="visitList" skip-form="true">
+            <row-actions>
+                <entity-find-count entity-name="moqui.server.ArtifactHit" count-field="hitCount">
+                    <econdition field-name="visitId"/></entity-find-count>
+            </row-actions>
             <field name="fromDate">
                 <header-field show-order-by="true"><text-find hide-options="true" size="16"/></header-field>
-                <default-field><display also-hidden="false"/></default-field>
+                <default-field><display/></default-field>
             </field>
             <field name="visitId">
                 <header-field show-order-by="true"><text-find hide-options="true" size="6"/></header-field>
-                <default-field><link text="${visitId}" url="visitDetail"><parameter name="visitId"/></link></default-field>
+                <default-field><link text="${visitId}" url="visitDetail" link-type="anchor"><parameter name="visitId"/></link></default-field>
             </field>
             <field name="visitorId">
                 <header-field show-order-by="true"><text-find hide-options="true" size="6"/></header-field>
-                <default-field><display also-hidden="false"/></default-field>
+                <default-field><display/></default-field>
             </field>
             <field name="userId">
                 <header-field show-order-by="true"><text-find hide-options="true" size="6"/></header-field>
-                <default-field><display also-hidden="false"/></default-field>
+                <default-field>
+                    <display-entity entity-name="moqui.security.UserAccount" text="${userFullName} [${username}]"/>
+                    <link url="userAccountDetail" text="${userId}" link-type="anchor" condition="userId"/>
+                </default-field>
             </field>
             <field name="serverIpAddress">
                 <header-field title="Server IP"><text-find hide-options="true" size="8"/></header-field>
-                <default-field><display also-hidden="false"/></default-field>
+                <default-field><display/></default-field>
             </field>
             <field name="clientIpAddress">
                 <header-field title="Client IP"><text-find hide-options="true" size="8"/></header-field>
-                <default-field><display also-hidden="false"/></default-field>
+                <default-field><display/></default-field>
             </field>
             <field name="initialRequest">
                 <header-field show-order-by="true"><text-find hide-options="true" size="20"/></header-field>
-                <default-field><display also-hidden="false"/></default-field>
+                <default-field><display/></default-field>
             </field>
+            <field name="hitCount"><default-field><display/></default-field></field>
             <field name="find"><header-field title="Find"><submit/></header-field></field>
         </form-list>
     </widgets>

@@ -170,8 +170,8 @@ class ContentResourceReference extends BaseResourceReference {
             // fileContent.setProperty("jcr:encoding", ?)
             Calendar lastModified = Calendar.getInstance(); lastModified.setTimeInMillis(System.currentTimeMillis())
             fileContent.setProperty("jcr:lastModified", lastModified)
-            if (obj instanceof String) {
-                fileContent.setProperty("jcr:data", session.valueFactory.createValue((String) obj))
+            if (obj instanceof CharSequence) {
+                fileContent.setProperty("jcr:data", session.valueFactory.createValue(obj.toString()))
             } else if (obj instanceof InputStream) {
                 fileContent.setProperty("jcr:data", session.valueFactory.createBinary((InputStream) obj))
             } else if (obj == null) {

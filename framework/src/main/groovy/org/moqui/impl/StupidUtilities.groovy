@@ -42,7 +42,7 @@ class StupidUtilities {
         // only support the classes we have pre-configured
         if (theClass == null) return value
         try {
-            if (theClass == Boolean.class && value instanceof String && value) {
+            if (theClass == Boolean.class && value instanceof CharSequence && value) {
                 // for non-empty String to Boolean don't use normal not-empty rules, look for "true", "false", etc
                 return Boolean.valueOf((String) value)
             } else {
@@ -68,12 +68,22 @@ class StupidUtilities {
         return obj.toString()
     }
 
+    /** Like the Groovy empty except doesn't consider empty 0 value numbers, false Boolean, etc; only null values,
+     *   0 length String (actually CharSequence to include GString, etc), and 0 size Collection/Map are considered empty. */
+    static boolean isEmpty(Object obj) {
+        if (obj == null) return true
+        if (obj instanceof CharSequence) return obj.length() == 0
+        if (obj instanceof Collection) return obj.size() == 0
+        if (obj instanceof Map) return obj.size() == 0
+        return false
+    }
+
     static final boolean compareLike(Object value1, Object value2) {
         // nothing to be like? consider a match
         if (!value2) return true
         // something to be like but nothing to compare? consider a mismatch
         if (!value1) return false
-        if (value1 instanceof String && value2 instanceof String) {
+        if (value1 instanceof CharSequence && value2 instanceof CharSequence) {
             // first escape the characters that would be interpreted as part of the regular expression
             int length2 = value2.length()
             StringBuilder sb = new StringBuilder(length2 * 2)
@@ -88,7 +98,7 @@ class StupidUtilities {
             String regex = sb.toString().replace("_", ".").replace("%", ".*?")
             // run it...
             Pattern pattern = Pattern.compile(regex, (int) (Pattern.CASE_INSENSITIVE | Pattern.DOTALL))
-            return pattern.matcher(value1).matches()
+            return pattern.matcher(value1.toString()).matches()
         } else {
             return false
         }

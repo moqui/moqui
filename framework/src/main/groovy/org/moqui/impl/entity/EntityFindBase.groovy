@@ -91,21 +91,19 @@ abstract class EntityFindBase implements EntityFind {
 
     @Override
     EntityFind condition(String fieldName, EntityCondition.ComparisonOperator operator, Object value) {
-        condition(efi.conditionFactory.makeCondition(fieldName, operator, value))
-        return this
+        if (operator == EntityCondition.EQUALS) return condition(fieldName, value)
+        return condition(efi.conditionFactory.makeCondition(fieldName, operator, value))
     }
     @Override
     EntityFind condition(String fieldName, String operator, Object value) {
         EntityCondition.ComparisonOperator opObj = EntityConditionFactoryImpl.stringComparisonOperatorMap.get(operator)
         if (opObj == null) throw new IllegalArgumentException("Operator [${operator}] is not a valid field comparison operator")
-        condition(efi.conditionFactory.makeCondition(fieldName, opObj, value))
-        return this
+        return condition(efi.conditionFactory.makeCondition(fieldName, opObj, value))
     }
 
     @Override
     EntityFind conditionToField(String fieldName, EntityCondition.ComparisonOperator operator, String toFieldName) {
-        condition(efi.conditionFactory.makeCondition(fieldName, operator, toFieldName))
-        return this
+        return condition(efi.conditionFactory.makeConditionToField(fieldName, operator, toFieldName))
     }
 
     @Override
@@ -121,7 +119,7 @@ abstract class EntityFindBase implements EntityFind {
         if (condition == null) return this
         if (whereEntityCondition) {
             // use ListCondition instead of ANDing two at a time to avoid a bunch of nested ANDs
-            if (whereEntityCondition instanceof ListCondition) {
+            if (whereEntityCondition instanceof ListCondition && whereEntityCondition.getOperator() == EntityCondition.AND) {
                 ((ListCondition) whereEntityCondition).addCondition((EntityConditionImplBase) condition)
             } else {
                 whereEntityCondition =
@@ -232,8 +230,8 @@ abstract class EntityFindBase implements EntityFind {
                     case "in":
                         if (value) {
                             Collection valueList = null
-                            if (value instanceof String) {
-                                valueList = value.split(",")
+                            if (value instanceof CharSequence) {
+                                valueList = value.toString().split(",")
                             } else if (value instanceof Collection) {
                                 valueList = value
                             }
@@ -255,9 +253,9 @@ abstract class EntityFindBase implements EntityFind {
             } else {
                 // these will handle range-find and date-find
                 Object fromValue = inf.get(fn + "_from")
-                if (fromValue && fromValue instanceof String) fromValue = ed.convertFieldString(fn, fromValue)
+                if (fromValue && fromValue instanceof CharSequence) fromValue = ed.convertFieldString(fn, fromValue.toString())
                 Object thruValue = inf.get(fn + "_thru")
-                if (thruValue && thruValue instanceof String) thruValue = ed.convertFieldString(fn, thruValue)
+                if (thruValue && thruValue instanceof CharSequence) thruValue = ed.convertFieldString(fn, thruValue.toString())
 
                 if (inf.get(fn + "_from")) this.condition(efi.conditionFactory.makeCondition(fn,
                         EntityCondition.GREATER_THAN_EQUAL_TO, fromValue))

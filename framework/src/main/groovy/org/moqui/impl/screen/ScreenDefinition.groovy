@@ -283,6 +283,10 @@ class ScreenDefinition {
         // breadth first by looking at subscreens of each subscreen on a first pass
         for (Map.Entry<String, SubscreensItem> entry in subscreensByName.entrySet()) {
             ScreenDefinition subSd = sfi.getScreenDefinition(entry.getValue().getLocation())
+            if (subSd == null) {
+                if (logger.isTraceEnabled()) logger.trace("Screen [${entry.getKey()}] at location [${entry.getValue().getLocation()}] not found, subscreen of [${this.getLocation()}]")
+                continue
+            }
             SubscreensItem subSsi = subSd.getSubscreensItem(curName)
             if (subSsi != null) {
                 if (remainingPathNameList.size() > 1) {
@@ -305,6 +309,10 @@ class ScreenDefinition {
         // not immediate child or grandchild subscreen, start recursion
         for (Map.Entry<String, SubscreensItem> entry in subscreensByName.entrySet()) {
             ScreenDefinition subSd = sfi.getScreenDefinition(entry.getValue().getLocation())
+            if (subSd == null) {
+                if (logger.isTraceEnabled()) logger.trace("Screen [${entry.getKey()}] at location [${entry.getValue().getLocation()}] not found, subscreen of [${this.getLocation()}]")
+                continue
+            }
             List<String> subPath = subSd.findSubscreenPath(remainingPathNameList, requestMethod)
             if (subPath) {
                 subPath.add(0, entry.getKey())

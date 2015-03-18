@@ -15,16 +15,23 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <parameter name="visitId" required="true"/>
 
+    <transition name="userAccountDetail"><default-response url="//system/Security/UserAccountDetail"/></transition>
+
     <actions>
         <entity-find-one entity-name="moqui.server.Visit" value-field="visit"/>
         <entity-find entity-name="moqui.server.ArtifactHit" list="artifactHitList">
+            <search-form-inputs default-order-by="startDateTime"/>
             <econdition field-name="visitId"/>
-            <order-by field-name="+startDateTime"/>
         </entity-find>
     </actions>
     <widgets>
         <form-single name="VisitDetail" map="visit">
             <auto-fields-entity entity-name="moqui.server.Visit" field-type="display"/>
+            <field name="userId"><default-field title="User">
+                <display-entity entity-name="moqui.security.UserAccount" text="${userFullName} [${username}]"/>
+                <link url="userAccountDetail" text="${visit.userId ?: 'N/A'}" link-type="anchor"
+                        parameter-map="[userId:visit.userId]"/>
+            </default-field></field>
             <field-layout>
                 <field-row><field-ref name="visitId"/><field-ref name="visitorId"/></field-row>
                 <field-row><field-ref name="userId"/><field-ref name="userCreated"/></field-row>
@@ -39,37 +46,60 @@ This Work includes contributions authored by David E. Jones, not as a
                 <field-row><field-ref name="fromDate"/><field-ref name="thruDate"/></field-row>
             </field-layout>
         </form-single>
-        <form-list name="VisitArtifactHitList" list="artifactHitList">
-            <field name="startDateTime"><default-field><display also-hidden="false"/></default-field></field>
-            <field name="userId"><default-field><display also-hidden="false"/></default-field></field>
+        <form-list name="VisitArtifactHitList" list="artifactHitList" skip-form="true">
+            <field name="visitId"><header-field><hidden/></header-field></field>
+            <field name="startDateTime">
+                <header-field show-order-by="true"/>
+                <default-field><display/></default-field>
+            </field>
+            <field name="userId"><default-field><display/></default-field></field>
 
-            <field name="artifactType"><default-field title="Type"><display text="${artifactType?.replace('-',' - ')}" also-hidden="false"/></default-field></field>
-            <field name="artifactSubType"><default-field title="Sub Type"><display text="${artifactSubType?.replace('/',' / ')}" also-hidden="false"/></default-field></field>
+            <field name="artifactType">
+                <header-field show-order-by="true">
+                    <drop-down allow-empty="true">
+                        <option key="screen"/><option key="screen-content"/><option key="transition"/>
+                        <option key="service"/><option key="entity"/>
+                    </drop-down>
+                </header-field>
+                <default-field title="Type"><display text="${artifactType?.replace('-',' - ')}"/></default-field>
+            </field>
+            <field name="artifactSubType"><default-field title="Sub Type"><display text="${artifactSubType?.replace('/',' / ')}"/></default-field></field>
 
-            <field name="artifactName"><default-field><display also-hidden="false"/></default-field></field>
-            <field name="parameterString"><default-field><display text="${parameterString?.replace(',',' , ') ?: ''}" also-hidden="false"/></default-field></field>
+            <field name="artifactName">
+                <header-field show-order-by="true"/>
+                <default-field><display/></default-field>
+            </field>
+            <field name="parameterString"><default-field><display text="${parameterString?.replace(',',' , ') ?: 'N/A'}"/></default-field></field>
 
-            <field name="runningTimeMillis"><default-field title="Time"><display text="${runningTimeMillis}ms" also-hidden="false"/></default-field></field>
-            <field name="outputSize"><default-field title="Size"><display text="${outputSize ?: 'Unknown'}" also-hidden="false"/></default-field></field>
+            <field name="runningTimeMillis"><default-field title="Time"><display text="${runningTimeMillis}ms"/></default-field></field>
+            <field name="outputSize"><default-field title="Size"><display text="${outputSize ?: 'Unknown'}"/></default-field></field>
 
-            <field name="wasError"><default-field title="Error"><display also-hidden="false"/></default-field></field>
-            <field name="errorMessage"><default-field title="Message"><display also-hidden="false"/></default-field></field>
+            <field name="wasError"><default-field title="Error"><display/></default-field></field>
+            <field name="errorMessage"><default-field title="Message"><display/></default-field></field>
 
-            <field name="requestUrl"><default-field><display also-hidden="false"/></default-field></field>
-            <field name="referrerUrl"><default-field><display also-hidden="false"/></default-field></field>
+            <field name="requestUrl">
+                <header-field show-order-by="true"/>
+                <default-field><display/></default-field>
+            </field>
+            <field name="referrerUrl"><default-field><display text="${referrerUrl ?: 'N/A'}"/></default-field></field>
 
-            <field name="serverIpAddress"><default-field><display also-hidden="false"/></default-field></field>
-            <field name="serverHostName"><default-field><display also-hidden="false"/></default-field></field>
+            <field name="serverIpAddress"><default-field><display/></default-field></field>
+            <field name="serverHostName"><default-field><display/></default-field></field>
+
+            <field name="findButton">
+                <header-field title="Find"><submit/></header-field>
+                <default-field><display text=" "/></default-field>
+            </field>
 
             <!-- NOTE: maybe go to 3-4 rows per record instead of two -->
             <form-list-column><field-ref name="startDateTime"/><field-ref name="userId"/></form-list-column>
             <form-list-column><field-ref name="artifactType"/><field-ref name="artifactSubType"/></form-list-column>
-            <form-list-column><field-ref name="artifactName"/><field-ref name="parameterString"/></form-list-column>
             <form-list-column><field-ref name="runningTimeMillis"/><field-ref name="outputSize"/></form-list-column>
-
-            <form-list-column><field-ref name="requestUrl"/><field-ref name="referrerUrl"/></form-list-column>
+            <form-list-column><field-ref name="artifactName"/><field-ref name="parameterString"/>
+                <field-ref name="requestUrl"/><field-ref name="referrerUrl"/></form-list-column>
             <form-list-column><field-ref name="wasError"/><field-ref name="errorMessage"/></form-list-column>
             <form-list-column><field-ref name="serverIpAddress"/><field-ref name="serverHostName"/></form-list-column>
+            <form-list-column><field-ref name="findButton"/></form-list-column>
         </form-list>
     </widgets>
 </screen>

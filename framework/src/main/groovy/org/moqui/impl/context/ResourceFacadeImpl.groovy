@@ -307,12 +307,14 @@ public class ResourceFacadeImpl implements ResourceFacade {
         ContextStack cs = (ContextStack) ec.context
         try {
             // push the entire context to isolate the context for the string expand
-            cs.pushContext()
-            cs.push(additionalContext)
+            if (additionalContext) {
+                cs.pushContext()
+                cs.push(additionalContext)
+            }
             return runScriptInCurrentContext(location, method)
         } finally {
             // pop the entire context to get back to where we were before isolating the context with pushContext
-            cs.popContext()
+            if (additionalContext) cs.popContext()
         }
     }
 
@@ -359,12 +361,14 @@ public class ResourceFacadeImpl implements ResourceFacade {
         ContextStack cs = (ContextStack) ec.context
         try {
             // push the entire context to isolate the context for the string expand
-            cs.pushContext()
-            cs.push(additionalContext)
+            if (additionalContext) {
+                cs.pushContext()
+                cs.push(additionalContext)
+            }
             return evaluateContextField(expression, debugLocation)
         } finally {
             // pop the entire context to get back to where we were before isolating the context with pushContext
-            cs.popContext()
+            if (additionalContext) cs.popContext()
         }
     }
 
@@ -392,12 +396,14 @@ public class ResourceFacadeImpl implements ResourceFacade {
         ContextStack cs = (ContextStack) ec.context
         try {
             // push the entire context to isolate the context for the string expand
-            cs.pushContext()
-            cs.push(additionalContext)
+            if (additionalContext) {
+                cs.pushContext()
+                cs.push(additionalContext)
+            }
             return evaluateStringExpand(inputString, debugLocation)
         } finally {
             // pop the entire context to get back to where we were before isolating the context with pushContext
-            cs.popContext()
+            if (additionalContext) cs.popContext()
         }
     }
 

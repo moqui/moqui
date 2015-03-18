@@ -14,7 +14,6 @@ This Work includes contributions authored by David E. Jones, not as a
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd"
         default-menu-title="Search" default-menu-index="1">
 
-    <transition name="submitSearch"><default-response url="."/></transition>
     <transition name="viewDocument"><default-response url="../ViewDocument"/></transition>
 
     <actions>
@@ -23,7 +22,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </if>
     </actions>
     <widgets>
-        <form-single name="SearchOptions" transition="submitSearch">
+        <form-single name="SearchOptions" transition=".">
             <field name="indexName"><default-field title="">
                 <drop-down>
                     <entity-options key="${indexName}" text="${indexName}">
@@ -58,7 +57,8 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="id"><default-field><display text="${_id}"/></default-field></field>
             <field name="documentTitle"><default-field title="Title"><display/></default-field></field>
             <field name="link"><default-field>
-                <link url="${linkUrl}" text="${dataDocumentLink.label}" link-type="anchor" url-type="plain"/>
+                <link url="${linkUrl}" text="${dataDocumentLink.label}" link-type="anchor" url-type="plain"
+                        condition="dataDocumentLink"/>
             </default-field></field>
             <field name="viewDocument"><default-field>
                 <dynamic-dialog id="ViewDocument" button-text="View Document" transition="viewDocument" width="800">

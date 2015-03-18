@@ -353,8 +353,8 @@ class WebFacadeImpl implements WebFacade {
     @Override
     void sendJsonResponse(Object responseObj) {
         String jsonStr
-        if (responseObj instanceof String) {
-            jsonStr = (String) responseObj
+        if (responseObj instanceof CharSequence) {
+            jsonStr = responseObj.toString()
         } else {
             if (eci.message.messages) {
                 if (responseObj == null) {

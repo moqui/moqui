@@ -11,12 +11,27 @@ TODO
 
 New Features:
 
-TODO
+- More consistent handling of is-null; support for is-not-null, not-between
+- More consistent handling of empty in service, entity, and screen when we
+  don't want the Groovy definition of empty (ie don't consider 0 numbers
+  or false boolean to be empty)
+- Support for CharSequence in various places (context, entity, service,
+  screen, etc) to handle not just String but also GString when it doesn't
+  get converted and StringBuffer, StringBuilder, etc where convenient
+- Document mappings (type definitions, etc) are now put automatically when
+  a DataDocument indexed with ElasticSearch is first used (by index or
+  search) with types for numbers, dates, etc needed for analytics and also
+  not_analyzed set for all id* type entity fields
+- Added EntityServices.search#CountBySource service to do analytics
+  searches using ElasticSearch; there is a real-world example of the use of
+  this service in Mantle for current and projected inventory data
 
 Bug Fixes:
 
 - Fixed issue with link.@dynamic-load-id attribute loading the result of
-  the load() function instead of doing nothing but calling the load method
+  the load() function instead of doing nothing but calling the load method;
+  this caused issues in browsers like FireFox that render the result of a
+  a.@href javascript: expression
 - Fixed issue with sparse screen paths (starting with a '//') where a
   high-level screen like the echopath screen with @allow-extra-path=true
   would be used instead of a more complete, and correct, match; sparse
@@ -27,6 +42,13 @@ Bug Fixes:
 - Fixed issue where adding ".xml" to a request URL for a screen would treat
   the screen XML file as a sub-screen resource and return the contents; now
   treats screen XMl files as if they don't exist, ie results in a 404 error
+- Fixed issue with EntityFind where if a ListCondition with an OR operator
+  was passed before passing other conditions then the top-level conditions
+  would be OR'ed together instead of AND'ed
+- Fixed issues with Date (without time, ie java.sql.Date) parsing and
+  formatting due to weirdness with time zone and truncating the time part
+  of the Date representation in long millis since epoch; see comments in
+  L10nFacadeImpl.groovy for more details
 
 
 ===========================================================================
@@ -1792,6 +1814,8 @@ Features considered, but may not to be included in 1.x series
   - separate plural aliases to get multiple or all records for an entity?
   - configure aliases for entity relationships; full or even plain entity name plus title relationship names may be problematic
   - support for path elements such entity name/alias, entity PK value(s), then a chain of relationship names/aliases to get one or many values
+  - http://blog.mwaysolutions.com/2014/06/05/10-best-practices-for-better-restful-api/
+  - http://www.vinaysahni.com/best-practices-for-a-pragmatic-restful-api
 
 - Email verification by random code on registration and email change
 - Login through Google, Facebook, etc

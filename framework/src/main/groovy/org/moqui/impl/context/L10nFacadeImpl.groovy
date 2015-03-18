@@ -73,8 +73,8 @@ public class L10nFacadeImpl implements L10nFacade {
     @Override
     String formatCurrency(Object amount, String uomId, Integer fractionDigits) {
         if (amount == null) return ""
-        if (amount instanceof String) {
-            if (((String) amount).length() == 0) {
+        if (amount instanceof CharSequence) {
+            if (amount.length() == 0) {
                 return ""
             } else {
                 amount = parseNumber((String) amount, null)
@@ -127,13 +127,28 @@ public class L10nFacadeImpl implements L10nFacade {
 
     @Override
     Date parseDate(String input, String format) {
-        Locale curLocale = getLocale()
-        TimeZone curTz = getTimeZone()
         if (!format) format = "yyyy-MM-dd"
+        Locale curLocale = getLocale()
+
+        // NOTE DEJ 20150317 Date parsing in terms of time zone causes funny issues because the time part of the long
+        //   since epoch representation is lost going to/from the DB, especially since the time portion is set to 0 and
+        //   with time zone conversion when the system date is in an earlier time zone than the user date it pushes the
+        //   Date to the previous day; what seems like the best solution is to parse and save the Date in the
+        //   system/default time zone, and format it that way as well.
+        // The BIG dilemma is there is no way to represent a Date (yyyy-MM-dd) in an object that does not use the long
+        //   since epoch but rather is an absolute year, month, and day... which is really what we want.
+        /*
+        TimeZone curTz = getTimeZone()
         Calendar cal = calendarValidator.validate(input, format, curLocale, curTz)
         if (cal == null) cal = calendarValidator.validate(input, "MM/dd/yyyy", curLocale, curTz)
         // also try the full ISO-8601, dates may come in that way
         if (cal == null) cal = calendarValidator.validate(input, "yyyy-MM-dd'T'HH:mm:ssZ", curLocale, curTz)
+        */
+
+        Calendar cal = calendarValidator.validate(input, format, curLocale)
+        if (cal == null) cal = calendarValidator.validate(input, "MM/dd/yyyy", curLocale)
+        // also try the full ISO-8601, dates may come in that way
+        if (cal == null) cal = calendarValidator.validate(input, "yyyy-MM-dd'T'HH:mm:ssZ", curLocale)
         if (cal != null) {
             Date date = new Date(cal.getTimeInMillis())
             // logger.warn("============== parseDate input=${input} cal=${cal} long=${cal.getTimeInMillis()} date=${date} date long=${date.getTime()} util date=${new java.util.Date(cal.getTimeInMillis())} timestamp=${new java.sql.Timestamp(cal.getTimeInMillis())}")
@@ -152,7 +167,9 @@ public class L10nFacadeImpl implements L10nFacade {
     }
     String formatDate(Date input, String format) {
         if (!format) format = "yyyy-MM-dd"
-        String dateStr = calendarValidator.format(input, format, getLocale(), getTimeZone())
+        // See comment in parseDate for why we are ignoring the time zone
+        // String dateStr = calendarValidator.format(input, format, getLocale(), getTimeZone())
+        String dateStr = calendarValidator.format(input, format, getLocale())
         // logger.warn("============= formatDate input=${input} dateStr=${dateStr} long=${input.getTime()}")
         return dateStr
     }

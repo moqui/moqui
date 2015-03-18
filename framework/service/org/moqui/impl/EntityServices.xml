@@ -31,11 +31,20 @@ This Work includes contributions authored by David E. Jones, not as a
             import org.slf4j.LoggerFactory
             import org.moqui.context.ExecutionContext
             ExecutionContext ec = context.ec
-            Logger logger = LoggerFactory.getLogger("index_DataDocuments")
+            Logger logger = LoggerFactory.getLogger("org.moqui.impl.EntityServices.indexDataDocuments")
+
+            // Make sure all indices exist
+            Set indexNames = new HashSet()
+            for (Map document in documentList) indexNames.add(document._index)
+            for (String indexName in indexNames) {
+                ec.entity.getEntityDataDocument().checkCreateIndex(indexName)
+            }
 
             documentVersionList = []
             originalDocumentList = getOriginalDocuments ? [] : null
             for (Map document in documentList) {
+                // logger.warn("====== indexing document: ${document}")
+
                 if (getOriginalDocuments) {
                     // this may fail for a number of reasons, like index doesn't exist yet, so catch the exception
                     try {
@@ -48,14 +57,23 @@ This Work includes contributions authored by David E. Jones, not as a
                         originalDocumentList.add([:])
                     }
                 }
-                IndexResponse response = ec.elasticSearchClient
-                        .prepareIndex((String) document._index, (String) document._type, (String) document._id)
-                        .setSource(document).execute().actionGet()
+                // Groovy DSL version
+                IndexResponse response = ec.elasticSearchClient.index { index document._index; type document._type;
+                    id document._id; source document; }.actionGet()
+                // Java API version
+                //IndexResponse response = ec.elasticSearchClient
+                //        .prepareIndex((String) document._index, (String) document._type, (String) document._id)
+                //        .setSource(document).execute().actionGet()
+
                 documentVersionList.add(response.getVersion())
-                // logger.warn("============ indexed [${document._index}, ${document._type}, ${document._id}] version [${response.getVersion()}]")
+                if (logger.isTraceEnabled()) logger.trace("Indexed [${document._index}, ${document._type}, ${document._id}] version [${response.getVersion()}]")
             }
             </script>
         </actions>
+    </service>
+    <service verb="put" noun="DataDocumentMappings">
+        <in-parameters><parameter name="indexName" required="true"/></in-parameters>
+        <actions><script>ec.entity.getEntityDataDocument().putIndexMappings(indexName)</script></actions>
     </service>
 
     <service verb="index" noun="DataFeedDocuments" authenticate="false">
@@ -154,6 +172,9 @@ This Work includes contributions authored by David E. Jones, not as a
 
                 if (!indexName.contains("__")) indexName = "${ec.tenantId}__${indexName}".toLowerCase()
 
+                // make sure index exists
+                ec.entity.getEntityDataDocument().checkCreateIndex(indexName)
+
                 // get the search hits
                 SearchRequestBuilder srb = ec.elasticSearchClient.prepareSearch().setIndices(indexName).setTypes(documentType)
                         .setQuery(QueryBuilders.queryString(queryString)).setFrom(fromOffset).setSize(sizeLimit)
@@ -200,6 +221,54 @@ This Work includes contributions authored by David E. Jones, not as a
                 documentListPageRangeLow = documentListPageIndex * documentListPageSize + 1
                 documentListPageRangeHigh = (documentListPageIndex * documentListPageSize) + documentListPageSize
                 if (documentListPageRangeHigh > documentListCount) documentListPageRangeHigh = documentListCount
+            </script>
+        </actions>
+    </service>
+
+    <service verb="search" noun="CountBySource">
+        <description>
+            Search documents with a "count" type search, meant for analytics searches with aggregations.
+            Use either the sourceJson or sourceMap parameters for the search source.
+
+            A good overview of the use of aggregations is available at: http://www.elastic.co/guide/en/elasticsearch/guide/current/aggregations.html
+
+            For detailed documentation of aggregations including all aggregation types see: http://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations.html
+        </description>
+        <in-parameters>
+            <parameter name="indexName" required="true"/>
+            <parameter name="documentTypeList" type="List"><description>The ElasticSearch document type. For DataDocument based docs
+                this is the dataDocumentId.</description></parameter>
+            <parameter name="maxResults" type="Integer" default="1000"/>
+            <parameter name="sourceJson"/>
+            <parameter name="sourceMap" type="Map"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="searchResponse" type="org.elasticsearch.action.search.SearchResponse"/>
+            <!-- Get this with "searchResponse.toString()" if needed: <parameter name="responseString"/> -->
+        </out-parameters>
+        <actions>
+            <script>
+                import org.elasticsearch.action.search.SearchRequestBuilder
+                import org.elasticsearch.action.search.SearchResponse
+                import org.moqui.context.ExecutionContext
+
+                ExecutionContext ec = context.ec
+
+                if (!indexName.contains('__')) indexName = "${ec.tenantId}__${indexName}".toLowerCase()
+
+                // make sure index exists
+                ec.entity.getEntityDataDocument().checkCreateIndex(indexName)
+
+                // get the search hits
+                SearchRequestBuilder srb = ec.elasticSearchClient.prepareSearch().setIndices((String) indexName)
+                        .setSearchType('count').setSize(maxResults)
+                if (documentTypeList) srb.setTypes((String[]) documentTypeList.toArray(new String[documentTypeList.size()]))
+                if (sourceJson) srb.setExtraSource((String) sourceJson)
+                if (sourceMap) srb.setExtraSource((Map) sourceMap)
+
+                searchResponse = srb.execute().actionGet()
+                // aggregations = searchResponse.getAggregations().getAsMap()
+                // responseString = searchResponse.toString()
             </script>
         </actions>
     </service>

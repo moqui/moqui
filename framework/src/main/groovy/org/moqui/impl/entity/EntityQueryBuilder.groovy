@@ -416,8 +416,8 @@ class EntityQueryBuilder {
                                           boolean useBinaryTypeForBlob, EntityFacadeImpl efi) throws EntityException {
         try {
             // allow setting, and searching for, String values for all types; JDBC driver should handle this okay
-            if (value instanceof String) {
-                ps.setString(index, value)
+            if (value instanceof CharSequence) {
+                ps.setString(index, value.toString())
             } else {
                 switch (typeValue) {
                 case 1: if (value != null) { ps.setString(index, value as String) } else { ps.setNull(index, Types.VARCHAR) }; break

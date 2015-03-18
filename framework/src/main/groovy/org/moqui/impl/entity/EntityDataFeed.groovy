@@ -615,9 +615,9 @@ class EntityDataFeed {
                                 Set<Object> pkValues = new HashSet<Object>()
                                 for (Map pkFieldValueMap in primaryPkFieldValues)
                                     pkValues.add(pkFieldValueMap.get(pkFieldName))
-                                // if pk field is aliased used the alias name
-                                condition = efi.getConditionFactory().makeCondition(pkFieldAliasMap.get(pkFieldName),
-                                        EntityCondition.IN, pkValues)
+                                // if pk field is aliased use the alias name
+                                String aliasedPkName = pkFieldAliasMap.get(pkFieldName) ?: pkFieldName
+                                condition = efi.getConditionFactory().makeCondition(aliasedPkName, EntityCondition.IN, pkValues)
                             } else {
                                 List<EntityCondition> condList = []
                                 for (Map pkFieldValueMap in primaryPkFieldValues) {

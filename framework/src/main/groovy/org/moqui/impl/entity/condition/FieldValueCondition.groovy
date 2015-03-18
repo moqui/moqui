@@ -47,19 +47,23 @@ class FieldValueCondition extends EntityConditionImplBase {
         sql.append(' ')
         boolean valueDone = false
         if (this.value == null) {
-            if (this.operator == EQUALS || this.operator == LIKE || this.operator == IN) {
+            if (this.operator == EQUALS || this.operator == LIKE || this.operator == IN || this.operator == BETWEEN) {
                 sql.append(" IS NULL")
                 valueDone = true
-            } else if (this.operator == NOT_EQUAL || this.operator == NOT_LIKE || this.operator == NOT_IN) {
+            } else if (this.operator == NOT_EQUAL || this.operator == NOT_LIKE || this.operator == NOT_IN || this.operator == NOT_BETWEEN) {
                 sql.append(" IS NOT NULL")
                 valueDone = true
             }
         }
+        if (this.operator == IS_NULL || this.operator == IS_NOT_NULL) {
+            sql.append(EntityConditionFactoryImpl.getComparisonOperatorString(this.operator))
+            valueDone = true
+        }
         if (!valueDone) {
             sql.append(EntityConditionFactoryImpl.getComparisonOperatorString(this.operator))
             if (this.operator == IN || this.operator == NOT_IN) {
-                if (this.value instanceof String || this.value instanceof GString) {
-                    String valueStr = (String) this.value
+                if (this.value instanceof CharSequence) {
+                    String valueStr = this.value.toString()
                     if (valueStr.contains(",")) this.value = valueStr.split(",").collect()
                 }
                 if (this.value instanceof Collection) {
@@ -68,27 +72,27 @@ class FieldValueCondition extends EntityConditionImplBase {
                     for (Object curValue in this.value) {
                         if (isFirst) isFirst = false else sql.append(", ")
                         sql.append("?")
-                        if (this.ignoreCase && (curValue instanceof String || curValue instanceof GString)) curValue = ((String) curValue).toUpperCase()
+                        if (this.ignoreCase && (curValue instanceof CharSequence)) curValue = curValue.toString().toUpperCase()
                         eqb.getParameters().add(new EntityConditionParameter(field.getFieldNode(eqb.mainEntityDefinition), curValue, eqb))
                     }
                     sql.append(')')
                 } else {
-                    if (this.ignoreCase && (this.value instanceof String || this.value instanceof GString)) this.value = ((String) this.value).toUpperCase()
+                    if (this.ignoreCase && (this.value instanceof CharSequence)) this.value = this.value.toString().toUpperCase()
                     sql.append(" (?)")
                     eqb.getParameters().add(new EntityConditionParameter(field.getFieldNode(eqb.mainEntityDefinition), this.value, eqb))
                 }
-            } else if (this.operator == BETWEEN && this.value instanceof Collection &&
+            } else if ((this.operator == BETWEEN || this.operator == NOT_BETWEEN) && this.value instanceof Collection &&
                     ((Collection) this.value).size() == 2) {
                 sql.append(" ? AND ?")
                 Iterator iterator = ((Collection) this.value).iterator()
                 Object value1 = iterator.next()
-                if (this.ignoreCase && (value1 instanceof String || value1 instanceof GString)) value1 = ((String) value1).toUpperCase()
+                if (this.ignoreCase && (value1 instanceof CharSequence)) value1 = value1.toString().toUpperCase()
                 Object value2 = iterator.next()
-                if (this.ignoreCase && (value2 instanceof String || value2 instanceof GString)) value2 = ((String) value2).toUpperCase()
+                if (this.ignoreCase && (value2 instanceof CharSequence)) value2 = value2.toString().toUpperCase()
                 eqb.getParameters().add(new EntityConditionParameter(field.getFieldNode(eqb.mainEntityDefinition), value1, eqb))
                 eqb.getParameters().add(new EntityConditionParameter(field.getFieldNode(eqb.mainEntityDefinition), value2, eqb))
             } else {
-                if (this.ignoreCase && (this.value instanceof String || this.value instanceof GString)) this.value = ((String) this.value).toUpperCase()
+                if (this.ignoreCase && (this.value instanceof CharSequence)) this.value = this.value.toString().toUpperCase()
                 sql.append(" ?")
                 eqb.getParameters().add(new EntityConditionParameter(field.getFieldNode(eqb.mainEntityDefinition), this.value, eqb))
             }

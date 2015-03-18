@@ -618,7 +618,7 @@ class ScreenForm {
         Map oneRelKeyMap = null
         for (Node rn in ed.entityNode."relationship") {
             Map km = ed.getRelationshipExpandedKeyMap(rn)
-            if (km.size() == 1 && km.containsKey(fieldName) && rn."@type" == "one" && rn."@is-one-reverse" != "true") {
+            if (km.size() == 1 && km.containsKey(fieldName) && rn."@type" == "one" && rn."@is-auto-reverse" != "true") {
                 oneRelNode = rn
                 oneRelKeyMap = km
             }

@@ -248,12 +248,12 @@ class StupidWebUtilities {
             } else if (lst.size() > 1) {
                 orig = new ArrayList(lst.size())
                 for (Object obj in lst) {
-                    if (obj instanceof String) orig.add(defaultWebEncoder.canonicalize(obj, false))
+                    if (obj instanceof CharSequence) orig.add(defaultWebEncoder.canonicalize(obj.toString(), false))
                 }
             }
         }
         // catch strings or lists with a single string in them unwrapped above
-        if (orig instanceof String) orig = defaultWebEncoder.canonicalize(orig, false)
+        if (orig instanceof CharSequence) orig = defaultWebEncoder.canonicalize(orig.toString(), false)
         return orig
     }
 
