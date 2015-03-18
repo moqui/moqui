@@ -179,7 +179,7 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
         comparisonOperatorStringMap.put(ComparisonOperator.IN, "IN")
         comparisonOperatorStringMap.put(ComparisonOperator.NOT_IN, "NOT IN")
         comparisonOperatorStringMap.put(ComparisonOperator.BETWEEN, "BETWEEN")
-        comparisonOperatorStringMap.put(ComparisonOperator.BETWEEN, "NOT BETWEEN")
+        comparisonOperatorStringMap.put(ComparisonOperator.NOT_BETWEEN, "NOT BETWEEN")
         comparisonOperatorStringMap.put(ComparisonOperator.LIKE, "LIKE")
         comparisonOperatorStringMap.put(ComparisonOperator.NOT_LIKE, "NOT LIKE")
         comparisonOperatorStringMap.put(ComparisonOperator.IS_NULL, "IS NULL")
