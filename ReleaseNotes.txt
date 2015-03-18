@@ -29,7 +29,9 @@ New Features:
 Bug Fixes:
 
 - Fixed issue with link.@dynamic-load-id attribute loading the result of
-  the load() function instead of doing nothing but calling the load method
+  the load() function instead of doing nothing but calling the load method;
+  this caused issues in browsers like FireFox that render the result of a
+  a.@href javascript: expression
 - Fixed issue with sparse screen paths (starting with a '//') where a
   high-level screen like the echopath screen with @allow-extra-path=true
   would be used instead of a more complete, and correct, match; sparse
