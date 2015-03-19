@@ -107,6 +107,12 @@ This Work includes contributions authored by David E. Jones, not as a
                     there will be a record of all updates.
                 </xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="short-alias" type="xs:string">
+                <xs:annotation><xs:documentation>A short alias for the entity, mainly meant for REST URLs but entities
+                    may be referenced by this. Must be unique across all entities defined. If a duplicate is found the
+                    later loading entity will be used. Should be short, start with a lowercase character, and be plural
+                    (ie products, not product).</xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="extend-entity">
@@ -202,6 +208,12 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="title" type="xs:string"/>
             <xs:attribute name="related-entity-name" type="xs:string" use="required"/>
             <xs:attribute name="fk-name" type="xs:string"/>
+            <xs:attribute name="short-alias" type="xs:string">
+                <xs:annotation><xs:documentation>A short alias for the relationship, mainly meant for REST URLs but
+                    relationships may be referenced by this. Must be unique for relationships within an entity (ie only
+                    has meaning in the context of a particular entity). Should be short, start with a lowercase
+                    character, and be plural (ie products, not product).</xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="key-map">

@@ -40,6 +40,7 @@ public class EntityDefinition {
     protected EntityFacadeImpl efi
     protected String internalEntityName
     protected String fullEntityName
+    protected String shortAlias
     protected Node internalEntityNode
     protected final Map<String, Boolean> fieldSimpleMap = new HashMap<String, Boolean>()
     protected final Map<String, Node> fieldNodeMap = new HashMap<String, Node>()
@@ -62,6 +63,7 @@ public class EntityDefinition {
         this.efi = efi
         this.internalEntityName = (entityNode."@entity-name").intern()
         this.fullEntityName = (entityNode."@package-name" + "." + this.internalEntityName).intern()
+        this.shortAlias = entityNode."@short-alias" ?: null
         this.internalEntityNode = entityNode
 
         if (isViewEntity()) {
@@ -101,6 +103,7 @@ public class EntityDefinition {
 
     String getEntityName() { return this.internalEntityName }
     String getFullEntityName() { return this.fullEntityName }
+    String getShortAlias() { return this.shortAlias }
 
     Node getEntityNode() { return this.internalEntityNode }
 
@@ -213,30 +216,43 @@ public class EntityDefinition {
         Node relNode = relationshipNodeMap.get(relationshipName)
         if (relNode != null) return relNode
 
-        String entityName = relationshipName.contains("#") ? relationshipName.substring(relationshipName.indexOf("#") + 1) : relationshipName
+        String relatedEntityName = relationshipName.contains("#") ? relationshipName.substring(relationshipName.indexOf("#") + 1) : relationshipName
         String title = relationshipName.contains("#") ? relationshipName.substring(0, relationshipName.indexOf("#")) : null
-        EntityDefinition relatedEd = null
-        try {
-            relatedEd = efi.getEntityDefinition(entityName)
-        } catch (EntityException e) {
-            // ignore if entity doesn't exist
-            if (logger.isTraceEnabled()) logger.trace("Ignoring entity not found exception: ${e.toString()}")
-            return null
+
+        // if no 'title' see if relationshipName is actually a short-alias
+        if (!title) {
+            relNode = (Node) this.internalEntityNode."relationship".find({ it."@short-alias" == relationshipName })
+            if (relNode != null) {
+                // this isn't really necessary, we already found the relationship Node, but may be useful
+                relatedEntityName = relNode."@related-entity-name"
+                title = relNode."@title"
+            }
         }
 
-        relNode = (Node) this.internalEntityNode."relationship"
-                .find({ ((it."@title" ?: "") + it."@related-entity-name") == relationshipName ||
-                    ((it."@title" ?: "") + "#" + it."@related-entity-name") == relationshipName ||
-                    (relatedEd != null && it."@title" == title &&
-                        (it."@related-entity-name" == relatedEd.getEntityName() ||
-                         it."@related-entity-name" == relatedEd.getFullEntityName())) })
+        if (relNode == null) {
+            EntityDefinition relatedEd = null
+            try {
+                relatedEd = efi.getEntityDefinition(relatedEntityName)
+            } catch (EntityException e) {
+                // ignore if entity doesn't exist
+                if (logger.isTraceEnabled()) logger.trace("Ignoring entity not found exception: ${e.toString()}")
+                return null
+            }
+
+            relNode = (Node) this.internalEntityNode."relationship"
+                    .find({ ((it."@title" ?: "") + it."@related-entity-name") == relationshipName ||
+                        ((it."@title" ?: "") + "#" + it."@related-entity-name") == relationshipName ||
+                        (relatedEd != null && it."@title" == title &&
+                            (it."@related-entity-name" == relatedEd.getEntityName() ||
+                                    it."@related-entity-name" == relatedEd.getFullEntityName())) })
+        }
 
         // handle automatic reverse-many nodes (based on one node coming the other way)
         if (relNode == null) {
             // see if there is an entity matching the relationship name that has a relationship coming this way
             EntityDefinition ed = null
             try {
-                ed = efi.getEntityDefinition(entityName)
+                ed = efi.getEntityDefinition(relatedEntityName)
             } catch (EntityException e) {
                 // probably means not a valid entity name, which may happen a lot since we're checking here to see, so just ignore
                 if (logger.isTraceEnabled()) logger.trace("Ignoring entity not found exception: ${e.toString()}")
@@ -250,7 +266,7 @@ public class EntityDefinition {
                     Map keyMap = ed.getRelationshipExpandedKeyMap(reverseRelNode)
                     String relType = (this.getPkFieldNames() == ed.getPkFieldNames()) ? "one-nofk" : "many"
                     Node newRelNode = this.internalEntityNode.appendNode("relationship",
-                            ["related-entity-name":entityName, "type":relType])
+                            ["related-entity-name":relatedEntityName, "type":relType])
                     if (title) newRelNode.attributes().put("title", title)
                     for (Map.Entry keyEntry in keyMap) {
                         // add a key-map with the reverse fields
@@ -307,7 +323,7 @@ public class EntityDefinition {
                     .getPrettyName((String) relNode."@title", internalEntityName)
 
             infoList.add([type:relNode."@type", title:(relNode."@title"?:""), relatedEntityName:relNode."@related-entity-name",
-                    keyMap:keyMap, targetParameterMap:targetParameterMap, prettyName:prettyName])
+                shortAlias:(relNode."@short-alias"?:""), keyMap:keyMap, targetParameterMap:targetParameterMap, prettyName:prettyName])
         }
         return infoList
     }
@@ -323,6 +339,7 @@ public class EntityDefinition {
         for (Map relInfo in relInfoList) {
             edp.allDescendants.add((String) relInfo.relatedEntityName)
             edp.relationshipInfos.put((relInfo.title ? (String) relInfo.title + "#" : "") + (String) relInfo.relatedEntityName, relInfo)
+            if (relInfo.shortAlias) edp.relationshipInfos.put((String) relInfo.shortAlias, relInfo)
             EntityDefinition relEd = efi.getEntityDefinition((String) relInfo.relatedEntityName)
             if (!edp.dependentEntities.containsKey(relEd.internalEntityName) && !ancestorEntities.contains(relEd.internalEntityName)) {
                 EntityDependents relEpd = relEd.getDependentsTree(ancestorEntities)

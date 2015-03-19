@@ -268,6 +268,8 @@ class EntityFacadeImpl implements EntityFacade {
             for (Node entity in entityRootChildren) {
                 String entityName = (String) entity."@entity-name"
                 String packageName = (String) entity."@package-name"
+                String shortAlias = (String) entity."@short-alias"
+
                 if (packageName) {
                     List pkgList = (List) this.entityLocationCache.get(packageName + "." + entityName)
                     if (!pkgList) {
@@ -275,6 +277,15 @@ class EntityFacadeImpl implements EntityFacade {
                         this.entityLocationCache.put(packageName + "." + entityName, pkgList)
                     }
                     if (!pkgList.contains(entityRr.location)) pkgList.add(entityRr.location)
+                }
+
+                if (shortAlias) {
+                    List aliasList = (List) this.entityLocationCache.get(shortAlias)
+                    if (!aliasList) {
+                        aliasList = new LinkedList()
+                        this.entityLocationCache.put(shortAlias, aliasList)
+                    }
+                    if (!aliasList.contains(entityRr.location)) aliasList.add(entityRr.location)
                 }
 
                 List nameList = (List) this.entityLocationCache.get(entityName)
@@ -369,6 +380,8 @@ class EntityFacadeImpl implements EntityFacade {
             // cache it under both entityName and fullEntityName
             entityDefinitionCache.put(ed.getEntityName(), ed)
             entityDefinitionCache.put(ed.getFullEntityName(), ed)
+            // also cache it for lookup by the short-alias
+            if (ed.getShortAlias()) entityDefinitionCache.put(ed.getShortAlias(), ed)
             // send it on its way
             return ed
         }
@@ -424,6 +437,8 @@ class EntityFacadeImpl implements EntityFacade {
         // cache it
         entityDefinitionCache.put(ed.getEntityName(), ed)
         entityDefinitionCache.put(ed.getFullEntityName(), ed)
+        // also cache it for lookup by the short-alias
+        if (ed.getShortAlias()) entityDefinitionCache.put(ed.getShortAlias(), ed)
         // send it on its way
         return ed
     }
@@ -651,6 +666,7 @@ class EntityFacadeImpl implements EntityFacade {
         if (ed != null) {
             this.entityDefinitionCache.remove(ed.getEntityName())
             this.entityDefinitionCache.remove(ed.getFullEntityName())
+            this.entityDefinitionCache.remove(ed.getShortAlias())
         }
     }
 
