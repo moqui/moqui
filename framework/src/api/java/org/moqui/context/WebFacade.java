@@ -11,6 +11,7 @@
  */
 package org.moqui.context;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletContext;
@@ -42,4 +43,5 @@ public interface WebFacade {
     void sendResourceResponse(String location);
     void handleXmlRpcServiceCall();
     void handleJsonRpcServiceCall();
+    void handleEntityRestCall(List<String> extraPathNameList);
 }

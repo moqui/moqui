@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This Work is in the public domain and is provided on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+including, without limitation, any warranties or conditions of TITLE,
+NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+You are solely responsible for determining the appropriateness of using
+this Work and assume any risks associated with your use of this Work.
+
+This Work includes contributions authored by David E. Jones, not as a
+"work for hire", who hereby disclaims any copyright to the same.
+-->
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd"
+        require-authentication="false" track-artifact-hit="false" default-menu-include="false">
+    <!-- NOTE: require-authentication=false is required to allow transitions to decide. -->
+
+    <!--
+    EXAMPLES
+
+    NOTE: "am9obi5kb2U6bW9xdWk=" is the Base64 encoded String "john.doe:moqui"
+
+    Verbs: GET=find, POST=create, PUT=store (create or update), PATCH=update, DELETE=delete
+
+    By short-alias:
+    curl -X GET -H "Authorization: Basic am9obi5kb2U6bW9xdWk=" http://localhost:8080/rest/v1/examples/TEST2
+    By entity name:
+    curl -X GET -H "Authorization: Basic am9obi5kb2U6bW9xdWk=" http://localhost:8080/rest/v1/Example/TEST2
+
+    Detail/child records can be retrieved in various ways, in the first "items" is a short-alias on the relationship:
+    curl -X GET -H "Authorization: Basic am9obi5kb2U6bW9xdWk=" http://localhost:8080/rest/v1/examples/TEST2/items/01
+    curl -X GET -H "Authorization: Basic am9obi5kb2U6bW9xdWk=" http://localhost:8080/rest/v1/exampleItems/TEST2/01
+
+    To get a record plus all dependents in the JSON document use:
+    curl -X GET -H "Authorization: Basic am9obi5kb2U6bW9xdWk=" http://localhost:8080/rest/v1/examples/TEST2?dependents=true
+
+    Parameters can also be used for searching, which supports the per-field extensions (_op, _ic, etc) of
+        EntityFind.searchFormInputs(), the orderByField parameter for comma-separated fields to sort the results by,
+        and pageIndex, pageSize for pagination; parameters can be in the URL (preferred) or in request body as JSON
+    curl -X GET -H "Authorization: Basic am9obi5kb2U6bW9xdWk=" \
+        http://localhost:8080/rest/v1/examples?exampleName=test&exampleName_op=contains&exampleName_ic=Y&orderByField=exampleName&pageIndex=0
+
+    Create looks like (remove the space between the two dashes in "- -data"; note the two approaches for authc):
+    curl -X POST -H "Content-Type: application/json" -H "Authorization: Basic am9obi5kb2U6bW9xdWk=" \
+         - -data '{ "exampleName":"REST Test 1", "exampleTypeEnumId":"EXT_MADE_UP", "statusId":"EXST_IN_DESIGN" }' \
+            http://localhost:8080/rest/v1/examples
+    curl -X POST -H "Content-Type: application/json" \
+         - -data '{ "exampleName":"REST Test 1", "exampleTypeEnumId":"EXT_MADE_UP", "statusId":"EXST_IN_DESIGN", \
+             "authUsername":"john.doe", "authPassword":"moqui" }' http://localhost:8080/rest/v1/examples
+
+    Store looks like (PATCH is similar):
+    curl -X PUT -H "Content-Type: application/json" -H "Authorization: Basic am9obi5kb2U6bW9xdWk=" \
+         - -data '{ "exampleName":"REST Test - Rev 2" }' http://localhost:8080/rest/v1/examples/100010
+
+    Delete looks like:
+    curl -X DELETE -H "Content-Type: application/json" -H "Authorization: Basic am9obi5kb2U6bW9xdWk=" \
+         http://localhost:8080/rest/v1/examples/100010
+    -->
+    <transition name="v1">
+        <actions><script>ec.web.handleEntityRestCall(sri.screenUrlInfo.extraPathNameList)</script></actions>
+        <default-response type="none"/>
+    </transition>
+
+    <widgets><!-- this should never be viewed... --></widgets>
+</screen>

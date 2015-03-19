@@ -461,9 +461,18 @@ class WebFacadeImpl implements WebFacade {
         }
     }
 
+    @Override
     void handleXmlRpcServiceCall() { new ServiceXmlRpcDispatcher(eci).dispatch(request, response) }
 
+    @Override
     void handleJsonRpcServiceCall() { new ServiceJsonRpcDispatcher(eci).dispatch(request, response) }
+
+    @Override
+    void handleEntityRestCall(List<String> extraPathNameList) {
+        throw new IllegalArgumentException("WebFacade.handleEntityRestCall() not yet implemented")
+        // TODO
+    }
+
 
     void saveScreenLastInfo(String screenPath, Map parameters) {
         session.setAttribute("moqui.screen.last.path", screenPath ?: request.getPathInfo())
