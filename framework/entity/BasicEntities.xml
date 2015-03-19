@@ -34,7 +34,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
 
     <!-- ========== Enumeration ========== -->
-    <entity entity-name="Enumeration" package-name="moqui.basic" cache="true">
+    <entity entity-name="Enumeration" package-name="moqui.basic" short-alias="enums" cache="true">
         <field name="enumId" type="id" is-pk="true"/>
         <field name="enumTypeId" type="id-long"/>
         <field name="parentEnumId" type="id"/>
@@ -49,13 +49,13 @@ This Work includes contributions authored by David E. Jones, not as a
             <moqui.basic.Enumeration enumId="_NA_" enumTypeId="_NA_" description="Not Applicable"/>
         </seed-data>
     </entity>
-    <entity entity-name="EnumerationType" package-name="moqui.basic" cache="true">
+    <entity entity-name="EnumerationType" package-name="moqui.basic" short-alias="enumerationTypes" cache="true">
         <field name="enumTypeId" type="id-long" is-pk="true"/>
         <field name="description" type="text-medium"/>
     </entity>
 
     <!-- ========== Geo ========== -->
-    <entity entity-name="Geo" package-name="moqui.basic" cache="true">
+    <entity entity-name="Geo" package-name="moqui.basic" short-alias="geos" cache="true">
         <field name="geoId" type="id" is-pk="true"/>
         <field name="geoTypeEnumId" type="id"/>
         <field name="geoName" type="text-medium"/>
@@ -121,7 +121,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <alias-all entity-alias="GEOA"/>
         <alias-all entity-alias="GEOFR"><exclude field="geoId"/></alias-all>
     </view-entity>
-    <entity entity-name="GeoPoint" package-name="moqui.basic">
+    <entity entity-name="GeoPoint" package-name="moqui.basic" short-alias="geoPoints">
         <field name="geoPointId" type="id" is-pk="true"/>
         <field name="dataSourceId" type="id"/>
         <field name="latitude" type="number-float"/>
@@ -149,7 +149,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
 
     <!-- ========== Status ========== -->
-    <entity entity-name="StatusItem" package-name="moqui.basic" cache="true">
+    <entity entity-name="StatusItem" package-name="moqui.basic" short-alias="statuses" cache="true">
         <field name="statusId" type="id" is-pk="true"/>
         <field name="statusTypeId" type="id-long"/>
         <field name="statusCode" type="text-medium"/>
@@ -161,7 +161,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <moqui.basic.StatusItem statusId="_NA_" statusTypeId="_NA_" description="Not Applicable"/>
         </seed-data>
     </entity>
-    <entity entity-name="StatusType" package-name="moqui.basic">
+    <entity entity-name="StatusType" package-name="moqui.basic" short-alias="statusTypes">
         <field name="statusTypeId" type="id-long" is-pk="true"/>
         <field name="parentTypeId" type="id-long"/>
         <field name="description" type="text-medium"/>
@@ -227,7 +227,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </view-entity>
 
     <!-- ========== Uom ========== -->
-    <entity entity-name="Uom" package-name="moqui.basic" cache="true">
+    <entity entity-name="Uom" package-name="moqui.basic" short-alias="uoms" cache="true">
         <field name="uomId" type="id" is-pk="true"/>
         <field name="uomTypeEnumId" type="id"/>
         <field name="abbreviation" type="text-short"/>
