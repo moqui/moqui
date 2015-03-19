@@ -13,14 +13,20 @@ package org.moqui.context;
 
 import org.moqui.BaseException;
 
-/** Thrown when artifact authz fails. */
-public class ArtifactAuthorizationException extends BaseException {
+/** Thrown when artifact tarpit is hit, too many uses of artifact. */
+public class ArtifactTarpitException extends BaseException {
 
-    public ArtifactAuthorizationException(String str) {
+    Integer retryAfterSeconds = null;
+
+    public ArtifactTarpitException(String str) { super(str); }
+    public ArtifactTarpitException(String str, Integer retryAfterSeconds) {
         super(str);
+        this.retryAfterSeconds = retryAfterSeconds;
     }
 
-    public ArtifactAuthorizationException(String str, Throwable nested) {
+    public ArtifactTarpitException(String str, Throwable nested) {
         super(str, nested);
     }
+
+    public Integer getRetryAfterSeconds() { return retryAfterSeconds; }
 }

@@ -13,6 +13,7 @@ package org.moqui.impl.screen
 
 import freemarker.template.Template
 import org.moqui.context.ArtifactAuthorizationException
+import org.moqui.context.ArtifactTarpitException
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -595,6 +596,8 @@ class ScreenRenderImpl implements ScreenRender {
 
             for (int i = screensPushed; i > 0; i--) ec.artifactExecution.pop()
         } catch (ArtifactAuthorizationException e) {
+            throw e
+        } catch (ArtifactTarpitException e) {
             throw e
         } catch (Throwable t) {
             String errMsg = "Error rendering screen [${getActiveScreenDef().location}]"

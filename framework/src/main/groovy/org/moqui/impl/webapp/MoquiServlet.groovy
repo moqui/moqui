@@ -11,6 +11,8 @@
  */
 package org.moqui.impl.webapp
 
+import org.moqui.context.ArtifactTarpitException
+
 import javax.servlet.http.HttpServlet
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpServletRequest
@@ -64,8 +66,15 @@ class MoquiServlet extends HttpServlet {
         try {
             ec.screen.makeRender().render(request, response)
         } catch (ArtifactAuthorizationException e) {
-            logger.warn("Web Access Unauthorized: " + e.message)
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.message)
+            // SC_UNAUTHORIZED 401 used when authc/login fails, use SC_FORBIDDEN 403 for authz failures
+            // See ScreenRenderImpl.checkWebappSettings for authc and SC_UNAUTHORIZED handling
+            logger.warn("Web Access Forbidden (no authz): " + e.message)
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, e.message)
+        } catch (ArtifactTarpitException e) {
+            logger.warn("Web Too Many Requests (tarpit): " + e.message)
+            if (e.getRetryAfterSeconds()) response.addIntHeader("Retry-After", e.getRetryAfterSeconds())
+            // NOTE: there is no constant on HttpServletResponse for 429; see RFC 6585 for details
+            response.sendError(429, e.message)
         } catch (ScreenResourceNotFoundException e) {
             logger.warn("Web Resource Not Found: " + e.message)
             response.sendError(HttpServletResponse.SC_NOT_FOUND, e.message)

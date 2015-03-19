@@ -25,6 +25,12 @@ New Features:
 - Added EntityServices.search#CountBySource service to do analytics
   searches using ElasticSearch; there is a real-world example of the use of
   this service in Mantle for current and projected inventory data
+- Improved HTTP response code handling, now uses 401 only for authc/login
+  failures, 403 (forbidden) for artifact authz failures, and 429 (too many
+  requests) for tarpit failures
+- Added @short-alias attribute for entity and relationship, can be used for
+  any entity or relationship reference, but mainly meant for use in entity
+  REST request URLs and other entity path operations
 
 Bug Fixes:
 

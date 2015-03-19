@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.context
 
+import org.moqui.context.ArtifactTarpitException
 import org.moqui.impl.entity.EntityValueBase
 
 import java.sql.Timestamp
@@ -257,9 +258,11 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                         EntityList tarpitLockList = efi.find("moqui.security.ArtifactTarpitLock")
                                 .condition([userId:userId, artifactName:aeii.getName(), artifactTypeEnumId:aeii.getTypeEnumId()])
                                 .useCache(true).list()
-                                .filterByCondition(efi.getConditionFactory().makeCondition("releaseDateTime", ComparisonOperator.GREATER_THAN, ufi.getNowTimestamp()), true)
+                                .filterByCondition(efi.getConditionFactory().makeCondition('releaseDateTime', ComparisonOperator.GREATER_THAN, ufi.getNowTimestamp()), true)
                         if (tarpitLockList) {
-                            throw new ArtifactAuthorizationException("User [${userId}] has accessed ${artifactTypeDescriptionMap.get(aeii.getTypeEnumId())?:aeii.getTypeEnumId()} [${aeii.getName()}] too many times and may not again until ${tarpitLockList.first.releaseDateTime}")
+                            Timestamp releaseDateTime = tarpitLockList.first.getTimestamp('releaseDateTime')
+                            int retryAfterSeconds = (releaseDateTime.getTime() - System.currentTimeMillis())/1000
+                            throw new ArtifactTarpitException("User [${userId}] has accessed ${artifactTypeDescriptionMap.get(aeii.getTypeEnumId())?:aeii.getTypeEnumId()} [${aeii.getName()}] too many times and may not again until ${releaseDateTime} (retry after ${retryAfterSeconds} seconds)", retryAfterSeconds)
                         }
                     }
                     // record the tarpit lock
