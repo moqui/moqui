@@ -1,0 +1,7 @@
+# first record is ${entityName or serviceName},${dataType}
+moqui.example.ExampleItem,demo
+# second record is list of field names, then each additional record is values for those fields
+exampleId,exampleItemSeqId,description,amount
+TEST1,01,Test 1 Item 1,100
+TEST1,02,Test 1 Item 2,200
+TEST2,01,Test 2 Item 1,
