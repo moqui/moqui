@@ -23,7 +23,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="exampleEmail" type="text-medium"/>
         <field name="exampleUrl" type="text-medium"/>
     </extend-entity>
-    <entity entity-name="Example" package-name="moqui.example" allow-user-field="true">
+    <entity entity-name="Example" package-name="moqui.example" short-alias="examples" allow-user-field="true">
         <field name="exampleId" type="id" is-pk="true"><description>primary sequenced ID</description></field>
         <field name="exampleTypeEnumId" type="id"/>
         <field name="statusId" type="id" enable-audit-log="true"/>
@@ -43,6 +43,11 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="exampleTypeEnumId"/>
         </relationship>
         <relationship type="one" title="Example" related-entity-name="moqui.basic.StatusItem"/>
+
+        <!-- This is not generally necessary, reverse relationships are created automatically, but needed to specify
+            the short-alias for use in entity REST requests and quick path look ups -->
+        <relationship type="many" related-entity-name="moqui.example.ExampleItem" short-alias="items">
+            <key-map field-name="exampleId"/></relationship>
 
         <seed-data>
             <!-- Example Type -->
@@ -73,7 +78,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="EXST_TESTED" toStatusId="EXST_CANCELLED" transitionName="Cancel Example"/>
         </seed-data>
     </entity>
-    <entity entity-name="ExampleItem" package-name="moqui.example">
+    <entity entity-name="ExampleItem" package-name="moqui.example" short-alias="exampleItems">
         <field name="exampleId" type="id" is-pk="true"/>
         <field name="exampleItemSeqId" type="id" is-pk="true"><description>secondary sequenced ID</description></field>
         <field name="description" type="text-medium"/>
@@ -103,7 +108,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
 
     <!-- Example Feature -->
-    <entity entity-name="ExampleFeature" package-name="moqui.example">
+    <entity entity-name="ExampleFeature" package-name="moqui.example" short-alias="exampleFeatures">
         <field name="exampleFeatureId" type="id" is-pk="true"><description>primary sequenced ID</description></field>
         <field name="featureSourceEnumId" type="id"/>
         <field name="description" type="text-medium"/>
