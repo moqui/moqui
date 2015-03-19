@@ -1,7 +1,5 @@
 package org.moqui.impl.service
 
-import org.moqui.context.ArtifactAuthorizationException
-
 /*
  * This Work is in the public domain and is provided on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
@@ -17,6 +15,7 @@ import org.moqui.context.ArtifactAuthorizationException
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
+import org.moqui.context.ArtifactAuthorizationException
 import org.moqui.impl.context.ExecutionContextImpl
 
 import org.slf4j.Logger
