@@ -47,6 +47,20 @@ public interface EntityFacade {
     /** Same as the find() method, exists to support code using this older method name. */
     EntityFind makeFind(String entityName);
 
+    /** Meant for processing entity REST requests, but useful more generally as a simple way to perform entity operations.
+     *
+     * @param operation Can be get/find, post/create, put/store, patch/update, or delete/delete.
+     * @param entityPath First element should be an entity name or short-alias, followed by (optionally depending on
+     *                   operation) the PK fields for the entity in the order they appear in the entity definition
+     *                   followed optionally by (one or more) relationship name or short-alias and then PK values for
+     *                   the related entity, not including any PK fields defined in the relationship.
+     * @param parameters A Map of extra parameters, used depending on the operation. For find operations these can be
+     *                   any parameters handled by the EntityFind.searchFormInputs() method. For create, update, store,
+     *                   and delete operations these parameters are for non-PK fields and as an alternative to the
+     *                   entity path for PK field values. For find operations also supports a "dependents" parameter
+     *                   that if true will get dependent values of the record referenced in the entity path.
+     */
+    Object rest(String operation, List<String> entityPath, Map parameters);
 
     /** Do a database query with the given SQL and return the results as an EntityList for the given entity and with
      * selected columns mapped to the listed fields.
@@ -116,7 +130,7 @@ public interface EntityFacade {
      */
     Connection getConnection(String groupName) throws EntityException;
 
-    // ======= XML Related Methods ========
+    // ======= Import/Export (XML, CSV, etc) Related Methods ========
 
     /** Make an object used to load XML or CSV entity data into the database or into an EntityList. The files come from
      * a specific location, text already read from somewhere, or by searching all component data directories

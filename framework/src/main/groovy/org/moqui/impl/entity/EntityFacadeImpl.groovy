@@ -807,6 +807,23 @@ class EntityFacadeImpl implements EntityFacade {
         return edf.makeEntityFind(entityName)
     }
 
+    final static Map<String, String> operationByMethod = [get:'find', post:'create', put:'store', patch:'update', delete:'delete']
+    @Override
+    Object rest(String operation, List<String> entityPath, Map parameters) {
+        if (!operation) throw new EntityException("Operation (method) must be specified")
+        operation = operationByMethod.get(operation.toLowerCase()) ?: operation
+        if (!(operation in ['find', 'create', 'store', 'update', 'delete']))
+            throw new EntityException("Operation [${operation}] not supported, must be one of: get, post, put, patch, or delete for HTTP request methods or find, create, store, update, or delete for direct entity operations")
+
+        String entityName = entityPath.get(0)
+        EntityDefinition ed = getEntityDefinition(entityName)
+        if (ed == null) throw new EntityNotFoundException("No entity found with name or alias [${entityName}]")
+
+        // TODO!
+        throw new IllegalArgumentException("rest not yet implemented")
+    }
+
+
     @Override
     EntityListIterator sqlFind(String sql, List<Object> sqlParameterList, String entityName, List<String> fieldList) {
         EntityDefinition ed = this.getEntityDefinition(entityName)

@@ -13,9 +13,12 @@ package org.moqui.impl.context
 
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
+import org.moqui.context.ArtifactAuthorizationException
+import org.moqui.context.ArtifactTarpitException
 import org.moqui.context.ContextStack
 import org.moqui.context.ResourceReference
 import org.moqui.context.ValidationError
+import org.moqui.entity.EntityNotFoundException
 import org.moqui.impl.StupidUtilities
 
 import javax.servlet.http.HttpServletRequest
@@ -404,7 +407,7 @@ class WebFacadeImpl implements WebFacade {
         int length = jsonStr.getBytes(charset).length
         response.setContentLength(length)
 
-        if (logger.infoEnabled) logger.info("Sending JSON response of length [${length}] with [${charset}] encoding")
+        if (logger.infoEnabled) logger.info("Sending JSON response of length [${length}] with [${charset}] encoding for request to ${request.getPathInfo()}")
 
         try {
             response.writer.write(jsonStr)
@@ -469,8 +472,50 @@ class WebFacadeImpl implements WebFacade {
 
     @Override
     void handleEntityRestCall(List<String> extraPathNameList) {
-        throw new IllegalArgumentException("WebFacade.handleEntityRestCall() not yet implemented")
-        // TODO
+        Map parameters = getParameters()
+
+        // check for parsing error, send a 400 response
+        if (parameters._requestBodyJsonParseError) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, (String) parameters._requestBodyJsonParseError)
+            return
+        }
+
+        // make sure a user is logged in, screen/etc that calls will generally be configured to not require auth
+        if (!eci.getUser().getUsername()) {
+            // if there was a login error there will be a MessageFacade error message
+            String errorMessage = eci.message.errorsString
+            if (!errorMessage) errorMessage = "Authentication required for entity REST operations"
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, errorMessage)
+            return
+        }
+
+        try {
+            Object responseObj = eci.getEntity().rest(request.getMethod(), extraPathNameList, parameters)
+            // TODO: This will always respond with 200 OK, consider using 201 Created (for successful POST, create PUT)
+            // TODO:     and 204 No Content (for DELETE and other when no content is returned)
+            sendJsonResponse(responseObj)
+        } catch (ArtifactAuthorizationException e) {
+            // SC_UNAUTHORIZED 401 used when authc/login fails, use SC_FORBIDDEN 403 for authz failures
+            logger.warn("REST Access Forbidden (no authz): " + e.message)
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, e.message)
+        } catch (ArtifactTarpitException e) {
+            logger.warn("REST Too Many Requests (tarpit): " + e.message)
+            if (e.getRetryAfterSeconds()) response.addIntHeader("Retry-After", e.getRetryAfterSeconds())
+            // NOTE: there is no constant on HttpServletResponse for 429; see RFC 6585 for details
+            response.sendError(429, e.message)
+        } catch (EntityNotFoundException e) {
+            logger.warn("REST Entity Not Found: " + e.message)
+            // send a good old 404 error
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, e.message)
+        } catch (Throwable t) {
+            String errorMessage = t.toString()
+            if (eci.message.hasError()) {
+                String errorsString = eci.message.errorsString
+                logger.error(errorsString, t)
+                errorMessage = errorMessage + ' ' + errorsString
+            }
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, errorMessage)
+        }
     }
 
 
