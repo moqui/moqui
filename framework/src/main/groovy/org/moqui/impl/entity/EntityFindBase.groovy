@@ -186,8 +186,8 @@ abstract class EntityFindBase implements EntityFind {
             if (inf.containsKey(fn) || inf.containsKey(fn + "_op")) {
                 Object value = inf.get(fn)
                 String op = inf.get(fn + "_op") ?: "equals"
-                boolean not = (inf.get(fn + "_not") == "Y")
-                boolean ic = (inf.get(fn + "_ic") == "Y")
+                boolean not = (inf.get(fn + "_not") == "Y" || inf.get(fn + "_not") == "true")
+                boolean ic = (inf.get(fn + "_ic") == "Y" || inf.get(fn + "_ic") == "true")
 
                 EntityCondition cond = null
                 switch (op) {
