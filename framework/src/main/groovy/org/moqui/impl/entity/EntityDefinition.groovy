@@ -755,18 +755,23 @@ public class EntityDefinition {
         String javaType = fieldType ? (EntityFacadeImpl.fieldTypeJavaMap.get(fieldType) ?: efi.getFieldJavaType(fieldType, this)) : "String"
         Integer typeValue = (fieldType ? EntityFacadeImpl.fieldTypeIntMap.get(fieldType) : null) ?: EntityFacadeImpl.getJavaTypeInt(javaType)
 
+        boolean isEmpty = value.length() == 0
+
         try {
             switch (typeValue) {
                 case 1: outValue = value; break
                 case 2: // outValue = java.sql.Timestamp.valueOf(value);
+                    if (isEmpty) { outValue = null; break }
                     outValue = efi.getEcfi().getL10nFacade().parseTimestamp(value, null)
                     if (outValue == null) throw new BaseException("The value [${value}] is not a valid date/time")
                     break
                 case 3: // outValue = java.sql.Time.valueOf(value);
+                    if (isEmpty) { outValue = null; break }
                     outValue = efi.getEcfi().getL10nFacade().parseTime(value, null)
                     if (outValue == null) throw new BaseException("The value [${value}] is not a valid time")
                     break
                 case 4: // outValue = java.sql.Date.valueOf(value);
+                    if (isEmpty) { outValue = null; break }
                     outValue = efi.getEcfi().getL10nFacade().parseDate(value, null)
                     if (outValue == null) throw new BaseException("The value [${value}] is not a valid date")
                     break
@@ -775,6 +780,7 @@ public class EntityDefinition {
                 case 7: // outValue = Float.valueOf(value); break
                 case 8: // outValue = Double.valueOf(value); break
                 case 9: // outValue = new BigDecimal(value); break
+                    if (isEmpty) { outValue = null; break }
                     BigDecimal bdVal = efi.getEcfi().getL10nFacade().parseNumber(value, null)
                     if (bdVal == null) {
                         throw new BaseException("The value [${value}] is not valid for type [${javaType}]")
@@ -782,11 +788,15 @@ public class EntityDefinition {
                         outValue = StupidUtilities.basicConvert(bdVal.stripTrailingZeros(), javaType)
                     }
                     break
-                case 10: outValue = Boolean.valueOf(value); break
+                case 10:
+                    if (isEmpty) { outValue = null; break }
+                    outValue = Boolean.valueOf(value); break
                 case 11: outValue = value; break
                 case 12: outValue = new SerialBlob(value.getBytes()); break
                 case 13: outValue = value; break
-                case 14: outValue = value.asType(Date.class); break
+                case 14:
+                    if (isEmpty) { outValue = null; break }
+                    outValue = value.asType(Date.class); break
             // better way for Collection (15)? maybe parse comma separated, but probably doesn't make sense in the first place
                 case 15: outValue = value; break
                 default: outValue = value; break
