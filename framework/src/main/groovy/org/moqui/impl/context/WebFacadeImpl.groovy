@@ -475,11 +475,11 @@ class WebFacadeImpl implements WebFacade {
 
     @Override
     void handleEntityRestCall(List<String> extraPathNameList) {
-        ContextStack parameters = (ContextStack) getParameters()
+        ContextStack parmStack = (ContextStack) getParameters()
 
         // check for parsing error, send a 400 response
-        if (parameters._requestBodyJsonParseError) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, (String) parameters._requestBodyJsonParseError)
+        if (parmStack._requestBodyJsonParseError) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, (String) parmStack._requestBodyJsonParseError)
             return
         }
 
@@ -494,35 +494,37 @@ class WebFacadeImpl implements WebFacade {
 
         // TODO: consider putting all of this in a transaction...
         try {
+            // logger.warn("====== parameters: ${parmStack.toString()}")
             // if _requestBodyJsonList do multiple calls
-            if (parameters._requestBodyJsonList) {
+            if (parmStack._requestBodyJsonList) {
                 List responseList = []
-                for (Object bodyListObj in parameters._requestBodyJsonList) {
+                for (Object bodyListObj in parmStack._requestBodyJsonList) {
                     if (!(bodyListObj instanceof Map)) {
                         String errMsg = "If request body JSON is a list/array it must contain only object/map values, found non-map entry of type ${bodyListObj.getClass().getName()} with value: ${bodyListObj}"
                         logger.warn(errMsg)
                         response.sendError(HttpServletResponse.SC_BAD_REQUEST, errMsg)
                         return
                     }
-                    parameters.push()
-                    parameters.putAll((Map) bodyListObj)
-                    Object responseObj = eci.getEntity().rest(request.getMethod(), extraPathNameList, parameters)
+                    // logger.warn("========== REST ${request.getMethod()} ${request.getPathInfo()} ${extraPathNameList}; body list object: ${bodyListObj}")
+                    parmStack.push()
+                    parmStack.putAll((Map) bodyListObj)
+                    Object responseObj = eci.getEntity().rest(request.getMethod(), extraPathNameList, parmStack)
                     responseList.add(responseObj ?: [:])
-                    parameters.pop()
+                    parmStack.pop()
                 }
                 sendJsonResponse(responseList)
             } else {
                 long startTime = System.currentTimeMillis()
-                Object responseObj = eci.getEntity().rest(request.getMethod(), extraPathNameList, parameters)
+                Object responseObj = eci.getEntity().rest(request.getMethod(), extraPathNameList, parmStack)
                 long endTime = System.currentTimeMillis()
                 response.addIntHeader('X-Run-Time-ms', (endTime - startTime) as int)
 
-                if (parameters.xTotalCount != null) response.addIntHeader('X-Total-Count', parameters.xTotalCount as int)
-                if (parameters.xPageIndex != null) response.addIntHeader('X-Page-Index', parameters.xPageIndex as int)
-                if (parameters.xPageSize != null) response.addIntHeader('X-Page-Size', parameters.xPageSize as int)
-                if (parameters.xPageMaxIndex != null) response.addIntHeader('X-Page-Max-Index', parameters.xPageMaxIndex as int)
-                if (parameters.xPageRangeLow != null) response.addIntHeader('X-Page-Range-Low', parameters.xPageRangeLow as int)
-                if (parameters.xPageRangeHigh != null) response.addIntHeader('X-Page-Range-High', parameters.xPageRangeHigh as int)
+                if (parmStack.xTotalCount != null) response.addIntHeader('X-Total-Count', parmStack.xTotalCount as int)
+                if (parmStack.xPageIndex != null) response.addIntHeader('X-Page-Index', parmStack.xPageIndex as int)
+                if (parmStack.xPageSize != null) response.addIntHeader('X-Page-Size', parmStack.xPageSize as int)
+                if (parmStack.xPageMaxIndex != null) response.addIntHeader('X-Page-Max-Index', parmStack.xPageMaxIndex as int)
+                if (parmStack.xPageRangeLow != null) response.addIntHeader('X-Page-Range-Low', parmStack.xPageRangeLow as int)
+                if (parmStack.xPageRangeHigh != null) response.addIntHeader('X-Page-Range-High', parmStack.xPageRangeHigh as int)
 
                 // TODO: This will always respond with 200 OK, consider using 201 Created (for successful POST, create PUT)
                 // TODO:     and 204 No Content (for DELETE and other when no content is returned)
