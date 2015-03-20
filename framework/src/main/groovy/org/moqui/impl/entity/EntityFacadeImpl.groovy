@@ -400,7 +400,8 @@ class EntityFacadeImpl implements EntityFacade {
             }
             // filter by package-name if specified, otherwise grab whatever
             List<Node> packageChildren = (List<Node>) entityRoot.children()
-                    .findAll({ it."@entity-name" == entityName && (packageName ? it."@package-name" == packageName : true) })
+                    .findAll({ (it."@entity-name" == entityName || it."@short-alias" == entityName) &&
+                        (packageName ? it."@package-name" == packageName : true) })
             for (Node childNode in packageChildren) {
                 if (childNode.name() == "extend-entity") {
                     extendEntityNodes.add(childNode)
@@ -876,18 +877,32 @@ class EntityFacadeImpl implements EntityFacade {
                 // if we have a full PK lookup by PK and return the single value
                 Map pkValues = [:]
                 lastEd.setFields(parameters, pkValues, false, null, true)
-                EntityValue ev = find(lastEd.getFullEntityName()).condition(pkValues).one()
+                EntityValueBase evb = (EntityValueBase) find(lastEd.getFullEntityName()).condition(pkValues).one()
+                if (evb == null) throw new EntityValueNotFoundException("No value found for entity [${lastEd.getShortAlias()?:''}:${lastEd.getFullEntityName()}] with key ${pkValues}")
+
+                Map resultMap = StupidUtilities.removeNullsFromMap(new HashMap(evb.getValueMap()))
 
                 // TODO: support getting dependents if dependents=true
 
-                return ev
+                return resultMap
             } else {
                 // otherwise do a list find
-                EntityList el = find(lastEd.getFullEntityName()).searchFormMap(parameters, null, false).list()
+                EntityFind ef = find(lastEd.getFullEntityName()).searchFormMap(parameters, null, false)
+                // we don't want to go overboard with these requests, never do an unlimited find, if no limit use 100
+                if (!ef.getLimit()) ef.limit(100)
 
-                // TODO: support pagination, at least "X-Total-Count" header if find is paginated
+                EntityList el = ef.list()
+                // support pagination, at least "X-Total-Count" header if find is paginated
+                parameters.put('xTotalCount', ef.count())
 
-                return el
+                List resultList = []
+                for (EntityValue ev in el) {
+                    Map resultMap = StupidUtilities.removeNullsFromMap(new HashMap(((EntityValueBase) ev).getValueMap()))
+                    // TODO: support getting dependents if dependents=true
+                    resultList.add(resultMap)
+                }
+
+                return resultList
             }
         } else {
             // use the entity auto service runner for other operations (create, store, update, delete)

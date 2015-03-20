@@ -14,6 +14,7 @@ package org.moqui.impl.service.runner
 import org.moqui.BaseException
 import org.moqui.entity.EntityList
 import org.moqui.entity.EntityValue
+import org.moqui.entity.EntityValueNotFoundException
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.impl.entity.EntityDefinition
 import org.moqui.impl.service.ServiceDefinition
@@ -214,7 +215,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
                 ecfi.getEntityFacade().makeValue(ed.getFullEntityName()).setFields(parameters, true, null, true)
         // this is much slower, and we don't need to do the query: sfi.getEcfi().getEntityFacade().find(ed.entityName).condition(parameters).useCache(false).forUpdate(true).one()
         if (lookedUpValue == null) {
-            throw new ServiceException("In entity-auto update service for entity [${ed.fullEntityName}] value not found, cannot update; using parameters [${parameters}]")
+            throw new EntityValueNotFoundException("In entity-auto update service for entity [${ed.fullEntityName}] value not found, cannot update; using parameters [${parameters}]")
         }
 
         if (ed.isField("statusId")) {
@@ -222,7 +223,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
             lookedUpValue = preLookedUpValue ?: ecfi.getEntityFacade().find(ed.getFullEntityName())
                     .condition(parameters).useCache(false).forUpdate(true).one()
             if (lookedUpValue == null) {
-                throw new ServiceException("In entity-auto update service for entity [${ed.fullEntityName}] value not found, cannot update; using parameters [${parameters}]")
+                throw new EntityValueNotFoundException("In entity-auto update service for entity [${ed.fullEntityName}] value not found, cannot update; using parameters [${parameters}]")
             }
 
             checkStatus(ed, parameters, result, outParamNames, lookedUpValue, ecfi)

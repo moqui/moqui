@@ -36,16 +36,18 @@ This Work includes contributions authored by David E. Jones, not as a
     curl -X GET -H "Authorization: Basic am9obi5kb2U6bW9xdWk=" http://localhost:8080/rest/v1/examples/TEST2/items/01
     curl -X GET -H "Authorization: Basic am9obi5kb2U6bW9xdWk=" http://localhost:8080/rest/v1/exampleItems/TEST2/01
 
-    To get a record plus all dependents in the JSON document use:
+    To get a record plus all dependents in the JSON document use dependents=true:
 
     curl -X GET -H "Authorization: Basic am9obi5kb2U6bW9xdWk=" http://localhost:8080/rest/v1/examples/TEST2?dependents=true
 
     Parameters can also be used for searching, which supports the per-field extensions (_op, _ic, etc) of
         EntityFind.searchFormInputs(), the orderByField parameter for comma-separated fields to sort the results by,
         and pageIndex, pageSize for pagination; parameters can be in the URL (preferred) or in request body as JSON.
+    The number of records will be limited to 100 unless a different pageSize is specified. The total count of records
+        is returned in the X-Total-Count HTTP response header.
 
-    curl -X GET -H "Authorization: Basic am9obi5kb2U6bW9xdWk=" \
-        http://localhost:8080/rest/v1/examples?exampleName=test&exampleName_op=contains&exampleName_ic=Y&orderByField=exampleName&pageIndex=0
+    curl -X GET -u john.doe:moqui -i http://localhost:8080/rest/v1/examples
+    curl -X GET -u john.doe:moqui -i http://localhost:8080/rest/v1/examples?exampleName=test&exampleName_op=contains&exampleName_ic=Y&orderByField=exampleName&pageIndex=0
 
     Create looks like (note the two approaches for authc):
 

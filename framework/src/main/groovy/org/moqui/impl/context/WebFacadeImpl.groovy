@@ -19,6 +19,7 @@ import org.moqui.context.ContextStack
 import org.moqui.context.ResourceReference
 import org.moqui.context.ValidationError
 import org.moqui.entity.EntityNotFoundException
+import org.moqui.entity.EntityValueNotFoundException
 import org.moqui.impl.StupidUtilities
 
 import javax.servlet.http.HttpServletRequest
@@ -393,7 +394,7 @@ class WebFacadeImpl implements WebFacade {
             } else if (responseObj != null) {
                 JsonBuilder jb = new JsonBuilder()
                 jb.call(responseObj)
-                jsonStr = jb.toString()
+                jsonStr = jb.toPrettyString()
                 response.setStatus(HttpServletResponse.SC_OK)
             } else {
                 jsonStr = ""
@@ -514,6 +515,7 @@ class WebFacadeImpl implements WebFacade {
                 Object responseObj = eci.getEntity().rest(request.getMethod(), extraPathNameList, parameters)
                 // TODO: This will always respond with 200 OK, consider using 201 Created (for successful POST, create PUT)
                 // TODO:     and 204 No Content (for DELETE and other when no content is returned)
+                if (parameters.xTotalCount != null) response.addIntHeader('X-Total-Count', parameters.xTotalCount as int)
                 sendJsonResponse(responseObj)
             }
         } catch (ArtifactAuthorizationException e) {
@@ -526,8 +528,12 @@ class WebFacadeImpl implements WebFacade {
             // NOTE: there is no constant on HttpServletResponse for 429; see RFC 6585 for details
             response.sendError(429, e.message)
         } catch (EntityNotFoundException e) {
-            logger.warn("REST Entity Not Found: " + e.message)
-            // send a good old 404 error
+            logger.warn("REST Entity Not Found: " + e.getMessage(), e)
+            // send bad request (400), reserve 404 Not Found for records that don't exist
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.message)
+        } catch (EntityValueNotFoundException e) {
+            logger.warn("REST Entity Value Not Found: " + e.getMessage())
+            // record doesn't exist, send 404 Not Found
             response.sendError(HttpServletResponse.SC_NOT_FOUND, e.message)
         } catch (Throwable t) {
             String errorMessage = t.toString()
