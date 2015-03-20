@@ -25,8 +25,14 @@ This Work includes contributions authored by David E. Jones, not as a
     </transition>
 
     <actions>
-        <entity-find-one entity-name="${entityName}" value-field="fieldValues"/>
-        <set field="relationshipInfoList" from="ec.entity.getEntityDefinition(entityName).getRelationshipsInfo(fieldValues, false)"/>
+        <entity-find-one entity-name="${entityName}" value-field="entityValue"/>
+        <set field="relationshipInfoList" from="ec.entity.getEntityDefinition(entityName).getRelationshipsInfo(entityValue, false)"/>
+        <script>
+            Map plainMap = entityValue.getPlainValueMap(true)
+            jb = new groovy.json.JsonBuilder()
+            jb.call(plainMap)
+            plainJsonStr = jb.toPrettyString()
+        </script>
     </actions>
     <widgets>
         <container>
@@ -34,7 +40,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <link url="find" text="Find"/>
         </container>
         <container><label text="Edit '${entityName}' Entity Value" type="h3"/></container>
-        <form-single name="UpdateEntityValue" transition="update" dynamic="true">
+        <form-single name="UpdateEntityValue" map="entityValue" transition="update" dynamic="true">
             <auto-fields-entity entity-name="${entityName}" include="pk" field-type="display"/>
             <auto-fields-entity entity-name="${entityName}" include="nonpk" field-type="edit"/>
             <field name="entityName" entry-name="entityName"><default-field><hidden/></default-field></field>
@@ -58,5 +64,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 </default-field>
             </field>
         </form-list>
+        <label text="JSON with Dependents" type="h5"/>
+        <label text="${plainJsonStr}" type="pre" encode="true" style="pre-plain"/>
     </widgets>
 </screen>

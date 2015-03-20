@@ -747,6 +747,29 @@ abstract class EntityValueBase implements EntityValue {
         return valuesWritten
     }
 
+    Map<String, Object> getPlainValueMap(boolean dependents) {
+        Map<String, Object> vMap = StupidUtilities.removeNullsFromMap(new HashMap(valueMap))
+        if (dependents) {
+            List<Map> relInfoList = getEntityDefinition().getRelationshipsInfo(null, true)
+            for (Map relInfo in relInfoList) {
+                String relationshipName = relInfo.relationshipName
+                String entryName = relInfo.shortAlias ?: relationshipName
+                if (relInfo.type == "many") {
+                    EntityList relList = findRelated(relationshipName, null, null, null, false)
+                    if (relList) {
+                        List plainRelList = []
+                        for (EntityValue relEv in relList) plainRelList.add(((EntityValueBase) relEv).getPlainValueMap(dependents))
+                        vMap.put(entryName, plainRelList)
+                    }
+                } else {
+                    EntityValue relEv = findRelatedOne(relationshipName, null, false)
+                    if (relEv != null) vMap.put(entryName, ((EntityValueBase) relEv).getPlainValueMap(dependents))
+                }
+            }
+        }
+        return vMap
+    }
+
     // ========== Map Interface Methods ==========
 
     @Override

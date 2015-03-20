@@ -37,7 +37,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
     To get a record plus all dependents in the JSON document use dependents=true:
 
-    curl -X GET -u john.doe:moqui http://localhost:8080/rest/v1/examples/TEST2?dependents=true
+    curl -X GET -u john.doe:moqui -i http://localhost:8080/rest/v1/examples/TEST2?dependents=true
 
     Parameters can also be used for searching, which supports the per-field extensions (_op, _ic, etc) of
         EntityFind.searchFormInputs(), the orderByField parameter for comma-separated fields to sort the results by,

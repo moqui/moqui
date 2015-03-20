@@ -84,7 +84,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </form-list>
 
         <label text="Dependents" type="h4"/>
-        <label text="${dependents.toString()}" type="code" encode="true"/>
+        <label text="${dependents.toString()}" type="pre" encode="true"/>
         <label text="All Descendants:" type="h5"/>
         <section-iterate name="DescendantList" list="dependents.allDescendants" entry="descendantName">
             <widgets><link url="." text="${descendantName}" parameter-map="[entityName:descendantName]" link-type="anchor"/></widgets>

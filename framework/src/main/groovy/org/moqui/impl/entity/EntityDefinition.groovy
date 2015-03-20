@@ -327,11 +327,11 @@ public class EntityDefinition {
             if (valueSource) for (Map.Entry keyEntry in keyMap)
                 targetParameterMap.put(keyEntry.value, valueSource.get(keyEntry.key))
 
-            String prettyName = relatedEd.getPrettyName((String) relNode."@title", internalEntityName)
+            String prettyName = relatedEd.getPrettyName(title, internalEntityName)
             String relationshipName = (title ? title + '#' : '') + relatedEntityName
 
-            infoList.add([type:relNode."@type", title:title, relatedEntityName:relatedEntityName,
-                          relationshipName:relationshipName, shortAlias:(relNode."@short-alias"?:""), keyMap:keyMap,
+            infoList.add([type:relNode.'@type', title:title, relatedEntityName:relatedEntityName,
+                          relationshipName:relationshipName, shortAlias:(relNode.'@short-alias'?:''), keyMap:keyMap,
                           targetParameterMap:targetParameterMap, prettyName:prettyName])
         }
         return infoList

@@ -27,6 +27,7 @@ strong { font-weight: bold; }
 tt, pre, pre code { font-family: "Courier New", Courier, monospace; }
 p, pre { white-space: pre-line; word-wrap: normal; word-break: normal; }
 .bg-dark pre { background-color: #3a3a3a; color: #EEE; border-color: #222; }
+pre.pre-plain { white-space: pre; }
 p { margin: 0 0 8px 0; line-height: 16px; }
 a { white-space: normal; }
 label { white-space: normal; }
