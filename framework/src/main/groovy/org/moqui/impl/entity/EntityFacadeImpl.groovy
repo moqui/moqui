@@ -893,7 +893,20 @@ class EntityFacadeImpl implements EntityFacade {
 
                 EntityList el = ef.list()
                 // support pagination, at least "X-Total-Count" header if find is paginated
-                parameters.put('xTotalCount', ef.count())
+                long count = ef.count()
+                int pageIndex = ef.getPageIndex()
+                int pageSize = ef.getPageSize()
+                int pageMaxIndex = ((BigDecimal) (count - 1)).divide(pageSize, 0, BigDecimal.ROUND_DOWN) as int
+                int pageRangeLow = pageIndex * pageSize + 1
+                int pageRangeHigh = (pageIndex * pageSize) + pageSize
+                if (pageRangeHigh > count) pageRangeHigh = count
+
+                parameters.put('xTotalCount', count)
+                parameters.put('xPageIndex', pageIndex)
+                parameters.put('xPageSize', pageSize)
+                parameters.put('xPageMaxIndex', pageMaxIndex)
+                parameters.put('xPageRangeLow', pageRangeLow)
+                parameters.put('xPageRangeHigh', pageRangeHigh)
 
                 List resultList = []
                 for (EntityValue ev in el) {

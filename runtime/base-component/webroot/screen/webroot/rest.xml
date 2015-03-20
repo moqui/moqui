@@ -44,14 +44,16 @@ This Work includes contributions authored by David E. Jones, not as a
         EntityFind.searchFormInputs(), the orderByField parameter for comma-separated fields to sort the results by,
         and pageIndex, pageSize for pagination; parameters can be in the URL (preferred) or in request body as JSON.
     The number of records will be limited to 100 unless a different pageSize is specified. The total count of records
-        is returned in the X-Total-Count HTTP response header.
+        is returned in the X-Total-Count HTTP response header. To facilitate pagination also calculates and adds headers
+        for the same fields Moqui uses for pagination: X-Page-Index, X-Page-Size, X-Page-Max-Index, X-Page-Range-Low,
+        and X-Page-Range-High.
 
     curl -X GET -u john.doe:moqui -i http://localhost:8080/rest/v1/examples
     curl -X GET -u john.doe:moqui -i http://localhost:8080/rest/v1/examples?exampleName=test&exampleName_op=contains&exampleName_ic=Y&orderByField=exampleName&pageIndex=0
 
     Create looks like (note the two approaches for authc):
 
-    curl -X POST -H "Content-Type: application/json" -H "Authorization: Basic am9obi5kb2U6bW9xdWk=" \
+    curl -X POST -H "Content-Type: application/json" -u john.doe:moqui \
          -d '{ "exampleName":"REST Test 1", "exampleTypeEnumId":"EXT_MADE_UP", "statusId":"EXST_IN_DESIGN" }' \
             http://localhost:8080/rest/v1/examples
     curl -X POST -H "Content-Type: application/json" \
@@ -74,7 +76,7 @@ This Work includes contributions authored by David E. Jones, not as a
     For example, to create multiple items (ExampleItem) for an Example, with an auto-generated secondary sequence ID
         (exampleItemSeqId) use something like:
 
-    curl -X POST -H "Content-Type: application/json" -H "Authorization: Basic am9obi5kb2U6bW9xdWk=" \
+    curl -X POST -H "Content-Type: application/json" -u john.doe:moqui \
          -d '[{ "description":"New REST Item 1", "amount":100 }, { "description":"New REST Item 2", "amount":200 }]' \
             http://localhost:8080/rest/v1/examples/TEST2/items
 

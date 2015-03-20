@@ -410,7 +410,7 @@ class WebFacadeImpl implements WebFacade {
         int length = jsonStr.getBytes(charset).length
         response.setContentLength(length)
 
-        if (logger.infoEnabled) logger.info("Sending JSON response of length [${length}] with [${charset}] encoding for request to ${request.getPathInfo()}")
+        if (logger.infoEnabled) logger.info("Sending JSON response of length [${length}] with [${charset}] encoding for ${request.getMethod()} request to ${request.getPathInfo()}")
 
         try {
             response.writer.write(jsonStr)
@@ -512,10 +512,20 @@ class WebFacadeImpl implements WebFacade {
                 }
                 sendJsonResponse(responseList)
             } else {
+                long startTime = System.currentTimeMillis()
                 Object responseObj = eci.getEntity().rest(request.getMethod(), extraPathNameList, parameters)
+                long endTime = System.currentTimeMillis()
+                response.addIntHeader('X-Run-Time-ms', (endTime - startTime) as int)
+
+                if (parameters.xTotalCount != null) response.addIntHeader('X-Total-Count', parameters.xTotalCount as int)
+                if (parameters.xPageIndex != null) response.addIntHeader('X-Page-Index', parameters.xPageIndex as int)
+                if (parameters.xPageSize != null) response.addIntHeader('X-Page-Size', parameters.xPageSize as int)
+                if (parameters.xPageMaxIndex != null) response.addIntHeader('X-Page-Max-Index', parameters.xPageMaxIndex as int)
+                if (parameters.xPageRangeLow != null) response.addIntHeader('X-Page-Range-Low', parameters.xPageRangeLow as int)
+                if (parameters.xPageRangeHigh != null) response.addIntHeader('X-Page-Range-High', parameters.xPageRangeHigh as int)
+
                 // TODO: This will always respond with 200 OK, consider using 201 Created (for successful POST, create PUT)
                 // TODO:     and 204 No Content (for DELETE and other when no content is returned)
-                if (parameters.xTotalCount != null) response.addIntHeader('X-Total-Count', parameters.xTotalCount as int)
                 sendJsonResponse(responseObj)
             }
         } catch (ArtifactAuthorizationException e) {
