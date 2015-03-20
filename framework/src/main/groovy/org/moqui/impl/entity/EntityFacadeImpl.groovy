@@ -671,13 +671,14 @@ class EntityFacadeImpl implements EntityFacade {
         }
     }
 
-    List<Map<String, Object>> getAllEntitiesInfo(String orderByField, boolean masterEntitiesOnly, boolean excludeViewEntities) {
+    List<Map<String, Object>> getAllEntitiesInfo(String orderByField, String filterRegexp, boolean masterEntitiesOnly, boolean excludeViewEntities) {
         if (masterEntitiesOnly) createAllAutoReverseManyRelationships()
 
         tempEntityFileNodeMap = new HashMap()
 
         List<Map<String, Object>> eil = new LinkedList()
         for (String en in getAllEntityNames()) {
+            if (filterRegexp && !en.matches(filterRegexp)) continue
             EntityDefinition ed = null
             try { ed = getEntityDefinition(en) } catch (EntityException e) { logger.warn("Problem finding entity definition", e) }
             if (ed == null) continue

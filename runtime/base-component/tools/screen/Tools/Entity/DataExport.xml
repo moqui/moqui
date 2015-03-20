@@ -59,7 +59,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <form-single name="ExportData" transition="EntityExport.xml">
             <field name="entityNames">
                 <default-field><drop-down allow-multiple="true" size="20">
-                    <list-options list="ec.entity.getAllEntitiesInfo('fullEntityName', false, true)" key="${fullEntityName}"/>
+                    <list-options list="ec.entity.getAllEntitiesInfo('fullEntityName', null, false, true)" key="${fullEntityName}"/>
                 </drop-down></default-field>
             </field>
 

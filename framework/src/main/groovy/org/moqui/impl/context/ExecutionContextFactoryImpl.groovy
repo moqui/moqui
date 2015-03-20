@@ -285,7 +285,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         // ========== load a few things in advance so first page hit is faster in production (in dev mode will reload anyway as caches timeout)
         // load entity defs
         this.entityFacade.loadAllEntityLocations()
-        this.entityFacade.getAllEntitiesInfo(null, false, false)
+        this.entityFacade.getAllEntitiesInfo(null, null, false, false)
         // init ESAPI
         StupidWebUtilities.canonicalizeValue("test")
 

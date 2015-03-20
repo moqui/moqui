@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This Work is in the public domain and is provided on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+including, without limitation, any warranties or conditions of TITLE,
+NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+You are solely responsible for determining the appropriateness of using
+this Work and assume any risks associated with your use of this Work.
+
+This Work includes contributions authored by David E. Jones, not as a
+"work for hire", who hereby disclaims any copyright to the same.
+-->
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd"
+        default-menu-title="Edit" default-menu-index="3">
+
+    <parameter name="entityName" required="true"/>
+
+    <transition name="list"><default-response url="../EntityList"/></transition>
+    <transition name="find"><default-response url="../EntityDataFind"/></transition>
+
+    <actions>
+        <set field="entityDefinition" from="ec.entity.getEntityDefinition(entityName)"/>
+        <set field="fieldNodes" from="entityDefinition.getFieldNodes(true, true, true)"/>
+        <set field="relationshipInfoList" from="entityDefinition.getRelationshipsInfo(null, false)"/>
+    </actions>
+    <widgets>
+        <container>
+            <link url="list" text="Entity List"/>
+            <link url="find" text="Find"/>
+        </container>
+        <container><label text="Entity Detail for '${entityDefinition.fullEntityName}'" type="h3"/></container>
+        <container-row>
+            <row-col lg="3"><label text="Short Alias: ${entityDefinition.getShortAlias() ?: 'N/A'}" type="strong"/></row-col>
+            <row-col lg="3"><label text="Table Name: ${entityDefinition.getFullTableName()}" type="strong"/></row-col>
+        </container-row>
+        <container-row>
+            <row-col lg="3"><label text="View Entity? ${entityDefinition.isViewEntity()}" type="strong"/></row-col>
+            <row-col lg="3"><label text="Needs Audit Log? ${entityDefinition.needsAuditLog()}" type="strong"/></row-col>
+            <row-col lg="3"><label text="Needs Encrypt? ${entityDefinition.needsEncrypt()}" type="strong"/></row-col>
+            <row-col lg="3"><label text="Create Only? ${entityDefinition.createOnly()}" type="strong"/></row-col>
+        </container-row>
+
+        <form-list name="FieldList" list="fieldNodes" list-entry="node">
+            <field name="fieldName" entry-name="node.'@name'"><default-field><display/></default-field></field>
+            <field name="type" entry-name="node.'@type'"><default-field><display/></default-field></field>
+            <field name="isPk" entry-name="node.'@is-pk'"><default-field title="Is PK"><display/></default-field></field>
+            <field name="audit" entry-name="node.'@enable-audit-log'"><default-field><display/></default-field></field>
+            <field name="encrypt" entry-name="node.'@encrypt'"><default-field><display/></default-field></field>
+        </form-list>
+        <form-list name="RelatedEntities" list="relationshipInfoList">
+            <field name="prettyName"><default-field><display/></default-field></field>
+            <field name="shortAlias"><default-field><display/></default-field></field>
+            <field name="title"><default-field><display/></default-field></field>
+            <field name="relatedEntityName"><default-field><display/></default-field></field>
+            <field name="type"><default-field><display/></default-field></field>
+            <field name="keyMap"><default-field><display/></default-field></field>
+            <field name="link">
+                <default-field>
+                    <link text="Detail" url="." link-type="anchor"><parameter name="entityName" from="relatedEntityName"/></link>
+                    <link text="Find" url="find" link-type="anchor"><parameter name="entityName" from="relatedEntityName"/></link>
+                </default-field>
+            </field>
+        </form-list>
+    </widgets>
+</screen>

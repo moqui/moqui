@@ -333,6 +333,7 @@ public class EntityDefinition {
         edp.entityName = internalEntityName
         edp.ed = this
 
+        if (ancestorEntities == null) ancestorEntities = new LinkedList()
         ancestorEntities.addFirst(this.internalEntityName)
 
         List<Map> relInfoList = getRelationshipsInfo(null, true)
