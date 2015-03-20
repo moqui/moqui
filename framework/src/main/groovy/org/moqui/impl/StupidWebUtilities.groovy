@@ -248,7 +248,11 @@ class StupidWebUtilities {
             } else if (lst.size() > 1) {
                 orig = new ArrayList(lst.size())
                 for (Object obj in lst) {
-                    if (obj instanceof CharSequence) orig.add(defaultWebEncoder.canonicalize(obj.toString(), false))
+                    if (obj instanceof CharSequence) {
+                        orig.add(defaultWebEncoder.canonicalize(obj.toString(), false))
+                    } else {
+                        orig.add(obj)
+                    }
                 }
             }
         }

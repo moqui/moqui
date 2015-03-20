@@ -55,6 +55,11 @@ Bug Fixes:
   formatting due to weirdness with time zone and truncating the time part
   of the Date representation in long millis since epoch; see comments in
   L10nFacadeImpl.groovy for more details
+- Fixed issue with canonicalized (for security, decoding) parameters
+  including JSON documents passed in the body where lists containing
+  anything other than strings (CharSequence actually) were emptied; most
+  lists in parameters only contain strings so this hasn't come up before,
+  but for more complex JSON documents it is an issue
 
 
 ===========================================================================
