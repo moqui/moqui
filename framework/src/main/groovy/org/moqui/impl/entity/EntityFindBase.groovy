@@ -109,7 +109,7 @@ abstract class EntityFindBase implements EntityFind {
     @Override
     EntityFind condition(Map<String, ?> fields) {
         if (!fields) return this
-        if (!this.simpleAndMap) this.simpleAndMap = new HashMap()
+        if (this.simpleAndMap == null) this.simpleAndMap = new HashMap()
         getEntityDef().setFields(fields, this.simpleAndMap, true, null, null)
         return this
     }
@@ -177,6 +177,12 @@ abstract class EntityFindBase implements EntityFind {
     EntityFind searchFormInputs(String inputFieldsMapName, String defaultOrderBy, boolean alwaysPaginate) {
         ExecutionContext ec = efi.getEcfi().getExecutionContext()
         Map inf = inputFieldsMapName ? (Map) ec.context[inputFieldsMapName] : efi.ecfi.executionContext.context
+        return searchFormInputs(inf, defaultOrderBy, alwaysPaginate)
+    }
+
+    @Override
+    EntityFind searchFormMap(Map inf, String defaultOrderBy, boolean alwaysPaginate) {
+        ExecutionContext ec = efi.getEcfi().getExecutionContext()
         EntityDefinition ed = getEntityDef()
 
         for (String fn in ed.getAllFieldNames()) {
@@ -270,7 +276,7 @@ abstract class EntityFindBase implements EntityFind {
         this.orderBy(orderByString)
 
         // look for the pageIndex and optional pageSize parameters; don't set these if should cache as will disable the cached query
-        if ((alwaysPaginate || inf.get("pageIndex")) && !shouldCache()) {
+        if ((alwaysPaginate || inf.get("pageIndex") || inf.get("pageSize")) && !shouldCache()) {
             int pageIndex = (inf.get("pageIndex") ?: 0) as int
             int pageSize = (inf.get("pageSize") ?: (this.limit ?: 20)) as int
             offset(pageIndex, pageSize)
