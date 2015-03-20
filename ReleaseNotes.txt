@@ -11,26 +11,35 @@ TODO
 
 New Features:
 
-- More consistent handling of is-null; support for is-not-null, not-between
 - More consistent handling of empty in service, entity, and screen when we
   don't want the Groovy definition of empty (ie don't consider 0 numbers
   or false boolean to be empty)
 - Support for CharSequence in various places (context, entity, service,
   screen, etc) to handle not just String but also GString when it doesn't
   get converted and StringBuffer, StringBuilder, etc where convenient
-- Document mappings (type definitions, etc) are now put automatically when
-  a DataDocument indexed with ElasticSearch is first used (by index or
-  search) with types for numbers, dates, etc needed for analytics and also
-  not_analyzed set for all id* type entity fields
-- Added EntityServices.search#CountBySource service to do analytics
-  searches using ElasticSearch; there is a real-world example of the use of
-  this service in Mantle for current and projected inventory data
 - Improved HTTP response code handling, now uses 401 only for authc/login
   failures, 403 (forbidden) for artifact authz failures, and 429 (too many
   requests) for tarpit failures
-- Added @short-alias attribute for entity and relationship, can be used for
-  any entity or relationship reference, but mainly meant for use in entity
-  REST request URLs and other entity path operations
+- Entity Facade
+  - More consistent handling of is-null; support is-not-null, not-between
+  - Document mappings (type definitions, etc) are now put automatically
+    when a DataDocument indexed with ElasticSearch is first used (by index
+    or search) with types for numbers, dates, etc needed for analytics and
+    also not_analyzed set for all id* type entity fields
+  - Added EntityServices.search#CountBySource service to do analytics
+    searches using ElasticSearch; there is a real-world example of the use
+    of this service in Mantle for current and projected inventory data
+  - Added @short-alias attribute for entity and relationship, can be used
+    for any entity or relationship reference, but mainly meant for use in
+    entity REST request URLs and other entity path operations
+  - Implemented automatic entity REST interface that supports GET/find,
+    POST/create, PUT/store, PATCH/update, and DELETE/delete operations;
+    supports a variety of bulk operations and flexible find options
+    including pagination and the various features of
+    EntityFind.searchFormInputs() that are used for find forms in XML
+    Screens; this is a RESTful API that follows various best practices
+    and security is handled through artifact authorization and tarpits at
+    the entity level; for examples see the comments in rest.xml
 
 Bug Fixes:
 
@@ -1820,11 +1829,10 @@ Features considered, but may not to be included in 1.x series
   - Screen to install a component (upload and register, load data from it; require special permission for this, not enabled on the demo server)
 
 - RESTful endpoint for arbitrary entity operations
-  - support URL and HTTP request method patterns for get, find, create, update, delete
-  - configure aliases for entity names, and of course allow plain entity names without the package
-  - separate plural aliases to get multiple or all records for an entity?
-  - configure aliases for entity relationships; full or even plain entity name plus title relationship names may be problematic
-  - support for path elements such entity name/alias, entity PK value(s), then a chain of relationship names/aliases to get one or many values
+  x support URL and HTTP request method patterns for get, find, create, update, delete
+  x configure aliases for entity names, and of course allow plain entity names without the package
+  x configure aliases for entity relationships; full or even plain entity name plus title relationship names may be problematic
+  x support for path elements such entity name/alias, entity PK value(s), then a chain of relationship names/aliases to get one or many values
   - http://blog.mwaysolutions.com/2014/06/05/10-best-practices-for-better-restful-api/
   - http://www.vinaysahni.com/best-practices-for-a-pragmatic-restful-api
 
