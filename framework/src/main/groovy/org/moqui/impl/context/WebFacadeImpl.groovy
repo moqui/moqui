@@ -492,11 +492,12 @@ class WebFacadeImpl implements WebFacade {
             return
         }
 
-        // TODO: consider putting all of this in a transaction...
         try {
             // logger.warn("====== parameters: ${parmStack.toString()}")
             // if _requestBodyJsonList do multiple calls
             if (parmStack._requestBodyJsonList) {
+                // TODO: Consider putting all of this in a transaction for non-find operations (currently each is run in
+                // TODO:     a separate transaction); or handle errors per-row instead of blowing up the whole request
                 List responseList = []
                 for (Object bodyListObj in parmStack._requestBodyJsonList) {
                     if (!(bodyListObj instanceof Map)) {
@@ -526,8 +527,8 @@ class WebFacadeImpl implements WebFacade {
                 if (parmStack.xPageRangeLow != null) response.addIntHeader('X-Page-Range-Low', parmStack.xPageRangeLow as int)
                 if (parmStack.xPageRangeHigh != null) response.addIntHeader('X-Page-Range-High', parmStack.xPageRangeHigh as int)
 
-                // TODO: This will always respond with 200 OK, consider using 201 Created (for successful POST, create PUT)
-                // TODO:     and 204 No Content (for DELETE and other when no content is returned)
+                // NOTE: This will always respond with 200 OK, consider using 201 Created (for successful POST, create PUT)
+                //     and 204 No Content (for DELETE and other when no content is returned)
                 sendJsonResponse(responseObj)
             }
         } catch (ArtifactAuthorizationException e) {

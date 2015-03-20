@@ -832,12 +832,6 @@ class EntityFacadeImpl implements EntityFacade {
             }
         }
 
-        // NOTE: don't think we'll need this, just put all field values in the parameters Map
-        // make a map of the primary entity's PK values, may not be complete depending on operation
-        // Map<String, Object> firstPkMap = [:]
-        // for (String pkFieldName in firstEd.getPkFieldNames()) firstPkMap.put(pkFieldName, parameters.get(pkFieldName))
-        // Map<String, Object> lastPkMap = firstPkMap
-
         EntityDefinition lastEd = firstEd
 
         // if there is still more in the path the next should be a relationship name or alias
