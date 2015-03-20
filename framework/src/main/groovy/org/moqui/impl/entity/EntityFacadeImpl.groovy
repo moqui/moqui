@@ -322,7 +322,7 @@ class EntityFacadeImpl implements EntityFacade {
             // no locations found for this entity, entity probably doesn't exist
             if (!entityLocationList) {
                 entityLocationCache.put(entityName, [])
-                EntityException ee = new EntityException("No definition found for entity-name [${entityName}]")
+                EntityException ee = new EntityNotFoundException("No definition found for entity-name [${entityName}]")
                 if (logger.infoEnabled) logger.info("No definition found for entity-name [${entityName}]")
                 throw ee
             }
@@ -344,7 +344,7 @@ class EntityFacadeImpl implements EntityFacade {
         // If this is a moqui.entity.view.DbViewEntity, handle that in a special way (generate the Nodes from the DB records)
         if (entityLocationList.contains("_DB_VIEW_ENTITY_")) {
             EntityValue dbViewEntity = makeFind("moqui.entity.view.DbViewEntity").condition("dbViewEntityName", entityName).one()
-            if (dbViewEntity == null) throw new EntityException("Could not find DbViewEntity with name ${entityName}")
+            if (dbViewEntity == null) throw new EntityNotFoundException("Could not find DbViewEntity with name ${entityName}")
             Node dbViewNode = new Node(null, "view-entity", ["entity-name":entityName, "package-name":dbViewEntity.packageName])
             if (dbViewEntity.cache == "Y") dbViewNode.attributes().put("cache", "true")
             else if (dbViewEntity.cache == "N") dbViewNode.attributes().put("cache", "false")
@@ -411,7 +411,7 @@ class EntityFacadeImpl implements EntityFacade {
             }
         }
 
-        if (!entityNode) throw new EntityException("No definition found for entity [${entityName}]${packageName ? ' in package ['+packageName+']' : ''}")
+        if (!entityNode) throw new EntityNotFoundException("No definition found for entity [${entityName}]${packageName ? ' in package ['+packageName+']' : ''}")
 
         // merge the extend-entity nodes
         for (Node extendEntity in extendEntityNodes) {
@@ -815,12 +815,85 @@ class EntityFacadeImpl implements EntityFacade {
         if (!(operation in ['find', 'create', 'store', 'update', 'delete']))
             throw new EntityException("Operation [${operation}] not supported, must be one of: get, post, put, patch, or delete for HTTP request methods or find, create, store, update, or delete for direct entity operations")
 
-        String entityName = entityPath.get(0)
-        EntityDefinition ed = getEntityDefinition(entityName)
-        if (ed == null) throw new EntityNotFoundException("No entity found with name or alias [${entityName}]")
+        List<String> localPath = new ArrayList<String>(entityPath)
 
-        // TODO!
-        throw new IllegalArgumentException("rest not yet implemented")
+        String firstEntityName = localPath.remove(0)
+        EntityDefinition firstEd = getEntityDefinition(firstEntityName)
+        // this exception will be thrown at lower levels, but just in case check it again here
+        if (firstEd == null) throw new EntityNotFoundException("No entity found with name or alias [${firstEntityName}]")
+
+        // if there are more path elements use one for each PK field of the entity
+        if (localPath) {
+            for (String pkFieldName in firstEd.getPkFieldNames()) {
+                String pkValue = localPath.remove(0)
+                if (!StupidUtilities.isEmpty(pkValue)) parameters.put(pkFieldName, pkValue)
+                if (!localPath) break
+            }
+        }
+
+        // NOTE: don't think we'll need this, just put all field values in the parameters Map
+        // make a map of the primary entity's PK values, may not be complete depending on operation
+        // Map<String, Object> firstPkMap = [:]
+        // for (String pkFieldName in firstEd.getPkFieldNames()) firstPkMap.put(pkFieldName, parameters.get(pkFieldName))
+        // Map<String, Object> lastPkMap = firstPkMap
+
+        EntityDefinition lastEd = firstEd
+
+        // if there is still more in the path the next should be a relationship name or alias
+        while (localPath) {
+            String relationshipName = localPath.remove(0)
+            Node relNode = lastEd.getRelationshipNode(relationshipName)
+
+            if (relNode == null) throw new EntityNotFoundException("No relationship found with name or alias [${relationshipName}] on entity [${lastEd.getShortAlias()?:''}:${lastEd.getFullEntityName()}]")
+
+            String relEntityName = (String) relNode."@related-entity-name"
+            EntityDefinition relEd = getEntityDefinition(relEntityName)
+            if (relEd == null) throw new EntityNotFoundException("No entity found with name [${relEntityName}], related to entity [${lastEd.getShortAlias()?:''}:${lastEd.getFullEntityName()}] by relationship [${relationshipName}]")
+
+            // TODO: How to handle more exotic relationships where they are not a dependent record, ie join on a field
+            // TODO:     other than a PK field? Should we lookup interim records to get field values to lookup the final
+            // TODO:     one? This would assume that all records exist along the path... need any variation for different
+            // TODO:     operations?
+
+            // if there are more path elements use one for each PK field of the entity
+            if (localPath) {
+                for (String pkFieldName in relEd.getPkFieldNames()) {
+                    // do we already have a value for this PK field? if so skip it...
+                    if (parameters.containsKey(pkFieldName)) continue
+
+                    String pkValue = localPath.remove(0)
+                    if (!StupidUtilities.isEmpty(pkValue)) parameters.put(pkFieldName, pkValue)
+                    if (!localPath) break
+                }
+            }
+
+            lastEd = relEd
+        }
+
+        // at this point we should have the entity we actually want to operate on, and all PK field values from the path
+        if (operation == 'find') {
+            if (lastEd.containsPrimaryKey(parameters)) {
+                // if we have a full PK lookup by PK and return the single value
+                Map pkValues = [:]
+                lastEd.setFields(parameters, pkValues, false, null, true)
+                EntityValue ev = find(lastEd.getFullEntityName()).condition(pkValues).one()
+
+                // TODO: support getting dependents if dependents=true
+
+                return ev
+            } else {
+                // otherwise do a list find
+                EntityList el = find(lastEd.getFullEntityName()).searchFormMap(parameters, null, false).list()
+
+                // TODO: support pagination, at least "X-Total-Count" header if find is paginated
+
+                return el
+            }
+        } else {
+            // use the entity auto service runner for other operations (create, store, update, delete)
+            Map result = ecfi.getServiceFacade().sync().name(operation, lastEd.getFullEntityName()).parameters(parameters).call()
+            return result
+        }
     }
 
 
