@@ -18,11 +18,10 @@ This Work includes contributions authored by David E. Jones, not as a
     <!--
     EXAMPLES
 
-    NOTE: "am9obi5kb2U6bW9xdWk=" is the Base64 encoded String "john.doe:moqui"
-
     Verbs: GET=find, POST=create, PUT=store (create or update), PATCH=update, DELETE=delete
 
     By short-alias:
+    NOTE: "am9obi5kb2U6bW9xdWk=" is the Base64 encoded String "john.doe:moqui"
 
     curl -X GET -H "Authorization: Basic am9obi5kb2U6bW9xdWk=" http://localhost:8080/rest/v1/examples/TEST2
     curl -X GET -u john.doe:moqui http://localhost:8080/rest/v1/examples/TEST2
@@ -33,12 +32,12 @@ This Work includes contributions authored by David E. Jones, not as a
 
     Detail/child records can be retrieved in various ways, in the first "items" is a short-alias on the relationship:
 
-    curl -X GET -H "Authorization: Basic am9obi5kb2U6bW9xdWk=" http://localhost:8080/rest/v1/examples/TEST2/items/01
-    curl -X GET -H "Authorization: Basic am9obi5kb2U6bW9xdWk=" http://localhost:8080/rest/v1/exampleItems/TEST2/01
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/v1/examples/TEST2/items/01
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/v1/exampleItems/TEST2/01
 
     To get a record plus all dependents in the JSON document use dependents=true:
 
-    curl -X GET -H "Authorization: Basic am9obi5kb2U6bW9xdWk=" http://localhost:8080/rest/v1/examples/TEST2?dependents=true
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/v1/examples/TEST2?dependents=true
 
     Parameters can also be used for searching, which supports the per-field extensions (_op, _ic, etc) of
         EntityFind.searchFormInputs(), the orderByField parameter for comma-separated fields to sort the results by,
@@ -49,7 +48,7 @@ This Work includes contributions authored by David E. Jones, not as a
         and X-Page-Range-High.
 
     curl -X GET -u john.doe:moqui -i http://localhost:8080/rest/v1/examples
-    curl -X GET -u john.doe:moqui -i http://localhost:8080/rest/v1/examples?exampleName=test&exampleName_op=contains&exampleName_ic=Y&orderByField=exampleName&pageIndex=0
+    curl -X GET -u john.doe:moqui -i 'http://localhost:8080/rest/v1/examples?exampleName=test&exampleName_op=contains&exampleName_ic=Y&orderByField=exampleName&pageIndex=0'
 
     Create looks like (note the two approaches for authc):
 
@@ -62,12 +61,12 @@ This Work includes contributions authored by David E. Jones, not as a
 
     Store looks like (PATCH is similar):
 
-    curl -X PUT -H "Content-Type: application/json" -H "Authorization: Basic am9obi5kb2U6bW9xdWk=" \
+    curl -X PUT -H "Content-Type: application/json" -u john.doe:moqui \
          -d '{ "exampleName":"REST Test - Rev 2" }' http://localhost:8080/rest/v1/examples/TEST2
 
     Delete looks like:
 
-    curl -X DELETE -H "Content-Type: application/json" -H "Authorization: Basic am9obi5kb2U6bW9xdWk=" \
+    curl -X DELETE -H "Content-Type: application/json" -u john.doe:moqui \
          http://localhost:8080/rest/v1/examples/100010
 
     This can also be used for bulk operations by passing a JSON document that is a list/array of map/object instead of a
@@ -81,7 +80,8 @@ This Work includes contributions authored by David E. Jones, not as a
             http://localhost:8080/rest/v1/examples/TEST2/items
 
     -->
-    <transition name="v1">
+    <!-- NOTE: read-only=true to disable check for URL parameters for transitions with actions -->
+    <transition name="v1" read-only="true">
         <actions><script>ec.web.handleEntityRestCall(sri.screenUrlInfo.extraPathNameList)</script></actions>
         <default-response type="none"/>
     </transition>
