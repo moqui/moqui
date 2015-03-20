@@ -177,7 +177,7 @@ abstract class EntityFindBase implements EntityFind {
     EntityFind searchFormInputs(String inputFieldsMapName, String defaultOrderBy, boolean alwaysPaginate) {
         ExecutionContext ec = efi.getEcfi().getExecutionContext()
         Map inf = inputFieldsMapName ? (Map) ec.context[inputFieldsMapName] : efi.ecfi.executionContext.context
-        return searchFormInputs(inf, defaultOrderBy, alwaysPaginate)
+        return searchFormMap(inf, defaultOrderBy, alwaysPaginate)
     }
 
     @Override
