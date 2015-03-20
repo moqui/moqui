@@ -25,10 +25,11 @@ This Work includes contributions authored by David E. Jones, not as a
     </transition>
 
     <actions>
+        <set field="dependentLevels" from="(dependentLevels ?: '0') as int"/>
         <entity-find-one entity-name="${entityName}" value-field="entityValue"/>
         <set field="relationshipInfoList" from="ec.entity.getEntityDefinition(entityName).getRelationshipsInfo(entityValue, false)"/>
         <script>
-            Map plainMap = entityValue.getPlainValueMap(true)
+            Map plainMap = entityValue.getPlainValueMap(dependentLevels)
             jb = new groovy.json.JsonBuilder()
             jb.call(plainMap)
             plainJsonStr = jb.toPrettyString()
@@ -65,6 +66,13 @@ This Work includes contributions authored by David E. Jones, not as a
             </field>
         </form-list>
         <label text="JSON with Dependents" type="h5"/>
+        <form-single name="LevelsForm" transition="." dynamic="true">
+            <auto-fields-entity entity-name="${entityName}" field-type="hidden" include="pk"/>
+            <field name="entityName"><default-field><hidden/></default-field></field>
+            <field name="dependentLevels"><default-field><text-line size="5"/></default-field></field>
+            <field name="submitButton"><default-field title="Submit"><submit/></default-field></field>
+            <field-layout><field-row-big><field-ref name="dependentLevels"/><field-ref name="submitButton"/></field-row-big></field-layout>
+        </form-single>
         <label text="${plainJsonStr}" type="pre" encode="true" style="pre-plain"/>
     </widgets>
 </screen>

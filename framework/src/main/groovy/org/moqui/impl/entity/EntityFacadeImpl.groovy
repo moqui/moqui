@@ -818,6 +818,7 @@ class EntityFacadeImpl implements EntityFacade {
             throw new EntityException("Operation [${operation}] not supported, must be one of: get, post, put, patch, or delete for HTTP request methods or find, create, store, update, or delete for direct entity operations")
 
         boolean dependents = (parameters.dependents == 'true' || parameters.dependents == 'Y')
+        int dependentLevels = (parameters.dependentLevels ?: (dependents ? '2' : '0')) as int
         List<String> localPath = new ArrayList<String>(entityPath)
 
         String firstEntityName = localPath.remove(0)
@@ -876,7 +877,7 @@ class EntityFacadeImpl implements EntityFacade {
                 EntityValueBase evb = (EntityValueBase) find(lastEd.getFullEntityName()).condition(pkValues).one()
                 if (evb == null) throw new EntityValueNotFoundException("No value found for entity [${lastEd.getShortAlias()?:''}:${lastEd.getFullEntityName()}] with key ${pkValues}")
 
-                Map resultMap = evb.getPlainValueMap(dependents)
+                Map resultMap = evb.getPlainValueMap(dependentLevels)
                 return resultMap
             } else {
                 // otherwise do a list find
@@ -903,7 +904,7 @@ class EntityFacadeImpl implements EntityFacade {
 
                 List resultList = []
                 for (EntityValue ev in el) {
-                    Map resultMap = ((EntityValueBase) ev).getPlainValueMap(dependents)
+                    Map resultMap = ((EntityValueBase) ev).getPlainValueMap(dependentLevels)
                     resultList.add(resultMap)
                 }
 

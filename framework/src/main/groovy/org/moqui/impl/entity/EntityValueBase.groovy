@@ -747,9 +747,9 @@ abstract class EntityValueBase implements EntityValue {
         return valuesWritten
     }
 
-    Map<String, Object> getPlainValueMap(boolean dependents) {
+    Map<String, Object> getPlainValueMap(int dependentLevels) {
         Map<String, Object> vMap = StupidUtilities.removeNullsFromMap(new HashMap(valueMap))
-        if (dependents) {
+        if (dependentLevels > 0) {
             List<Map> relInfoList = getEntityDefinition().getRelationshipsInfo(null, true)
             for (Map relInfo in relInfoList) {
                 String relationshipName = relInfo.relationshipName
@@ -758,12 +758,12 @@ abstract class EntityValueBase implements EntityValue {
                     EntityList relList = findRelated(relationshipName, null, null, null, false)
                     if (relList) {
                         List plainRelList = []
-                        for (EntityValue relEv in relList) plainRelList.add(((EntityValueBase) relEv).getPlainValueMap(dependents))
+                        for (EntityValue relEv in relList) plainRelList.add(((EntityValueBase) relEv).getPlainValueMap(dependentLevels-1))
                         vMap.put(entryName, plainRelList)
                     }
                 } else {
                     EntityValue relEv = findRelatedOne(relationshipName, null, false)
-                    if (relEv != null) vMap.put(entryName, ((EntityValueBase) relEv).getPlainValueMap(dependents))
+                    if (relEv != null) vMap.put(entryName, ((EntityValueBase) relEv).getPlainValueMap(dependentLevels-1))
                 }
             }
         }
