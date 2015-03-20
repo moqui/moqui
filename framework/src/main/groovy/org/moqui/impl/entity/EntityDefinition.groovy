@@ -311,41 +311,51 @@ public class EntityDefinition {
 
         List<Map> infoList = new ArrayList()
         for (Node relNode in this.expandedRelationshipList) {
-            // for now dependent entities do not include those from auto-reverse
-            if (dependentsOnly && relNode."@is-auto-reverse" != "true") continue
-
+            String relatedEntityName = relNode.'@related-entity-name'
+            EntityDefinition relatedEd = efi.getEntityDefinition(relatedEntityName)
+            relatedEntityName = relatedEd.getFullEntityName()
+            String title = relNode.'@title' ?: ''
+            if (dependentsOnly) {
+                // see if there is a type one reverse relationship, if not skip this relationship (not dependent)
+                Node reverseRelNode = (Node) relatedEd.internalEntityNode."relationship".find(
+                        { ((it."@related-entity-name" == this.internalEntityName || it."@related-entity-name" == this.fullEntityName)
+                                && (it."@type" == "one" || it."@type" == "one-nofk") && ((!title && !it."@title") || it."@title" == title)) })
+                if (reverseRelNode == null) continue
+            }
             Map keyMap = getRelationshipExpandedKeyMap(relNode)
             Map targetParameterMap = new HashMap()
-            if (valueSource)
-                for (Map.Entry keyEntry in keyMap) targetParameterMap.put(keyEntry.value, valueSource.get(keyEntry.key))
+            if (valueSource) for (Map.Entry keyEntry in keyMap)
+                targetParameterMap.put(keyEntry.value, valueSource.get(keyEntry.key))
 
-            String prettyName = efi.getEntityDefinition((String) relNode."@related-entity-name")
-                    .getPrettyName((String) relNode."@title", internalEntityName)
+            String prettyName = relatedEd.getPrettyName((String) relNode."@title", internalEntityName)
+            String relationshipName = (title ? title + '#' : '') + relatedEntityName
 
-            infoList.add([type:relNode."@type", title:(relNode."@title"?:""), relatedEntityName:relNode."@related-entity-name",
-                shortAlias:(relNode."@short-alias"?:""), keyMap:keyMap, targetParameterMap:targetParameterMap, prettyName:prettyName])
+            infoList.add([type:relNode."@type", title:title, relatedEntityName:relatedEntityName,
+                          relationshipName:relationshipName, shortAlias:(relNode."@short-alias"?:""), keyMap:keyMap,
+                          targetParameterMap:targetParameterMap, prettyName:prettyName])
         }
         return infoList
     }
 
     EntityDependents getDependentsTree(Deque<String> ancestorEntities) {
         EntityDependents edp = new EntityDependents()
-        edp.entityName = internalEntityName
+        edp.entityName = fullEntityName
         edp.ed = this
 
         if (ancestorEntities == null) ancestorEntities = new LinkedList()
-        ancestorEntities.addFirst(this.internalEntityName)
+        ancestorEntities.addFirst(this.fullEntityName)
 
         List<Map> relInfoList = getRelationshipsInfo(null, true)
         for (Map relInfo in relInfoList) {
             edp.allDescendants.add((String) relInfo.relatedEntityName)
-            edp.relationshipInfos.put((relInfo.title ? (String) relInfo.title + "#" : "") + (String) relInfo.relatedEntityName, relInfo)
-            if (relInfo.shortAlias) edp.relationshipInfos.put((String) relInfo.shortAlias, relInfo)
+            String relName = (String) relInfo.relationshipName
+            edp.relationshipInfos.put(relName, relInfo)
+            // if (relInfo.shortAlias) edp.relationshipInfos.put((String) relInfo.shortAlias, relInfo)
             EntityDefinition relEd = efi.getEntityDefinition((String) relInfo.relatedEntityName)
-            if (!edp.dependentEntities.containsKey(relEd.internalEntityName) && !ancestorEntities.contains(relEd.internalEntityName)) {
+            if (!edp.dependentEntities.containsKey(relName) && !ancestorEntities.contains(relEd.fullEntityName)) {
                 EntityDependents relEpd = relEd.getDependentsTree(ancestorEntities)
                 edp.allDescendants.addAll(relEpd.allDescendants)
-                edp.dependentEntities.put((String) relInfo.relatedEntityName, relEpd)
+                edp.dependentEntities.put(relName, relEpd)
             }
         }
 
@@ -360,6 +370,25 @@ public class EntityDefinition {
         Map<String, EntityDependents> dependentEntities = new HashMap()
         Set<String> allDescendants = new HashSet()
         Map<String, Map> relationshipInfos = new HashMap()
+
+        String toString() {
+            StringBuilder builder = new StringBuilder()
+            buildString(builder, 0)
+            return builder.toString()
+        }
+        static final String indentBase = '- '
+        void buildString(StringBuilder builder, int level) {
+            StringBuilder ib = new StringBuilder()
+            for (int i = 0; i < level; i++) ib.append(indentBase)
+            String indent = ib.toString()
+
+            // builder.append(indent).append(entityName).append('\n')
+            for (Map.Entry<String, EntityDependents> entry in dependentEntities) {
+                Map relInfo = relationshipInfos.get(entry.getKey())
+                builder.append(indent).append(indentBase).append(relInfo.relationshipName).append(' ').append(relInfo.keyMap).append('\n')
+                entry.getValue().buildString(builder, level+1)
+            }
+        }
     }
 
     String getPrettyName(String title, String baseName) {

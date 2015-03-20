@@ -12,7 +12,7 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd"
-        default-menu-title="Edit" default-menu-index="3">
+        default-menu-title="Entity Detail">
 
     <parameter name="entityName" required="true"/>
 
@@ -21,32 +21,52 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <actions>
         <set field="entityDefinition" from="ec.entity.getEntityDefinition(entityName)"/>
-        <set field="fieldNodes" from="entityDefinition.getFieldNodes(true, true, true)"/>
+        <set field="entityNode" from="entityDefinition.getEntityNode()"/>
+        <set field="fieldNodes" from="entityDefinition.getFieldNodes(true, true, false)"/>
+        <entity-find entity-name="moqui.entity.UserField" list="userFieldList">
+            <econdition field-name="entityName" from="entityDefinition.fullEntityName"/>
+            <order-by field-name="fieldName"/>
+        </entity-find>
         <set field="relationshipInfoList" from="entityDefinition.getRelationshipsInfo(null, false)"/>
+        <set field="dependents" from="entityDefinition.getDependentsTree(null)"/>
     </actions>
     <widgets>
         <container>
             <link url="list" text="Entity List"/>
-            <link url="find" text="Find"/>
+            <link url="find" text="Find ${entityDefinition.entityName}"/>
         </container>
         <container><label text="Entity Detail for '${entityDefinition.fullEntityName}'" type="h3"/></container>
         <container-row>
-            <row-col lg="3"><label text="Short Alias: ${entityDefinition.getShortAlias() ?: 'N/A'}" type="strong"/></row-col>
-            <row-col lg="3"><label text="Table Name: ${entityDefinition.getFullTableName()}" type="strong"/></row-col>
+            <row-col md="3" lg="3"><label text="View Entity? ${entityDefinition.isViewEntity()}" type="strong"/></row-col>
+            <row-col md="3" lg="3"><label text="Short Alias: ${entityDefinition.getShortAlias() ?: 'N/A'}" type="strong"/></row-col>
+            <row-col md="3" lg="3"><label text="Table Name: ${entityDefinition.getFullTableName() ?: 'N/A'}" type="strong"/></row-col>
+            <row-col md="3" lg="3"><label text="Entity Group: ${entityNode.'@group-name' ?: '(default)'}" type="strong"/></row-col>
         </container-row>
         <container-row>
-            <row-col lg="3"><label text="View Entity? ${entityDefinition.isViewEntity()}" type="strong"/></row-col>
-            <row-col lg="3"><label text="Needs Audit Log? ${entityDefinition.needsAuditLog()}" type="strong"/></row-col>
-            <row-col lg="3"><label text="Needs Encrypt? ${entityDefinition.needsEncrypt()}" type="strong"/></row-col>
-            <row-col lg="3"><label text="Create Only? ${entityDefinition.createOnly()}" type="strong"/></row-col>
+            <row-col md="3" lg="3"><label text="Needs Encrypt? ${entityDefinition.needsEncrypt()}" type="strong"/></row-col>
+            <row-col md="3" lg="3"><label text="Create Only? ${entityDefinition.createOnly()}" type="strong"/></row-col>
+        </container-row>
+        <container-row>
+            <row-col md="3" lg="3"><label text="Needs Audit Log? ${entityDefinition.needsAuditLog()}" type="strong"/></row-col>
+            <row-col md="3" lg="3"><label text="Entity Audit Default: ${entityNode.'@enable-audit-log' ?: 'false'}" type="strong"/></row-col>
         </container-row>
 
         <form-list name="FieldList" list="fieldNodes" list-entry="node">
             <field name="fieldName" entry-name="node.'@name'"><default-field><display/></default-field></field>
             <field name="type" entry-name="node.'@type'"><default-field><display/></default-field></field>
+            <field name="column" entry-name="entityDefinition.getColumnName(node.'@name', true)"><default-field><display/></default-field></field>
             <field name="isPk" entry-name="node.'@is-pk'"><default-field title="Is PK"><display/></default-field></field>
             <field name="audit" entry-name="node.'@enable-audit-log'"><default-field><display/></default-field></field>
             <field name="encrypt" entry-name="node.'@encrypt'"><default-field><display/></default-field></field>
+            <field name="localize" entry-name="node.'@enable-localization'"><default-field><display/></default-field></field>
+            <field name="default" entry-name="node.'@default'"><default-field><display/></default-field></field>
+        </form-list>
+        <form-list name="UserFieldList" list="userFieldList">
+            <field name="fieldName"><default-field title="User Field"><display/></default-field></field>
+            <field name="fieldType"><default-field><display/></default-field></field>
+            <field name="userGroupId"><default-field><display/></default-field></field>
+            <field name="enableAuditLog"><default-field title="Audit"><display/></default-field></field>
+            <field name="enableLocalization"><default-field title="Localize"><display/></default-field></field>
         </form-list>
         <form-list name="RelatedEntities" list="relationshipInfoList">
             <field name="prettyName"><default-field><display/></default-field></field>
@@ -62,5 +82,12 @@ This Work includes contributions authored by David E. Jones, not as a
                 </default-field>
             </field>
         </form-list>
+
+        <label text="Dependents" type="h4"/>
+        <label text="${dependents.toString()}" type="code" encode="true"/>
+        <label text="All Descendants:" type="h5"/>
+        <section-iterate name="DescendantList" list="dependents.allDescendants" entry="descendantName">
+            <widgets><link url="." text="${descendantName}" parameter-map="[entityName:descendantName]" link-type="anchor"/></widgets>
+        </section-iterate>
     </widgets>
 </screen>

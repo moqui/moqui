@@ -40,6 +40,10 @@ New Features:
     Screens; this is a RESTful API that follows various best practices
     and security is handled through artifact authorization and tarpits at
     the entity level; for examples see the comments in rest.xml
+  - Improved relationship info (EntityDefinition.getRelationshipsInfo())
+    and dependent entity handling
+  - Added EntityDetail screen in the Tools app with info about entity and
+    related entities
 
 Bug Fixes:
 

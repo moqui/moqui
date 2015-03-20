@@ -40,8 +40,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="anotherText" type="text-medium"/>
         -->
         <relationship type="one" title="ExampleType" related-entity-name="moqui.basic.Enumeration">
-            <key-map field-name="exampleTypeEnumId"/>
-        </relationship>
+            <key-map field-name="exampleTypeEnumId"/></relationship>
         <relationship type="one" title="Example" related-entity-name="moqui.basic.StatusItem"/>
 
         <!-- This is not generally necessary, reverse relationships are created automatically, but needed to specify
@@ -85,8 +84,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="amount" type="number-float"/>
         <field name="amountUomId" type="id"/>
         <relationship type="one" title="Amount" related-entity-name="moqui.basic.Uom">
-            <key-map field-name="amountUomId"/>
-        </relationship>
+            <key-map field-name="amountUomId"/></relationship>
         <relationship type="one" related-entity-name="moqui.example.Example"/>
     </entity>
     <entity entity-name="ExampleContent" package-name="moqui.example">
@@ -95,8 +93,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="purposeEnumId" type="id"/>
         <field name="locale" type="text-short"/>
         <relationship type="one" title="ExampleContentPurpose" related-entity-name="moqui.basic.Enumeration">
-            <key-map field-name="purposeEnumId"/>
-        </relationship>
+            <key-map field-name="purposeEnumId"/></relationship>
         <relationship type="one" related-entity-name="moqui.example.Example"/>
         <seed-data>
             <moqui.basic.EnumerationType description="Example Content Purpose" enumTypeId="ExampleContentPurpose"/>
@@ -113,8 +110,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="featureSourceEnumId" type="id"/>
         <field name="description" type="text-medium"/>
         <relationship type="one" title="ExampleFeatureSource" related-entity-name="moqui.basic.Enumeration">
-            <key-map field-name="featureSourceEnumId"/>
-        </relationship>
+            <key-map field-name="featureSourceEnumId"/></relationship>
         <seed-data>
             <!-- Example Feature Source -->
             <moqui.basic.EnumerationType description="Example Feature Source" enumTypeId="ExampleFeatureSource"/>
@@ -133,8 +129,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <relationship type="one" related-entity-name="moqui.example.Example"/>
         <relationship type="one" related-entity-name="moqui.example.ExampleFeature"/>
         <relationship type="one" title="ExampleFeatureAppl" related-entity-name="moqui.basic.Enumeration">
-            <key-map field-name="exampleFeatureApplEnumId"/>
-        </relationship>
+            <key-map field-name="exampleFeatureApplEnumId"/></relationship>
 
         <seed-data>
             <!-- Example Feature Application -->
