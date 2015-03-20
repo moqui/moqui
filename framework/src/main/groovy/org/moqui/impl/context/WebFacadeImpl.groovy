@@ -217,6 +217,8 @@ class WebFacadeImpl implements WebFacade {
         cs.push(getApplicationAttributes())
         cs.push(getSessionAttributes())
         cs.push(getRequestAttributes())
+        // add an extra Map for anything added so won't go in  request attributes (can put there explicitly if desired)
+        cs.push()
         parameters = cs
         return parameters
     }
@@ -472,7 +474,7 @@ class WebFacadeImpl implements WebFacade {
 
     @Override
     void handleEntityRestCall(List<String> extraPathNameList) {
-        Map parameters = getParameters()
+        ContextStack parameters = (ContextStack) getParameters()
 
         // check for parsing error, send a 400 response
         if (parameters._requestBodyJsonParseError) {
@@ -489,11 +491,31 @@ class WebFacadeImpl implements WebFacade {
             return
         }
 
+        // TODO: consider putting all of this in a transaction...
         try {
-            Object responseObj = eci.getEntity().rest(request.getMethod(), extraPathNameList, parameters)
-            // TODO: This will always respond with 200 OK, consider using 201 Created (for successful POST, create PUT)
-            // TODO:     and 204 No Content (for DELETE and other when no content is returned)
-            sendJsonResponse(responseObj)
+            // if _requestBodyJsonList do multiple calls
+            if (parameters._requestBodyJsonList) {
+                List responseList = []
+                for (Object bodyListObj in parameters._requestBodyJsonList) {
+                    if (!(bodyListObj instanceof Map)) {
+                        String errMsg = "If request body JSON is a list/array it must contain only object/map values, found non-map entry of type ${bodyListObj.getClass().getName()} with value: ${bodyListObj}"
+                        logger.warn(errMsg)
+                        response.sendError(HttpServletResponse.SC_BAD_REQUEST, errMsg)
+                        return
+                    }
+                    parameters.push()
+                    parameters.putAll((Map) bodyListObj)
+                    Object responseObj = eci.getEntity().rest(request.getMethod(), extraPathNameList, parameters)
+                    responseList.add(responseObj ?: [:])
+                    parameters.pop()
+                }
+                sendJsonResponse(responseList)
+            } else {
+                Object responseObj = eci.getEntity().rest(request.getMethod(), extraPathNameList, parameters)
+                // TODO: This will always respond with 200 OK, consider using 201 Created (for successful POST, create PUT)
+                // TODO:     and 204 No Content (for DELETE and other when no content is returned)
+                sendJsonResponse(responseObj)
+            }
         } catch (ArtifactAuthorizationException e) {
             // SC_UNAUTHORIZED 401 used when authc/login fails, use SC_FORBIDDEN 403 for authz failures
             logger.warn("REST Access Forbidden (no authz): " + e.message)
