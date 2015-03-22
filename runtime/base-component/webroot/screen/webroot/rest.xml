@@ -86,7 +86,8 @@ This Work includes contributions authored by David E. Jones, not as a
 
     curl -X POST -H "Content-Type: application/json" -u john.doe:moqui \
          -d '{ "exampleName":"REST Test With Items", "exampleTypeEnumId":"EXT_MADE_UP", "statusId":"EXST_IN_DESIGN",
-                "items": [ { "amount": 100.0, "description": "Test With Items Item 1" },
+                "items": [
+                    { "amount": 100.0, "description": "Test With Items Item 1" },
                     { "amount": 200.0, "description": "Test With Items Item 2" }
                 ]
              }' \
@@ -100,7 +101,8 @@ This Work includes contributions authored by David E. Jones, not as a
 
     curl -X PUT -H "Content-Type: application/json" -u john.doe:moqui \
          -d '{ "exampleId":"TEST2", "exampleName":"Name updated through store with related",
-                "items": [ { "exampleItemSeqId":"01", "description": "Updated related item 01" },
+                "items": [
+                    { "exampleItemSeqId":"01", "description": "Updated related item 01" },
                     { "description": "Created new related item with generated ID" },
                     { "exampleItemSeqId":"FOO", "description": "Stored new or existing related item with specified ID" }
                 ]
