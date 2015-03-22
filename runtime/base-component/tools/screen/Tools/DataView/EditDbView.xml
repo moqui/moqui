@@ -47,10 +47,11 @@ This Work includes contributions authored by David E. Jones, not as a
 
             <!-- add moqui.entity.view.DbViewEntityAlias record, and moqui.entity.view.DbViewEntityMember/ViewLink if needed -->
             <script>
+                import org.moqui.impl.entity.EntityDefinition
                 // make sure reverse-one many relationships exist
                 ec.entity.createAllAutoReverseManyRelationships()
 
-                org.moqui.impl.entity.EntityDefinition masterEd = ec.entity.getEntityDefinition(masterEntityName)
+                EntityDefinition masterEd = ec.entity.getEntityDefinition(masterEntityName)
 
                 Map members = [:]
                 int memberIndex = 1
@@ -95,7 +96,8 @@ This Work includes contributions authored by David E. Jones, not as a
                         members.put(entityName, memberValue)
 
                         // added a member, add KeyMap(s)
-                        Map relExpKeyMap = masterEd.getRelationshipExpandedKeyMap(relNode)
+                        Map relExpKeyMap = EntityDefinition.getRelationshipExpandedKeyMap(relNode,
+                                (EntityDefinition) ec.entity.getEntityDefinition(relNode."@related-entity-name"))
                         for (Map.Entry keyMapEntry in relExpKeyMap) {
                             def keyMapValue = ec.entity.makeValue("moqui.entity.view.DbViewEntityKeyMap")
                             keyMapValue.dbViewEntityName = dbViewEntityName

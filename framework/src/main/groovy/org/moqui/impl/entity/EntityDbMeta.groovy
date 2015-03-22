@@ -363,6 +363,7 @@ class EntityDbMeta {
         if (databaseNode."@use-foreign-key-indexes" == "false") return
         for (Node relNode in ed.entityNode."relationship") {
             if (relNode."@type" != "one") continue
+            String relatedEntityName = relNode."@related-entity-name"
 
             StringBuilder indexName = new StringBuilder()
             if (relNode."@fk-name") indexName.append(relNode."@fk-name")
@@ -374,7 +375,6 @@ class EntityDbMeta {
                 while (title.length() > commonChars && entityName.length() > commonChars &&
                         title.charAt(commonChars) == entityName.charAt(commonChars)) commonChars++
 
-                String relatedEntityName = relNode."@related-entity-name"
                 if (relatedEntityName.contains("."))
                     relatedEntityName = relatedEntityName.substring(relatedEntityName.lastIndexOf(".") + 1)
 
@@ -409,7 +409,7 @@ class EntityDbMeta {
             sql.append(indexName.toString()).append(" ON ").append(ed.getFullTableName())
 
             sql.append(" (")
-            Map keyMap = ed.getRelationshipExpandedKeyMap(relNode)
+            Map keyMap = EntityDefinition.getRelationshipExpandedKeyMap(relNode, efi.getEntityDefinition(relatedEntityName))
             boolean isFirst = true
             for (String fieldName in keyMap.keySet()) {
                 if (isFirst) isFirst = false else sql.append(", ")
@@ -442,7 +442,7 @@ class EntityDbMeta {
             // don't rely on constraint name, look at related table name, keys
 
             // get set of fields on main entity to match against (more unique than fields on related entity)
-            Map keyMap = ed.getRelationshipExpandedKeyMap(relNode)
+            Map keyMap = EntityDefinition.getRelationshipExpandedKeyMap(relNode, relEd)
             Set<String> fieldNames = new HashSet(keyMap.keySet())
             Set<String> fkColsFound = new HashSet()
 
@@ -549,7 +549,7 @@ class EntityDbMeta {
             }
             shrinkName(constraintName, constraintNameClipLength)
 
-            Map keyMap = ed.getRelationshipExpandedKeyMap(relNode)
+            Map keyMap = EntityDefinition.getRelationshipExpandedKeyMap(relNode, relEd)
             List<String> keyMapKeys = new ArrayList(keyMap.keySet())
             StringBuilder sql = new StringBuilder("ALTER TABLE ").append(ed.getFullTableName()).append(" ADD ")
             if (databaseNode."@fk-style" == "name_fk") {

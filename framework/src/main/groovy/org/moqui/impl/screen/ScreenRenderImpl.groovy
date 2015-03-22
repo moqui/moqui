@@ -14,6 +14,7 @@ package org.moqui.impl.screen
 import freemarker.template.Template
 import org.moqui.context.ArtifactAuthorizationException
 import org.moqui.context.ArtifactTarpitException
+import org.moqui.impl.entity.EntityValueBase
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -1025,11 +1026,6 @@ class ScreenRenderImpl implements ScreenRender {
     String getFieldValueString(FtlNodeWrapper fieldNodeWrapper, String defaultValue, String format) {
         Object obj = getFieldValue(fieldNodeWrapper, defaultValue)
         String strValue = ec.l10n.format(obj, format)
-        /* if (format) {
-            strValue = ec.l10n.format(obj, format)
-        } else {
-            strValue = obj ? obj.toString() : ""
-        } */
         return strValue
     }
     String getFieldValuePlainString(FtlNodeWrapper fieldNodeWrapper, String defaultValue) {
@@ -1051,18 +1047,25 @@ class ScreenRenderImpl implements ScreenRender {
         if (ec.getWeb() != null && ec.getWeb().getErrorParameters() != null && (ec.getWeb().getErrorParameters().moquiFormName == fieldNode.parent()."@name"))
             value = ec.getWeb().getErrorParameters().get(fieldName)
         Map valueMap = (Map) ec.resource.evaluateContextField(mapName, "")
-        if (!value && valueMap && fieldNode.parent().name() == "form-single") {
-            try {
-                if (valueMap instanceof EntityValueImpl) {
-                    // if it is an EntityValueImpl, only get if the fieldName is a value
-                    EntityValueImpl evi = (EntityValueImpl) valueMap
-                    if (evi.getEntityDefinition().isField(fieldName)) value = evi.get(fieldName)
-                } else {
-                    value = valueMap.get(fieldName)
+        if (StupidUtilities.isEmpty(value)) {
+            Node formNode = fieldNode.parent()
+            if (valueMap && formNode.name() == "form-single") {
+                try {
+                    if (valueMap instanceof EntityValueBase) {
+                        // if it is an EntityValueImpl, only get if the fieldName is a value
+                        EntityValueBase evb = (EntityValueImpl) valueMap
+                        if (evb.getEntityDefinition().isField(fieldName)) value = evb.get(fieldName)
+                    } else {
+                        value = valueMap.get(fieldName)
+                    }
+                } catch (EntityException e) {
+                    // do nothing, not necessarily an entity field
+                    if (logger.isTraceEnabled()) logger.trace("Ignoring entity exception for non-field: ${e.toString()}")
                 }
-            } catch (EntityException e) {
-                // do nothing, not necessarily an entity field
-                if (logger.isTraceEnabled()) logger.trace("Ignoring entity exception for non-field: ${e.toString()}")
+            } else if (formNode.name() == "form-list" && formNode."@list-entry") {
+                // use some Groovy goodness to get an object property
+                Object entryObj = ec.getContext().get(formNode."@list-entry")
+                value = entryObj.getAt(fieldName)
             }
         }
         if (StupidUtilities.isEmpty(value)) value = ec.getContext().get(fieldName)

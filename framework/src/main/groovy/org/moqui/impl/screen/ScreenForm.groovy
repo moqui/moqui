@@ -616,15 +616,19 @@ class ScreenForm {
         // find first relationship that has this field as the only key map and is not a many relationship
         Node oneRelNode = null
         Map oneRelKeyMap = null
+        String relatedEntityName = null
+        EntityDefinition relatedEd = null
         for (Node rn in ed.entityNode."relationship") {
-            Map km = ed.getRelationshipExpandedKeyMap(rn)
+            String relEntityName = rn."@related-entity-name"
+            EntityDefinition relEd = ecfi.entityFacade.getEntityDefinition(relEntityName)
+            Map km = EntityDefinition.getRelationshipExpandedKeyMap(rn, relEd)
             if (km.size() == 1 && km.containsKey(fieldName) && rn."@type" == "one" && rn."@is-auto-reverse" != "true") {
                 oneRelNode = rn
                 oneRelKeyMap = km
+                relatedEntityName = relEntityName
+                relatedEd = relEd
             }
         }
-        String relatedEntityName = oneRelNode?."@related-entity-name"
-        EntityDefinition relatedEd = relatedEntityName ? ecfi.entityFacade.getEntityDefinition(relatedEntityName) : null
         String keyField = oneRelKeyMap?.keySet()?.iterator()?.next()
         String relKeyField = oneRelKeyMap?.values()?.iterator()?.next()
         String relDefaultDescriptionField = relatedEd?.getDefaultDescriptionField()

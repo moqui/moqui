@@ -68,7 +68,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="enableAuditLog"><default-field title="Audit"><display/></default-field></field>
             <field name="enableLocalization"><default-field title="Localize"><display/></default-field></field>
         </form-list>
-        <form-list name="RelatedEntities" list="relationshipInfoList">
+        <form-list name="RelatedEntities" list="relationshipInfoList" list-entry="relInfo">
             <field name="prettyName"><default-field><display/></default-field></field>
             <field name="shortAlias"><default-field><display/></default-field></field>
             <field name="title"><default-field><display/></default-field></field>

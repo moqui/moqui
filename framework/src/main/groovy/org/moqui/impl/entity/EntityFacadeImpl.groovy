@@ -490,7 +490,7 @@ class EntityFacadeImpl implements EntityFacade {
                 if (!ed.isViewEntity() && relNode."@type" != "many") reverseEd.entityNode.attributes().put("has-dependents", "true")
 
                 // create a new reverse-many relationship
-                Map keyMap = ed.getRelationshipExpandedKeyMap(relNode)
+                Map keyMap = EntityDefinition.getRelationshipExpandedKeyMap(relNode, reverseEd)
 
                 Node newRelNode = reverseEd.entityNode.appendNode("relationship",
                         ["related-entity-name":ed.fullEntityName, "type":relType, "is-auto-reverse":"true"])
@@ -667,7 +667,7 @@ class EntityFacadeImpl implements EntityFacade {
         if (ed != null) {
             this.entityDefinitionCache.remove(ed.getEntityName())
             this.entityDefinitionCache.remove(ed.getFullEntityName())
-            this.entityDefinitionCache.remove(ed.getShortAlias())
+            if (ed.getShortAlias()) this.entityDefinitionCache.remove(ed.getShortAlias())
         }
     }
 
@@ -729,7 +729,7 @@ class EntityFacadeImpl implements EntityFacade {
         }
 
         // loop through all related entities and get their fields too
-        for (Map relInfo in ed.getRelationshipsInfo(null, false)) {
+        for (EntityDefinition.RelationshipInfo relInfo in ed.getRelationshipsInfo(null, false)) {
             //[type:relNode."@type", title:(relNode."@title"?:""), relatedEntityName:relNode."@related-entity-name",
             //        keyMap:keyMap, targetParameterMap:targetParameterMap, prettyName:prettyName]
             EntityDefinition red = null

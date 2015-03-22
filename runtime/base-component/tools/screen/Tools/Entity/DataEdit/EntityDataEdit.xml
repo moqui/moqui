@@ -47,7 +47,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="entityName" entry-name="entityName"><default-field><hidden/></default-field></field>
             <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
         </form-single>
-        <form-list name="RelatedEntities" list="relationshipInfoList">
+        <form-list name="RelatedEntities" list="relationshipInfoList" list-entry="relInfo">
             <field name="title"><default-field><display/></default-field></field>
             <field name="relatedEntityName"><default-field><display/></default-field></field>
             <field name="type"><default-field><display/></default-field></field>

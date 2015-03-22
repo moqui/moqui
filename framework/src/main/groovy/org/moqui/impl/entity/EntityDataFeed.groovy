@@ -262,6 +262,7 @@ class EntityDataFeed {
                     Node relNode = currentEd.getRelationshipNode(fieldPathElement)
                     if (relNode == null) throw new EntityException("Could not find relationship [${fieldPathElement}] from entity [${currentEd.getFullEntityName()}] as part of DataDocumentField.fieldPath [${fieldPath}]")
                     String relEntityName = relNode."@related-entity-name"
+                    EntityDefinition relEd = efi.getEntityDefinition(relEntityName)
 
                     // add entry for the related entity
                     if (!entityInfoMap.containsKey(relEntityName)) entityInfoMap.put(relEntityName,
@@ -269,7 +270,7 @@ class EntityDataFeed {
                                     currentRelationshipPath.toString()))
 
                     // add PK fields of the related entity as fields for the current entity so changes on them will also trigger a data feed
-                    Map relKeyMap = currentEd.getRelationshipExpandedKeyMap(relNode)
+                    Map relKeyMap = EntityDefinition.getRelationshipExpandedKeyMap(relNode, relEd)
                     for (String fkFieldName in relKeyMap.keySet()) {
                         currentTree.put(fkFieldName, fkFieldName)
                         // save the current field name (not the alias)
@@ -277,7 +278,7 @@ class EntityDataFeed {
                     }
 
                     currentEntityInfo = entityInfoMap.get(relEntityName)
-                    currentEd = efi.getEntityDefinition(relEntityName)
+                    currentEd = relEd
                 } else {
                     currentTree.put(fieldPathElement, dataDocumentField.fieldNameAlias ?: fieldPathElement)
                     // save the current field name (not the alias)

@@ -292,7 +292,7 @@ class TransactionCache implements Synchronization {
                     //     expanded key Map and the related entity's PK Map
                     Map relCreateMap = getCreateByEntityMap(relEntityName)
                     if (relCreateMap) {
-                        Map relKeyMap = ed.getRelationshipExpandedKeyMap(relNode)
+                        Map relKeyMap = EntityDefinition.getRelationshipExpandedKeyMap(relNode, relEd)
                         Map relPk = [:]
                         boolean foundAllPks = true
                         for (Map.Entry<String, String> entry in relKeyMap.entrySet()) {

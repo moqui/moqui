@@ -487,7 +487,8 @@ abstract class EntityValueBase implements EntityValue {
         Node relationship = getEntityDefinition().getRelationshipNode(relationshipName)
         if (!relationship) throw new EntityException("Relationship [${relationshipName}] not found in entity [${entityName}]")
 
-        Map keyMap = getEntityDefinition().getRelationshipExpandedKeyMap(relationship)
+        String relatedEntityName = relationship."@related-entity-name"
+        Map keyMap = EntityDefinition.getRelationshipExpandedKeyMap(relationship, efi.getEntityDefinition(relatedEntityName))
         if (!keyMap) throw new EntityException("Relationship [${relationshipName}] in entity [${entityName}] has no key-map sub-elements and no default values")
 
         // make a Map where the key is the related entity's field name, and the value is the value from this entity
@@ -495,7 +496,7 @@ abstract class EntityValueBase implements EntityValue {
         for (Map.Entry entry in keyMap.entrySet()) condMap.put(entry.getValue(), valueMap.get(entry.getKey()))
         if (byAndFields) condMap.putAll(byAndFields)
 
-        EntityFind find = getEntityFacadeImpl().find((String) relationship."@related-entity-name")
+        EntityFind find = getEntityFacadeImpl().find(relatedEntityName)
         return find.condition(condMap).orderBy(orderBy).useCache(useCache).forUpdate(forUpdate as boolean).list()
     }
 
@@ -507,14 +508,15 @@ abstract class EntityValueBase implements EntityValue {
     }
 
     protected EntityValue findRelatedOne(Node relationship, Boolean useCache, Boolean forUpdate) {
-        Map keyMap = getEntityDefinition().getRelationshipExpandedKeyMap(relationship)
+        String relatedEntityName = relationship."@related-entity-name"
+        Map keyMap = EntityDefinition.getRelationshipExpandedKeyMap(relationship, efi.getEntityDefinition(relatedEntityName))
         if (!keyMap) throw new EntityException("Relationship [${relationship."@title"}${relationship."@related-entity-name"}] in entity [${entityName}] has no key-map sub-elements and no default values")
 
         // make a Map where the key is the related entity's field name, and the value is the value from this entity
         Map condMap = new HashMap()
         for (Map.Entry entry in keyMap.entrySet()) condMap.put(entry.getValue(), valueMap.get(entry.getKey()))
 
-        EntityFind find = getEntityFacadeImpl().find((String) relationship."@related-entity-name")
+        EntityFind find = getEntityFacadeImpl().find(relatedEntityName)
         return find.condition(condMap).useCache(useCache).forUpdate(forUpdate as boolean).one()
     }
 
@@ -531,17 +533,16 @@ abstract class EntityValueBase implements EntityValue {
             EntityValue value = findRelatedOne(oneRel, true, false)
             if (!value) {
                 if (insertDummy) {
-                    EntityValue newValue = getEntityFacadeImpl().makeValue((String) oneRel."@related-entity-name")
-                    Map keyMap = getEntityDefinition().getRelationshipExpandedKeyMap(oneRel)
+                    String relatedEntityName = oneRel."@related-entity-name"
+                    EntityValue newValue = getEntityFacadeImpl().makeValue(relatedEntityName)
+                    Map keyMap = EntityDefinition.getRelationshipExpandedKeyMap(oneRel, efi.getEntityDefinition(relatedEntityName))
                     if (!keyMap) throw new EntityException("Relationship [${oneRel."@title"}#${oneRel."@related-entity-name"}] in entity [${entityName}] has no key-map sub-elements and no default values")
 
                     // make a Map where the key is the related entity's field name, and the value is the value from this entity
                     for (Map.Entry entry in keyMap.entrySet())
                         newValue.set((String) entry.getValue(), valueMap.get(entry.getKey()))
 
-                    if (newValue.containsPrimaryKey()){
-                        newValue.create()
-                    }
+                    if (newValue.containsPrimaryKey()) newValue.create()
                 } else {
                     return false
                 }
@@ -750,8 +751,8 @@ abstract class EntityValueBase implements EntityValue {
     Map<String, Object> getPlainValueMap(int dependentLevels) {
         Map<String, Object> vMap = StupidUtilities.removeNullsFromMap(new HashMap(valueMap))
         if (dependentLevels > 0) {
-            List<Map> relInfoList = getEntityDefinition().getRelationshipsInfo(null, true)
-            for (Map relInfo in relInfoList) {
+            List<EntityDefinition.RelationshipInfo> relInfoList = getEntityDefinition().getRelationshipsInfo(null, true)
+            for (EntityDefinition.RelationshipInfo relInfo in relInfoList) {
                 String relationshipName = relInfo.relationshipName
                 String entryName = relInfo.shortAlias ?: relationshipName
                 if (relInfo.type == "many") {
