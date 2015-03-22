@@ -804,7 +804,7 @@ public class EntityDefinition {
                     } else {
                         dest.put(fieldName, value)
                     }
-                } else if (setIfEmpty) {
+                } else if (setIfEmpty && src.containsKey(sourceFieldName)) {
                     // treat empty String as null, otherwise set as whatever null or empty type it is
                     if (value != null && value instanceof CharSequence) {
                         dest.put(fieldName, null)
