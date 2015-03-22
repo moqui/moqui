@@ -73,6 +73,10 @@ Bug Fixes:
   anything other than strings (CharSequence actually) were emptied; most
   lists in parameters only contain strings so this hasn't come up before,
   but for more complex JSON documents it is an issue
+- Fixed issues with determining dependent entities, now more consistent by
+  looking for reverse relationships with appropriate criteria
+- Fixed a few issues with the Tools auto screens and entity edit screens
+  related to relationships
 
 
 ===========================================================================
