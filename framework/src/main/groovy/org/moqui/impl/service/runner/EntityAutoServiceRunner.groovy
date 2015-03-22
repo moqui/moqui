@@ -17,6 +17,7 @@ import org.moqui.entity.EntityValue
 import org.moqui.entity.EntityValueNotFoundException
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.impl.entity.EntityDefinition
+import org.moqui.impl.entity.EntityValueBase
 import org.moqui.impl.service.ServiceDefinition
 import org.moqui.impl.service.ServiceFacadeImpl
 import org.moqui.impl.service.ServiceRunner
@@ -275,6 +276,8 @@ public class EntityAutoServiceRunner implements ServiceRunner {
         lookedUpValue.setFields(parameters, true, null, false)
         // logger.info("In auto updateEntity lookedUpValue final [${lookedUpValue}] for parameters [${parameters}]")
         lookedUpValue.update()
+
+        storeRelated(ecfi, (EntityValueBase) lookedUpValue, parameters, result)
     }
 
     static void deleteEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> parameters) {
@@ -287,6 +290,11 @@ public class EntityAutoServiceRunner implements ServiceRunner {
     static void storeEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> parameters,
                                    Map<String, Object> result, Set<String> outParamNames) {
         ExecutionContextFactoryImpl ecfi = sfi.getEcfi()
+        storeRecursive(ecfi, ed, parameters, result, outParamNames)
+    }
+
+    static void storeRecursive(ExecutionContextFactoryImpl ecfi, EntityDefinition ed, Map<String, Object> parameters,
+                               Map<String, Object> result, Set<String> outParamNames) {
         EntityValue newEntityValue = ecfi.getEntityFacade().makeValue(ed.getFullEntityName())
 
         checkFromDate(ed, parameters, result, ecfi)
@@ -299,6 +307,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
             // we had to fill some stuff in, so do a create
             newEntityValue.setFields(parameters, true, null, false)
             newEntityValue.create()
+            storeRelated(ecfi, (EntityValueBase) newEntityValue, parameters, result)
             return
         }
 
@@ -321,6 +330,50 @@ public class EntityAutoServiceRunner implements ServiceRunner {
         lookedUpValue.setFields(parameters, true, null, false)
         // logger.info("In auto updateEntity lookedUpValue final [${lookedUpValue}] for parameters [${parameters}]")
         lookedUpValue.store()
+
+        storeRelated(ecfi, (EntityValueBase) lookedUpValue, parameters, result)
+    }
+
+    static void storeRelated(ExecutionContextFactoryImpl ecfi, EntityValueBase parentValue, Map<String, Object> parameters,
+                             Map<String, Object> result) {
+        EntityDefinition ed = parentValue.getEntityDefinition()
+        Map pkMap = parentValue.getPrimaryKeys()
+
+        // check parameters Map for relationships
+        for (EntityDefinition.RelationshipInfo relInfo in ed.getRelationshipsInfo(false)) {
+            Object relParmObj = parameters.get(relInfo.shortAlias)
+            String relKey = null
+            if (relParmObj) {
+                relKey = relInfo.shortAlias
+            } else {
+                relParmObj = parameters.get(relInfo.relationshipName)
+                if (relParmObj) relKey = relInfo.relationshipName
+            }
+            if (relParmObj) {
+                if (relParmObj instanceof Map) {
+                    Map relResults = [:]
+                    // add in all of the main entity's primary key fields, this is necessary for auto-generated, and to
+                    //     allow them to be left out of related records
+                    relParmObj.putAll(pkMap)
+                    storeRecursive(ecfi, relInfo.relatedEd, relParmObj, relResults, null)
+                    result.put(relKey, relResults)
+                } else if (relParmObj instanceof List) {
+                    List relResultList = []
+                    for (Object relParmEntry in relParmObj) {
+                        Map relResults = [:]
+                        if (relParmEntry instanceof Map) {
+                            relParmEntry.putAll(pkMap)
+                            storeRecursive(ecfi, relInfo.relatedEd, relParmEntry, relResults, null)
+                        } else {
+                            logger.warn("In entity auto create for entity ${ed.getFullEntityName()} found list for relationship ${relKey} with a non-Map entry: ${relParmEntry}")
+                        }
+                        relResultList.add(relResults)
+
+                    }
+                    result.put(relKey, relResultList)
+                }
+            }
+        }
     }
 
     void destroy() { }
