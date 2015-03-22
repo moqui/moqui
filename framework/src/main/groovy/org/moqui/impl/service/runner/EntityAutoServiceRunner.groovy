@@ -224,6 +224,8 @@ public class EntityAutoServiceRunner implements ServiceRunner {
     /* This should only be called if statusId is a field of the entity and lookedUpValue != null */
     protected static void checkStatus(EntityDefinition ed, Map<String, Object> parameters, Map<String, Object> result,
                             Set<String> outParamNames, EntityValue lookedUpValue, ExecutionContextFactoryImpl ecfi) {
+        if (!parameters.containsKey("statusId")) return
+
         // populate the oldStatusId out if there is a service parameter for it, and before we do the set non-pk fields
         if (outParamNames == null || outParamNames.contains("oldStatusId")) {
             result.put("oldStatusId", lookedUpValue.get("statusId"))
@@ -262,7 +264,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
             throw new EntityValueNotFoundException("In entity-auto update service for entity [${ed.fullEntityName}] value not found, cannot update; using parameters [${parameters}]")
         }
 
-        if (ed.isField("statusId")) {
+        if (parameters.containsKey("statusId") && ed.isField("statusId")) {
             // do the actual query so we'll have the current statusId
             lookedUpValue = preLookedUpValue ?: ecfi.getEntityFacade().find(ed.getFullEntityName())
                     .condition(parameters).useCache(false).forUpdate(true).one()
@@ -312,7 +314,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
         }
 
         EntityValue lookedUpValue = null
-        if (ed.isField("statusId")) {
+        if (parameters.containsKey("statusId") && ed.isField("statusId")) {
             // do the actual query so we'll have the current statusId
             lookedUpValue = ecfi.getEntityFacade().find(ed.getFullEntityName())
                     .condition(newEntityValue).useCache(false).forUpdate(true).one()
@@ -322,6 +324,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
                 // no lookedUpValue at this point? doesn't exist so create
                 newEntityValue.setFields(parameters, true, null, false)
                 newEntityValue.create()
+                storeRelated(ecfi, (EntityValueBase) newEntityValue, parameters, result)
                 return
             }
         }
