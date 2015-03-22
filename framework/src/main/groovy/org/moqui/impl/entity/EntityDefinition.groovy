@@ -44,6 +44,7 @@ public class EntityDefinition {
     protected Node internalEntityNode
     protected final Map<String, Boolean> fieldSimpleMap = new HashMap<String, Boolean>()
     protected final Map<String, Node> fieldNodeMap = new HashMap<String, Node>()
+    // TODO: get rid of this, refactor code to use getRelationshipMap()
     protected final Map<String, Node> relationshipNodeMap = new HashMap<String, Node>()
     protected final Map<String, String> columnNameMap = new HashMap<String, String>()
     protected List<String> pkFieldNameList = null
@@ -58,6 +59,9 @@ public class EntityDefinition {
     protected Boolean createOnlyVal = null
 
     protected List<Node> expandedRelationshipList = null
+    // this is kept separately for quick access to relationships by name or short-alias
+    protected Map<String, RelationshipInfo> relationshipInfoMap = null
+    protected List<RelationshipInfo> relationshipInfoList = null
 
     EntityDefinition(EntityFacadeImpl efi, Node entityNode) {
         this.efi = efi
@@ -300,31 +304,39 @@ public class EntityDefinition {
         return eKeyMap
     }
 
+    Map<String, RelationshipInfo> getRelationshipInfoMap() {
+        if (relationshipInfoMap != null) return relationshipInfoMap
+        relationshipInfoMap = new HashMap<String, RelationshipInfo>()
+        List<RelationshipInfo> relInfoList = getRelationshipsInfo(false)
+        for (RelationshipInfo relInfo in relInfoList) {
+            relationshipInfoMap.put(relInfo.relationshipName, relInfo)
+            if (relInfo.shortAlias) relationshipInfoMap.put(relInfo.shortAlias, relInfo)
+        }
+        return relationshipInfoMap
+    }
 
-    List<RelationshipInfo> getRelationshipsInfo(Map valueSource, boolean dependentsOnly) {
+    List<RelationshipInfo> getRelationshipsInfo(boolean dependentsOnly) {
+        if (relationshipInfoList == null) makeRelInfoList()
+
+        List<RelationshipInfo> infoListCopy = []
+        for (RelationshipInfo info in relationshipInfoList) if (!dependentsOnly || info.dependent) infoListCopy.add(info)
+        return infoListCopy
+    }
+    private synchronized void makeRelInfoList() {
+        if (relationshipInfoList != null) return
+
         if (!this.expandedRelationshipList) {
             // make sure this is done before as this isn't done by default
             efi.createAllAutoReverseManyRelationships()
             this.expandedRelationshipList = this.internalEntityNode."relationship"
         }
 
-        List<RelationshipInfo> infoList = new ArrayList()
+        List<RelationshipInfo> infoList = []
         for (Node relNode in this.expandedRelationshipList) {
             RelationshipInfo relInfo = new RelationshipInfo(relNode, this, efi)
-
-            if (dependentsOnly) {
-                // see if there is a type one reverse relationship, if not skip this relationship (not dependent)
-                Node reverseRelNode = (Node) relInfo.relatedEd.internalEntityNode."relationship".find(
-                        { ((it."@related-entity-name" == this.internalEntityName || it."@related-entity-name" == this.fullEntityName)
-                                && (it."@type" == "one" || it."@type" == "one-nofk")
-                                && ((!relInfo.title && !it."@title") || it."@title" == relInfo.title)) })
-                if (reverseRelNode == null) continue
-            }
-
-            relInfo.populateTargetParameterMap(valueSource)
             infoList.add(relInfo)
         }
-        return infoList
+        relationshipInfoList = infoList
     }
 
     static class RelationshipInfo {
@@ -333,14 +345,16 @@ public class EntityDefinition {
         String relatedEntityName
         EntityDefinition fromEd
         EntityDefinition relatedEd
+        Node relNode
 
         String relationshipName
         String shortAlias
         String prettyName
         Map keyMap
-        Map targetParameterMap
+        boolean dependent
 
         RelationshipInfo(Node relNode, EntityDefinition fromEd, EntityFacadeImpl efi) {
+            this.relNode = relNode
             type = relNode.'@type'
             title = relNode.'@title' ?: ''
             relatedEntityName = relNode.'@related-entity-name'
@@ -352,13 +366,25 @@ public class EntityDefinition {
             shortAlias = relNode.'@short-alias' ?: ''
             prettyName = relatedEd.getPrettyName(title, fromEd.internalEntityName)
             keyMap = getRelationshipExpandedKeyMap(relNode, relatedEd)
+            dependent = hasReverse()
         }
 
-        void populateTargetParameterMap(Map valueSource) {
-            if (!valueSource) return
-            targetParameterMap = new HashMap()
-            for (Map.Entry keyEntry in keyMap)
-                targetParameterMap.put(keyEntry.value, valueSource.get(keyEntry.key))
+        private boolean hasReverse() {
+            Node reverseRelNode = (Node) relatedEd.internalEntityNode."relationship".find(
+                    { ((it."@related-entity-name" == fromEd.internalEntityName || it."@related-entity-name" == fromEd.fullEntityName)
+                            && (it."@type" == "one" || it."@type" == "one-nofk")
+                            && ((!title && !it."@title") || it."@title" == title)) })
+            return reverseRelNode != null
+        }
+
+        Map getTargetParameterMap(Map valueSource) {
+            if (!valueSource) return [:]
+            Map targetParameterMap = new HashMap()
+            for (Map.Entry keyEntry in keyMap) {
+                Object value = valueSource.get(keyEntry.key)
+                if (!StupidUtilities.isEmpty(value)) targetParameterMap.put(keyEntry.value, value)
+            }
+            return targetParameterMap
         }
     }
 
@@ -370,7 +396,7 @@ public class EntityDefinition {
         if (ancestorEntities == null) ancestorEntities = new LinkedList()
         ancestorEntities.addFirst(this.fullEntityName)
 
-        List<RelationshipInfo> relInfoList = getRelationshipsInfo(null, true)
+        List<RelationshipInfo> relInfoList = getRelationshipsInfo(true)
         for (RelationshipInfo relInfo in relInfoList) {
             edp.allDescendants.add((String) relInfo.relatedEntityName)
             String relName = (String) relInfo.relationshipName

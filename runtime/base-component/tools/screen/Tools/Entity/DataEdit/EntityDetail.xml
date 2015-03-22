@@ -27,7 +27,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <econdition field-name="entityName" from="entityDefinition.fullEntityName"/>
             <order-by field-name="fieldName"/>
         </entity-find>
-        <set field="relationshipInfoList" from="entityDefinition.getRelationshipsInfo(null, false)"/>
+        <set field="relationshipInfoList" from="entityDefinition.getRelationshipsInfo(false)"/>
         <set field="dependents" from="entityDefinition.getDependentsTree(null)"/>
     </actions>
     <widgets>

@@ -729,7 +729,7 @@ class EntityFacadeImpl implements EntityFacade {
         }
 
         // loop through all related entities and get their fields too
-        for (EntityDefinition.RelationshipInfo relInfo in ed.getRelationshipsInfo(null, false)) {
+        for (EntityDefinition.RelationshipInfo relInfo in ed.getRelationshipsInfo(false)) {
             //[type:relNode."@type", title:(relNode."@title"?:""), relatedEntityName:relNode."@related-entity-name",
             //        keyMap:keyMap, targetParameterMap:targetParameterMap, prettyName:prettyName]
             EntityDefinition red = null

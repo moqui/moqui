@@ -27,12 +27,14 @@ This Work includes contributions authored by David E. Jones, not as a
     <actions>
         <set field="dependentLevels" from="(dependentLevels ?: '0') as int"/>
         <entity-find-one entity-name="${entityName}" value-field="entityValue"/>
-        <set field="relationshipInfoList" from="ec.entity.getEntityDefinition(entityName).getRelationshipsInfo(entityValue, false)"/>
+        <set field="relationshipInfoList" from="ec.entity.getEntityDefinition(entityName).getRelationshipsInfo(false)"/>
         <script>
-            Map plainMap = entityValue.getPlainValueMap(dependentLevels)
-            jb = new groovy.json.JsonBuilder()
-            jb.call(plainMap)
-            plainJsonStr = jb.toPrettyString()
+            if (entityValue) {
+                Map plainMap = entityValue.getPlainValueMap(dependentLevels)
+                jb = new groovy.json.JsonBuilder()
+                jb.call(plainMap)
+                plainJsonStr = jb.toPrettyString()
+            }
         </script>
     </actions>
     <widgets>
@@ -48,21 +50,24 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
         </form-single>
         <form-list name="RelatedEntities" list="relationshipInfoList" list-entry="relInfo">
+            <row-actions><set field="targetParameterMap" from="relInfo.getTargetParameterMap(entityValue)"/></row-actions>
             <field name="title"><default-field><display/></default-field></field>
             <field name="relatedEntityName"><default-field><display/></default-field></field>
             <field name="type"><default-field><display/></default-field></field>
-            <field name="targetParameterMap"><default-field title="ID Map"><display/></default-field></field>
+            <field name="targetParameterMap">
+                <default-field title="ID Map"><display/></default-field></field>
             <field name="link">
-                <conditional-field condition="type == 'many'">
+                <conditional-field condition="relInfo.type == 'many' &amp;&amp; targetParameterMap">
                     <link text="Find" url="find" parameter-map="targetParameterMap">
-                        <parameter name="entityName" from="relatedEntityName"/>
+                        <parameter name="entityName" from="relInfo.relatedEntityName"/>
                     </link>
                 </conditional-field>
-                <default-field>
+                <conditional-field condition="targetParameterMap">
                     <link text="Edit" url="edit" parameter-map="targetParameterMap">
-                        <parameter name="entityName" from="relatedEntityName"/>
+                        <parameter name="entityName" from="relInfo.relatedEntityName"/>
                     </link>
-                </default-field>
+                </conditional-field>
+                <default-field><display text=" "/></default-field>
             </field>
         </form-list>
         <label text="JSON with Dependents" type="h5"/>
