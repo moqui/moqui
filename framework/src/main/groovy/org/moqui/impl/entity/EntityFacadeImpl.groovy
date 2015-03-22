@@ -840,12 +840,11 @@ class EntityFacadeImpl implements EntityFacade {
         // if there is still more in the path the next should be a relationship name or alias
         while (localPath) {
             String relationshipName = localPath.remove(0)
-            Node relNode = lastEd.getRelationshipNode(relationshipName)
+            EntityDefinition.RelationshipInfo relInfo = lastEd.getRelationshipInfoMap().get(relationshipName)
+            if (relInfo == null) throw new EntityNotFoundException("No relationship found with name or alias [${relationshipName}] on entity [${lastEd.getShortAlias()?:''}:${lastEd.getFullEntityName()}]")
 
-            if (relNode == null) throw new EntityNotFoundException("No relationship found with name or alias [${relationshipName}] on entity [${lastEd.getShortAlias()?:''}:${lastEd.getFullEntityName()}]")
-
-            String relEntityName = (String) relNode."@related-entity-name"
-            EntityDefinition relEd = getEntityDefinition(relEntityName)
+            String relEntityName = relInfo.relatedEntityName
+            EntityDefinition relEd = relInfo.relatedEd
             if (relEd == null) throw new EntityNotFoundException("No entity found with name [${relEntityName}], related to entity [${lastEd.getShortAlias()?:''}:${lastEd.getFullEntityName()}] by relationship [${relationshipName}]")
 
             // TODO: How to handle more exotic relationships where they are not a dependent record, ie join on a field

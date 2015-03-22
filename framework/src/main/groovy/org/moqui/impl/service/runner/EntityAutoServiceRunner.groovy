@@ -159,6 +159,11 @@ public class EntityAutoServiceRunner implements ServiceRunner {
     static void createEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> parameters,
                                     Map<String, Object> result, Set<String> outParamNames) {
         ExecutionContextFactoryImpl ecfi = sfi.getEcfi()
+        createRecursive(ecfi, ed, parameters, result, outParamNames)
+    }
+
+    static void createRecursive(ExecutionContextFactoryImpl ecfi, EntityDefinition ed, Map<String, Object> parameters,
+                                Map<String, Object> result, Set<String> outParamNames) {
         EntityValue newEntityValue = ecfi.getEntityFacade().makeValue(ed.getFullEntityName())
 
         checkFromDate(ed, parameters, result, ecfi)
@@ -169,10 +174,48 @@ public class EntityAutoServiceRunner implements ServiceRunner {
         newEntityValue.setFields(parameters, true, null, false)
         newEntityValue.create()
 
+        Map pkMap = newEntityValue.getPrimaryKeys()
+
         // if a PK field has a @default get it and return it
         List<Node> pkNodes = ed.getFieldNodes(true, false, false)
         for (Node pkNode in pkNodes) if (pkNode."@default")
             tempResult.put((String) pkNode."@name", newEntityValue.get((String) pkNode."@name"))
+
+        // check parameters Map for relationships
+        for (EntityDefinition.RelationshipInfo relInfo in ed.getRelationshipsInfo(false)) {
+            Object relParmObj = parameters.get(relInfo.shortAlias)
+            String relKey = null
+            if (relParmObj) {
+                relKey = relInfo.shortAlias
+            } else {
+                relParmObj = parameters.get(relInfo.relationshipName)
+                if (relParmObj) relKey = relInfo.relationshipName
+            }
+            if (relParmObj) {
+                if (relParmObj instanceof Map) {
+                    Map relResults = [:]
+                    // add in all of the main entity's primary key fields, this is necessary for auto-generated, and to
+                    //     allow them to be left out of related records
+                    relParmObj.putAll(pkMap)
+                    createRecursive(ecfi, relInfo.relatedEd, relParmObj, relResults, null)
+                    tempResult.put(relKey, relResults)
+                } else if (relParmObj instanceof List) {
+                    List relResultList = []
+                    for (Object relParmEntry in relParmObj) {
+                        Map relResults = [:]
+                        if (relParmEntry instanceof Map) {
+                            relParmEntry.putAll(pkMap)
+                            createRecursive(ecfi, relInfo.relatedEd, relParmEntry, relResults, null)
+                        } else {
+                            logger.warn("In entity auto create for entity ${ed.getFullEntityName()} found list for relationship ${relKey} with a non-Map entry: ${relParmEntry}")
+                        }
+                        relResultList.add(relResults)
+
+                    }
+                    tempResult.put(relKey, relResultList)
+                }
+            }
+        }
 
         result.putAll(tempResult)
     }

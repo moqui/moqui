@@ -40,12 +40,13 @@ This Work includes contributions authored by David E. Jones, not as a
     curl -X GET -u john.doe:moqui -i http://localhost:8080/rest/v1/examples/TEST2?dependents=true
 
     Parameters can also be used for searching, which supports the per-field extensions (_op, _ic, etc) of
-        EntityFind.searchFormInputs(), the orderByField parameter for comma-separated fields to sort the results by,
-        and pageIndex, pageSize for pagination; parameters can be in the URL (preferred) or in request body as JSON.
+    EntityFind.searchFormInputs(), the orderByField parameter for comma-separated fields to sort the results by,
+    and pageIndex, pageSize for pagination; parameters can be in the URL (preferred) or in request body as JSON.
+
     The number of records will be limited to 100 unless a different pageSize is specified. The total count of records
-        is returned in the X-Total-Count HTTP response header. To facilitate pagination also calculates and adds headers
-        for the same fields Moqui uses for pagination: X-Page-Index, X-Page-Size, X-Page-Max-Index, X-Page-Range-Low,
-        and X-Page-Range-High.
+    is returned in the X-Total-Count HTTP response header. To facilitate pagination also calculates and adds headers
+    for the same fields Moqui uses for pagination: X-Page-Index, X-Page-Size, X-Page-Max-Index, X-Page-Range-Low,
+    and X-Page-Range-High.
 
     curl -X GET -u john.doe:moqui -i http://localhost:8080/rest/v1/examples
     curl -X GET -u john.doe:moqui -i 'http://localhost:8080/rest/v1/examples?exampleName=test&exampleName_op=contains&exampleName_ic=Y&orderByField=exampleName&pageIndex=0'
@@ -70,14 +71,26 @@ This Work includes contributions authored by David E. Jones, not as a
          http://localhost:8080/rest/v1/examples/100010
 
     This can also be used for bulk operations by passing a JSON document that is a list/array of map/object instead of a
-        single map/object. The operation will be done for each entry in the list/array and the result will be a JSON
-        document with a list/array with the result for each of the passed entries (generally a map/object, may be empty).
+    single map/object. The operation will be done for each entry in the list/array and the result will be a JSON
+    document with a list/array with the result for each of the passed entries (generally a map/object, may be empty).
+
     For example, to create multiple items (ExampleItem) for an Example, with an auto-generated secondary sequence ID
-        (exampleItemSeqId) use something like:
+    (exampleItemSeqId) use something like:
 
     curl -X POST -H "Content-Type: application/json" -u john.doe:moqui \
          -d '[{ "description":"New REST Item 1", "amount":100 }, { "description":"New REST Item 2", "amount":200 }]' \
             http://localhost:8080/rest/v1/examples/TEST2/items
+
+    There is a similar concept to dependent records when creating a new record, related records can be included in the
+    document by their relationship name or short-alias, for example:
+
+    curl -X POST -H "Content-Type: application/json" -u john.doe:moqui \
+         -d '{ "exampleName":"REST Test With Items", "exampleTypeEnumId":"EXT_MADE_UP", "statusId":"EXST_IN_DESIGN",
+                "items": [ { "amount": 100.0, "description": "Test With Items Item 1" },
+                    { "amount": 200.0, "description": "Test With Items Item 2" }
+                ]
+             }' \
+            http://localhost:8080/rest/v1/examples
 
     -->
     <!-- NOTE: read-only=true to disable check for URL parameters for transitions with actions -->
