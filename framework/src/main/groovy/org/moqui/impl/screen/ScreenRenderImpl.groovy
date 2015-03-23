@@ -1063,12 +1063,15 @@ class ScreenRenderImpl implements ScreenRender {
                     if (logger.isTraceEnabled()) logger.trace("Ignoring entity exception for non-field: ${e.toString()}")
                 }
             } else if (formNode.name() == "form-list" && formNode."@list-entry") {
-                // use some Groovy goodness to get an object property
+                // use some Groovy goodness to get an object property, only do if this is NOT a Map (that is handled by
+                //     putting all Map entries in the context for each row)
                 Object entryObj = ec.getContext().get(formNode."@list-entry")
-                try {
-                    value = entryObj.getAt(fieldName)
-                } catch (MissingPropertyException e) {
-                    // ignore exception, we know this may not be a real property of the object
+                if (!(entryObj instanceof Map)) {
+                    try {
+                        value = entryObj.getAt(fieldName)
+                    } catch (MissingPropertyException e) {
+                        // ignore exception, we know this may not be a real property of the object
+                    }
                 }
             }
         }
