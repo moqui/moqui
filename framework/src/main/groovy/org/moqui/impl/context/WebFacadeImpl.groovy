@@ -555,6 +555,7 @@ class WebFacadeImpl implements WebFacade {
                 logger.error(errorsString, t)
                 errorMessage = errorMessage + ' ' + errorsString
             }
+            logger.warn("General error in entity REST: " + t.toString(), t)
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, errorMessage)
         }
     }
