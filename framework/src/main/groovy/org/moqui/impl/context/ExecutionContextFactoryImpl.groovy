@@ -781,7 +781,9 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             'moqui.entity.SequenceValueItem', 'moqui.security.UserAccount', 'moqui.tenant.Tenant',
             'moqui.tenant.TenantDataSource', 'moqui.tenant.TenantDataSourceXaProp',
             'moqui.entity.document.DataDocument', 'moqui.entity.document.DataDocumentField',
-            'moqui.entity.document.DataDocumentCondition', 'moqui.entity.feed.DataFeedAndDocument'])
+            'moqui.entity.document.DataDocumentCondition', 'moqui.entity.feed.DataFeedAndDocument',
+            'moqui.entity.view.DbViewEntity', 'moqui.entity.view.DbViewEntityMember',
+            'moqui.entity.view.DbViewEntityKeyMap', 'moqui.entity.view.DbViewEntityAlias'])
     void countArtifactHit(String artifactType, String artifactSubType, String artifactName, Map parameters,
                           long startTime, long endTime, Long outputSize) {
         // don't count the ones this calls
