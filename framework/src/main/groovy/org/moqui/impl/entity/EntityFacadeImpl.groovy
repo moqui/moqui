@@ -901,12 +901,7 @@ class EntityFacadeImpl implements EntityFacade {
                 parameters.put('xPageRangeLow', pageRangeLow)
                 parameters.put('xPageRangeHigh', pageRangeHigh)
 
-                List resultList = []
-                for (EntityValue ev in el) {
-                    Map resultMap = ((EntityValueBase) ev).getPlainValueMap(dependentLevels)
-                    resultList.add(resultMap)
-                }
-
+                List resultList = el.getPlainValueList(dependentLevels)
                 return resultList
             }
         } else {

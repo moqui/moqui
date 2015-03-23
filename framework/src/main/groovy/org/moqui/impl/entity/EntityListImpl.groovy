@@ -206,6 +206,14 @@ class EntityListImpl implements EntityList {
     Iterator<EntityValue> iterator() { return this.valueList.iterator() }
 
     @Override
+    List<Map> getPlainValueList(int dependentLevels) {
+        List plainRelList = new ArrayList(valueList.size())
+        for (EntityValue ev in valueList)
+            plainRelList.add(((EntityValueBase) ev).getPlainValueMap(dependentLevels))
+        return plainRelList
+    }
+
+    @Override
     Object clone() { return this.cloneList() }
 
     @Override
@@ -367,6 +375,7 @@ class EntityListImpl implements EntityList {
         Iterator<EntityValue> iterator() { return emptyIterator }
         Object clone() { return this.cloneList() }
         int writeXmlText(Writer writer, String prefix, boolean dependents) { return 0 }
+        List<Map> getPlainValueList(int dependentLevels) { return [] }
 
         EntityList cloneList() { return this }
         void setFromCache(boolean fc) { }

@@ -110,6 +110,10 @@ public interface EntityList extends List<EntityValue>, Iterable<EntityValue>, Cl
      */
     Iterator<EntityValue> iterator();
 
+    /** Get a list of Map (not EntityValue) objects. If dependentLevels is greater than zero includes nested dependents
+     * in the Map for each value. */
+    List<Map> getPlainValueList(int dependentLevels);
+
     EntityList cloneList();
 
     void setFromCache(boolean fc);

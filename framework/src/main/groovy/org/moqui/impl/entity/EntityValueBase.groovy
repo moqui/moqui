@@ -748,8 +748,12 @@ abstract class EntityValueBase implements EntityValue {
         return valuesWritten
     }
 
+    @Override
     Map<String, Object> getPlainValueMap(int dependentLevels) {
         Map<String, Object> vMap = StupidUtilities.removeNullsFromMap(new HashMap(valueMap))
+        EntityDefinition ed = getEntityDefinition()
+        vMap.put('_entityName', ed.getShortAlias() ?: ed.getFullEntityName())
+
         if (dependentLevels > 0) {
             List<EntityDefinition.RelationshipInfo> relInfoList = getEntityDefinition().getRelationshipsInfo(true)
             for (EntityDefinition.RelationshipInfo relInfo in relInfoList) {
@@ -758,8 +762,7 @@ abstract class EntityValueBase implements EntityValue {
                 if (relInfo.type == "many") {
                     EntityList relList = findRelated(relationshipName, null, null, null, false)
                     if (relList) {
-                        List plainRelList = []
-                        for (EntityValue relEv in relList) plainRelList.add(((EntityValueBase) relEv).getPlainValueMap(dependentLevels-1))
+                        List plainRelList = relList.getPlainValueList(dependentLevels-1)
                         vMap.put(entryName, plainRelList)
                     }
                 } else {
@@ -768,6 +771,7 @@ abstract class EntityValueBase implements EntityValue {
                 }
             }
         }
+
         return vMap
     }
 

@@ -231,4 +231,10 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
      * @return The number of records written
      */
     int writeXmlText(Writer writer, String prefix, boolean dependents);
+
+    /** Get a Map with all non-null field values. If dependentLevels is greater than zero includes nested dependents
+     * in the Map as an entry with key of the dependent relationship's short-alias or if no short-alias then the
+     * relationship name (title + related-entity-name). Each dependent entity's Map may have its own dependent records
+     * up to dependentLevels levels deep.*/
+    Map<String, Object> getPlainValueMap(int dependentLevels);
 }
