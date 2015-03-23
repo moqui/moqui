@@ -237,7 +237,8 @@ This Work includes contributions authored by David E. Jones, not as a
                         if (currentCount > 0) {
                             EntityListIterator resultEli = find.iterator()
                             try {
-                                resultEli.writeXmlText((Writer) entityWriter, null, (Boolean) entryMap.dependents)
+                                int levels = entryMap.dependents ? 2 : 0
+                                resultEli.writeXmlText((Writer) entityWriter, null, levels)
                             } finally {
                                 resultEli.close()
                             }

@@ -99,10 +99,10 @@ public interface EntityList extends List<EntityValue>, Iterable<EntityValue>, Cl
      * writes all dependent (descendant) records.
      * @param writer A Writer object to write to
      * @param prefix A prefix to put in front of the entity name in the tag name
-     * @param dependents Write dependent (descendant) records as well?
+     * @param dependentLevels Write dependent (descendant) records this many levels deep, zero for no dependents
      * @return The number of records written
      */
-    int writeXmlText(Writer writer, String prefix, boolean dependents);
+    int writeXmlText(Writer writer, String prefix, int dependentLevels);
 
     /** Method to implement the Iterable interface to allow an EntityList to be used in a foreach loop.
      *

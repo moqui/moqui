@@ -32,7 +32,7 @@ class EntityDataWriterImpl implements EntityDataWriter {
 
     protected int txTimeout = 3600
     protected ListOrderedSet entityNames = new ListOrderedSet()
-    protected boolean dependents = false
+    protected int dependentLevels = 0
     protected String prefix = null
     protected Map<String, Object> filterMap = [:]
     protected List<String> orderByList = []
@@ -45,7 +45,8 @@ class EntityDataWriterImpl implements EntityDataWriter {
 
     EntityDataWriter entityName(String entityName) { entityNames.add(entityName);  return this }
     EntityDataWriter entityNames(List<String> enList) { entityNames.addAll(enList);  return this }
-    EntityDataWriter dependentRecords(boolean d) { dependents = d; return this }
+    EntityDataWriter dependentRecords(boolean dr) { if (dr) { dependentLevels = 2 } else { dependentLevels = 0 }; return this }
+    EntityDataWriter dependentLevels(int levels) { dependentLevels = levels; return this }
     EntityDataWriter prefix(String p) { prefix = p; return this }
     EntityDataWriter filterMap(Map<String, Object> fm) { filterMap.putAll(fm); return this }
     EntityDataWriter orderBy(List<String> obl) { orderByList.addAll(obl); return this }
@@ -74,7 +75,7 @@ class EntityDataWriterImpl implements EntityDataWriter {
             return 0
         }
 
-        if (dependents) efi.createAllAutoReverseManyRelationships()
+        if (dependentLevels) efi.createAllAutoReverseManyRelationships()
 
         int valuesWritten = 0
 
@@ -104,7 +105,7 @@ class EntityDataWriterImpl implements EntityDataWriter {
                         if (thruDate) ef.condition("lastUpdatedStamp", ComparisonOperator.LESS_THAN, thruDate)
                     }
                     EntityListIterator eli = ef.iterator()
-                    valuesWritten += eli.writeXmlText(pw, prefix, dependents)
+                    valuesWritten += eli.writeXmlText(pw, prefix, dependentLevels)
                     eli.close()
 
                     pw.println("</entity-facade-xml>")
@@ -132,7 +133,7 @@ class EntityDataWriterImpl implements EntityDataWriter {
     }
 
     int writer(Writer writer) {
-        if (dependents) efi.createAllAutoReverseManyRelationships()
+        if (dependentLevels) efi.createAllAutoReverseManyRelationships()
 
         TransactionFacade tf = efi.getEcfi().getTransactionFacade()
         boolean suspendedTransaction = false
@@ -163,7 +164,7 @@ class EntityDataWriterImpl implements EntityDataWriter {
 
                     EntityListIterator eli = ef.iterator()
                     try {
-                        valuesWritten += eli.writeXmlText(writer, prefix, dependents)
+                        valuesWritten += eli.writeXmlText(writer, prefix, dependentLevels)
                     } finally {
                         eli.close()
                     }

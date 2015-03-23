@@ -316,7 +316,7 @@ class EntityListIteratorImpl implements EntityListIterator {
     }
 
     @Override
-    int writeXmlText(Writer writer, String prefix, boolean dependents) {
+    int writeXmlText(Writer writer, String prefix, int dependentLevels) {
         int recordsWritten = 0
         try {
             // move back to before first if we need to
@@ -325,7 +325,7 @@ class EntityListIteratorImpl implements EntityListIterator {
             }
             EntityValue value
             while ((value = this.next()) != null) {
-                recordsWritten += value.writeXmlText(writer, prefix, dependents)
+                recordsWritten += value.writeXmlText(writer, prefix, dependentLevels)
             }
         } catch (SQLException e) {
             throw new EntityException("Error writing XML for all results", e)

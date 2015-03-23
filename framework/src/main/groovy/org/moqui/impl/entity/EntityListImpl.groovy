@@ -196,9 +196,9 @@ class EntityListImpl implements EntityList {
     }
 
     @Override
-    int writeXmlText(Writer writer, String prefix, boolean dependents) {
+    int writeXmlText(Writer writer, String prefix, int dependentLevels) {
         int recordsWritten = 0
-        for (EntityValue ev in this) recordsWritten += ev.writeXmlText(writer, prefix, dependents)
+        for (EntityValue ev in this) recordsWritten += ev.writeXmlText(writer, prefix, dependentLevels)
         return recordsWritten
     }
 
@@ -374,7 +374,7 @@ class EntityListImpl implements EntityList {
         EntityList addAllIfMissing(EntityList el) { throw new IllegalArgumentException("EmptyEntityList does not support add") }
         Iterator<EntityValue> iterator() { return emptyIterator }
         Object clone() { return this.cloneList() }
-        int writeXmlText(Writer writer, String prefix, boolean dependents) { return 0 }
+        int writeXmlText(Writer writer, String prefix, int dependentLevels) { return 0 }
         List<Map> getPlainValueList(int dependentLevels) { return [] }
 
         EntityList cloneList() { return this }

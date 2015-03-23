@@ -227,10 +227,10 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
      * writes all dependent (descendant) records.
      * @param writer A Writer object to write to
      * @param prefix A prefix to put in front of the entity name in the tag name
-     * @param dependents Write dependent (descendant) records as well?
+     * @param dependentLevels Write dependent (descendant) records this many levels deep, zero for no dependents
      * @return The number of records written
      */
-    int writeXmlText(Writer writer, String prefix, boolean dependents);
+    int writeXmlText(Writer writer, String prefix, int dependentLevels);
 
     /** Get a Map with all non-null field values. If dependentLevels is greater than zero includes nested dependents
      * in the Map as an entry with key of the dependent relationship's short-alias or if no short-alias then the

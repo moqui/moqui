@@ -36,11 +36,17 @@ public interface EntityDataWriter {
      */
     EntityDataWriter entityNames(List<String> entityNames);
 
-    /** Should the dependent records of each record be written?
+    /** Should the dependent records of each record be written? If set will include 2 levels of dependents by default,
+     * use dependentLevels() to specify a different number of levels.
      * @param dependents Boolean dependents indicator
      * @return Reference to this for convenience.
      */
     EntityDataWriter dependentRecords(boolean dependents);
+
+    /** The number of levels of dependents to include for records written. If set dependentRecords will be considered true.
+     * If dependentRecords is set but no level limit is specified all levels found will be written (may be large and not
+     * what is desired). */
+    EntityDataWriter dependentLevels(int levels);
 
     /** A Map of field name, value pairs to filter the results by. Each name/value only used on entities that have a
      * field matching the name.

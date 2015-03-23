@@ -605,12 +605,12 @@ abstract class EntityValueBase implements EntityValue {
     }
 
     @Override
-    int writeXmlText(Writer pw, String prefix, boolean dependents) {
-        if (dependents) {
+    int writeXmlText(Writer pw, String prefix, int dependentLevels) {
+        if (dependentLevels > 0) {
             // to avoid loops (shouldn't happen but could)
             Map<String, Set> entityPksVisited = new HashMap()
             EntityDefinition.EntityDependents edp = this.getEntityDefinition().getDependentsTree(new LinkedList([this.getEntityName()]))
-            int valuesWritten = this.writeXmlWithDependentsInternal(pw, prefix, entityPksVisited, edp)
+            int valuesWritten = this.writeXmlWithDependentsInternal(pw, prefix, entityPksVisited, edp, dependentLevels)
             return valuesWritten
         }
 
@@ -671,7 +671,8 @@ abstract class EntityValueBase implements EntityValue {
         return 1
     }
 
-    int writeXmlWithDependentsInternal(Writer pw, String prefix, Map<String, Set> entityPksVisited, EntityDefinition.EntityDependents edp) {
+    int writeXmlWithDependentsInternal(Writer pw, String prefix, Map<String, Set> entityPksVisited,
+                                       EntityDefinition.EntityDependents edp, int dependentLevels) {
         int valuesWritten = 0
         String en = this.getEntityName()
         Map pkMap = this.getPrimaryKeys()
@@ -683,8 +684,10 @@ abstract class EntityValueBase implements EntityValue {
         StupidUtilities.addToSetInMap(en, pkMap, entityPksVisited)
         // logger.warn("===== Added ${en}:${pkMap}, entityPksVisited=${entityPksVisited}")
         // write this
-        this.writeXmlText(pw, prefix, false)
+        this.writeXmlText(pw, prefix, 0)
         valuesWritten++
+
+        if (dependentLevels <= 0) return valuesWritten
 
         // if a relationship is to an entity that is a descendant of another child of this entity, defer until
         // after other entity (ie a sort of depth first with entities in deeper position run before those in higher
@@ -692,15 +695,15 @@ abstract class EntityValueBase implements EntityValue {
         Set<String> deferredEntityNames = new HashSet()
         Set<String> finishedRelationshipNames = new HashSet()
 
-        valuesWritten += writeXmlWithDependentsInternalLoop(pw, prefix, entityPksVisited, edp, deferredEntityNames, finishedRelationshipNames, true)
+        valuesWritten += writeXmlWithDependentsInternalLoop(pw, prefix, entityPksVisited, edp, deferredEntityNames, finishedRelationshipNames, true, dependentLevels)
 
         while (deferredEntityNames) {
             int deferredSize = deferredEntityNames.size()
-            valuesWritten += writeXmlWithDependentsInternalLoop(pw, prefix, entityPksVisited, edp, deferredEntityNames, finishedRelationshipNames, true)
+            valuesWritten += writeXmlWithDependentsInternalLoop(pw, prefix, entityPksVisited, edp, deferredEntityNames, finishedRelationshipNames, true, dependentLevels)
             if (deferredSize == deferredEntityNames.size()) {
                 // uh-oh, made no progress... just do it without defer and we get what we get
                 logger.info("In EntityValue.writeXmlWithDependents() for entity [${this.getEntityName()}] could not make progress with deferred entities, so writing in raw order instead of dependent-sensitive order.\n========== Current deferredEntityNames: ${deferredEntityNames}\n========== finishedRelationshipNames: ${finishedRelationshipNames}\n========== edp.dependentEntities: ${edp.dependentEntities.keySet()}")
-                valuesWritten += writeXmlWithDependentsInternalLoop(pw, prefix, entityPksVisited, edp, deferredEntityNames, finishedRelationshipNames, false)
+                valuesWritten += writeXmlWithDependentsInternalLoop(pw, prefix, entityPksVisited, edp, deferredEntityNames, finishedRelationshipNames, false, dependentLevels)
                 break
             }
         }
@@ -708,8 +711,9 @@ abstract class EntityValueBase implements EntityValue {
         return valuesWritten
     }
 
-    int writeXmlWithDependentsInternalLoop(Writer pw, String prefix, Map<String, Set> entityPksVisited, EntityDefinition.EntityDependents edp,
-                                           Set<String> deferredEntityNames, Set<String> finishedRelationshipNames, boolean doDefer) {
+    int writeXmlWithDependentsInternalLoop(Writer pw, String prefix, Map<String, Set> entityPksVisited,
+                                           EntityDefinition.EntityDependents edp, Set<String> deferredEntityNames,
+                                           Set<String> finishedRelationshipNames, boolean doDefer, int dependentLevels) {
         int valuesWritten = 0
 
         // for each dependent entity, if it is a dependent of another entity then defer it
@@ -718,7 +722,7 @@ abstract class EntityValueBase implements EntityValue {
         if (doDefer) {
             for (String checkEn in edp.dependentEntities.keySet()) {
                 for (EntityDefinition.RelationshipInfo relInfo in edp.relationshipInfos.values()) {
-                    if (finishedRelationshipNames.contains((relInfo.title ? relInfo.title + "#" : "") + relInfo.relatedEntityName)) continue
+                    if (finishedRelationshipNames.contains(relInfo.relationshipName)) continue
                     if (checkEn == relInfo.relatedEntityName) continue
                     EntityDefinition.EntityDependents checkEdp = edp.dependentEntities.get(relInfo.relatedEntityName)
                     if (checkEdp != null && checkEdp.allDescendants.contains(checkEn)) { deferredEntityNames.add(checkEn); break }
@@ -729,20 +733,20 @@ abstract class EntityValueBase implements EntityValue {
         // get only dependent entity relationships
         for (EntityDefinition.RelationshipInfo relInfo in edp.relationshipInfos.values()) {
             if (deferredEntityNames.contains(relInfo.relatedEntityName)) continue
-            if (finishedRelationshipNames.contains((relInfo.title ? relInfo.title + "#" : "") + relInfo.relatedEntityName)) continue
+            if (finishedRelationshipNames.contains(relInfo.relationshipName)) continue
 
             EntityDefinition.EntityDependents relEdp = edp.dependentEntities.get(relInfo.relatedEntityName)
             if (relEdp == null) continue
             if (relInfo.type == "many") {
-                EntityList el = findRelated((relInfo.title ? relInfo.title + "#" : "") + relInfo.relatedEntityName, null, null, false, false)
+                EntityList el = findRelated(relInfo.relationshipName, null, null, false, false)
                 for (EntityValue ev in el)
-                    valuesWritten += ((EntityValueBase) ev).writeXmlWithDependentsInternal(pw, prefix, entityPksVisited, relEdp)
+                    valuesWritten += ((EntityValueBase) ev).writeXmlWithDependentsInternal(pw, prefix, entityPksVisited, relEdp, dependentLevels - 1)
             } else {
-                EntityValueImpl ev = (EntityValueImpl) findRelatedOne((String) relInfo.title+relInfo.relatedEntityName, false, false)
-                if (ev != null) valuesWritten += ev.writeXmlWithDependentsInternal(pw, prefix, entityPksVisited, relEdp)
+                EntityValueImpl ev = (EntityValueImpl) findRelatedOne(relInfo.relationshipName, false, false)
+                if (ev != null) valuesWritten += ev.writeXmlWithDependentsInternal(pw, prefix, entityPksVisited, relEdp, dependentLevels - 1)
             }
 
-            finishedRelationshipNames.add((relInfo.title ? relInfo.title + "#" : "") + relInfo.relatedEntityName)
+            finishedRelationshipNames.add(relInfo.relationshipName)
         }
 
         return valuesWritten

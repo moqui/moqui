@@ -35,7 +35,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 PrintWriter pw = new PrintWriter(outFile)
                 pw.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
                 pw.println("<entity-facade-xml>")
-                int valuesWritten = entityValue.writeXmlText(pw, null, true)
+                int valuesWritten = entityValue.writeXmlText(pw, null, (dependentLevels ?: '2') as int)
                 pw.println("</entity-facade-xml>")
                 pw.close()
                 ec.message.addMessage("Wrote ${valuesWritten} records to file ${filename}")
@@ -62,8 +62,11 @@ This Work includes contributions authored by David E. Jones, not as a
         <form-single name="ExportMasterEntity" transition="export" dynamic="true">
             <auto-fields-entity entity-name="${aen}" include="pk" field-type="hidden"/>
             <field name="aen"><default-field><hidden/></default-field></field>
-            <field name="filename"><default-field><text-line size="100"/></default-field></field>
-            <field name="submitButton"><default-field title="Export with Dependents to File"><submit/></default-field></field>
+            <field name="filename"><default-field><text-line size="70"/></default-field></field>
+            <field name="dependentLevels"><default-field><text-line size="2" default-value="2"/></default-field></field>
+            <field name="submitButton"><default-field title="Export"><submit/></default-field></field>
+            <field-layout><field-row-big><field-ref name="aen"/><field-ref name="filename"/>
+                <field-ref name="dependentLevels"/><field-ref name="submitButton"/></field-row-big></field-layout>
         </form-single>
     </widgets>
 </screen>
