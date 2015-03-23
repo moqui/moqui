@@ -146,6 +146,25 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
         return sw.toString()
     }
 
+    void logProfilingDetail() {
+        if (!logger.isInfoEnabled()) return
+        StringWriter sw = new StringWriter()
+
+        sw.append("========= Hot Spots by Own Time =========\n")
+        List<Map> ownHotSpotList = ArtifactExecutionInfoImpl.hotSpotByTime(artifactExecutionInfoHistory, true, "-time")
+        ArtifactExecutionInfoImpl.printHotSpotList(sw, ownHotSpotList)
+
+        sw.append("========= Hot Spots by Total Time =========\n")
+        List<Map> totalHotSpotList = ArtifactExecutionInfoImpl.hotSpotByTime(artifactExecutionInfoHistory, false, "-time")
+        ArtifactExecutionInfoImpl.printHotSpotList(sw, totalHotSpotList)
+
+        sw.append("========= Consolidated Artifact List =========\n")
+        List<Map> consolidatedList = ArtifactExecutionInfoImpl.consolidateArtifactInfo(artifactExecutionInfoHistory)
+        ArtifactExecutionInfoImpl.printArtifactInfoList(sw, consolidatedList, 0)
+
+        logger.info(sw.toString())
+    }
+
 
     void setAnonymousAuthorizedAll() {
         ArtifactExecutionInfoImpl aeii = artifactExecutionInfoStack.peekFirst()

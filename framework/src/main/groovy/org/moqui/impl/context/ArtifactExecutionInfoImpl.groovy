@@ -123,6 +123,7 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
     }
 
     String getKeyString() { return name + ":" + typeEnumId + ":" + actionEnumId + ":" + actionDetail }
+
     static List<Map> hotSpotByTime(List<ArtifactExecutionInfoImpl> aeiiList, boolean ownTime, String orderBy) {
         Map<String, Map> timeByArtifact = [:]
         for (ArtifactExecutionInfoImpl aeii in aeiiList) aeii.addToMapByTime(timeByArtifact, ownTime)
@@ -148,6 +149,20 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
         }
         for (ArtifactExecutionInfoImpl aeii in childList) aeii.addToMapByTime(timeByArtifact, ownTime)
     }
+    static void printHotSpotList(Writer writer, List<Map> infoList) {
+        // "[${time}:${timeMin}:${timeMax}][${count}] ${type} ${action} ${actionDetail} ${name}"
+        for (Map info in infoList) {
+            writer.append('[').append(StupidUtilities.paddedString(info.time as String, 5, false)).append(':')
+            writer.append(StupidUtilities.paddedString(info.timeMin as String, 3, false)).append(':')
+            writer.append(StupidUtilities.paddedString(info.timeMax as String, 3, false)).append(']')
+            writer.append('[').append(StupidUtilities.paddedString(info.count as String, 3, false)).append('] ')
+            writer.append(StupidUtilities.paddedString((String) info.type, 10, true)).append(' ')
+            writer.append(StupidUtilities.paddedString((String) info.action, 7, true)).append(' ')
+            writer.append(StupidUtilities.paddedString((String) info.actionDetail, 5, true)).append(' ')
+            writer.append((String) info.name).append('\n')
+        }
+    }
+
 
     static List<Map> consolidateArtifactInfo(List<ArtifactExecutionInfoImpl> aeiiList) {
         List<Map> topLevelList = []
