@@ -29,11 +29,12 @@ This Work includes contributions authored by David E. Jones, not as a
                 }
                 if (entityNames instanceof List) edw.entityNames(entityNames) else edw.entityName(entityNames)
 
-                if (dependents) edw.dependentRecords(true)
+                if (dependentLevels) edw.dependentLevels(dependentLevels as int)
                 if (fromDate) edw.fromDate(ec.l10n.parseTimestamp(fromDate, null))
                 if (thruDate) edw.thruDate(ec.l10n.parseTimestamp(thruDate, null))
                 if (filterMap) edw.filterMap(ec.resource.evaluateContextField(filterMap, null))
                 if (orderBy) edw.orderBy([orderBy])
+                edw.fileType(fileType == 'JSON' ? EntityDataWriter.JSON : EntityDataWriter.XML)
 
                 noResponse = false
                 if (context.output == "file") {
@@ -43,7 +44,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 } else if (context.output == "browser") {
                     // stream to ec.web.response
                     def response = ec.web.response
-                    response.setContentType("text/xml")
+                    response.setContentType(fileType == 'JSON' ? 'application/json' : 'text/xml')
                     response.setCharacterEncoding("UTF-8")
                     response.addHeader("Cache-Control", "no-cache, must-revalidate, private")
                     edw.writer(response.getWriter())
@@ -58,12 +59,11 @@ This Work includes contributions authored by David E. Jones, not as a
     <widgets>
         <form-single name="ExportData" transition="EntityExport.xml">
             <field name="entityNames">
-                <default-field><drop-down allow-multiple="true" size="20">
+                <default-field><drop-down allow-multiple="true" size="80">
                     <list-options list="ec.entity.getAllEntitiesInfo('fullEntityName', null, false, true)" key="${fullEntityName}"/>
                 </drop-down></default-field>
             </field>
-
-            <field name="dependents"><default-field title=""><check><option key="true" text="Write dependents of each value?"/></check></default-field></field>
+            <field name="dependentLevels"><default-field><text-line size="2" default-value="0"/></default-field></field>
 
             <field name="fromDate"><default-field><date-time/></default-field></field>
             <field name="thruDate"><default-field><date-time/></default-field></field>
@@ -71,6 +71,9 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="path"><default-field><text-line size="80"/></default-field></field>
             <field name="filterMap"><default-field><text-line size="80" default-value="[:]"/></default-field></field>
             <field name="orderBy"><default-field><text-line size="80"/></default-field></field>
+            <field name="fileType"><default-field>
+                <radio no-current-selected-key="XML"><option key="XML"/><option key="JSON"/></radio>
+            </default-field></field>
             <field name="output">
                 <default-field><radio no-current-selected-key="file">
                     <option key="file" text="Single File"/>
