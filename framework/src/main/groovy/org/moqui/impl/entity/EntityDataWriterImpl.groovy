@@ -66,6 +66,9 @@ class EntityDataWriterImpl implements EntityDataWriter {
             return 0
         }
 
+        if (filename.endsWith('.json')) fileType(JSON)
+        else if (filename.endsWith('.xml')) fileType(XML)
+
         PrintWriter pw = new PrintWriter(outFile)
         // NOTE: don't have to do anything different here for different file types, writer() method will handle that
         int valuesWritten = this.writer(pw)
@@ -110,12 +113,7 @@ class EntityDataWriterImpl implements EntityDataWriter {
                     pw.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
                     pw.println("<entity-facade-xml>")
 
-                    EntityFind ef = efi.find(en).condition(filterMap).orderBy(orderByList)
-                    EntityDefinition ed = efi.getEntityDefinition(en)
-                    if (ed.isField("lastUpdatedStamp")) {
-                        if (fromDate) ef.condition("lastUpdatedStamp", ComparisonOperator.GREATER_THAN_EQUAL_TO, fromDate)
-                        if (thruDate) ef.condition("lastUpdatedStamp", ComparisonOperator.LESS_THAN, thruDate)
-                    }
+                    EntityFind ef = makeEntityFind(en)
                     EntityListIterator eli = ef.iterator()
                     valuesWritten += eli.writeXmlText(pw, prefix, dependentLevels)
                     eli.close()
@@ -168,12 +166,7 @@ class EntityDataWriterImpl implements EntityDataWriter {
                 writer.println("<entity-facade-xml>")
 
                 for (String en in entityNames) {
-                    EntityFind ef = efi.find(en).condition(filterMap).orderBy(orderByList)
-                    EntityDefinition ed = efi.getEntityDefinition(en)
-                    if (ed.isField("lastUpdatedStamp")) {
-                        if (fromDate) ef.condition("lastUpdatedStamp", ComparisonOperator.GREATER_THAN_EQUAL_TO, fromDate)
-                        if (thruDate) ef.condition("lastUpdatedStamp", ComparisonOperator.LESS_THAN, thruDate)
-                    }
+                    EntityFind ef = makeEntityFind(en)
 
                     /* leaving commented as might be useful for future con pool debugging:
                     try {
@@ -227,13 +220,7 @@ class EntityDataWriterImpl implements EntityDataWriter {
                 writer.println("[")
 
                 for (String en in entityNames) {
-                    EntityFind ef = efi.find(en).condition(filterMap).orderBy(orderByList)
-                    EntityDefinition ed = efi.getEntityDefinition(en)
-                    if (ed.isField("lastUpdatedStamp")) {
-                        if (fromDate) ef.condition("lastUpdatedStamp", ComparisonOperator.GREATER_THAN_EQUAL_TO, fromDate)
-                        if (thruDate) ef.condition("lastUpdatedStamp", ComparisonOperator.LESS_THAN, thruDate)
-                    }
-
+                    EntityFind ef = makeEntityFind(en)
                     EntityListIterator eli = ef.iterator()
                     try {
                         EntityValue ev
@@ -273,5 +260,15 @@ class EntityDataWriterImpl implements EntityDataWriter {
         }
 
         return valuesWritten
+    }
+
+    protected EntityFind makeEntityFind(String en) {
+        EntityFind ef = efi.find(en).condition(filterMap).orderBy(orderByList)
+        EntityDefinition ed = efi.getEntityDefinition(en)
+        if (ed.isField("lastUpdatedStamp")) {
+            if (fromDate) ef.condition("lastUpdatedStamp", ComparisonOperator.GREATER_THAN_EQUAL_TO, fromDate)
+            if (thruDate) ef.condition("lastUpdatedStamp", ComparisonOperator.LESS_THAN, thruDate)
+        }
+        return ef
     }
 }
