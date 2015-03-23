@@ -148,21 +148,28 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
 
     void logProfilingDetail() {
         if (!logger.isInfoEnabled()) return
-        StringWriter sw = new StringWriter()
 
+        StringWriter sw = new StringWriter()
         sw.append("========= Hot Spots by Own Time =========\n")
+        sw.append("[{time}:{timeMin}:{timeMax}][{count}] {type} {action} {actionDetail} {name}\n")
         List<Map> ownHotSpotList = ArtifactExecutionInfoImpl.hotSpotByTime(artifactExecutionInfoHistory, true, "-time")
         ArtifactExecutionInfoImpl.printHotSpotList(sw, ownHotSpotList)
+        logger.info(sw.toString())
 
+        sw = new StringWriter()
         sw.append("========= Hot Spots by Total Time =========\n")
+        sw.append("[{time}:{timeMin}:{timeMax}][{count}] {type} {action} {actionDetail} {name}\n")
         List<Map> totalHotSpotList = ArtifactExecutionInfoImpl.hotSpotByTime(artifactExecutionInfoHistory, false, "-time")
         ArtifactExecutionInfoImpl.printHotSpotList(sw, totalHotSpotList)
+        logger.info(sw.toString())
 
+        sw = new StringWriter()
         sw.append("========= Consolidated Artifact List =========\n")
+        sw.append("[{time}:{thisTime}:{childrenTime}][{count}] {type} {action} {actionDetail} {name}\n")
         List<Map> consolidatedList = ArtifactExecutionInfoImpl.consolidateArtifactInfo(artifactExecutionInfoHistory)
         ArtifactExecutionInfoImpl.printArtifactInfoList(sw, consolidatedList, 0)
-
         logger.info(sw.toString())
+
     }
 
 
