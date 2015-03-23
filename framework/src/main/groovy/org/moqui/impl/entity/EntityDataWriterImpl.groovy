@@ -11,6 +11,9 @@
  */
 package org.moqui.impl.entity
 
+import groovy.json.JsonBuilder
+import org.moqui.entity.EntityValue
+
 import java.sql.Timestamp
 
 import org.apache.commons.collections.set.ListOrderedSet
@@ -30,6 +33,7 @@ class EntityDataWriterImpl implements EntityDataWriter {
 
     protected EntityFacadeImpl efi
 
+    protected EntityDataWriter.FileType fileType = XML
     protected int txTimeout = 3600
     protected ListOrderedSet entityNames = new ListOrderedSet()
     protected int dependentLevels = 0
@@ -43,6 +47,7 @@ class EntityDataWriterImpl implements EntityDataWriter {
 
     EntityFacadeImpl getEfi() { return efi }
 
+    EntityDataWriter fileType(EntityDataWriter.FileType ft) { fileType = ft; return this }
     EntityDataWriter entityName(String entityName) { entityNames.add(entityName);  return this }
     EntityDataWriter entityNames(List<String> enList) { entityNames.addAll(enList);  return this }
     EntityDataWriter dependentRecords(boolean dr) { if (dr) { dependentLevels = 2 } else { dependentLevels = 0 }; return this }
@@ -53,6 +58,7 @@ class EntityDataWriterImpl implements EntityDataWriter {
     EntityDataWriter fromDate(Timestamp fd) { fromDate = fd; return this }
     EntityDataWriter thruDate(Timestamp td) { thruDate = td; return this }
 
+    @Override
     int file(String filename) {
         File outFile = new File(filename)
         if (!outFile.createNewFile()) {
@@ -61,13 +67,19 @@ class EntityDataWriterImpl implements EntityDataWriter {
         }
 
         PrintWriter pw = new PrintWriter(outFile)
+        // NOTE: don't have to do anything different here for different file types, writer() method will handle that
         int valuesWritten = this.writer(pw)
         pw.close()
         efi.ecfi.executionContext.message.addMessage("Wrote ${valuesWritten} records to file ${filename}")
         return valuesWritten
     }
 
+    @Override
     int directory(String path) {
+        if (fileType == JSON) return directoryJson(path)
+        return directoryXml(path)
+    }
+    protected int directoryXml(String path) {
         File outDir = new File(path)
         if (!outDir.exists()) outDir.mkdir()
         if (!outDir.isDirectory()) {
@@ -132,9 +144,20 @@ class EntityDataWriterImpl implements EntityDataWriter {
         }
     }
 
+    protected int directoryJson(String path) {
+        // TODO: implement this!
+        throw new IllegalArgumentException("JSON directory writer not yet implemented")
+    }
+
+    @Override
     int writer(Writer writer) {
+        if (fileType == JSON) return writerJson(writer)
+        return writerXml(writer)
+    }
+    protected int writerXml(Writer writer) {
         if (dependentLevels) efi.createAllAutoReverseManyRelationships()
 
+        int valuesWritten = 0
         TransactionFacade tf = efi.getEcfi().getTransactionFacade()
         boolean suspendedTransaction = false
         try {
@@ -144,7 +167,6 @@ class EntityDataWriterImpl implements EntityDataWriter {
                 writer.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
                 writer.println("<entity-facade-xml>")
 
-                int valuesWritten = 0
                 for (String en in entityNames) {
                     EntityFind ef = efi.find(en).condition(filterMap).orderBy(orderByList)
                     EntityDefinition ed = efi.getEntityDefinition(en)
@@ -172,8 +194,6 @@ class EntityDataWriterImpl implements EntityDataWriter {
 
                 writer.println("</entity-facade-xml>")
                 writer.println("")
-
-                return valuesWritten
             } catch (Throwable t) {
                 logger.warn("Error writing data: " + t.toString(), t)
                 tf.rollback(beganTransaction, "Error writing data", t)
@@ -190,5 +210,68 @@ class EntityDataWriterImpl implements EntityDataWriter {
                 logger.error("Error resuming parent transaction after data write", t)
             }
         }
+
+        return valuesWritten
+    }
+
+    protected int writerJson(Writer writer) {
+        if (dependentLevels) efi.createAllAutoReverseManyRelationships()
+
+        int valuesWritten = 0
+        TransactionFacade tf = efi.getEcfi().getTransactionFacade()
+        boolean suspendedTransaction = false
+        try {
+            if (tf.isTransactionInPlace()) suspendedTransaction = tf.suspend()
+            boolean beganTransaction = tf.begin(txTimeout)
+            try {
+                writer.println("[")
+
+                for (String en in entityNames) {
+                    EntityFind ef = efi.find(en).condition(filterMap).orderBy(orderByList)
+                    EntityDefinition ed = efi.getEntityDefinition(en)
+                    if (ed.isField("lastUpdatedStamp")) {
+                        if (fromDate) ef.condition("lastUpdatedStamp", ComparisonOperator.GREATER_THAN_EQUAL_TO, fromDate)
+                        if (thruDate) ef.condition("lastUpdatedStamp", ComparisonOperator.LESS_THAN, thruDate)
+                    }
+
+                    EntityListIterator eli = ef.iterator()
+                    try {
+                        EntityValue ev
+                        while ((ev = eli.next()) != null) {
+                            Map plainMap = ev.getPlainValueMap(dependentLevels)
+                            JsonBuilder jb = new JsonBuilder()
+                            jb.call(plainMap)
+                            String jsonStr = jb.toPrettyString()
+                            writer.write(jsonStr)
+                            writer.println(",")
+
+                            // TODO: consider including dependent records in the count too... maybe write something to recursively count the nested Maps
+                            valuesWritten++
+                        }
+                    } finally {
+                        eli.close()
+                    }
+                }
+
+                writer.println("]")
+                writer.println("")
+            } catch (Throwable t) {
+                logger.warn("Error writing data: " + t.toString(), t)
+                tf.rollback(beganTransaction, "Error writing data", t)
+                efi.getEcfi().getExecutionContext().getMessage().addError(t.getMessage())
+            } finally {
+                if (beganTransaction && tf.isTransactionInPlace()) tf.commit()
+            }
+        } catch (TransactionException e) {
+            throw e
+        } finally {
+            try {
+                if (suspendedTransaction) tf.resume()
+            } catch (Throwable t) {
+                logger.error("Error resuming parent transaction after data write", t)
+            }
+        }
+
+        return valuesWritten
     }
 }

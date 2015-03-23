@@ -22,6 +22,13 @@ import java.util.Map;
  */
 public interface EntityDataWriter {
 
+    public static final FileType XML = FileType.XML;
+    public static final FileType JSON = FileType.JSON;
+
+    public enum FileType { XML, JSON }
+
+    EntityDataWriter fileType(FileType ft);
+
     /** Specify the name of an entity to query and export. Data is queried and exporting from entities in the order they
      * are added by calling this or entityNames() multiple times.
      * @param entityName The entity name
