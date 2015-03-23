@@ -28,19 +28,29 @@ This Work includes contributions authored by David E. Jones, not as a
         <actions>
             <entity-find-one entity-name="${aen}" value-field="entityValue"/>
             <script><![CDATA[
-            File outFile = new File(filename)
-            if (!outFile.createNewFile()) {
-                ec.message.addError("File ${filename} already exists.")
-            } else {
-                PrintWriter pw = new PrintWriter(outFile)
-                pw.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
-                pw.println("<entity-facade-xml>")
-                int valuesWritten = entityValue.writeXmlText(pw, null, (dependentLevels ?: '2') as int)
-                pw.println("</entity-facade-xml>")
-                pw.close()
-                ec.message.addMessage("Wrote ${valuesWritten} records to file ${filename}")
-            }
-            ]]></script>
+                import org.moqui.context.ExecutionContext
+                import org.moqui.entity.EntityDataWriter
+
+                ExecutionContext ec = context.ec
+                int valuesWritten = ec.entity.makeDataWriter().dependentLevels((dependentLevels ?: '2') as int)
+                        .fileType(fileType == 'JSON' ? EntityDataWriter.JSON : EntityDataWriter.XML)
+                        .entityName(aen).filterMap(entityValue.getPrimaryKeys()).file(filename)
+
+                /* old approach not using EntityDataWriter:
+                File outFile = new File(filename)
+                if (!outFile.createNewFile()) {
+                    ec.message.addError("File ${filename} already exists.")
+                } else {
+                    PrintWriter pw = new PrintWriter(outFile)
+                    pw.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
+                    pw.println("<entity-facade-xml>")
+                    int valuesWritten = entityValue.writeXmlText(pw, null, (dependentLevels ?: '2') as int)
+                    pw.println("</entity-facade-xml>")
+                    pw.close()
+                    ec.message.addMessage("Wrote ${valuesWritten} records to file ${filename}")
+                }
+                */
+                ]]></script>
         </actions>
         <default-response url="." parameter-map="ec.entity.getEntityDefinition(aen).getPrimaryKeys(context)"/>
     </transition>
@@ -62,11 +72,15 @@ This Work includes contributions authored by David E. Jones, not as a
         <form-single name="ExportMasterEntity" transition="export" dynamic="true">
             <auto-fields-entity entity-name="${aen}" include="pk" field-type="hidden"/>
             <field name="aen"><default-field><hidden/></default-field></field>
-            <field name="filename"><default-field><text-line size="70"/></default-field></field>
+            <field name="filename"><default-field><text-line size="60"/></default-field></field>
             <field name="dependentLevels"><default-field><text-line size="2" default-value="2"/></default-field></field>
+            <field name="fileType"><default-field>
+                <radio no-current-selected-key="XML"><option key="XML"/><option key="JSON"/></radio>
+            </default-field></field>
             <field name="submitButton"><default-field title="Export"><submit/></default-field></field>
             <field-layout><field-row-big><field-ref name="aen"/><field-ref name="filename"/>
-                <field-ref name="dependentLevels"/><field-ref name="submitButton"/></field-row-big></field-layout>
+                <field-ref name="dependentLevels"/><field-ref name="fileType"/><field-ref name="submitButton"/>
+            </field-row-big></field-layout>
         </form-single>
     </widgets>
 </screen>
