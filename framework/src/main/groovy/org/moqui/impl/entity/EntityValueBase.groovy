@@ -717,7 +717,7 @@ abstract class EntityValueBase implements EntityValue {
 
         if (doDefer) {
             for (String checkEn in edp.dependentEntities.keySet()) {
-                for (Map relInfo in edp.relationshipInfos.values()) {
+                for (EntityDefinition.RelationshipInfo relInfo in edp.relationshipInfos.values()) {
                     if (finishedRelationshipNames.contains((relInfo.title ? relInfo.title + "#" : "") + relInfo.relatedEntityName)) continue
                     if (checkEn == relInfo.relatedEntityName) continue
                     EntityDefinition.EntityDependents checkEdp = edp.dependentEntities.get(relInfo.relatedEntityName)
@@ -727,7 +727,7 @@ abstract class EntityValueBase implements EntityValue {
         }
 
         // get only dependent entity relationships
-        for (Map relInfo in edp.relationshipInfos.values()) {
+        for (EntityDefinition.RelationshipInfo relInfo in edp.relationshipInfos.values()) {
             if (deferredEntityNames.contains(relInfo.relatedEntityName)) continue
             if (finishedRelationshipNames.contains((relInfo.title ? relInfo.title + "#" : "") + relInfo.relatedEntityName)) continue
 
