@@ -756,7 +756,7 @@ abstract class EntityValueBase implements EntityValue {
     Map<String, Object> getPlainValueMap(int dependentLevels) {
         Map<String, Object> vMap = StupidUtilities.removeNullsFromMap(new HashMap(valueMap))
         EntityDefinition ed = getEntityDefinition()
-        vMap.put('_entityName', ed.getShortAlias() ?: ed.getFullEntityName())
+        vMap.put('_entity', ed.getShortAlias() ?: ed.getFullEntityName())
 
         if (dependentLevels > 0) {
             List<EntityDefinition.RelationshipInfo> relInfoList = getEntityDefinition().getRelationshipsInfo(true)
