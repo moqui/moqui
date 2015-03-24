@@ -40,6 +40,7 @@ public interface EntityDataLoader {
      */
     EntityDataLoader xmlText(String xmlText);
     EntityDataLoader csvText(String csvText);
+    EntityDataLoader jsonText(String jsonText);
 
     /** A Set of data types to match against the candidate files from the component data directories and the
      * entity-facade.load-data elements.

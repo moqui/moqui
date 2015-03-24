@@ -79,10 +79,6 @@ class EntityDataWriterImpl implements EntityDataWriter {
 
     @Override
     int directory(String path) {
-        if (fileType == JSON) return directoryJson(path)
-        return directoryXml(path)
-    }
-    protected int directoryXml(String path) {
         File outDir = new File(path)
         if (!outDir.exists()) outDir.mkdir()
         if (!outDir.isDirectory()) {
@@ -100,95 +96,13 @@ class EntityDataWriterImpl implements EntityDataWriter {
             if (tf.isTransactionInPlace()) suspendedTransaction = tf.suspend()
             boolean beganTransaction = tf.begin(txTimeout)
             try {
-                for (String en in entityNames) {
-                    String filename = "${path}/${en}.xml"
-                    File outFile = new File(filename)
-                    if (outFile.exists()) {
-                        efi.ecfi.executionContext.message.addError("File ${filename} already exists, skipping entity ${en}.")
-                        continue
-                    }
-                    outFile.createNewFile()
-
-                    PrintWriter pw = new PrintWriter(outFile)
-                    pw.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
-                    pw.println("<entity-facade-xml>")
-
-                    EntityFind ef = makeEntityFind(en)
-                    EntityListIterator eli = ef.iterator()
-                    valuesWritten += eli.writeXmlText(pw, prefix, dependentLevels)
-                    eli.close()
-
-                    pw.println("</entity-facade-xml>")
-                    pw.close()
-                    efi.ecfi.executionContext.message.addMessage("Wrote ${valuesWritten} records to file ${filename}")
+                if (fileType == JSON) {
+                    valuesWritten = directoryJson(path)
+                } else {
+                    valuesWritten = directoryXml(path)
                 }
-
-                return valuesWritten
             } catch (Throwable t) {
                 logger.warn("Error writing data", t)
-                tf.rollback(beganTransaction, "Error writing data", t)
-                efi.getEcfi().getExecutionContext().getMessage().addError(t.getMessage())
-            } finally {
-                if (beganTransaction && tf.isTransactionInPlace()) tf.commit()
-            }
-        } catch (TransactionException e) {
-            throw e
-        } finally {
-            try {
-                if (suspendedTransaction) tf.resume()
-            } catch (Throwable t) {
-                logger.error("Error resuming parent transaction after data write", t)
-            }
-        }
-    }
-
-    protected int directoryJson(String path) {
-        // TODO: implement this!
-        throw new IllegalArgumentException("JSON directory writer not yet implemented")
-    }
-
-    @Override
-    int writer(Writer writer) {
-        if (fileType == JSON) return writerJson(writer)
-        return writerXml(writer)
-    }
-    protected int writerXml(Writer writer) {
-        if (dependentLevels) efi.createAllAutoReverseManyRelationships()
-
-        int valuesWritten = 0
-        TransactionFacade tf = efi.getEcfi().getTransactionFacade()
-        boolean suspendedTransaction = false
-        try {
-            if (tf.isTransactionInPlace()) suspendedTransaction = tf.suspend()
-            boolean beganTransaction = tf.begin(txTimeout)
-            try {
-                writer.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
-                writer.println("<entity-facade-xml>")
-
-                for (String en in entityNames) {
-                    EntityFind ef = makeEntityFind(en)
-
-                    /* leaving commented as might be useful for future con pool debugging:
-                    try {
-                        def dataSource = efi.getDatasourceFactory(efi.getEntityGroupName(ed)).getDataSource()
-                        logger.warn("=========== edwi pool available size: ${dataSource.poolAvailableSize()}/${dataSource.poolTotalSize()}; ${dataSource.getMinPoolSize()}-${dataSource.getMaxPoolSize()}")
-                    } catch (Throwable t) {
-                        logger.warn("========= pool size error ${t.toString()}")
-                    }
-                    */
-
-                    EntityListIterator eli = ef.iterator()
-                    try {
-                        valuesWritten += eli.writeXmlText(writer, prefix, dependentLevels)
-                    } finally {
-                        eli.close()
-                    }
-                }
-
-                writer.println("</entity-facade-xml>")
-                writer.println("")
-            } catch (Throwable t) {
-                logger.warn("Error writing data: " + t.toString(), t)
                 tf.rollback(beganTransaction, "Error writing data", t)
                 efi.getEcfi().getExecutionContext().getMessage().addError(t.getMessage())
             } finally {
@@ -206,42 +120,100 @@ class EntityDataWriterImpl implements EntityDataWriter {
 
         return valuesWritten
     }
+    protected int directoryXml(String path) {
+        int valuesWritten = 0
 
-    protected int writerJson(Writer writer) {
+        for (String en in entityNames) {
+            String filename = "${path}/${en}.xml"
+            File outFile = new File(filename)
+            if (outFile.exists()) {
+                efi.ecfi.executionContext.message.addError("File ${filename} already exists, skipping entity ${en}.")
+                continue
+            }
+            outFile.createNewFile()
+
+            PrintWriter pw = new PrintWriter(outFile)
+            pw.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
+            pw.println("<entity-facade-xml>")
+
+            EntityFind ef = makeEntityFind(en)
+            EntityListIterator eli = ef.iterator()
+            int curValuesWritten = 0
+            try {
+                curValuesWritten = eli.writeXmlText(pw, prefix, dependentLevels)
+            } finally {
+                eli.close()
+            }
+
+            pw.println("</entity-facade-xml>")
+            pw.close()
+            efi.ecfi.executionContext.message.addMessage("Wrote ${curValuesWritten} records to file ${filename}")
+
+            valuesWritten += curValuesWritten
+        }
+
+        return valuesWritten
+    }
+    protected int directoryJson(String path) {
+        int valuesWritten = 0
+
+        for (String en in entityNames) {
+            String filename = "${path}/${en}.json"
+            File outFile = new File(filename)
+            if (outFile.exists()) {
+                efi.ecfi.executionContext.message.addError("File ${filename} already exists, skipping entity ${en}.")
+                continue
+            }
+            outFile.createNewFile()
+
+            PrintWriter pw = new PrintWriter(outFile)
+            pw.println("[")
+
+            EntityFind ef = makeEntityFind(en)
+            EntityListIterator eli = ef.iterator()
+
+            int curValuesWritten = 0
+            try {
+                EntityValue ev
+                while ((ev = eli.next()) != null) {
+                    Map plainMap = ev.getPlainValueMap(dependentLevels)
+                    JsonBuilder jb = new JsonBuilder()
+                    jb.call(plainMap)
+                    String jsonStr = jb.toPrettyString()
+                    pw.write(jsonStr)
+                    pw.println(",")
+
+                    // TODO: consider including dependent records in the count too... maybe write something to recursively count the nested Maps
+                    curValuesWritten++
+                }
+            } finally {
+                eli.close()
+            }
+
+            pw.println("]")
+            pw.println("")
+
+            pw.close()
+            efi.ecfi.executionContext.message.addMessage("Wrote ${curValuesWritten} records to file ${filename}")
+
+            valuesWritten += curValuesWritten
+        }
+
+        return valuesWritten
+    }
+
+    @Override
+    int writer(Writer writer) {
         if (dependentLevels) efi.createAllAutoReverseManyRelationships()
 
-        int valuesWritten = 0
         TransactionFacade tf = efi.getEcfi().getTransactionFacade()
         boolean suspendedTransaction = false
         try {
             if (tf.isTransactionInPlace()) suspendedTransaction = tf.suspend()
             boolean beganTransaction = tf.begin(txTimeout)
             try {
-                writer.println("[")
-
-                for (String en in entityNames) {
-                    EntityFind ef = makeEntityFind(en)
-                    EntityListIterator eli = ef.iterator()
-                    try {
-                        EntityValue ev
-                        while ((ev = eli.next()) != null) {
-                            Map plainMap = ev.getPlainValueMap(dependentLevels)
-                            JsonBuilder jb = new JsonBuilder()
-                            jb.call(plainMap)
-                            String jsonStr = jb.toPrettyString()
-                            writer.write(jsonStr)
-                            writer.println(",")
-
-                            // TODO: consider including dependent records in the count too... maybe write something to recursively count the nested Maps
-                            valuesWritten++
-                        }
-                    } finally {
-                        eli.close()
-                    }
-                }
-
-                writer.println("]")
-                writer.println("")
+                if (fileType == JSON) return writerJson(writer)
+                return writerXml(writer)
             } catch (Throwable t) {
                 logger.warn("Error writing data: " + t.toString(), t)
                 tf.rollback(beganTransaction, "Error writing data", t)
@@ -258,6 +230,67 @@ class EntityDataWriterImpl implements EntityDataWriter {
                 logger.error("Error resuming parent transaction after data write", t)
             }
         }
+    }
+    protected int writerXml(Writer writer) {
+        int valuesWritten = 0
+
+        writer.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
+        writer.println("<entity-facade-xml>")
+
+        for (String en in entityNames) {
+            EntityFind ef = makeEntityFind(en)
+
+            /* leaving commented as might be useful for future con pool debugging:
+            try {
+                def dataSource = efi.getDatasourceFactory(efi.getEntityGroupName(ed)).getDataSource()
+                logger.warn("=========== edwi pool available size: ${dataSource.poolAvailableSize()}/${dataSource.poolTotalSize()}; ${dataSource.getMinPoolSize()}-${dataSource.getMaxPoolSize()}")
+            } catch (Throwable t) {
+                logger.warn("========= pool size error ${t.toString()}")
+            }
+            */
+
+            EntityListIterator eli = ef.iterator()
+            try {
+                valuesWritten += eli.writeXmlText(writer, prefix, dependentLevels)
+            } finally {
+                eli.close()
+            }
+        }
+
+        writer.println("</entity-facade-xml>")
+        writer.println("")
+
+        return valuesWritten
+    }
+
+    protected int writerJson(Writer writer) {
+        int valuesWritten = 0
+
+        writer.println("[")
+
+        for (String en in entityNames) {
+            EntityFind ef = makeEntityFind(en)
+            EntityListIterator eli = ef.iterator()
+            try {
+                EntityValue ev
+                while ((ev = eli.next()) != null) {
+                    Map plainMap = ev.getPlainValueMap(dependentLevels)
+                    JsonBuilder jb = new JsonBuilder()
+                    jb.call(plainMap)
+                    String jsonStr = jb.toPrettyString()
+                    writer.write(jsonStr)
+                    writer.println(",")
+
+                    // TODO: consider including dependent records in the count too... maybe write something to recursively count the nested Maps
+                    valuesWritten++
+                }
+            } finally {
+                eli.close()
+            }
+        }
+
+        writer.println("]")
+        writer.println("")
 
         return valuesWritten
     }

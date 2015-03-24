@@ -25,6 +25,9 @@ This Work includes contributions authored by David E. Jones, not as a
                 } else if (context.location) {
                     edl.location(context.location)
                     source = context.location
+                } else if (context.jsonText) {
+                    edl.jsonText(context.jsonText)
+                    source = "JSON Text Box"
                 } else if (context.xmlText) {
                     edl.xmlText(context.xmlText)
                     source = "XML Text Box"
@@ -61,6 +64,9 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="xmlText"><default-field title="Text">
                 <text-area rows="10" cols="80" default-value="&lt;entity-facade-xml&gt;\n&lt;/entity-facade-xml&gt;"/>
             </default-field></field>
+            <field name="jsonText"><default-field title="Text">
+                <text-area rows="10" cols="80" default-value=""/>
+            </default-field></field>
 
             <field name="submitButton"><default-field title="Import"><submit/></default-field></field>
 
@@ -71,6 +77,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <field-group title="Data Types, Comma Separated (from entity-facade-xml.@type)"><field-ref name="types"/></field-group>
                 <field-group title="Resource Location"><field-ref name="location"/></field-group>
                 <field-group title="XML Text"><field-ref name="xmlText"/></field-group>
+                <field-group title="JSON Text"><field-ref name="jsonText"/></field-group>
 
                 <field-ref name="submitButton"/>
             </field-layout>

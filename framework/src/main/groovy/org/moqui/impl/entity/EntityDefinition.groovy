@@ -65,23 +65,24 @@ public class EntityDefinition {
 
     EntityDefinition(EntityFacadeImpl efi, Node entityNode) {
         this.efi = efi
-        this.internalEntityName = (entityNode."@entity-name").intern()
-        this.fullEntityName = (entityNode."@package-name" + "." + this.internalEntityName).intern()
-        this.shortAlias = entityNode."@short-alias" ?: null
-        this.internalEntityNode = entityNode
+        // copy the entityNode because we may be modifying it
+        this.internalEntityNode = StupidUtilities.deepCopyNode(entityNode)
+        this.internalEntityName = (internalEntityNode."@entity-name").intern()
+        this.fullEntityName = (internalEntityNode."@package-name" + "." + this.internalEntityName).intern()
+        this.shortAlias = internalEntityNode."@short-alias" ?: null
 
         if (isViewEntity()) {
             // get group-name, etc from member-entity
-            for (Node memberEntity in entityNode."member-entity") {
+            for (Node memberEntity in internalEntityNode."member-entity") {
                 EntityDefinition memberEd = this.efi.getEntityDefinition((String) memberEntity."@entity-name")
                 Node memberEntityNode = memberEd.getEntityNode()
-                if (memberEntityNode."@group-name") entityNode.attributes().put("group-name", memberEntityNode."@group-name")
+                if (memberEntityNode."@group-name") internalEntityNode.attributes().put("group-name", memberEntityNode."@group-name")
             }
             // if this is a view-entity, expand the alias-all elements into alias elements here
             this.expandAliasAlls()
             // set @type, set is-pk on all alias Nodes if the related field is-pk
-            for (Node aliasNode in entityNode."alias") {
-                Node memberEntity = (Node) entityNode."member-entity".find({ it."@entity-alias" == aliasNode."@entity-alias" })
+            for (Node aliasNode in internalEntityNode."alias") {
+                Node memberEntity = (Node) internalEntityNode."member-entity".find({ it."@entity-alias" == aliasNode."@entity-alias" })
                 if (memberEntity == null) {
                     if (aliasNode."complex-alias") {
                         continue
@@ -96,12 +97,19 @@ public class EntityDefinition {
                 aliasNode.attributes().put("type", fieldNode.attributes().get("type"))
                 if (fieldNode."@is-pk" == "true") aliasNode."@is-pk" = "true"
             }
+            for (Node aliasNode in internalEntityNode."alias") {
+                fieldNodeMap.put((String) aliasNode."@name", aliasNode)
+            }
         } else {
             if (internalEntityNode."@no-update-stamp" != "true") {
                 // automatically add the lastUpdatedStamp field
                 internalEntityNode.appendNode("field", [name:"lastUpdatedStamp", type:"date-time"])
             }
             if (internalEntityNode."@allow-user-field" == "true") allowUserField = true
+
+            for (Node fieldNode in this.internalEntityNode.field) {
+                fieldNodeMap.put((String) fieldNode."@name", fieldNode)
+            }
         }
     }
 
@@ -172,11 +180,8 @@ public class EntityDefinition {
     Node getFieldNode(String fieldName) {
         Node fn = fieldNodeMap.get(fieldName)
         if (fn != null) return fn
-        String nodeName = this.isViewEntity() ? "alias" : "field"
-        fn = (Node) this.internalEntityNode[nodeName].find({ it.@name == fieldName })
-        fieldNodeMap.put(fieldName, fn)
 
-        if (fn == null && allowUserField && !this.isViewEntity() && !fieldName.contains('.')) {
+        if (allowUserField && !this.isViewEntity() && !fieldName.contains('.')) {
             // if fieldName has a dot it is likely a relationship name, so don't look for UserField
 
             boolean alreadyDisabled = efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz()
