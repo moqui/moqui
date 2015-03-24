@@ -44,6 +44,9 @@ New Features:
     and dependent entity handling
   - Added EntityDetail screen in the Tools app with info about entity and
     related entities
+  - EntityDataLoader and EntityDataWriter, along with the DataImport and
+    DataExport screens in the Tools app, now support JSON files including
+    embedded related records just like the REST interface
 
 Bug Fixes:
 
