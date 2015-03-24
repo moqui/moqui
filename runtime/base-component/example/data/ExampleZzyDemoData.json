@@ -1,0 +1,19 @@
+[
+  { "_dataType": "demo" },
+  {
+    "_entity": "examples",
+    "exampleName": "Test Example from JSON File", "description": "Yet another test description",
+    "exampleTypeEnumId": "EXT_MADE_UP", "statusId": "EXST_IN_DESIGN",
+    "exampleEmail": "example1@test.com", "exampleSize": 123,
+    "exampleDate": "2014-01-01T18:00:00+0000", "testTime": "12:00:00", "testDate": "2014-01-01",
+    "items" : [ { "description": "JSON test 1 item 1" }, { "description": "JSON test 1 item 2", "amount": 200 } ]
+  },
+  {
+    "_entity": "examples",
+    "exampleName": "Test Example 2 from JSON File",
+    "exampleTypeEnumId": "EXT_MADE_UP", "statusId": "EXST_IN_DESIGN",
+    "exampleEmail": "example1@test.com", "exampleSize": 234,
+    "exampleDate": "1265184000000", "testTime": "18:00:00", "testDate": "2015-02-02",
+    "items" : [ { "description": "JSON test 2 item 1" }, { "description": "JSON test 2 item 2", "amount": 400 } ]
+  }
+]
