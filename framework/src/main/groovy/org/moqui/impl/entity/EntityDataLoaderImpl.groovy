@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.entity
 
+import groovy.json.JsonSlurper
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVParser
 import org.apache.commons.csv.CSVRecord
@@ -52,6 +53,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
     List<String> locationList = new LinkedList<String>()
     String xmlText = null
     String csvText = null
+    String jsonText = null
     Set<String> dataTypes = new HashSet<String>()
 
     int transactionTimeout = 600
@@ -79,6 +81,8 @@ class EntityDataLoaderImpl implements EntityDataLoader {
     @Override
     EntityDataLoader csvText(String csvText) { this.csvText = csvText; return this }
     @Override
+    EntityDataLoader jsonText(String jsonText) { this.jsonText = jsonText; return this }
+    @Override
     EntityDataLoader dataTypes(Set<String> dataTypes) {
         for (String dt in dataTypes) this.dataTypes.add(dt.trim())
         return this
@@ -104,8 +108,9 @@ class EntityDataLoaderImpl implements EntityDataLoader {
         CheckValueHandler cvh = new CheckValueHandler(this)
         EntityXmlHandler exh = new EntityXmlHandler(this, cvh)
         EntityCsvHandler ech = new EntityCsvHandler(this, cvh)
+        EntityJsonHandler ejh = new EntityJsonHandler(this, cvh)
 
-        internalRun(exh, ech)
+        internalRun(exh, ech, ejh)
         return cvh.getMessageList()
     }
 
@@ -113,26 +118,28 @@ class EntityDataLoaderImpl implements EntityDataLoader {
         LoadValueHandler lvh = new LoadValueHandler(this)
         EntityXmlHandler exh = new EntityXmlHandler(this, lvh)
         EntityCsvHandler ech = new EntityCsvHandler(this, lvh)
+        EntityJsonHandler ejh = new EntityJsonHandler(this, lvh)
 
-        internalRun(exh, ech)
-        return exh.getValuesRead() + ech.getValuesRead()
+        internalRun(exh, ech, ejh)
+        return exh.getValuesRead() + ech.getValuesRead() + ejh.getValuesRead()
     }
 
     EntityList list() {
         ListValueHandler lvh = new ListValueHandler(this)
         EntityXmlHandler exh = new EntityXmlHandler(this, lvh)
         EntityCsvHandler ech = new EntityCsvHandler(this, lvh)
+        EntityJsonHandler ejh = new EntityJsonHandler(this, lvh)
 
-        internalRun(exh, ech)
+        internalRun(exh, ech, ejh)
         return lvh.entityList
     }
 
-    void internalRun(EntityXmlHandler exh, EntityCsvHandler ech) {
+    void internalRun(EntityXmlHandler exh, EntityCsvHandler ech, EntityJsonHandler ejh) {
         boolean reenableEeca = false
         if (this.disableEeca) reenableEeca = !this.efi.ecfi.eci.artifactExecution.disableEntityEca()
 
         // if no xmlText or locations, so find all of the component and entity-facade files
-        if (!this.xmlText && !this.csvText && !this.locationList) {
+        if (!this.xmlText && !this.csvText && !this.jsonText && !this.locationList) {
             // if we're loading seed type data, add entity def files to the list of locations to load
             if (!dataTypes || dataTypes.contains("seed")) {
                 for (ResourceReference entityRr in efi.getAllEntityFileLocations())
@@ -152,7 +159,8 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                     // get all files in the directory
                     TreeMap<String, ResourceReference> dataDirEntries = new TreeMap<String, ResourceReference>()
                     for (ResourceReference dataRr in dataDirRr.directoryEntries) {
-                        if (!dataRr.isFile() || (!dataRr.location.endsWith(".xml") && !dataRr.location.endsWith(".csv"))) continue
+                        if (!dataRr.isFile() || (!dataRr.location.endsWith(".xml") && !dataRr.location.endsWith(".csv")
+                                && !dataRr.location.endsWith(".json"))) continue
                         dataDirEntries.put(dataRr.getFileName(), dataRr)
                     }
                     for (Map.Entry<String, ResourceReference> dataDirEntry in dataDirEntries) {
@@ -206,9 +214,24 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                 }
             }
 
+            // load the CSV text in its own transaction
+            if (this.jsonText) {
+                boolean beganTransaction = tf.begin(transactionTimeout)
+                InputStream jsonInputStream = new ByteArrayInputStream(jsonText.getBytes("UTF-8"))
+                try {
+                    ejh.loadFile("csvText", jsonInputStream)
+                } catch (Throwable t) {
+                    tf.rollback(beganTransaction, "Error loading JSON entity data", t)
+                    throw t
+                } finally {
+                    if (jsonInputStream != null) jsonInputStream.close()
+                    if (beganTransaction && tf.isTransactionInPlace()) tf.commit()
+                }
+            }
+
             // load each file in its own transaction
             for (String location in this.locationList) {
-                loadSingleFile(location, exh, ech)
+                loadSingleFile(location, exh, ech, ejh)
             }
         } catch (TransactionException e) {
             throw e
@@ -219,7 +242,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
         if (reenableEeca) this.efi.ecfi.eci.artifactExecution.enableEntityEca()
     }
 
-    void loadSingleFile(String location, EntityXmlHandler exh, EntityCsvHandler ech) {
+    void loadSingleFile(String location, EntityXmlHandler exh, EntityCsvHandler ech, EntityJsonHandler ejh) {
         TransactionFacade tf = efi.ecfi.transactionFacade
         boolean beganTransaction = tf.begin(transactionTimeout)
         try {
@@ -242,8 +265,12 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                     if (ech.loadFile(location, inputStream)) {
                         logger.info("Loaded ${(ech.valuesRead?:0) - beforeRecords} records from [${location}] in ${((System.currentTimeMillis() - beforeTime)/1000)} seconds")
                     }
+                } else if (location.endsWith(".json")) {
+                    long beforeRecords = ejh.valuesRead ?: 0
+                    if (ejh.loadFile(location, inputStream)) {
+                        logger.info("Loaded ${(ejh.valuesRead?:0) - beforeRecords} records from [${location}] in ${((System.currentTimeMillis() - beforeTime)/1000)} seconds")
+                    }
                 }
-
             } catch (TypeToSkipException e) {
                 // nothing to do, this just stops the parsing when we know the file is not in the types we want
             } finally {
@@ -267,6 +294,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
         protected EntityDataLoaderImpl edli
         ValueHandler(EntityDataLoaderImpl edli) { this.edli = edli }
         abstract void handleValue(EntityValue value)
+        abstract void handlePlainMap(String entityName, Map value)
         abstract void handleService(ServiceCallSync scs)
     }
     static class CheckValueHandler extends ValueHandler {
@@ -274,10 +302,18 @@ class EntityDataLoaderImpl implements EntityDataLoader {
         CheckValueHandler(EntityDataLoaderImpl edli) { super(edli) }
         List<String> getMessageList() { return messageList }
         void handleValue(EntityValue value) { value.checkAgainstDatabase(messageList) }
-        void handleService(ServiceCallSync scs) { messageList.add("Not calling service [${scs.getServiceName()}] with parameters ${scs.getCurrentParameters()}") }
+        void handlePlainMap(String entityName, Map value) {
+            EntityList el = edli.getEfi().getValueListFromPlainMap(value, entityName)
+            for (EntityValue ev in el) ev.checkAgainstDatabase(messageList)
+        }
+        void handleService(ServiceCallSync scs) { messageList.add("Doing check only so not calling service [${scs.getServiceName()}] with parameters ${scs.getCurrentParameters()}") }
     }
     static class LoadValueHandler extends ValueHandler {
-        LoadValueHandler(EntityDataLoaderImpl edli) { super(edli) }
+        protected ServiceFacadeImpl sfi
+        LoadValueHandler(EntityDataLoaderImpl edli) {
+            super(edli)
+            sfi = edli.getEfi().getEcfi().getServiceFacade()
+        }
         void handleValue(EntityValue value) {
             if (edli.dummyFks) value.checkFks(true)
             if (edli.useTryInsert) {
@@ -292,18 +328,26 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                 value.createOrUpdate()
             }
         }
+        void handlePlainMap(String entityName, Map value) {
+            Map results = sfi.sync().name('store', entityName).parameters(value).call()
+            if (logger.isInfoEnabled()) logger.info("Called store service for entity [${entityName}] in data load, results: ${results}")
+        }
         void handleService(ServiceCallSync scs) {
             Map results = scs.call()
-            logger.info("Called service [${scs.getServiceName()}] in data load, results: ${results}")
+            if (logger.isInfoEnabled()) logger.info("Called service [${scs.getServiceName()}] in data load, results: ${results}")
         }
     }
     static class ListValueHandler extends ValueHandler {
         protected EntityList el
         ListValueHandler(EntityDataLoaderImpl edli) { super(edli); el = new EntityListImpl(edli.efi) }
+        EntityList getEntityList() { return el }
         void handleValue(EntityValue value) {
             el.add(value)
         }
-        EntityList getEntityList() { return el }
+        void handlePlainMap(String entityName, Map value) {
+            EntityDefinition ed = edli.getEfi().getEntityDefinition(entityName)
+            edli.getEfi().addValuesFromPlainMapRecursive(ed, value, el)
+        }
         void handleService(ServiceCallSync scs) { logger.warn("For load to EntityList not calling service [${scs.getServiceName()}] with parameters ${scs.getCurrentParameters()}") }
     }
 
@@ -561,6 +605,89 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                     valuesRead++
                 }
             }
+            return true
+        }
+    }
+
+    static class EntityJsonHandler {
+        protected EntityDataLoaderImpl edli
+        protected ValueHandler valueHandler
+
+        protected long valuesRead = 0
+        protected List<String> messageList = new LinkedList()
+
+        EntityJsonHandler(EntityDataLoaderImpl edli, ValueHandler valueHandler) {
+            this.edli = edli
+            this.valueHandler = valueHandler
+        }
+
+        ValueHandler getValueHandler() { return valueHandler }
+        long getValuesRead() { return valuesRead }
+        List<String> getMessageList() { return messageList }
+
+        boolean loadFile(String location, InputStream is) {
+            JsonSlurper slurper = new JsonSlurper()
+            Object jsonObj
+            try {
+                jsonObj = slurper.parse(new BufferedReader(new InputStreamReader(is, "UTF-8")))
+            } catch (Throwable t) {
+                String errMsg = "Error parsing HTTP request body JSON: ${t.toString()}"
+                logger.error(errMsg, t)
+                throw new BaseException(errMsg, t)
+            }
+
+            String type = null
+            List valueList
+            if (jsonObj instanceof Map) {
+                type = jsonObj."_dataType"
+                valueList = [jsonObj]
+            } else if (jsonObj instanceof List) {
+                valueList = jsonObj
+                Object firstValue = valueList?.get(0)
+                if (firstValue instanceof Map) {
+                    if (firstValue."_dataType") {
+                        type = firstValue."_dataType"
+                        valueList.remove(0)
+                    }
+                }
+            } else {
+                throw new BaseException("Root JSON field was not a Map/object or List/array, type is ${jsonObj.getClass().getName()}")
+            }
+
+            if (type && edli.dataTypes && !edli.dataTypes.contains(type)) {
+                if (logger.isInfoEnabled()) logger.info("Skipping file [${location}], is a type to skip (${type})")
+                return false
+            }
+
+            for (Object valueObj in valueList) {
+                if (!(valueObj instanceof Map)) {
+                    logger.warn("Found non-Map object in JSON import, skipping: ${valueObj}")
+                    continue
+                }
+
+                Map value = (Map) valueObj
+
+                String entityName = value."_entity"
+                boolean isService
+                if (edli.efi.isEntityDefined(entityName)) {
+                    isService = false
+                } else if (edli.sfi.isServiceDefined(entityName)) {
+                    isService = true
+                } else {
+                    throw new BaseException("JSON _entity value [${entityName}] is not a valid entity name or service name")
+                }
+
+                if (isService) {
+                    ServiceCallSyncImpl currentScs = (ServiceCallSyncImpl) edli.sfi.sync().name(entityName).parameters(value)
+                    valueHandler.handleService(currentScs)
+                    valuesRead++
+                } else {
+                    valueHandler.handlePlainMap(entityName, value)
+                    // TODO: make this more complete, like counting nested Maps?
+                    valuesRead++
+                }
+            }
+
             return true
         }
     }

@@ -911,6 +911,56 @@ class EntityFacadeImpl implements EntityFacade {
         }
     }
 
+    EntityList getValueListFromPlainMap(Map value, String entityName) {
+        if (!entityName) entityName = value."_entity"
+        if (!entityName) throw new EntityException("No entityName passed and no _entity field in value Map")
+
+        EntityDefinition ed = getEntityDefinition(entityName)
+        if (ed == null) throw new EntityNotFoundException("Not entity found with name ${entityName}")
+
+        EntityList valueList = new EntityListImpl(this)
+        addValuesFromPlainMapRecursive(ed, value, valueList)
+        return valueList
+    }
+    void addValuesFromPlainMapRecursive(EntityDefinition ed, Map value, EntityList valueList) {
+        EntityValue newEntityValue = makeValue(ed.getFullEntityName())
+
+        newEntityValue.setFields(value, true, null, null)
+
+        Map pkMap = newEntityValue.getPrimaryKeys()
+
+        // check parameters Map for relationships
+        for (EntityDefinition.RelationshipInfo relInfo in ed.getRelationshipsInfo(false)) {
+            Object relParmObj = value.get(relInfo.shortAlias)
+            String relKey = null
+            if (relParmObj) {
+                relKey = relInfo.shortAlias
+            } else {
+                relParmObj = value.get(relInfo.relationshipName)
+                if (relParmObj) relKey = relInfo.relationshipName
+            }
+            if (relParmObj) {
+                if (relParmObj instanceof Map) {
+                    // add in all of the main entity's primary key fields, this is necessary for auto-generated, and to
+                    //     allow them to be left out of related records
+                    relParmObj.putAll(pkMap)
+                    getValuesFromPlainMapRecursive(relInfo.relatedEd, relParmObj, valueList)
+                } else if (relParmObj instanceof List) {
+                    List relResultList = []
+                    for (Object relParmEntry in relParmObj) {
+                        if (relParmEntry instanceof Map) {
+                            relParmEntry.putAll(pkMap)
+                            getValuesFromPlainMapRecursive(relInfo.relatedEd, relParmEntry, valueList)
+                        } else {
+                            logger.warn("In entity auto create for entity ${ed.getFullEntityName()} found list for relationship ${relKey} with a non-Map entry: ${relParmEntry}")
+                        }
+
+                    }
+                }
+            }
+        }
+    }
+
 
     @Override
     EntityListIterator sqlFind(String sql, List<Object> sqlParameterList, String entityName, List<String> fieldList) {
