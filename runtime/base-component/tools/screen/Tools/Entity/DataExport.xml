@@ -68,7 +68,6 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="fromDate"><default-field><date-time/></default-field></field>
             <field name="thruDate"><default-field><date-time/></default-field></field>
 
-            <field name="path"><default-field><text-line size="80"/></default-field></field>
             <field name="filterMap"><default-field><text-line size="80" default-value="[:]"/></default-field></field>
             <field name="orderBy"><default-field><text-line size="80"/></default-field></field>
             <field name="fileType"><default-field>
@@ -81,6 +80,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     <option key="browser" text="Out to Browser"/>
                 </radio></default-field>
             </field>
+            <field name="path"><default-field><text-line size="80"/></default-field></field>
 
             <field name="submitButton"><default-field title="Export"><submit/></default-field></field>
         </form-single>
