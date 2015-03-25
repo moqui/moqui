@@ -309,6 +309,11 @@ public class EntityDefinition {
         return eKeyMap
     }
 
+    RelationshipInfo getRelationshipInfo(String relationshipName) {
+        if (!relationshipName) return null
+        return getRelationshipInfoMap().get(relationshipName)
+    }
+
     Map<String, RelationshipInfo> getRelationshipInfoMap() {
         if (relationshipInfoMap != null) return relationshipInfoMap
         relationshipInfoMap = new HashMap<String, RelationshipInfo>()
