@@ -33,6 +33,6 @@ This Work includes contributions authored by David E. Jones, not as a
         <label text="Flattened Map" type="h4"/>
         <label text="${flattenedDocumentMap}" encode="true"/>
         <label text="Document JSON" type="h4"/>
-        <label text="${documentString}" encode="true" type="pre"/>
+        <label text="${documentString}" encode="true" type="pre" style="pre-plain"/>
     </widgets>
 </screen>
