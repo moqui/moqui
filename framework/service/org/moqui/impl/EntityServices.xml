@@ -43,7 +43,7 @@ This Work includes contributions authored by David E. Jones, not as a
             documentVersionList = []
             originalDocumentList = getOriginalDocuments ? [] : null
             for (Map document in documentList) {
-                // logger.warn("====== indexing document: ${document}")
+                // logger.warn("====== Indexing document: ${document}")
 
                 if (getOriginalDocuments) {
                     // this may fail for a number of reasons, like index doesn't exist yet, so catch the exception
@@ -67,6 +67,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
                 documentVersionList.add(response.getVersion())
                 if (logger.isTraceEnabled()) logger.trace("Indexed [${document._index}, ${document._type}, ${document._id}] version [${response.getVersion()}]")
+                // logger.warn("====== Indexed [${document._index}, ${document._type}, ${document._id}] version [${response.getVersion()}] created? ${response.isCreated()}}")
             }
             </script>
         </actions>
