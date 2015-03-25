@@ -11,6 +11,7 @@ TODO
 
 New Features:
 
+- Updated Elasticsearch to 1.5.0, Apache Lucene to 4.10.4
 - More consistent handling of empty in service, entity, and screen when we
   don't want the Groovy definition of empty (ie don't consider 0 numbers
   or false boolean to be empty)
