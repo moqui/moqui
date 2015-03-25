@@ -27,6 +27,9 @@ New Features:
     when a DataDocument indexed with ElasticSearch is first used (by index
     or search) with types for numbers, dates, etc needed for analytics and
     also not_analyzed set for all id* type entity fields
+  - In DataDocument the fields on the primary entity are no longer in a
+    Map/object but rather are in the root of the document, simpler and more
+    consistent with the structure used elsewhere
   - Added EntityServices.search#CountBySource service to do analytics
     searches using ElasticSearch; there is a real-world example of the use
     of this service in Mantle for current and projected inventory data
