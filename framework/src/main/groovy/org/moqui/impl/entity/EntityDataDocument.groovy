@@ -215,11 +215,12 @@ class EntityDataDocument {
                 if (docMap == null) {
                     // add special entries
                     docMap = [_type:dataDocumentId, _id:docId]
-                    docMap.put("_timestamp", efi.ecfi.getL10nFacade().format(
+                    docMap.put('_timestamp', efi.ecfi.getL10nFacade().format(
                             thruUpdatedStamp ?: new Timestamp(System.currentTimeMillis()), "yyyy-MM-dd'T'HH:mm:ssZ"))
                     String _index = efi.getEcfi().getExecutionContext().getTenantId()
                     if (dataDocument.indexName) _index = _index + "__" + dataDocument.indexName
-                    docMap.put("_index", _index.toLowerCase())
+                    docMap.put('_index', _index.toLowerCase())
+                    docMap.put('_entity', primaryEd.getShortAlias() ?: primaryEd.getFullEntityName())
 
                     // add Map for primary entity
                     Map primaryEntityMap = [:]
@@ -459,7 +460,7 @@ class EntityDataDocument {
         // String primaryEntityAlias = relationshipAliasMap.get(primaryEntityName) ?: primaryEntityName
         EntityDefinition primaryEd = efi.getEntityDefinition(primaryEntityName)
 
-        Map rootProperties = [:]
+        Map rootProperties = [_entity:[type:'string', index:'not_analyzed']]
         Map mappingMap = [properties:rootProperties]
 
         List<String> remainingPkFields = new ArrayList(primaryEd.getPkFieldNames())
