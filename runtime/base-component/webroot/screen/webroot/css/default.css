@@ -31,6 +31,8 @@ pre.pre-plain { white-space: pre; }
 p { margin: 0 0 8px 0; line-height: 16px; }
 a { white-space: normal; }
 label { white-space: normal; }
+.padding-top-8 { padding-top: 8px; }
+.padding-top-16 { padding-top: 16px; }
 
 form { display: inline; }
 
