@@ -148,8 +148,8 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
                 long newTotal = 0
                 long newMax = 0
                 for (long time in newTimes) { newTotal += time; if (time > newMax) newMax = time }
-                BigDecimal newAvg = newTotal / newTimes.size()
-                long newTimeAvg = newAvg.setScale(2, BigDecimal.ROUND_HALF_UP)
+                BigDecimal newAvg = ((newTotal / newTimes.size()) as BigDecimal).setScale(2, BigDecimal.ROUND_HALF_UP)
+                long newTimeAvg = newAvg.setScale(0, BigDecimal.ROUND_HALF_UP)
                 newTotal += newTimeAvg * knockOutCount
                 val.time = newTotal
                 val.timeMax = newMax
@@ -176,15 +176,16 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
             val.time = val.time + curTime
             val.timeMin = val.timeMin > curTime ? curTime : val.timeMin
             val.timeMax = val.timeMax > curTime ? val.timeMax : curTime
-            val.timeAvg = val.time / val.count
+            val.timeAvg = ((val.time / val.count) as BigDecimal).setScale(2, BigDecimal.ROUND_HALF_UP)
         }
         for (ArtifactExecutionInfoImpl aeii in childList) aeii.addToMapByTime(timeByArtifact, ownTime)
     }
     static void printHotSpotList(Writer writer, List<Map> infoList) {
-        // "[${time}:${timeMin}:${timeMax}][${count}] ${type} ${action} ${actionDetail} ${name}"
+        // "[${time}:${timeMin}:${timeAvg}:${timeMax}][${count}] ${type} ${action} ${actionDetail} ${name}"
         for (Map info in infoList) {
             writer.append('[').append(StupidUtilities.paddedString(info.time as String, 5, false)).append(':')
             writer.append(StupidUtilities.paddedString(info.timeMin as String, 3, false)).append(':')
+            writer.append(StupidUtilities.paddedString(info.timeAvg as String, 5, false)).append(':')
             writer.append(StupidUtilities.paddedString(info.timeMax as String, 3, false)).append(']')
             writer.append('[').append(StupidUtilities.paddedString(info.count as String, 3, false)).append('] ')
             writer.append(StupidUtilities.paddedString((String) info.type, 10, true)).append(' ')
