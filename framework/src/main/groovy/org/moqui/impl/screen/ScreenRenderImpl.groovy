@@ -1066,7 +1066,7 @@ class ScreenRenderImpl implements ScreenRender {
                 // use some Groovy goodness to get an object property, only do if this is NOT a Map (that is handled by
                 //     putting all Map entries in the context for each row)
                 Object entryObj = ec.getContext().get(formNode."@list-entry")
-                if (!(entryObj instanceof Map)) {
+                if (entryObj != null && !(entryObj instanceof Map)) {
                     try {
                         value = entryObj.getAt(fieldName)
                     } catch (MissingPropertyException e) {
