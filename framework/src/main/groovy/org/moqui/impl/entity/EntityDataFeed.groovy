@@ -617,7 +617,7 @@ class EntityDataFeed {
                                     sb.append('    ').append(ev).append('\n')
                                 }
                                 */
-                                logger.info(errMsg)
+                                if (logger.isTraceEnabled()) logger.trace(errMsg)
                                 continue
                             }
 
@@ -667,7 +667,8 @@ class EntityDataFeed {
                                                 documentList:documents]).call()
                                     }
                                 } else {
-                                    logger.warn("In DataFeed no documents found for dataDocumentId [${dataDocumentId}]")
+                                    // this is pretty common, some operation done on a record that doesn't match the conditions for the feed
+                                    if (logger.isTraceEnabled()) logger.trace("In DataFeed no documents found for dataDocumentId [${dataDocumentId}]")
                                 }
                             } finally {
                                 if (!alreadyDisabled) efi.getEcfi().getExecutionContext().getArtifactExecution().enableAuthz()

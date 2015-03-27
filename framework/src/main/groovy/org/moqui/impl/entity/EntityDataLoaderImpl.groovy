@@ -561,6 +561,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                 // end of nested relationship element, just pop the last
                 valueMapStack.remove(0)
                 relatedEdStack.remove(0)
+                valuesRead++
             } else {
                 if (currentEntityDef != null) {
                     // before we write currentValue check to see if PK is there, if not and it is one field, generate it from a sequence using the entity name

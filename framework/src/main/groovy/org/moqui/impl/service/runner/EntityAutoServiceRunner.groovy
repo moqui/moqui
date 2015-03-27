@@ -31,7 +31,8 @@ import java.sql.Timestamp
 public class EntityAutoServiceRunner implements ServiceRunner {
     protected final static Logger logger = LoggerFactory.getLogger(EntityAutoServiceRunner.class)
 
-    final static Set<String> verbSet = new TreeSet(["create", "update", "delete", "store"])
+    final static Set<String> verbSet = new TreeSet(['create', 'update', 'delete', 'store'])
+    final static Set<String> otherFieldsToSkip = new HashSet(['ec', '_entity', 'authTenantId', 'authUsername', 'authPassword'])
     protected ServiceFacadeImpl sfi = null
 
     EntityAutoServiceRunner() {}
@@ -190,6 +191,8 @@ public class EntityAutoServiceRunner implements ServiceRunner {
         Map nonFieldEntries = ed.cloneMapRemoveFields(parameters, null)
         for (Map.Entry entry in nonFieldEntries) {
             String entryName = entry.getKey()
+            if (parentPks != null && parentPks.containsKey(entryName)) continue
+            if (otherFieldsToSkip.contains(entryName)) continue
             Object relParmObj = entry.getValue()
             if (!relParmObj) continue
 
@@ -200,7 +203,11 @@ public class EntityAutoServiceRunner implements ServiceRunner {
             } else if (ecfi.getEntityFacade().isEntityDefined(entryName)) {
                 subEd = ecfi.getEntityFacade().getEntityDefinition(entryName)
             }
-            if (subEd == null) continue
+            if (subEd == null) {
+                // this happens a lot, extra stuff passed to the service call, so be quiet unless trace is on
+                if (logger.isTraceEnabled()) logger.trace("In create entity auto service found key [${entryName}] which is not a field or relationship of [${ed.getFullEntityName()}] and is not a defined entity")
+                continue
+            }
 
             if (relParmObj instanceof Map) {
                 Map relResults = [:]
@@ -223,6 +230,8 @@ public class EntityAutoServiceRunner implements ServiceRunner {
 
                 }
                 tempResult.put(entryName, relResultList)
+            } else {
+                logger.warn("In entity auto create for entity ${ed.getFullEntityName()} found list for sub-object ${entryName} which is not a Map or List: ${relParmObj}")
             }
         }
 
@@ -307,6 +316,10 @@ public class EntityAutoServiceRunner implements ServiceRunner {
                                Map<String, Object> result, Set<String> outParamNames, Map<String, Object> parentPks) {
         EntityValue newEntityValue = ecfi.getEntityFacade().makeValue(ed.getFullEntityName())
 
+        // add in all of the main entity's primary key fields, this is necessary for auto-generated, and to
+        //     allow them to be left out of related records
+        if (parentPks) parameters.putAll(parentPks)
+
         checkFromDate(ed, parameters, result, ecfi)
 
         Map<String, Object> tempResult = [:]
@@ -358,6 +371,8 @@ public class EntityAutoServiceRunner implements ServiceRunner {
         Map nonFieldEntries = ed.cloneMapRemoveFields(parameters, null)
         for (Map.Entry entry in nonFieldEntries) {
             String entryName = entry.getKey()
+            if (parentPks != null && parentPks.containsKey(entryName)) continue
+            if (otherFieldsToSkip.contains(entryName)) continue
             Object relParmObj = entry.getValue()
             if (!relParmObj) continue
 
@@ -368,13 +383,14 @@ public class EntityAutoServiceRunner implements ServiceRunner {
             } else if (ecfi.getEntityFacade().isEntityDefined(entryName)) {
                 subEd = ecfi.getEntityFacade().getEntityDefinition(entryName)
             }
-            if (subEd == null) continue
+            if (subEd == null) {
+                // this happens a lot, extra stuff passed to the service call, so be quiet unless trace is on
+                if (logger.isTraceEnabled()) logger.trace("In store entity auto service found key [${entryName}] which is not a field or relationship of [${ed.getFullEntityName()}] and is not a defined entity")
+                continue
+            }
 
             if (relParmObj instanceof Map) {
                 Map relResults = [:]
-                // add in all of the main entity's primary key fields, this is necessary for auto-generated, and to
-                //     allow them to be left out of related records
-                relParmObj.putAll(pkMap)
                 storeRecursive(ecfi, subEd, relParmObj, relResults, null, pkMap)
                 result.put(entryName, relResults)
             } else if (relParmObj instanceof List) {
@@ -382,7 +398,6 @@ public class EntityAutoServiceRunner implements ServiceRunner {
                 for (Object relParmEntry in relParmObj) {
                     Map relResults = [:]
                     if (relParmEntry instanceof Map) {
-                        relParmEntry.putAll(pkMap)
                         storeRecursive(ecfi, subEd, relParmEntry, relResults, null, pkMap)
                     } else {
                         logger.warn("In entity auto create for entity ${ed.getFullEntityName()} found list for sub-object ${entryName} with a non-Map entry: ${relParmEntry}")
@@ -391,6 +406,8 @@ public class EntityAutoServiceRunner implements ServiceRunner {
 
                 }
                 result.put(entryName, relResultList)
+            } else {
+                logger.warn("In entity auto create for entity ${ed.getFullEntityName()} found list for sub-object ${entryName} which is not a Map or List: ${relParmObj}")
             }
         }
     }
