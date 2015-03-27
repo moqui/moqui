@@ -42,8 +42,6 @@ import org.moqui.entity.EntityCondition.ComparisonOperator
 import org.moqui.impl.entity.EntityValueImpl
 import org.moqui.impl.StupidUtilities
 
-import java.sql.Timestamp
-
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
