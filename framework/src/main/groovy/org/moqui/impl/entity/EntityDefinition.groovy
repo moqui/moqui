@@ -790,6 +790,14 @@ public class EntityDefinition {
         return mePkFieldToAliasNameMap
     }
 
+    Map cloneMapRemoveFields(Map theMap, Boolean pks) {
+        Map newMap = new HashMap(theMap)
+        for (String fieldName in (pks != null ? this.getFieldNames(pks, !pks, !pks) : this.getAllFieldNames())) {
+            if (newMap.containsKey(fieldName)) newMap.remove(fieldName)
+        }
+        return newMap
+    }
+
     void setFields(Map<String, ?> src, Map<String, Object> dest, boolean setIfEmpty, String namePrefix, Boolean pks) {
         if (src == null) return
 

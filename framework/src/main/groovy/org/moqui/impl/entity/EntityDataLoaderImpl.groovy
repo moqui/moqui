@@ -408,14 +408,19 @@ class EntityDataLoaderImpl implements EntityDataLoader {
             }
             if (!loadElements) return
 
+            String entityName = qName
+            // get everything after a colon, but replace - with # for verb#noun separation
+            if (entityName.contains(':')) entityName = entityName.substring(entityName.indexOf(':') + 1)
+            if (entityName.contains('-')) entityName = entityName.replace('-', '#')
+
             if (currentEntityDef != null) {
                 EntityDefinition checkEd = currentEntityDef
                 if (relatedEdStack) checkEd = relatedEdStack.get(0)
-                if (checkEd.isField(qName)) {
+                if (checkEd.isField(entityName)) {
                     // nested value/CDATA element
-                    currentFieldName = qName
-                } else if (checkEd.getRelationshipInfo(qName) != null) {
-                    EntityDefinition.RelationshipInfo relInfo = checkEd.getRelationshipInfo(qName)
+                    currentFieldName = entityName
+                } else if (checkEd.getRelationshipInfo(entityName) != null) {
+                    EntityDefinition.RelationshipInfo relInfo = checkEd.getRelationshipInfo(entityName)
                     Map curRelMap = getAttributesMap(attributes, relInfo.relatedEd)
                     String relationshipName = relInfo.getRelationshipName()
                     if (valueMapStack) {
@@ -446,18 +451,45 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                         valueMapStack = [curRelMap]
                         relatedEdStack = [relInfo.relatedEd]
                     }
+                } else if (edli.efi.isEntityDefined(entityName)) {
+                    EntityDefinition subEd = edli.efi.getEntityDefinition(entityName)
+                    Map curRelMap = getAttributesMap(attributes, subEd)
+                    String relationshipName = subEd.getFullEntityName()
+                    if (valueMapStack) {
+                        Map prevValueMap = valueMapStack.get(0)
+                        if (prevValueMap.containsKey(relationshipName)) {
+                            Object prevRelValue = prevValueMap.get(relationshipName)
+                            if (prevRelValue instanceof List) {
+                                prevRelValue.add(curRelMap)
+                            } else {
+                                prevValueMap.put(relationshipName, [prevRelValue, curRelMap])
+                            }
+                        } else {
+                            prevValueMap.put(relationshipName, curRelMap)
+                        }
+                        valueMapStack.add(0, curRelMap)
+                        relatedEdStack.add(0, subEd)
+                    } else {
+                        if (rootValueMap.containsKey(relationshipName)) {
+                            Object prevRelValue = rootValueMap.get(relationshipName)
+                            if (prevRelValue instanceof List) {
+                                prevRelValue.add(curRelMap)
+                            } else {
+                                rootValueMap.put(relationshipName, [prevRelValue, curRelMap])
+                            }
+                        } else {
+                            rootValueMap.put(relationshipName, curRelMap)
+                        }
+                        valueMapStack = [curRelMap]
+                        relatedEdStack = [subEd]
+                    }
                 } else {
-                    logger.warn("Found element [${qName}] under element for entity [${checkEd.getFullEntityName()}] and it is not a field or relationship so ignoring")
+                    logger.warn("Found element [${entityName}] under element for entity [${checkEd.getFullEntityName()}] and it is not a field or relationship so ignoring")
                 }
             } else if (currentServiceDef != null) {
                 currentFieldName = qName
                 // TODO: support nested elements for services? ie look for attributes, somehow handle subelements, etc
             } else {
-                String entityName = qName
-                // get everything after a colon, but replace - with # for verb#noun separation
-                if (entityName.contains(':')) entityName = entityName.substring(entityName.indexOf(':') + 1)
-                if (entityName.contains('-')) entityName = entityName.replace('-', '#')
-
                 if (edli.efi.isEntityDefined(entityName)) {
                     currentEntityDef = edli.efi.getEntityDefinition(entityName)
                     rootValueMap = getAttributesMap(attributes, currentEntityDef)
