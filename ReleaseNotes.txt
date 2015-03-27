@@ -50,7 +50,10 @@ New Features:
     related entities
   - EntityDataLoader and EntityDataWriter, along with the DataImport and
     DataExport screens in the Tools app, now support JSON files including
-    embedded related records just like the REST interface
+    embedded related (or other entity) records like the REST interface
+  - EntityDataLoader for XML files also supports nested records; with the
+    PK field inheritance from parent records this can significantly reduce
+    redundancy in data load files and make them easier to read/maintain
 
 Bug Fixes:
 
