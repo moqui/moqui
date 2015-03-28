@@ -101,7 +101,7 @@ class EntityDataFeed {
      */
 
     void dataFeedCheckAndRegister(EntityValue ev, boolean isUpdate, Map valueMap, Map oldValues) {
-        // logger.warn("============== checking entity isModified=${ev.isModified()} [${ev.getEntityName()}] value: ${ev}")
+        // logger.warn("============== DataFeed checking entity isModified=${ev.isModified()} [${ev.getEntityName()}] value: ${ev}")
         // if the value isn't modified don't register for DataFeed at all
         if (!ev.isModified()) return
 
@@ -149,7 +149,7 @@ class EntityDataFeed {
             }
 
             if (dataDocumentIdSet) {
-                // logger.warn("============== DataFeed registering entity value [${ev.getEntityName()}] value: ${ev}")
+                // logger.warn("============== DataFeed registering entity value [${ev.getEntityName()}] value: ${ev.getPrimaryKeys()}")
                 // NOTE: comment out this line to disable real-time push DataFeed in one simple place:
                 getDataFeedSynchronization().addValueToFeed(ev, dataDocumentIdSet)
             }
@@ -606,7 +606,20 @@ class EntityDataFeed {
 
                             // if there aren't really any values for the document (a value updated that isn't really in
                             //    a document) then skip it, don't want to query with no constraints and get a huge document
-                            if (!primaryPkFieldValues) continue
+                            if (!primaryPkFieldValues) {
+                                String errMsg = "Skipping feed for DataDocument [${dataDocumentId}], no primary PK values found in feed values"
+                                /*
+                                StringBuilder sb = new StringBuilder()
+                                sb.append(errMsg).append('\n')
+                                sb.append("Primary Entity: ").append(primaryEntityName).append(": ").append(primaryPkFieldNames).append('\n')
+                                sb.append("Feed Values:").append('\n')
+                                for (EntityValue ev in feedValues) {
+                                    sb.append('    ').append(ev).append('\n')
+                                }
+                                */
+                                if (logger.isTraceEnabled()) logger.trace(errMsg)
+                                continue
+                            }
 
                             // for primary entity with 1 PK field do an IN condition, for >1 PK field do an and cond for
                             //     each PK and an or list cond to combine them
@@ -642,6 +655,8 @@ class EntityDataFeed {
                                             .condition("dataFeedTypeEnumId", "DTFDTP_RT_PUSH")
                                             .condition("dataDocumentId", dataDocumentId).useCache(true).list()
 
+                                    // logger.warn("=========== FEED document ${dataDocumentId}, documents ${documents.size()}, condition: ${condition}\n dataFeedAndDocumentList: ${dataFeedAndDocumentList.feedReceiveServiceName}")
+
                                     // do the actual feed receive service calls (authz is disabled to allow the service
                                     //     call, but also allows anything in the services...)
                                     for (EntityValue dataFeedAndDocument in dataFeedAndDocumentList) {
@@ -652,7 +667,8 @@ class EntityDataFeed {
                                                 documentList:documents]).call()
                                     }
                                 } else {
-                                    logger.warn("In DataFeed no documents found for dataDocumentId [${dataDocumentId}]")
+                                    // this is pretty common, some operation done on a record that doesn't match the conditions for the feed
+                                    if (logger.isTraceEnabled()) logger.trace("In DataFeed no documents found for dataDocumentId [${dataDocumentId}]")
                                 }
                             } finally {
                                 if (!alreadyDisabled) efi.getEcfi().getExecutionContext().getArtifactExecution().enableAuthz()

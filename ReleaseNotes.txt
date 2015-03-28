@@ -11,6 +11,7 @@ TODO
 
 New Features:
 
+- Updated Elasticsearch to 1.5.0, Apache Lucene to 4.10.4
 - More consistent handling of empty in service, entity, and screen when we
   don't want the Groovy definition of empty (ie don't consider 0 numbers
   or false boolean to be empty)
@@ -26,6 +27,9 @@ New Features:
     when a DataDocument indexed with ElasticSearch is first used (by index
     or search) with types for numbers, dates, etc needed for analytics and
     also not_analyzed set for all id* type entity fields
+  - In DataDocument the fields on the primary entity are no longer in a
+    Map/object but rather are in the root of the document, simpler and more
+    consistent with the structure used elsewhere
   - Added EntityServices.search#CountBySource service to do analytics
     searches using ElasticSearch; there is a real-world example of the use
     of this service in Mantle for current and projected inventory data
@@ -46,7 +50,10 @@ New Features:
     related entities
   - EntityDataLoader and EntityDataWriter, along with the DataImport and
     DataExport screens in the Tools app, now support JSON files including
-    embedded related records just like the REST interface
+    embedded related (or other entity) records like the REST interface
+  - EntityDataLoader for XML files also supports nested records; with the
+    PK field inheritance from parent records this can significantly reduce
+    redundancy in data load files and make them easier to read/maintain
 
 Bug Fixes:
 

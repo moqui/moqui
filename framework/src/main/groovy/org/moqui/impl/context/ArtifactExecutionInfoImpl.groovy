@@ -123,11 +123,40 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
     }
 
     String getKeyString() { return name + ":" + typeEnumId + ":" + actionEnumId + ":" + actionDetail }
+
     static List<Map> hotSpotByTime(List<ArtifactExecutionInfoImpl> aeiiList, boolean ownTime, String orderBy) {
         Map<String, Map> timeByArtifact = [:]
         for (ArtifactExecutionInfoImpl aeii in aeiiList) aeii.addToMapByTime(timeByArtifact, ownTime)
         List<Map> hotSpotList = []
         hotSpotList.addAll(timeByArtifact.values())
+
+        // in some cases we get REALLY long times before the system is warmed, knock those out
+        for (Map val in hotSpotList) {
+            int knockOutCount = 0
+            List<Long> newTimes = []
+            def timeAvg = val.timeAvg
+            for (Long time in val.times) {
+                // this ain't no standard deviation, but consider 3 times average to be abnormal
+                if (time > (timeAvg * 3)) {
+                    knockOutCount++
+                } else {
+                    newTimes.add(time)
+                }
+            }
+            if (knockOutCount > 0) {
+                // calc new average, add knockOutCount times to fill in gaps, calc new time total
+                long newTotal = 0
+                long newMax = 0
+                for (long time in newTimes) { newTotal += time; if (time > newMax) newMax = time }
+                BigDecimal newAvg = ((newTotal / newTimes.size()) as BigDecimal).setScale(2, BigDecimal.ROUND_HALF_UP)
+                long newTimeAvg = newAvg.setScale(0, BigDecimal.ROUND_HALF_UP)
+                newTotal += newTimeAvg * knockOutCount
+                val.time = newTotal
+                val.timeMax = newMax
+                val.timeAvg = newAvg
+            }
+        }
+
         StupidUtilities.orderMapList(hotSpotList, [orderBy ?: '-time'])
         return hotSpotList
     }
@@ -136,18 +165,36 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
         Map val = timeByArtifact.get(key)
         long curTime = ownTime ? getThisRunningTime() : getRunningTime()
         if (val == null) {
-            timeByArtifact.put(key, [time:curTime, timeMin:curTime, timeMax:curTime, count:1, name:name,
-                    actionDetail:actionDetail, type:ArtifactExecutionFacadeImpl.artifactTypeDescriptionMap.get(typeEnumId),
+            timeByArtifact.put(key, [times:[curTime], time:curTime, timeMin:curTime, timeMax:curTime, timeAvg:curTime,
+                    count:1, name:name, actionDetail:actionDetail,
+                    type:ArtifactExecutionFacadeImpl.artifactTypeDescriptionMap.get(typeEnumId),
                     action:ArtifactExecutionFacadeImpl.artifactActionDescriptionMap.get(actionEnumId)])
         } else {
             val = timeByArtifact[key]
             val.count = val.count + 1
+            val.times.add(curTime)
             val.time = val.time + curTime
             val.timeMin = val.timeMin > curTime ? curTime : val.timeMin
             val.timeMax = val.timeMax > curTime ? val.timeMax : curTime
+            val.timeAvg = ((val.time / val.count) as BigDecimal).setScale(2, BigDecimal.ROUND_HALF_UP)
         }
         for (ArtifactExecutionInfoImpl aeii in childList) aeii.addToMapByTime(timeByArtifact, ownTime)
     }
+    static void printHotSpotList(Writer writer, List<Map> infoList) {
+        // "[${time}:${timeMin}:${timeAvg}:${timeMax}][${count}] ${type} ${action} ${actionDetail} ${name}"
+        for (Map info in infoList) {
+            writer.append('[').append(StupidUtilities.paddedString(info.time as String, 5, false)).append(':')
+            writer.append(StupidUtilities.paddedString(info.timeMin as String, 3, false)).append(':')
+            writer.append(StupidUtilities.paddedString(info.timeAvg as String, 5, false)).append(':')
+            writer.append(StupidUtilities.paddedString(info.timeMax as String, 3, false)).append(']')
+            writer.append('[').append(StupidUtilities.paddedString(info.count as String, 3, false)).append('] ')
+            writer.append(StupidUtilities.paddedString((String) info.type, 10, true)).append(' ')
+            writer.append(StupidUtilities.paddedString((String) info.action, 7, true)).append(' ')
+            writer.append(StupidUtilities.paddedString((String) info.actionDetail, 5, true)).append(' ')
+            writer.append((String) info.name).append('\n')
+        }
+    }
+
 
     static List<Map> consolidateArtifactInfo(List<ArtifactExecutionInfoImpl> aeiiList) {
         List<Map> topLevelList = []
