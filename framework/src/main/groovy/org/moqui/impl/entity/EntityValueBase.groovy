@@ -447,7 +447,7 @@ abstract class EntityValueBase implements EntityValue {
 
                 String stackNameString = ec.artifactExecution.getStackNameString()
                 if (stackNameString.length() > 4000) stackNameString = stackNameString.substring(0, 4000)
-                Map<String, Object> parms = (Map<String, Object>) [changedEntityName:getEntityName(),
+                Map<String, Object> parms = [changedEntityName:getEntityName(),
                         changedFieldName:fieldName, newValueText:(value as String), changedDate:nowTimestamp,
                         changedByUserId:ec.getUser().getUserId(), changedInVisitId:ec.getUser().getVisitId(),
                         artifactStack:stackNameString]
@@ -754,11 +754,20 @@ abstract class EntityValueBase implements EntityValue {
 
     @Override
     Map<String, Object> getPlainValueMap(int dependentLevels) {
+        return internalPlainValueMap(dependentLevels, null)
+    }
+
+    protected Map<String, Object> internalPlainValueMap(int dependentLevels, Set<String> parentPkFields) {
         Map<String, Object> vMap = StupidUtilities.removeNullsFromMap(new HashMap(valueMap))
+        if (parentPkFields != null) for (String pkField in parentPkFields) vMap.remove(pkField)
         EntityDefinition ed = getEntityDefinition()
         vMap.put('_entity', ed.getShortAlias() ?: ed.getFullEntityName())
 
         if (dependentLevels > 0) {
+            Set<String> curPkFields = new HashSet(ed.getPkFieldNames())
+            // keep track of all parent PK field names, even not part of this entity's PK, they will be inherited when read
+            if (parentPkFields != null) curPkFields.addAll(parentPkFields)
+
             List<EntityDefinition.RelationshipInfo> relInfoList = getEntityDefinition().getRelationshipsInfo(true)
             for (EntityDefinition.RelationshipInfo relInfo in relInfoList) {
                 String relationshipName = relInfo.relationshipName
@@ -766,12 +775,16 @@ abstract class EntityValueBase implements EntityValue {
                 if (relInfo.type == "many") {
                     EntityList relList = findRelated(relationshipName, null, null, null, false)
                     if (relList) {
-                        List plainRelList = relList.getPlainValueList(dependentLevels-1)
+                        List plainRelList = []
+                        for (EntityValue relEv in relList) {
+                            plainRelList.add(((EntityValueBase) relEv).internalPlainValueMap(dependentLevels - 1, curPkFields))
+                        }
                         vMap.put(entryName, plainRelList)
                     }
                 } else {
                     EntityValue relEv = findRelatedOne(relationshipName, null, false)
-                    if (relEv != null) vMap.put(entryName, ((EntityValueBase) relEv).getPlainValueMap(dependentLevels-1))
+                    if (relEv != null) vMap.put(entryName, ((EntityValueBase) relEv)
+                            .internalPlainValueMap(dependentLevels - 1, curPkFields))
                 }
             }
         }
