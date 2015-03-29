@@ -54,6 +54,8 @@ New Features:
   - EntityDataLoader for XML files also supports nested records; with the
     PK field inheritance from parent records this can significantly reduce
     redundancy in data load files and make them easier to read/maintain
+  - EntityDataWriter for XML files now exports nested elements for
+    dependent records using a similar pattern to that used for JSON out
 
 Bug Fixes:
 
