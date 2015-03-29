@@ -619,11 +619,14 @@ abstract class EntityValueBase implements EntityValue {
         String curEntity = objectName ?: plainMap.get('_entity')
 
         for (int i = 0; i < level; i++) pw.print(indentString)
+        // mostly for relationship names, see opposite code in the EntityDataLoaderImpl.startElement
+        if (curEntity.contains('#')) curEntity = curEntity.replace('#', '-')
         pw.append('<').append(prefix ?: '').append(curEntity)
 
         int valueCount = 1
         for (Map.Entry<String, Object> entry in plainMap) {
             String fieldName = entry.getKey()
+            // leave this out, not needed for XML where the element name represents the entity or relationship
             if (fieldName == '_entity') continue
             Object fieldValue = entry.getValue()
 
