@@ -21,8 +21,11 @@ import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.impl.StupidUtilities
 import org.moqui.impl.context.ContextBinding
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 class GroovyScriptRunner implements ScriptRunner {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(GroovyScriptRunner.class)
+    protected final static Logger logger = LoggerFactory.getLogger(GroovyScriptRunner.class)
 
     protected ExecutionContextFactoryImpl ecfi
     protected Cache scriptGroovyLocationCache
