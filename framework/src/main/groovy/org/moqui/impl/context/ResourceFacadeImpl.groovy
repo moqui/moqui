@@ -431,7 +431,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
         }
 
         // delete all leading forward slashes
-        while (strippedLocation.length() > 0 && strippedLocation.charAt(0) == '/') strippedLocation.deleteCharAt(0)
+        while (strippedLocation.length() > 0 && strippedLocation.charAt(0) == (char) '/') strippedLocation.deleteCharAt(0)
 
         return strippedLocation.toString()
     }
