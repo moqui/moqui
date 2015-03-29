@@ -944,13 +944,12 @@ class EntityFacadeImpl implements EntityFacade {
                     // add in all of the main entity's primary key fields, this is necessary for auto-generated, and to
                     //     allow them to be left out of related records
                     relParmObj.putAll(pkMap)
-                    getValuesFromPlainMapRecursive(relInfo.relatedEd, relParmObj, valueList)
+                    addValuesFromPlainMapRecursive(relInfo.relatedEd, relParmObj, valueList)
                 } else if (relParmObj instanceof List) {
-                    List relResultList = []
                     for (Object relParmEntry in relParmObj) {
                         if (relParmEntry instanceof Map) {
                             relParmEntry.putAll(pkMap)
-                            getValuesFromPlainMapRecursive(relInfo.relatedEd, relParmEntry, valueList)
+                            addValuesFromPlainMapRecursive(relInfo.relatedEd, relParmEntry, valueList)
                         } else {
                             logger.warn("In entity auto create for entity ${ed.getFullEntityName()} found list for relationship ${relKey} with a non-Map entry: ${relParmEntry}")
                         }
