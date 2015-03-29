@@ -606,6 +606,93 @@ abstract class EntityValueBase implements EntityValue {
 
     @Override
     int writeXmlText(Writer pw, String prefix, int dependentLevels) {
+        Map<String, Object> plainMap = getPlainValueMap(dependentLevels)
+        EntityDefinition ed = getEntityDefinition()
+        return plainMapXmlWriter(pw, prefix, ed.getShortAlias() ?: ed.getFullEntityName(), plainMap, 1)
+    }
+    // indent 4 spaces
+    protected static final String indentString = "    "
+    protected static int plainMapXmlWriter(Writer pw, String prefix, String objectName, Map<String, Object> plainMap, int level) {
+        // if a CDATA element is needed for a field it goes in this Map to be added at the end
+        Map<String, String> cdataMap = [:]
+        Map<String, Object> subPlainMap = [:]
+        String curEntity = objectName ?: plainMap.get('_entity')
+
+        for (int i = 0; i < level; i++) pw.print(indentString)
+        pw.append('<').append(prefix ?: '').append(curEntity)
+
+        int valueCount = 1
+        for (Map.Entry<String, Object> entry in plainMap) {
+            String fieldName = entry.getKey()
+            if (fieldName == '_entity') continue
+            Object fieldValue = entry.getValue()
+
+            if (fieldValue instanceof Map || fieldValue instanceof List) {
+                subPlainMap.put(fieldName, fieldValue)
+                continue
+            }
+            if (fieldValue instanceof byte[]) {
+                cdataMap.put(fieldName, new String(Base64.encodeBase64(fieldValue)))
+                continue
+            }
+            if (fieldValue instanceof SerialBlob) {
+                if (fieldValue.length() == 0) continue
+                byte[] objBytes = fieldValue.getBytes(1, (int) fieldValue.length())
+                cdataMap.put(fieldName, new String(Base64.encodeBase64(objBytes)))
+                continue
+            }
+
+            String valueStr = StupidUtilities.toPlainString(fieldValue)
+            if (!valueStr) continue
+            if (valueStr.contains('\n') || valueStr.contains('\r') || valueStr.length() > 255) {
+                cdataMap.put(fieldName, valueStr)
+                continue
+            }
+
+            pw.append(' ').append(fieldName).append('="')
+            pw.append(StupidUtilities.encodeForXmlAttribute(valueStr)).append('"')
+        }
+
+        if (cdataMap.size() == 0 && subPlainMap.size() == 0) {
+            // self-close the entity element
+            pw.append('/>\n')
+        } else {
+            pw.append('>\n')
+
+            // CDATA sub-elements
+            for (Map.Entry<String, String> entry in cdataMap.entrySet()) {
+                pw.append(indentString).append(indentString)
+                pw.append('<').append(entry.getKey()).append('>')
+                pw.append('<![CDATA[').append(entry.getValue()).append(']]>')
+                pw.append('</').append(entry.getKey()).append('>\n');
+            }
+
+            // related/dependent sub-elements
+            for (Map.Entry<String, Object> entry in subPlainMap) {
+                String entryKey = entry.getKey()
+                Object entryVal = entry.getValue()
+                if (entryVal instanceof List) {
+                    for (Object listEntry in entryVal) {
+                        if (listEntry instanceof Map) {
+                            valueCount += plainMapXmlWriter(pw, prefix, entryKey, listEntry, level + 1)
+                        } else {
+                            logger.warn("In entity auto create for entity ${curEntity} found list for sub-object ${entryKey} with a non-Map entry: ${listEntry}")
+                        }
+                    }
+                } else if (entryVal instanceof Map) {
+                    valueCount += plainMapXmlWriter(pw, prefix, entryKey, entryVal, level + 1)
+                }
+            }
+
+            // close the entity element
+            for (int i = 0; i < level; i++) pw.print(indentString)
+            pw.append('</').append(curEntity).append('>\n')
+        }
+
+        return valueCount
+    }
+
+    int writeXmlTextOld(Writer pw, String prefix, int dependentLevels) {
         if (dependentLevels > 0) {
             // to avoid loops (shouldn't happen but could)
             Map<String, Set> entityPksVisited = new HashMap()
@@ -614,8 +701,6 @@ abstract class EntityValueBase implements EntityValue {
             return valuesWritten
         }
 
-        // indent 4 spaces
-        String indentString = "    "
         // if a CDATA element is needed for a field it goes in this Map to be added at the end
         Map<String, String> cdataMap = new HashMap()
 
@@ -623,9 +708,9 @@ abstract class EntityValueBase implements EntityValue {
 
         for (String fieldName in getEntityDefinition().getAllFieldNames()) {
             Node fieldNode = getEntityDefinition().getFieldNode(fieldName)
-            String type = fieldNode."@type"
+            String type = fieldNode.'@type'
 
-            if (type == "binary-very-long") {
+            if (type == 'binary-very-long') {
                 Object obj = get(fieldName)
                 if (obj instanceof byte[]) {
                     cdataMap.put(fieldName, new String(Base64.encodeBase64((byte[]) obj)))
