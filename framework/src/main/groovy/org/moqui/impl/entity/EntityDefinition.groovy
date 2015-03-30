@@ -128,13 +128,13 @@ public class EntityDefinition {
 
     String getEntityGroupName() {
         if (groupName == null) {
-            if (entityNode."@is-dynamic-view" == "true") {
-                Node entityNode = this.internalEntityNode
+            if (internalEntityNode."@is-dynamic-view" == "true") {
                 // use the name of the first member-entity
-                String memberEntityName = entityNode."member-entity".find({ !it."@join-from-alias" })?."@entity-name"
+                String memberEntityName = internalEntityNode."member-entity".find({ !it."@join-from-alias" })?."@entity-name"
                 groupName = efi.getEntityGroupName(memberEntityName)
+            } else {
+                groupName = internalEntityNode."@group-name" ?: efi.getDefaultGroupName()
             }
-            groupName = entityNode."@group-name" ?: efi.getDefaultGroupName()
         }
         return groupName
     }

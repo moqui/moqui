@@ -14,6 +14,7 @@ package org.moqui.impl.service
 import groovy.json.JsonBuilder
 import org.moqui.context.Cache
 import org.moqui.context.ResourceReference
+import org.moqui.impl.StupidJavaUtilities
 import org.moqui.impl.StupidUtilities
 import org.moqui.impl.service.runner.RemoteJsonRpcServiceRunner
 import org.moqui.service.ServiceFacade
@@ -334,7 +335,7 @@ class ServiceFacadeImpl implements ServiceFacade {
                 ServiceEcaRule ser = new ServiceEcaRule(ecfi, secaNode, rr.location)
                 String serviceName = ser.serviceName
                 // remove the hash if there is one to more consistently match the service name
-                if (serviceName.contains("#")) serviceName = serviceName.replace("#", "")
+                serviceName = StupidJavaUtilities.removeChar(serviceName, (char) '#')
                 List<ServiceEcaRule> lst = secaRulesByServiceName.get(serviceName)
                 if (!lst) {
                     lst = new LinkedList()
@@ -354,15 +355,17 @@ class ServiceFacadeImpl implements ServiceFacade {
 
     void runSecaRules(String serviceName, Map<String, Object> parameters, Map<String, Object> results, String when) {
         // remove the hash if there is one to more consistently match the service name
-        if (serviceName.contains("#")) serviceName = serviceName.replace("#", "")
+        serviceName = StupidJavaUtilities.removeChar(serviceName, (char) '#')
         List<ServiceEcaRule> lst = secaRulesByServiceName.get(serviceName)
-        ExecutionContext ec = ecfi.executionContext
-        for (ServiceEcaRule ser in lst) ser.runIfMatches(serviceName, parameters, results, when, ec)
+        if (lst) {
+            ExecutionContext ec = ecfi.getExecutionContext()
+            for (ServiceEcaRule ser in lst) ser.runIfMatches(serviceName, parameters, results, when, ec)
+        }
     }
 
     void registerTxSecaRules(String serviceName, Map<String, Object> parameters, Map<String, Object> results) {
         // remove the hash if there is one to more consistently match the service name
-        if (serviceName.contains("#")) serviceName = serviceName.replace("#", "")
+        serviceName = StupidJavaUtilities.removeChar(serviceName, (char) '#')
         List<ServiceEcaRule> lst = secaRulesByServiceName.get(serviceName)
         for (ServiceEcaRule ser in lst) {
             if (ser.when.startsWith("tx-")) {

@@ -395,7 +395,10 @@ class EntityQueryBuilder {
             }
         }
 
-        boolean useBinaryTypeForBlob = ("true" == efi.getDatabaseNode(ed.getEntityGroupName())."@use-binary-type-for-blob")
+        boolean useBinaryTypeForBlob = false
+        if (typeValue == 11 || typeValue == 12) {
+            useBinaryTypeForBlob = ("true" == efi.getDatabaseNode(ed.getEntityGroupName())."@use-binary-type-for-blob")
+        }
         try {
             setPreparedStatementValue(ps, index, value, typeValue, useBinaryTypeForBlob, efi)
         } catch (EntityException e) {

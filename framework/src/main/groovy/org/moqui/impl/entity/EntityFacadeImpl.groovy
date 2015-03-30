@@ -565,17 +565,21 @@ class EntityFacadeImpl implements EntityFacade {
 
     boolean hasEecaRules(String entityName) { return eecaRulesByEntityName.get(entityName) as boolean }
     void runEecaRules(String entityName, Map fieldValues, String operation, boolean before) {
-        // if Entity ECA rules disabled in ArtifactExecutionFacade, just return immediately
-        if (((ArtifactExecutionFacadeImpl) this.ecfi.getEci().getArtifactExecution()).entityEcaDisabled()) return
-
         List<EntityEcaRule> lst = eecaRulesByEntityName.get(entityName)
-        for (EntityEcaRule eer in lst) {
-            eer.runIfMatches(entityName, fieldValues, operation, before, ecfi.getExecutionContext())
+        if (lst) {
+            // if Entity ECA rules disabled in ArtifactExecutionFacade, just return immediately
+            // do this only if there are EECA rules to run, small cost in getEci, etc
+            if (((ArtifactExecutionFacadeImpl) this.ecfi.getEci().getArtifactExecution()).entityEcaDisabled()) return
+
+            for (EntityEcaRule eer in lst) {
+                eer.runIfMatches(entityName, fieldValues, operation, before, ecfi.getExecutionContext())
+            }
         }
 
-        if (entityName == "moqui.entity.ServiceTrigger" && operation == "create" && !before) runServiceTrigger(fieldValues)
+        // deprecated: if (entityName == "moqui.entity.ServiceTrigger" && operation == "create" && !before) runServiceTrigger(fieldValues)
     }
 
+    /* Deprecated:
     void runServiceTrigger(Map fieldValues) {
         ecfi.getServiceFacade().sync().name((String) fieldValues.serviceName)
                 .parameters((Map) ecfi.resourceFacade.evaluateContextField((String) fieldValues.mapString, ""))
@@ -586,6 +590,7 @@ class EntityFacadeImpl implements EntityFacade {
                 .set("statusId", ecfi.getExecutionContext().getMessage().hasError() ? "SrtrRunError" : "SrtrRunSuccess")
                 .update()
     }
+    */
 
     void destroy() {
         Set<String> groupNames = this.datasourceFactoryByGroupMap.keySet()

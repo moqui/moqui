@@ -66,17 +66,17 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
     void setAuthorizationInheritable(boolean isAuthorizationInheritable) { this.authorizationInheritable = isAuthorizationInheritable}
 
     void copyAacvInfo(EntityValue aacv, String userId) {
-        setAuthorizedUserId((String) userId)
-        setAuthorizedAuthzTypeId((String) aacv.authzTypeEnumId)
-        setAuthorizedActionEnumId((String) aacv.authzActionEnumId)
-        setAuthorizationInheritable(aacv.inheritAuthz == "Y")
+        this.authorizedUserId = userId
+        this.authorizedAuthzTypeId = (String) aacv.get('authzTypeEnumId')
+        this.authorizedActionEnumId = (String) aacv.get('authzActionEnumId')
+        this.authorizationInheritable = aacv.get('inheritAuthz') == "Y"
     }
 
     void copyAuthorizedInfo(ArtifactExecutionInfoImpl aeii) {
-        setAuthorizedUserId(aeii.authorizedUserId)
-        setAuthorizedAuthzTypeId(aeii.authorizedAuthzTypeId)
-        setAuthorizedActionEnumId(aeii.authorizedActionEnumId)
-        setAuthorizationInheritable(aeii.authorizationInheritable)
+        this.authorizedUserId = aeii.authorizedUserId
+        this.authorizedAuthzTypeId = aeii.authorizedAuthzTypeId
+        this.authorizedActionEnumId = aeii.authorizedActionEnumId
+        this.authorizationInheritable = aeii.authorizationInheritable
     }
 
     void setEndTime() { this.endTime = System.currentTimeMillis() }

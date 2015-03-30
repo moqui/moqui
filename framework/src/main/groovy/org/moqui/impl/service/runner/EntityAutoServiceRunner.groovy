@@ -17,6 +17,7 @@ import org.moqui.entity.EntityValue
 import org.moqui.entity.EntityValueNotFoundException
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.impl.entity.EntityDefinition
+import org.moqui.impl.entity.EntityFacadeImpl
 import org.moqui.impl.entity.EntityValueBase
 import org.moqui.impl.service.ServiceDefinition
 import org.moqui.impl.service.ServiceFacadeImpl
@@ -166,7 +167,8 @@ public class EntityAutoServiceRunner implements ServiceRunner {
 
     static void createRecursive(ExecutionContextFactoryImpl ecfi, EntityDefinition ed, Map<String, Object> parameters,
                                 Map<String, Object> result, Set<String> outParamNames, Map<String, Object> parentPks) {
-        EntityValue newEntityValue = ecfi.getEntityFacade().makeValue(ed.getFullEntityName())
+        EntityFacadeImpl efi = ecfi.getEntityFacade()
+        EntityValue newEntityValue = efi.makeValue(ed.getFullEntityName())
 
         checkFromDate(ed, parameters, result, ecfi)
 
@@ -203,8 +205,8 @@ public class EntityAutoServiceRunner implements ServiceRunner {
             if (ed.getRelationshipInfo(entryName) != null) {
                 EntityDefinition.RelationshipInfo relInfo = ed.getRelationshipInfo(entryName)
                 subEd = relInfo.relatedEd
-            } else if (ecfi.getEntityFacade().isEntityDefined(entryName)) {
-                subEd = ecfi.getEntityFacade().getEntityDefinition(entryName)
+            } else if (efi.isEntityDefined(entryName)) {
+                subEd = efi.getEntityDefinition(entryName)
             }
             if (subEd == null) {
                 // this happens a lot, extra stuff passed to the service call, so be quiet unless trace is on
@@ -277,8 +279,10 @@ public class EntityAutoServiceRunner implements ServiceRunner {
     static void updateEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> parameters,
                                     Map<String, Object> result, Set<String> outParamNames, EntityValue preLookedUpValue) {
         ExecutionContextFactoryImpl ecfi = sfi.getEcfi()
+        EntityFacadeImpl efi = ecfi.getEntityFacade()
+
         EntityValue lookedUpValue = preLookedUpValue ?:
-                ecfi.getEntityFacade().makeValue(ed.getFullEntityName()).setFields(parameters, true, null, true)
+                efi.makeValue(ed.getFullEntityName()).setFields(parameters, true, null, true)
         // this is much slower, and we don't need to do the query: sfi.getEcfi().getEntityFacade().find(ed.entityName).condition(parameters).useCache(false).forUpdate(true).one()
         if (lookedUpValue == null) {
             throw new EntityValueNotFoundException("In entity-auto update service for entity [${ed.fullEntityName}] value not found, cannot update; using parameters [${parameters}]")
@@ -286,7 +290,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
 
         if (parameters.containsKey("statusId") && ed.isField("statusId")) {
             // do the actual query so we'll have the current statusId
-            lookedUpValue = preLookedUpValue ?: ecfi.getEntityFacade().find(ed.getFullEntityName())
+            lookedUpValue = preLookedUpValue ?: efi.find(ed.getFullEntityName())
                     .condition(parameters).useCache(false).forUpdate(true).one()
             if (lookedUpValue == null) {
                 throw new EntityValueNotFoundException("In entity-auto update service for entity [${ed.fullEntityName}] value not found, cannot update; using parameters [${parameters}]")
@@ -317,7 +321,8 @@ public class EntityAutoServiceRunner implements ServiceRunner {
 
     static void storeRecursive(ExecutionContextFactoryImpl ecfi, EntityDefinition ed, Map<String, Object> parameters,
                                Map<String, Object> result, Set<String> outParamNames, Map<String, Object> parentPks) {
-        EntityValue newEntityValue = ecfi.getEntityFacade().makeValue(ed.getFullEntityName())
+        EntityFacadeImpl efi = ecfi.getEntityFacade()
+        EntityValue newEntityValue = efi.makeValue(ed.getFullEntityName())
 
         // add in all of the main entity's primary key fields, this is necessary for auto-generated, and to
         //     allow them to be left out of related records
@@ -340,7 +345,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
         EntityValue lookedUpValue = null
         if (parameters.containsKey("statusId") && ed.isField("statusId")) {
             // do the actual query so we'll have the current statusId
-            lookedUpValue = ecfi.getEntityFacade().find(ed.getFullEntityName())
+            lookedUpValue = efi.find(ed.getFullEntityName())
                     .condition(newEntityValue).useCache(false).forUpdate(true).one()
             if (lookedUpValue != null) {
                 checkStatus(ed, parameters, result, outParamNames, lookedUpValue, ecfi)
@@ -363,6 +368,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
 
     static void storeRelated(ExecutionContextFactoryImpl ecfi, EntityValueBase parentValue, Map<String, Object> parameters,
                              Map<String, Object> result, Map<String, Object> parentPks) {
+        EntityFacadeImpl efi = ecfi.getEntityFacade()
         EntityDefinition ed = parentValue.getEntityDefinition()
 
         // NOTE: keep a separate Map of parent PK values to pass down, can't just be current record's PK fields because
@@ -386,8 +392,8 @@ public class EntityAutoServiceRunner implements ServiceRunner {
             if (ed.getRelationshipInfo(entryName) != null) {
                 EntityDefinition.RelationshipInfo relInfo = ed.getRelationshipInfo(entryName)
                 subEd = relInfo.relatedEd
-            } else if (ecfi.getEntityFacade().isEntityDefined(entryName)) {
-                subEd = ecfi.getEntityFacade().getEntityDefinition(entryName)
+            } else if (efi.isEntityDefined(entryName)) {
+                subEd = efi.getEntityDefinition(entryName)
             }
             if (subEd == null) {
                 // this happens a lot, extra stuff passed to the service call, so be quiet unless trace is on
