@@ -174,6 +174,9 @@ class EntityValueImpl extends EntityValueBase {
     boolean refreshExtended() {
         EntityDefinition ed = getEntityDefinition()
 
+        // table doesn't exist, just return null
+        if (!getEntityFacadeImpl().getEntityDbMeta().tableExists(ed)) return null
+
         // NOTE: this simple approach may not work for view-entities, but not restricting for now
 
         List<String> pkFieldList = ed.getPkFieldNames()
@@ -205,7 +208,10 @@ class EntityValueImpl extends EntityValueBase {
 
         boolean retVal = false
         try {
-            getEntityFacadeImpl().entityDbMeta.checkTableRuntime(ed)
+            // don't check create, above tableExists check is done:
+            // efi.getEntityDbMeta().checkTableRuntime(ed)
+            // if this is a view-entity and any table in it exists check/create all or will fail with optional members, etc
+            if (ed.isViewEntity()) getEntityFacadeImpl().getEntityDbMeta().checkTableRuntime(ed)
 
             eqb.makeConnection()
             eqb.makePreparedStatement()
