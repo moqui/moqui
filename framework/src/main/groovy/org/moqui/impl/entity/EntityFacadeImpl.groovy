@@ -56,6 +56,7 @@ class EntityFacadeImpl implements EntityFacade {
 
     protected final Map<String, List<EntityEcaRule>> eecaRulesByEntityName = new HashMap()
     protected final Map<String, String> entityGroupNameMap = new HashMap()
+    protected final Map<String, Node> databaseNodeByGroupName = new HashMap()
     protected final String defaultGroupName
     protected final TimeZone databaseTimeZone
     protected final Locale databaseLocale
@@ -639,20 +640,24 @@ class EntityFacadeImpl implements EntityFacade {
     }
 
     boolean isEntityDefined(String entityName) {
-            if (!entityName) return false
-            entityLocationCache.clearExpired()
-            if (entityLocationCache.size() > 0) {
-                return entityLocationCache.containsKey(entityName)
-            } else {
-                // faster to not do this, causes reload of all entity files if not found (happens a lot for this method):
-                try {
-                    EntityDefinition ed = getEntityDefinition(entityName)
-                    return ed != null
-                } catch (EntityException ee) {
-                    // ignore the exception, just means entity not found
-                    return false
-                }
+        if (!entityName) return false
+        // optimization, common case: if it's in the location cache it is exists, even if expired; if it isn't there
+        //     doesn't necessarily mean it isn't defined, so then do more
+        if (entityLocationCache.containsKey(entityName)) return true
+
+        entityLocationCache.clearExpired()
+        if (entityLocationCache.size() > 0) {
+            return entityLocationCache.containsKey(entityName)
+        } else {
+            // faster to not do this, causes reload of all entity files if not found (happens a lot for this method):
+            try {
+                EntityDefinition ed = getEntityDefinition(entityName)
+                return ed != null
+            } catch (EntityException ee) {
+                // ignore the exception, just means entity not found
+                return false
             }
+        }
     }
 
     EntityDefinition getEntityDefinition(String entityName) {
@@ -762,8 +767,12 @@ class EntityFacadeImpl implements EntityFacade {
     }
 
     Node getDatabaseNode(String groupName) {
+        Node node = databaseNodeByGroupName.get(groupName)
+        if (node != null) return node
         String databaseConfName = getDatabaseConfName(groupName)
-        return (Node) ecfi.confXmlRoot."database-list"[0].database.find({ it."@name" == databaseConfName })
+        node = (Node) ecfi.confXmlRoot."database-list"[0].database.find({ it."@name" == databaseConfName })
+        databaseNodeByGroupName.put(groupName, node)
+        return node
     }
     String getDatabaseConfName(String groupName) {
         Node datasourceNode = getDatasourceNode(groupName)
