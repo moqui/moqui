@@ -10,7 +10,7 @@
  * "work for hire", who hereby disclaims any copyright to the same.
  */
 
-allprojects { version = '1.5.1' }
+allprojects { version = '1.5.2' }
 
 def tomcatHome = '../apache-tomcat-7.0.50'
 def warName = 'moqui-' + version + '.war'

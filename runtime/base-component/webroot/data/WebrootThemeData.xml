@@ -39,7 +39,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="102" resourceTypeEnumId="STRT_BODY_CLASS"
             resourceValue="bg-light lter"/>
     <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="200" resourceTypeEnumId="STRT_FOOTER_ITEM">
-        <resourceValue><![CDATA[<h6><a href="http://www.moqui.org/" target="_blank">Built on Moqui Framework 1.5.1</a></h6>]]></resourceValue>
+        <resourceValue><![CDATA[<h6><a href="http://www.moqui.org/" target="_blank">Built on Moqui Framework 1.5.2</a></h6>]]></resourceValue>
     </moqui.screen.ScreenThemeResource>
     <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="201" resourceTypeEnumId="STRT_FOOTER_ITEM">
         <resourceValue><![CDATA[<h6><a href="/apps/ScreenTree">Site Map</a></h6>]]></resourceValue>
