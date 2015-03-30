@@ -9,7 +9,8 @@ Moqui Framework 1.5.2 is a minor new feature and bug fix release.
 
 New Features:
 
-TODO
+- Various performance improvements based on profiling, this time focusing
+  on entity and service level operations
 
 Bug Fixes:
 
