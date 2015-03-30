@@ -2,12 +2,22 @@
 Moqui Framework Release Notes
 
 ===========================================================================
-Release 1.5.1 - TBD
+Release 1.5.1 - 29 Mar 2015
 ===========================================================================
 
 Moqui Framework 1.5.1 is a minor new feature and bug fix release.
 
-TODO
+New features in this release include various enhancements to DataDocument
+functionality and the introduction of the search#CountBySource to be used
+for analytics and reporting using ElasticSearch as the data store. Note
+that as part of these changes the fields of the primary entity of a
+DataDocument are in the root map/object of the document instead of in a
+map/object names for the primary entity.
+
+There is also new functionality for handling JSON documents in more places
+including load/import and write/export of entity data and a generic entity
+REST interface following various RESTful best practices. See the rest.xml
+screen file for more details (comments there with examples, etc).
 
 New Features:
 
@@ -21,6 +31,10 @@ New Features:
 - Improved HTTP response code handling, now uses 401 only for authc/login
   failures, 403 (forbidden) for artifact authz failures, and 429 (too many
   requests) for tarpit failures
+- Entity auto services (create, update, and store) now support related
+  records in Maps and Lists in the Map passed to the service call,
+  following the same pattern used for incoming JSON documents (the same
+  code is used for both)
 - Entity Facade
   - More consistent handling of is-null; support is-not-null, not-between
   - Document mappings (type definitions, etc) are now put automatically
