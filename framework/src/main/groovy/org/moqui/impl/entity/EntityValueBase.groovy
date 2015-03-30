@@ -466,7 +466,7 @@ abstract class EntityValueBase implements EntityValue {
         EntityDefinition ed = getEntityDefinition()
 
         // get pkPrimaryValue, pkSecondaryValue, pkRestCombinedValue (just like the AuditLog stuff)
-        ListOrderedSet pkFieldList = ed.getFieldNames(true, false, false)
+        List<String> pkFieldList = new ArrayList(ed.getPkFieldNames())
         String firstPkField = pkFieldList.size() > 0 ? pkFieldList.remove(0) : null
         String secondPkField = pkFieldList.size() > 0 ? pkFieldList.remove(0) : null
         StringBuffer pkTextSb = new StringBuffer()
@@ -850,19 +850,24 @@ abstract class EntityValueBase implements EntityValue {
     }
 
     void checkSetFieldDefaults(boolean isCreate, EntityDefinition ed, ExecutionContext ec) {
-        for (Node fieldNode in ed.getFieldNodes(isCreate, true, false)) {
-            String defaultStr = fieldNode."@default"
-            if (!defaultStr) continue
-            String fieldName = fieldNode."@name"
-            Object curVal = valueMap.get(fieldName)
-            if (StupidUtilities.isEmpty(curVal)) {
-                ec.getContext().push(valueMap)
-                try {
-                    Object newVal = ec.getResource().evaluateContextField(defaultStr, "")
-                    if (newVal != null) valueMap.put(fieldName, newVal)
-                } finally {
-                    ec.getContext().pop()
-                }
+        Map<String, String> nonPkDefaults = ed.getNonPkFieldDefaults()
+        if (nonPkDefaults.size() > 0) for (Map.Entry<String, String> entry in nonPkDefaults)
+            checkSetDefault(entry.getKey(), entry.getValue(), ec)
+        if (isCreate) {
+            Map<String, String> pkDefaults = ed.getPkFieldDefaults()
+            if (pkDefaults.size() > 0) for (Map.Entry<String, String> entry in pkDefaults)
+                checkSetDefault(entry.getKey(), entry.getValue(), ec)
+        }
+    }
+    protected void checkSetDefault(String fieldName, String defaultStr, ExecutionContext ec) {
+        Object curVal = valueMap.get(fieldName)
+        if (StupidUtilities.isEmpty(curVal)) {
+            ec.getContext().push(valueMap)
+            try {
+                Object newVal = ec.getResource().evaluateContextField(defaultStr, "")
+                if (newVal != null) valueMap.put(fieldName, newVal)
+            } finally {
+                ec.getContext().pop()
             }
         }
     }
@@ -928,7 +933,7 @@ abstract class EntityValueBase implements EntityValue {
         this.createExtended(fieldList, con)
 
         // create records for the UserFields
-        ListOrderedSet userFieldNameList = ed.getFieldNames(false, false, true)
+        ListOrderedSet userFieldNameList = ed.getUserFieldNames()
         if (userFieldNameList) {
             boolean alreadyDisabled = ec.getArtifactExecution().disableAuthz()
             try {
@@ -984,9 +989,8 @@ abstract class EntityValueBase implements EntityValue {
         Map oldValues = refreshedValue ? refreshedValue.getValueMap() : (dbValueMapFromDb ? dbValueMap : [:])
 
         List<String> pkFieldList = ed.getPkFieldNames()
-        ListOrderedSet nonPkAllFieldList = ed.getFieldNames(false, true, false)
         ListOrderedSet nonPkFieldList = new ListOrderedSet()
-        for (String fieldName in nonPkAllFieldList) {
+        for (String fieldName in ed.getNonPkFieldNames()) {
             if (valueMap.containsKey(fieldName) &&
                     (!dbValueMapFromDb || valueMap.get(fieldName) != dbValueMap.get(fieldName))) {
                 nonPkFieldList.add(fieldName)
@@ -1037,9 +1041,8 @@ abstract class EntityValueBase implements EntityValue {
         if (dbValueMap) for (Object val in dbValueMap.values()) if (val != null) { dbValueMapFromDb = true; break }
 
         List<String> pkFieldList = ed.getPkFieldNames()
-        ListOrderedSet nonPkAllFieldList = ed.getFieldNames(false, true, false)
         ListOrderedSet nonPkFieldList = new ListOrderedSet()
-        for (String fieldName in nonPkAllFieldList) {
+        for (String fieldName in ed.getNonPkFieldNames()) {
             if (valueMap.containsKey(fieldName) &&
                     (!dbValueMapFromDb || valueMap.get(fieldName) != dbValueMap.get(fieldName))) {
                 nonPkFieldList.add(fieldName)
@@ -1057,7 +1060,7 @@ abstract class EntityValueBase implements EntityValue {
         this.updateExtended(pkFieldList, nonPkFieldList, con)
 
         // create or update records for the UserFields
-        ListOrderedSet userFieldNameList = ed.getFieldNames(false, false, true)
+        ListOrderedSet userFieldNameList = ed.getUserFieldNames()
         if (userFieldNameList) {
             boolean alreadyDisabled = ec.getArtifactExecution().disableAuthz()
             try {
@@ -1143,7 +1146,7 @@ abstract class EntityValueBase implements EntityValue {
         this.deleteExtended(con)
 
         // delete records for the UserFields
-        ListOrderedSet userFieldNameList = ed.getFieldNames(false, false, true)
+        ListOrderedSet userFieldNameList = ed.getUserFieldNames()
         if (userFieldNameList) {
             boolean alreadyDisabled = ec.getArtifactExecution().disableAuthz()
             try {

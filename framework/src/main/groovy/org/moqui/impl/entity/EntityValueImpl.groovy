@@ -180,7 +180,7 @@ class EntityValueImpl extends EntityValueBase {
         // NOTE: this simple approach may not work for view-entities, but not restricting for now
 
         List<String> pkFieldList = ed.getPkFieldNames()
-        ListOrderedSet nonPkFieldList = ed.getFieldNames(false, true, false)
+        List<String> nonPkFieldList = ed.getNonPkFieldNames()
         // NOTE: even if there are no non-pk fields do a refresh in order to see if the record exists or not
 
         EntityQueryBuilder eqb = new EntityQueryBuilder(ed, getEntityFacadeImpl())

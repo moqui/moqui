@@ -173,7 +173,7 @@ class ScreenForm {
                 } else if (ecfi.getServiceFacade().isEntityAutoPattern(singleServiceName)) {
                     String entityName = ServiceDefinition.getNounFromName(singleServiceName)
                     EntityDefinition ed = ecfi.getEntityFacade().getEntityDefinition(entityName)
-                    ListOrderedSet fieldNames = ed.getFieldNames(true, true, false)
+                    List<String> fieldNames = ed.getAllFieldNames(false)
                     for (Node fieldNode in newFormNode."field") {
                         // if the field matches an in-parameter name and does not already have a validate-entity, then set it
                         if (fieldNames.contains(fieldNode."@name") && !fieldNode."@validate-entity") {

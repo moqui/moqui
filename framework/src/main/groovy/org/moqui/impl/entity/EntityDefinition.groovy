@@ -48,7 +48,9 @@ public class EntityDefinition {
     // TODO: get rid of this, refactor code to use getRelationshipMap()
     protected final Map<String, Node> relationshipNodeMap = new HashMap<String, Node>()
     protected final Map<String, String> columnNameMap = new HashMap<String, String>()
+    // small lists, but very frequently accessed
     protected List<String> pkFieldNameList = null
+    protected List<String> nonPkFieldNameList = null
     protected List<String> allFieldNameList = null
     protected Boolean hasUserFields = null
     protected Boolean allowUserField = null
@@ -140,7 +142,7 @@ public class EntityDefinition {
     }
 
     String getDefaultDescriptionField() {
-        ListOrderedSet nonPkFields = getFieldNames(false, true, false)
+        List<String> nonPkFields = getFieldNames(false, true, false)
         // find the first *Name
         for (String fn in nonPkFields)
             if (fn.endsWith("Name")) return fn
@@ -628,7 +630,36 @@ public class EntityDefinition {
         return pks
     }
 
-    ListOrderedSet getFieldNames(boolean includePk, boolean includeNonPk, boolean includeUserFields) {
+    List<String> getFieldNames(boolean includePk, boolean includeNonPk, boolean includeUserFields) {
+        List<String> baseList
+        // common case, do it fast
+        if (includePk) {
+            if (includeNonPk) {
+                baseList = getAllFieldNames(false)
+            } else {
+                baseList = getPkFieldNames()
+            }
+        } else {
+            if (includeNonPk) {
+                baseList = getNonPkFieldNames()
+            } else {
+                // all false is weird, but okay
+                baseList = []
+            }
+        }
+        if (!includeUserFields) return baseList
+
+        ListOrderedSet userFieldNames = getUserFieldNames()
+        if (userFieldNames) {
+            List<String> returnList = []
+            returnList.addAll(baseList)
+            returnList.addAll(userFieldNames.asList())
+            return returnList
+        } else {
+            return baseList
+        }
+    }
+    protected ListOrderedSet getFieldNamesInternal(boolean includePk, boolean includeNonPk) {
         ListOrderedSet nameSet = new ListOrderedSet()
         String nodeName = this.isViewEntity() ? "alias" : "field"
         for (Node node in (Collection<Node>) this.internalEntityNode[nodeName]) {
@@ -636,63 +667,85 @@ public class EntityDefinition {
                 nameSet.add(node."@name")
             }
         }
-
-        if (includeUserFields && allowUserField && !this.isViewEntity()) {
+        return nameSet
+    }
+    protected ListOrderedSet getUserFieldNames() {
+        ListOrderedSet userFieldNames = null
+        if (allowUserField && !this.isViewEntity() && (hasUserFields == null || hasUserFields)) {
             boolean alreadyDisabled = efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz()
             try {
                 EntityList userFieldList = efi.find("moqui.entity.UserField").condition("entityName", getFullEntityName()).useCache(true).list()
                 if (userFieldList) {
+                    hasUserFields = true
+                    userFieldNames = new ListOrderedSet()
+
                     Set<String> userGroupIdSet = efi.getEcfi().getExecutionContext().getUser().getUserGroupIdSet()
                     for (EntityValue userField in userFieldList) {
-                        if (userGroupIdSet.contains(userField.userGroupId)) nameSet.add((String) userField.fieldName)
+                        if (userGroupIdSet.contains(userField.get('userGroupId'))) userFieldNames.add((String) userField.get('fieldName'))
                     }
+                } else {
+                    hasUserFields = false
                 }
             } finally {
                 if (!alreadyDisabled) efi.getEcfi().getExecutionContext().getArtifactExecution().enableAuthz()
             }
         }
-
-        return nameSet
+        return userFieldNames
     }
+
     List<String> getPkFieldNames() {
-        if (pkFieldNameList == null) {
-            pkFieldNameList = Collections.unmodifiableList(new ArrayList(getFieldNames(true, false, false).asList()))
-        }
+        if (pkFieldNameList == null)
+            pkFieldNameList = Collections.unmodifiableList(new ArrayList(getFieldNamesInternal(true, false).asList()))
         return pkFieldNameList
     }
-    List<String> getAllFieldNames() {
-        if (allFieldNameList == null) {
-            allFieldNameList = Collections.unmodifiableList(new ArrayList(getFieldNames(true, true, false).asList()))
+    List<String> getNonPkFieldNames() {
+        if (nonPkFieldNameList == null)
+            nonPkFieldNameList = Collections.unmodifiableList(new ArrayList(getFieldNamesInternal(false, true).asList()))
+        return nonPkFieldNameList
+    }
+    List<String> getAllFieldNames() { return getAllFieldNames(true) }
+    List<String> getAllFieldNames(boolean includeUserFields) {
+        if (allFieldNameList == null)
+            allFieldNameList = Collections.unmodifiableList(new ArrayList(getFieldNamesInternal(true, true).asList()))
+
+        if (!includeUserFields) return allFieldNameList
+
+        ListOrderedSet userFieldNames = getUserFieldNames()
+        if (userFieldNames) {
+            List<String> returnList = []
+            returnList.addAll(allFieldNameList)
+            returnList.addAll(userFieldNames.asList())
+            return returnList
+        } else {
+            return allFieldNameList
         }
+    }
 
-        if (!allowUserField || (hasUserFields != null && !hasUserFields)) return allFieldNameList
-
-        List<String> returnList = null
-
-        // add UserFields to it if needed
-        boolean alreadyDisabled = efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz()
-        try {
-            EntityList userFieldList = efi.find("moqui.entity.UserField").condition("entityName", getFullEntityName()).useCache(true).list()
-            if (userFieldList) {
-                hasUserFields = true
-
-                Set<String> userGroupIdSet = efi.getEcfi().getExecutionContext().getUser().getUserGroupIdSet()
-                Set<String> userFieldNames = new HashSet<String>()
-                for (EntityValue userField in userFieldList) {
-                    if (userGroupIdSet.contains(userField.userGroupId)) userFieldNames.add((String) userField.fieldName)
-                }
-                if (userFieldNames) {
-                    returnList = new ArrayList<String>(allFieldNameList)
-                    returnList.addAll(userFieldNames)
-                }
-            } else {
-                hasUserFields = false
+    Map<String, String> pkFieldDefaults = null
+    Map<String, String> nonPkFieldDefaults = null
+    Map<String, String> getPkFieldDefaults() {
+        if (pkFieldDefaults == null) {
+            Map<String, String> newDefaults = [:]
+            for (Node fieldNode in getFieldNodes(true, false, false)) {
+                String defaultStr = fieldNode.'@default'
+                if (!defaultStr) continue
+                newDefaults.put((String) fieldNode.'@name', defaultStr)
             }
-        } finally {
-            if (!alreadyDisabled) efi.getEcfi().getExecutionContext().getArtifactExecution().enableAuthz()
+            pkFieldDefaults = newDefaults
         }
-
-        return returnList ? Collections.unmodifiableList(returnList) : allFieldNameList
+        return pkFieldDefaults
+    }
+    Map<String, String> getNonPkFieldDefaults() {
+        if (nonPkFieldDefaults == null) {
+            Map<String, String> newDefaults = [:]
+            for (Node fieldNode in getFieldNodes(false, true, false)) {
+                String defaultStr = fieldNode.'@default'
+                if (!defaultStr) continue
+                newDefaults.put((String) fieldNode.'@name', defaultStr)
+            }
+            nonPkFieldDefaults = newDefaults
+        }
+        return nonPkFieldDefaults
     }
 
     List<Node> getFieldNodes(boolean includePk, boolean includeNonPk, boolean includeUserFields) {

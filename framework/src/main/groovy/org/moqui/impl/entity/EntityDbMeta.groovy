@@ -256,7 +256,7 @@ class EntityDbMeta {
             con = efi.getConnection(groupName)
             DatabaseMetaData dbData = con.getMetaData()
 
-            ListOrderedSet fnSet = ed.getFieldNames(true, true, false)
+            List<String> fnSet = new ArrayList(ed.getFieldNames(true, true, false))
             int fieldCount = fnSet.size()
             colSet = dbData.getColumns(null, ed.getSchemaName(), ed.getTableName(), "%")
             while (colSet.next()) {

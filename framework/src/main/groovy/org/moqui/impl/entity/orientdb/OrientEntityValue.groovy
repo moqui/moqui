@@ -283,7 +283,7 @@ class OrientEntityValue extends EntityValueBase {
             }
 
             ODocument document = documentList.first()
-            for (String fieldName in ed.getFieldNames(false, true, false))
+            for (String fieldName in ed.getNonPkFieldNames())
                 getValueMap().put(fieldName, document.field(fieldName))
 
             return true

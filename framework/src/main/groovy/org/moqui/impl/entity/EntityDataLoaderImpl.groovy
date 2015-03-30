@@ -322,9 +322,11 @@ class EntityDataLoaderImpl implements EntityDataLoader {
     }
     static class LoadValueHandler extends ValueHandler {
         protected ServiceFacadeImpl sfi
+        protected ExecutionContext ec
         LoadValueHandler(EntityDataLoaderImpl edli) {
             super(edli)
             sfi = edli.getEfi().getEcfi().getServiceFacade()
+            ec = edli.getEfi().getEcfi().getExecutionContext()
         }
         void handleValue(EntityValue value) {
             if (edli.dummyFks) value.checkFks(true)
@@ -343,10 +345,20 @@ class EntityDataLoaderImpl implements EntityDataLoader {
         void handlePlainMap(String entityName, Map value) {
             Map results = sfi.sync().name('store', entityName).parameters(value).call()
             if (logger.isTraceEnabled()) logger.trace("Called store service for entity [${entityName}] in data load, results: ${results}")
+            if (ec.getMessage().hasError()) {
+                String errStr = ec.getMessage().getErrorsString()
+                ec.getMessage().clearErrors()
+                throw new BaseException("Error handling data load plain Map: ${errStr}")
+            }
         }
         void handleService(ServiceCallSync scs) {
             Map results = scs.call()
             if (logger.isInfoEnabled()) logger.info("Called service [${scs.getServiceName()}] in data load, results: ${results}")
+            if (ec.getMessage().hasError()) {
+                String errStr = ec.getMessage().getErrorsString()
+                ec.getMessage().clearErrors()
+                throw new BaseException("Error handling data load service call: ${errStr}")
+            }
         }
     }
     static class ListValueHandler extends ValueHandler {
