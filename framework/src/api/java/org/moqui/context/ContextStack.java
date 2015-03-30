@@ -137,27 +137,42 @@ public class ContextStack implements Map<String, Object> {
     }
 
     public Object get(Object keyObj) {
-        if (keyObj != null && !(keyObj instanceof CharSequence)) return null;
-        String key = keyObj != null ? keyObj.toString(): null;
-        // the "context" key always gets a self-reference, effectively the top of the stack
-        if ("context".equals(key)) return this;
+        String key = null;
+        if (keyObj != null) {
+            if (keyObj instanceof String) {
+                key = (String) keyObj;
+            } else if (keyObj instanceof CharSequence) {
+                key = keyObj.toString();
+            } else {
+                return null;
+            }
+            // the "context" key always gets a self-reference, effectively the top of the stack
+            if ("context".equals(key)) return this;
+        }
+
+        // optimize for non-null get, avoid double lookup with containsKey/get
+        // it sure would be nice if there was a getEntry method in Java Maps... could always avoid the double lookup
+        Object value = firstMap.get(key);
+        if (value != null) return value;
+
         if (firstMap.containsKey(key)) {
-            return firstMap.get(key);
+            // we already got it and it's null by this point
+            return null;
         } else {
-            Object value = null;
             for (Map curMap: stackList) {
                 try {
                     if (key == null && curMap instanceof Hashtable) continue;
-                    if (curMap.containsKey(key)) {
-                        value = curMap.get(key);
-                        break;
-                    }
+                    // optimize for non-null get, avoid double lookup with containsKey/get
+                    value = curMap.get(key);
+                    if (value != null) return value;
+                    if (curMap.containsKey(key)) return null;
                 } catch (Exception e) {
                     logger.error("Error getting value for key [" + key + "], returning null", e);
                     return null;
                 }
             }
-            return value;
+            // didn't find it
+            return null;
         }
     }
 
