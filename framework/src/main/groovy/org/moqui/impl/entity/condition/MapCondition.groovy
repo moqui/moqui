@@ -10,6 +10,7 @@ class MapCondition extends EntityConditionImplBase {
     protected EntityCondition.ComparisonOperator comparisonOperator
     protected EntityCondition.JoinOperator joinOperator
     protected boolean ignoreCase = false
+    protected EntityConditionImplBase internalCond = null
 
     MapCondition(EntityConditionFactoryImpl ecFactoryImpl,
             Map<String, ?> fieldMap, EntityCondition.ComparisonOperator comparisonOperator,
@@ -29,7 +30,18 @@ class MapCondition extends EntityConditionImplBase {
 
     @Override
     boolean mapMatches(Map<String, ?> map) {
-        return this.makeCondition().mapMatches(map)
+        // do this directly instead of going through condition, faster
+        // return this.makeCondition().mapMatches(map)
+
+        for (Map.Entry<String, ?> fieldEntry in this.fieldMap.entrySet()) {
+            boolean conditionMatches = EntityConditionFactoryImpl.compareByOperator(map.get(fieldEntry.getKey()),
+                    comparisonOperator, fieldEntry.getValue())
+            if (conditionMatches && joinOperator == OR) return true
+            if (!conditionMatches && joinOperator == AND) return false
+        }
+
+        // if we got here it means that it's an OR with no true, or an AND with no false
+        return (joinOperator == AND)
     }
 
     @Override
@@ -68,6 +80,8 @@ class MapCondition extends EntityConditionImplBase {
     }
 
     protected EntityConditionImplBase makeCondition() {
+        if (internalCond != null) return internalCond
+
         List conditionList = new LinkedList()
         for (Map.Entry<String, ?> fieldEntry in this.fieldMap.entrySet()) {
             EntityConditionImplBase newCondition = (EntityConditionImplBase) this.ecFactoryImpl.makeCondition(fieldEntry.getKey(),
@@ -75,7 +89,9 @@ class MapCondition extends EntityConditionImplBase {
             if (this.ignoreCase) newCondition.ignoreCase()
             conditionList.add(newCondition)
         }
-        return (EntityConditionImplBase) this.ecFactoryImpl.makeCondition(conditionList, this.joinOperator)
+
+        internalCond = (EntityConditionImplBase) this.ecFactoryImpl.makeCondition(conditionList, this.joinOperator)
+        return internalCond
     }
 
     @Override
