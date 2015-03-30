@@ -125,8 +125,9 @@ class EntityFacadeImpl implements EntityFacade {
         // the OLD approach using user's TimeZone/Locale, bad idea because user may change for same record, getting different value, etc
         // return efi.getEcfi().getExecutionContext().getUser().getCalendarForTzLcOnly()
 
-        // return Calendar.getInstance(getDatabaseTimeZone(), getDatabaseLocale())
-        return databaseTzLcCalendar
+        return Calendar.getInstance(getDatabaseTimeZone(), getDatabaseLocale())
+        // NOTE: this approach is faster but seems to cause errors with Derby (ERROR 22007: The string representation of a date/time value is out of range)
+        // return databaseTzLcCalendar
     }
 
     void checkInitDatasourceTables() {
