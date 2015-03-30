@@ -190,11 +190,14 @@ public class EntityAutoServiceRunner implements ServiceRunner {
         // check parameters Map for relationships
         Map nonFieldEntries = ed.cloneMapRemoveFields(parameters, null)
         for (Map.Entry entry in nonFieldEntries) {
+            Object relParmObj = entry.getValue()
+            if (!relParmObj) continue
+            // if the entry is not a Map or List ignore it, we're only looking for those
+            if (!(relParmObj instanceof Map) && !(relParmObj instanceof List)) continue
+
             String entryName = entry.getKey()
             if (parentPks != null && parentPks.containsKey(entryName)) continue
             if (otherFieldsToSkip.contains(entryName)) continue
-            Object relParmObj = entry.getValue()
-            if (!relParmObj) continue
 
             EntityDefinition subEd = null
             if (ed.getRelationshipInfo(entryName) != null) {
@@ -370,11 +373,14 @@ public class EntityAutoServiceRunner implements ServiceRunner {
 
         Map nonFieldEntries = ed.cloneMapRemoveFields(parameters, null)
         for (Map.Entry entry in nonFieldEntries) {
+            Object relParmObj = entry.getValue()
+            if (!relParmObj) continue
+            // if the entry is not a Map or List ignore it, we're only looking for those
+            if (!(relParmObj instanceof Map) && !(relParmObj instanceof List)) continue
+
             String entryName = entry.getKey()
             if (parentPks != null && parentPks.containsKey(entryName)) continue
             if (otherFieldsToSkip.contains(entryName)) continue
-            Object relParmObj = entry.getValue()
-            if (!relParmObj) continue
 
             EntityDefinition subEd = null
             if (ed.getRelationshipInfo(entryName) != null) {
