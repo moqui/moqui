@@ -40,11 +40,10 @@ This Work includes contributions authored by David E. Jones, not as a
 
 
             // direct cache writes and reads with EC
-            calls = baseCalls
+            calls = baseCalls * 10
             Cache testCache = ec.cache.getCache("test.cache")
             EntityValue testEnumValue =
                     ef.find("moqui.basic.Enumeration").condition([enumId:"_NA_"]).useCache(true).one()
-
             // to measure the cache time and not the condition creation time, create those in advance
             startTime = System.currentTimeMillis()
             EntityConditionFactory ecf = ef.conditionFactory
@@ -52,7 +51,7 @@ This Work includes contributions authored by David E. Jones, not as a
             for (int i = 0; i < calls; i++) {
                 conditionList.add(ecf.makeCondition([enumId:"_NA_"+i]))
             }
-            seconds = (System.currentTimeMillis() - startTime) / 1000
+            seconds = ((System.currentTimeMillis() - startTime) / 1000) ?: 0.001
             performanceList.add([operation:"create EntityCondition", entity:"moqui.basic.Enumeration", calls:calls, seconds:seconds,
                     secsPerCall:decimalFormat.format(seconds / calls),
                     callsPerSecond:decimalFormat.format(calls / seconds)])
@@ -61,7 +60,7 @@ This Work includes contributions authored by David E. Jones, not as a
             for (int i = 0; i < calls; i++) {
                 testCache.put(conditionList[i], testEnumValue)
             }
-            seconds = (System.currentTimeMillis() - startTime) / 1000
+            seconds = ((System.currentTimeMillis() - startTime) / 1000) ?: 0.001
             performanceList.add([operation:"direct cache writes", entity:"moqui.basic.Enumeration", calls:calls, seconds:seconds,
                     secsPerCall:decimalFormat.format(seconds / calls),
                     callsPerSecond:decimalFormat.format(calls / seconds)])
@@ -70,7 +69,7 @@ This Work includes contributions authored by David E. Jones, not as a
             for (int i = 0; i < calls; i++) {
                 testCache.get(conditionList[i])
             }
-            seconds = (System.currentTimeMillis() - startTime) / 1000
+            seconds = ((System.currentTimeMillis() - startTime) / 1000) ?: 0.001
             performanceList.add([operation:"direct cache reads", entity:"moqui.basic.Enumeration", calls:calls, seconds:seconds,
                     secsPerCall:decimalFormat.format(seconds / calls),
                     callsPerSecond:decimalFormat.format(calls / seconds)])
@@ -81,7 +80,7 @@ This Work includes contributions authored by David E. Jones, not as a
             for (int i = 0; i < calls; i++) {
                 ef.find("moqui.basic.Enumeration").condition([enumId:"_NA_"]).useCache(true).one()
             }
-            seconds = (System.currentTimeMillis() - startTime) / 1000
+            seconds = ((System.currentTimeMillis() - startTime) / 1000) ?: 0.001
             performanceList.add([operation:"one PK cache", entity:"moqui.basic.Enumeration", calls:calls, seconds:seconds,
                     secsPerCall:decimalFormat.format(seconds / calls),
                     callsPerSecond:decimalFormat.format(calls / seconds)])
@@ -92,15 +91,15 @@ This Work includes contributions authored by David E. Jones, not as a
             for (int i = 0; i < calls; i++) {
                 ef.find("moqui.basic.Enumeration").condition([enumId:"_NA_"]).useCache(false).one()
             }
-            seconds = (System.currentTimeMillis() - startTime) / 1000
+            seconds = ((System.currentTimeMillis() - startTime) / 1000) ?: 0.001
             performanceList.add([operation:"one PK", entity:"moqui.basic.Enumeration", calls:calls, seconds:seconds,
                     secsPerCall:decimalFormat.format(seconds / calls),
                     callsPerSecond:decimalFormat.format(calls / seconds)])
 
             // ========== direct CrUD tests ==========
+            calls = baseCalls/2
 
             // create with sequenced ID test
-            calls = baseCalls/2
             startTime = System.currentTimeMillis()
             List createTestList = []
             for (int i = 0; i < calls; i++) {
@@ -108,20 +107,19 @@ This Work includes contributions authored by David E. Jones, not as a
                         testLong:"Long "+i, testIndicator:"Y", testDateTime:nowTs, testNumberInteger:i,
                         testNumberDecimal:(i+0.5)], true, null, null).setSequencedIdPrimary().create())
             }
-            seconds = (System.currentTimeMillis() - startTime) / 1000
+            seconds = ((System.currentTimeMillis() - startTime) / 1000) ?: 0.001
             performanceList.add([operation:"direct create with sequenced ID", entity:"moqui.tools.test.ToolsTestEntity", calls:calls, seconds:seconds,
                     secsPerCall:decimalFormat.format(seconds / calls),
                     callsPerSecond:decimalFormat.format(calls / seconds)])
 
             // create with preset ID test
-            calls = baseCalls/2
             startTime = System.currentTimeMillis()
             for (int i = 0; i < calls; i++) {
                 createTestList.add(ef.makeValue("moqui.tools.test.ToolsTestEntity").setFields([testId:("id"+i),
                         testMedium:"Medium "+i, testLong:"Long "+i, testIndicator:"Y", testDateTime:nowTs,
                         testNumberInteger:i, testNumberDecimal:(i+0.5)], true, null, null).create())
             }
-            seconds = (System.currentTimeMillis() - startTime) / 1000
+            seconds = ((System.currentTimeMillis() - startTime) / 1000) ?: 0.001
             performanceList.add([operation:"direct create with preset ID", entity:"moqui.tools.test.ToolsTestEntity", calls:calls, seconds:seconds,
                     secsPerCall:decimalFormat.format(seconds / calls),
                     callsPerSecond:decimalFormat.format(calls / seconds)])
@@ -133,7 +131,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 ev.testMedium = ev.testMedium + " - Updated"
                 ev.update()
             }
-            seconds = (System.currentTimeMillis() - startTime) / 1000
+            seconds = ((System.currentTimeMillis() - startTime) / 1000) ?: 0.001
             performanceList.add([operation:"direct update", entity:"moqui.tools.test.ToolsTestEntity", calls:calls, seconds:seconds,
                     secsPerCall:decimalFormat.format(seconds / calls),
                     callsPerSecond:decimalFormat.format(calls / seconds)])
@@ -144,15 +142,15 @@ This Work includes contributions authored by David E. Jones, not as a
             for (def ev in createTestList) {
                 ev.delete()
             }
-            seconds = (System.currentTimeMillis() - startTime) / 1000
+            seconds = ((System.currentTimeMillis() - startTime) / 1000) ?: 0.001
             performanceList.add([operation:"direct delete", entity:"moqui.tools.test.ToolsTestEntity", calls:calls, seconds:seconds,
                     secsPerCall:decimalFormat.format(seconds / calls),
                     callsPerSecond:decimalFormat.format(calls / seconds)])
 
             // ========== service CrUD tests ==========
+            calls = baseCalls/2
 
             // create with sequenced ID test
-            calls = baseCalls/4
             startTime = System.currentTimeMillis()
             List createTestIdList = []
             for (int i = 0; i < calls; i++) {
@@ -160,7 +158,7 @@ This Work includes contributions authored by David E. Jones, not as a
                         testMedium:"Medium "+i, testLong:"Long "+i, testIndicator:"Y", testDateTime:nowTs,
                         testNumberInteger:i, testNumberDecimal:(i+0.5)]).call().testId)
             }
-            seconds = (System.currentTimeMillis() - startTime) / 1000
+            seconds = ((System.currentTimeMillis() - startTime) / 1000) ?: 0.001
             performanceList.add([operation:"service create with sequenced ID", entity:"moqui.tools.test.ToolsTestEntity", calls:calls, seconds:seconds,
                     secsPerCall:decimalFormat.format(seconds / calls),
                     callsPerSecond:decimalFormat.format(calls / seconds)])
@@ -171,7 +169,7 @@ This Work includes contributions authored by David E. Jones, not as a
             for (String id in createTestIdList) {
                 ec.service.sync().name("update", "moqui.tools.test.ToolsTestEntity").parameters([testId:id, testMedium:"Updated Text"]).call()
             }
-            seconds = (System.currentTimeMillis() - startTime) / 1000
+            seconds = ((System.currentTimeMillis() - startTime) / 1000) ?: 0.001
             performanceList.add([operation:"service update", entity:"moqui.tools.test.ToolsTestEntity", calls:calls, seconds:seconds,
                     secsPerCall:decimalFormat.format(seconds / calls),
                     callsPerSecond:decimalFormat.format(calls / seconds)])
@@ -182,15 +180,15 @@ This Work includes contributions authored by David E. Jones, not as a
             for (String id in createTestIdList) {
                 ec.service.sync().name("delete", "moqui.tools.test.ToolsTestEntity").parameter("testId", id).call()
             }
-            seconds = (System.currentTimeMillis() - startTime) / 1000
+            seconds = ((System.currentTimeMillis() - startTime) / 1000) ?: 0.001
             performanceList.add([operation:"service delete", entity:"moqui.tools.test.ToolsTestEntity", calls:calls, seconds:seconds,
                     secsPerCall:decimalFormat.format(seconds / calls),
                     callsPerSecond:decimalFormat.format(calls / seconds)])
 
             // ========== NoSQL direct CrUD tests ==========
+            calls = baseCalls/2
 
             // create with sequenced ID test
-            calls = baseCalls/2
             startTime = System.currentTimeMillis()
             List createNoSqlTestList = []
             for (int i = 0; i < calls; i++) {
@@ -200,20 +198,19 @@ This Work includes contributions authored by David E. Jones, not as a
                 createNoSqlTestList.add(ev)
                 // logger.warn("===== created ToolsTestNoSqlEntity value ${ev}")
             }
-            seconds = (System.currentTimeMillis() - startTime) / 1000
+            seconds = ((System.currentTimeMillis() - startTime) / 1000) ?: 0.001
             performanceList.add([operation:"direct create with sequenced ID", entity:"moqui.tools.test.ToolsTestNoSqlEntity", calls:calls, seconds:seconds,
                     secsPerCall:decimalFormat.format(seconds / calls),
                     callsPerSecond:decimalFormat.format(calls / seconds)])
 
             // create with preset ID test
-            calls = baseCalls/2
             startTime = System.currentTimeMillis()
             for (int i = 0; i < calls; i++) {
                 createNoSqlTestList.add(ef.makeValue("moqui.tools.test.ToolsTestNoSqlEntity").setFields([testId:("id"+i),
                         testMedium:"Medium "+i, testLong:"Long "+i, testIndicator:"Y", testDateTime:nowTs,
                         testNumberInteger:i, testNumberDecimal:(i+0.5)], true, null, null).create())
             }
-            seconds = (System.currentTimeMillis() - startTime) / 1000
+            seconds = ((System.currentTimeMillis() - startTime) / 1000) ?: 0.001
             performanceList.add([operation:"direct create with preset ID", entity:"moqui.tools.test.ToolsTestNoSqlEntity", calls:calls, seconds:seconds,
                     secsPerCall:decimalFormat.format(seconds / calls),
                     callsPerSecond:decimalFormat.format(calls / seconds)])
@@ -225,7 +222,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 ev.testMedium = ev.testMedium + " - Updated"
                 ev.update()
             }
-            seconds = (System.currentTimeMillis() - startTime) / 1000
+            seconds = ((System.currentTimeMillis() - startTime) / 1000) ?: 0.001
             performanceList.add([operation:"direct update", entity:"moqui.tools.test.ToolsTestNoSqlEntity", calls:calls, seconds:seconds,
                     secsPerCall:decimalFormat.format(seconds / calls),
                     callsPerSecond:decimalFormat.format(calls / seconds)])
@@ -236,7 +233,7 @@ This Work includes contributions authored by David E. Jones, not as a
             for (def ev in createNoSqlTestList) {
                 ev.delete()
             }
-            seconds = (System.currentTimeMillis() - startTime) / 1000
+            seconds = ((System.currentTimeMillis() - startTime) / 1000) ?: 0.001
             performanceList.add([operation:"direct delete", entity:"moqui.tools.test.ToolsTestNoSqlEntity", calls:calls, seconds:seconds,
                     secsPerCall:decimalFormat.format(seconds / calls),
                     callsPerSecond:decimalFormat.format(calls / seconds)])
