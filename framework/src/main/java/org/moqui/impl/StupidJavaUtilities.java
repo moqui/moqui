@@ -11,8 +11,24 @@
  */
 package org.moqui.impl;
 
-/** Methods that work better in Java than Groovy, helps with performance but mostly for syntax and language feature reasons */
-public class StupidJavaUtilities extends ClassLoader {
+/** Methods that work better in Java than Groovy, helps with performance and for syntax and language feature reasons */
+public class StupidJavaUtilities {
+    public static boolean isInstanceOf(Object theObjectInQuestion, String javaType) {
+        Class theClass = StupidClassLoader.commonJavaClassesMap.get(javaType);
+        if (theClass == null) {
+            try {
+                theClass = StupidJavaUtilities.class.getClassLoader().loadClass(javaType);
+            } catch (ClassNotFoundException e) { /* ignore */ }
+        }
+        if (theClass == null) {
+            try {
+                theClass = Thread.currentThread().getContextClassLoader().loadClass(javaType);
+            } catch (ClassNotFoundException e) { /* ignore */ }
+        }
+        if (theClass == null) throw new IllegalArgumentException("Cannot find class for type: ${javaType}");
+        return theClass.isInstance(theObjectInQuestion);
+    }
+
     public static boolean internedStringsEqual(String s1, String s2) {
         if (s1 == null) {
             return (s2 == null);
