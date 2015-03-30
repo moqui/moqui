@@ -539,17 +539,6 @@ abstract class EntityFindBase implements EntityFind {
         if (!this.fieldsToSelect || (txCache != null && txcValue == null) || (doCache && cacheHit == null))
             this.selectFields(ed.getFieldNames(true, true, false))
 
-        // NOTE: do actual query condition as a separate condition because this will always be added on and isn't a
-        //     part of the original where to use for the cache
-        EntityConditionImplBase conditionForQuery
-        EntityConditionImplBase viewWhere = ed.makeViewWhereCondition()
-        if (viewWhere) {
-            if (whereCondition) conditionForQuery = (EntityConditionImplBase) efi.getConditionFactory()
-                    .makeCondition(whereCondition, EntityCondition.JoinOperator.AND, viewWhere)
-            else conditionForQuery = viewWhere
-        } else { conditionForQuery = whereCondition }
-
-
         // call the abstract method
         EntityValueBase newEntityValue = null
         if (txcValue != null) {
@@ -560,7 +549,7 @@ abstract class EntityFindBase implements EntityFind {
             } else {
                 // if forUpdate unless this was a TX CREATE it'll be in the DB and should be locked, so do the query
                 //     anyway, but ignore the result
-                if (forUpdate && !txCache.isTxCreate(txcValue)) oneExtended(conditionForQuery)
+                if (forUpdate && !txCache.isTxCreate(txcValue)) oneExtended(getConditionForQuery(ed, whereCondition))
                 newEntityValue = txcValue
             }
         } else if (cacheHit != null) {
@@ -573,7 +562,7 @@ abstract class EntityFindBase implements EntityFind {
 
             // TODO: this will not handle query conditions on UserFields, it will blow up in fact
 
-            newEntityValue = oneExtended(conditionForQuery)
+            newEntityValue = oneExtended(getConditionForQuery(ed, whereCondition))
 
             // it didn't come from the txCache so put it there
             if (txCache != null) txCache.onePut(newEntityValue)
@@ -592,6 +581,20 @@ abstract class EntityFindBase implements EntityFind {
         ec.getArtifactExecution().pop()
 
         return newEntityValue
+    }
+
+    EntityConditionImplBase getConditionForQuery(EntityDefinition ed, EntityConditionImplBase whereCondition) {
+        // NOTE: do actual query condition as a separate condition because this will always be added on and isn't a
+        //     part of the original where to use for the cache
+        EntityConditionImplBase conditionForQuery
+        EntityConditionImplBase viewWhere = ed.makeViewWhereCondition()
+        if (viewWhere) {
+            if (whereCondition) conditionForQuery = (EntityConditionImplBase) efi.getConditionFactory()
+                    .makeCondition(whereCondition, EntityCondition.JoinOperator.AND, viewWhere)
+            else conditionForQuery = viewWhere
+        } else { conditionForQuery = whereCondition }
+
+        return conditionForQuery
     }
 
     abstract EntityValueBase oneExtended(EntityConditionImplBase whereCondition) throws EntityException
