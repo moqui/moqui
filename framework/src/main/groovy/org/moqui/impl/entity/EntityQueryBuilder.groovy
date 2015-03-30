@@ -331,7 +331,7 @@ class EntityQueryBuilder {
     }
 
     public static String enDeCrypt(String value, boolean encrypt, EntityFacadeImpl efi) {
-        Node entityFacadeNode = efi.ecfi.confXmlRoot."entity-facade"[0]
+        Node entityFacadeNode = (Node) efi.ecfi.confXmlRoot."entity-facade"[0]
         String pwStr = entityFacadeNode."@crypt-pass"
         if (!pwStr) throw new IllegalArgumentException("No entity-facade.@crypt-pass setting found, NOT doing encryption")
 
@@ -503,7 +503,7 @@ class EntityQueryBuilder {
                 }
             }
         } catch (SQLException sqle) {
-            throw new EntityException("SQL Exception while setting value: " + sqle.toString(), sqle)
+            throw new EntityException("SQL Exception while setting value [${value}](${value?.getClass()?.getName()}), type ${typeValue}: " + sqle.toString(), sqle)
         } catch (Exception e) {
             throw new EntityException("Error while setting value: " + e.toString(), e)
         }

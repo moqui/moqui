@@ -102,13 +102,13 @@ class MapCondition extends EntityConditionImplBase {
 
     @Override
     boolean equals(Object o) {
-        if (o == null || o.getClass() != this.getLocalClass()) return false
+        if (o == null || !(o instanceof MapCondition)) return false
         MapCondition that = (MapCondition) o
         // NOTE: for Java Enums the != is WAY faster than the .equals
-        if (this.comparisonOperator != that.comparisonOperator) return false
-        if (this.joinOperator != that.joinOperator) return false
-        if (this.ignoreCase != that.ignoreCase) return false
-        if (!this.fieldMap.equals(that.fieldMap)) return false
+        if (comparisonOperator != that.comparisonOperator) return false
+        if (joinOperator != that.joinOperator) return false
+        if (ignoreCase != that.ignoreCase) return false
+        if (!fieldMap.equals(that.fieldMap)) return false
         return true
     }
 }

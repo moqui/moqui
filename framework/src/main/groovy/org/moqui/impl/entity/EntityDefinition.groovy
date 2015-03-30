@@ -868,19 +868,27 @@ public class EntityDefinition {
     void setFields(Map<String, ?> src, Map<String, Object> dest, boolean setIfEmpty, String namePrefix, Boolean pks) {
         if (src == null) return
 
-        EntityValue ev = src instanceof EntityValue ? (EntityValue) src : null
-        for (String fieldName in (pks != null ? this.getFieldNames(pks, !pks, !pks) : this.getAllFieldNames())) {
+        boolean hasNamePrefix = namePrefix as boolean
+        EntityValueBase evb = src instanceof EntityValueBase ? (EntityValueBase) src : null
+        List<String> fieldNameList = pks != null ? this.getFieldNames(pks, !pks, !pks) : this.getAllFieldNames()
+        for (String fieldName in fieldNameList) {
             String sourceFieldName
-            if (namePrefix) {
+            if (hasNamePrefix) {
                 sourceFieldName = namePrefix + Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1)
             } else {
                 sourceFieldName = fieldName
             }
 
-            if (ev != null ? ev.isFieldSet(sourceFieldName) : src.containsKey(sourceFieldName)) {
-                Object value = src.get(sourceFieldName)
+            Object value = src.get(sourceFieldName)
+            if (value != null || (evb != null ? evb.isFieldSet(sourceFieldName) : src.containsKey(sourceFieldName))) {
                 if (!StupidUtilities.isEmpty(value)) {
-                    if (value instanceof CharSequence) {
+                    if (value instanceof String) {
+                        try {
+                            this.setString(fieldName, value, dest)
+                        } catch (BaseException be) {
+                            this.efi.ecfi.executionContext.message.addValidationError(null, fieldName, null, be.getMessage(), be)
+                        }
+                    } else if (value instanceof CharSequence) {
                         try {
                             this.setString(fieldName, value.toString(), dest)
                         } catch (BaseException be) {

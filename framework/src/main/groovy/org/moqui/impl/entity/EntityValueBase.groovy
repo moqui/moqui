@@ -214,19 +214,7 @@ abstract class EntityValueBase implements EntityValue {
 
     @Override
     EntityValue set(String name, Object value) {
-        if (!mutable) throw new EntityException("Cannot set field [${name}], this entity value is not mutable (it is read-only)")
-        if (!getEntityDefinition().isField(name)) {
-            throw new EntityException("The name [${name}] is not a valid field name for entity [${entityName}]")
-        }
-        if (valueMap.get(name) != value) {
-            modified = true
-            if (entityDefinition.isPkField(name)) pkModified = true
-            if (valueMap.containsKey(name)) {
-                if (dbValueMap == null) dbValueMap = [:]
-                dbValueMap.put(name, valueMap.get(name))
-            }
-        }
-        valueMap.put(name, value)
+        put(name, value)
         return this
     }
 
@@ -762,10 +750,24 @@ abstract class EntityValueBase implements EntityValue {
     }
 
     @Override
-    Object put(String k, Object v) {
-        Object original = this.get(k)
-        this.set(k, v)
-        return original
+    Object put(String name, Object value) {
+        EntityDefinition ed = getEntityDefinition()
+        Node fieldNode = ed.getFieldNode(name)
+        if (!mutable) throw new EntityException("Cannot set field [${name}], this entity value is not mutable (it is read-only)")
+        if (fieldNode == null) {
+            throw new EntityException("The name [${name}] is not a valid field name for entity [${entityName}]")
+        }
+        Object curValue = valueMap.get(name)
+        if (curValue != value) {
+            modified = true
+            if (fieldNode."@is-pk" == "true") pkModified = true
+            if (curValue != null) {
+                if (dbValueMap == null) dbValueMap = [:]
+                dbValueMap.put(name, curValue)
+            }
+        }
+        valueMap.put(name, value)
+        return curValue
     }
 
     @Override
