@@ -29,6 +29,21 @@ public class StupidJavaUtilities {
         return theClass.isInstance(theObjectInQuestion);
     }
 
+    public static String removeChar(String orig, char ch) {
+        char[] newChars = new char[orig.length()];
+        int origLength = orig.length();
+        int lastPos = 0;
+        for (int i = 0; i < origLength; i++) {
+            char curChar = orig.charAt(i);
+            if (curChar != ch) {
+                newChars[lastPos] = curChar;
+                lastPos++;
+            }
+        }
+        if (lastPos == origLength) return orig;
+        return new String(newChars, 0, lastPos);
+    }
+
     public static boolean internedStringsEqual(String s1, String s2) {
         if (s1 == null) {
             return (s2 == null);
