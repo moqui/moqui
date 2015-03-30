@@ -184,6 +184,10 @@ class EntityDataLoaderImpl implements EntityDataLoader {
             logger.info("Loading data types: ${dataTypes ?: 'ALL'}")
         }
 
+        // efi.createAllAutoReverseManyRelationships()
+        // logger.warn("========== Waiting 45s to attach profiler")
+        // Thread.sleep(45000)
+
         TransactionFacade tf = efi.ecfi.transactionFacade
         boolean suspendedTransaction = false
         try {
@@ -245,6 +249,9 @@ class EntityDataLoaderImpl implements EntityDataLoader {
         }
 
         if (reenableEeca) this.efi.ecfi.eci.artifactExecution.enableEntityEca()
+
+        // logger.warn("========== Done loading, waiting for a long time so process is still running for profiler")
+        // Thread.sleep(60*1000*100)
     }
 
     void loadSingleFile(String location, EntityXmlHandler exh, EntityCsvHandler ech, EntityJsonHandler ejh) {
