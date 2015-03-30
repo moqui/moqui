@@ -60,6 +60,7 @@ class EntityFacadeImpl implements EntityFacade {
     protected final String defaultGroupName
     protected final TimeZone databaseTimeZone
     protected final Locale databaseLocale
+    protected final Calendar databaseTzLcCalendar
 
     // this will be used to temporarily cache root Node objects of entity XML files, used when loading a bunch at once,
     //     should be null otherwise to prevent its use
@@ -93,6 +94,7 @@ class EntityFacadeImpl implements EntityFacade {
             } catch (Exception e) { /* do nothing */ }
         }
         this.databaseLocale = theLocale ?: Locale.getDefault()
+        this.databaseTzLcCalendar = Calendar.getInstance(getDatabaseTimeZone(), getDatabaseLocale())
 
         // init entity meta-data
         entityDefinitionCache = ecfi.getCacheFacade().getCache("entity.definition")
@@ -122,7 +124,9 @@ class EntityFacadeImpl implements EntityFacade {
     Calendar getCalendarForTzLc() {
         // the OLD approach using user's TimeZone/Locale, bad idea because user may change for same record, getting different value, etc
         // return efi.getEcfi().getExecutionContext().getUser().getCalendarForTzLcOnly()
-        return Calendar.getInstance(getDatabaseTimeZone(), getDatabaseLocale())
+
+        // return Calendar.getInstance(getDatabaseTimeZone(), getDatabaseLocale())
+        return databaseTzLcCalendar
     }
 
     void checkInitDatasourceTables() {
@@ -1027,7 +1031,7 @@ class EntityFacadeImpl implements EntityFacade {
             // is the seqName an entityName?
             EntityDefinition ed = getEntityDefinition(seqName)
             if (ed != null) {
-                String groupName = getEntityGroupName(ed)
+                String groupName = ed.getEntityGroupName()
                 if (ed.getEntityNode()?."@sequence-primary-use-uuid" == "true" ||
                         getDatasourceNode(groupName)?."@sequence-primary-use-uuid" == "true")
                     return UUID.randomUUID().toString()
@@ -1107,16 +1111,6 @@ class EntityFacadeImpl implements EntityFacade {
         return prefix + seqNum.toString()
     }
 
-    String getEntityGroupName(EntityDefinition ed) {
-        String entityName = ed.getFullEntityName()
-        Node entityNode = ed.getEntityNode()
-        if (entityNode."@is-dynamic-view" == "true") {
-            // use the name of the first member-entity
-            entityName = entityNode."member-entity".find({ !it."@join-from-alias" })?."@entity-name"
-        }
-        return getEntityGroupName(entityName)
-    }
-
     Set<String> getAllEntityNamesInGroup(String groupName) {
         Set<String> groupEntityNames = new TreeSet<String>()
         for (String entityName in getAllEntityNames()) {
@@ -1132,11 +1126,7 @@ class EntityFacadeImpl implements EntityFacade {
         if (entityGroupName != null) return entityGroupName
         EntityDefinition ed = this.getEntityDefinition(entityName)
         if (!ed) return null
-        if (ed.entityNode."@group-name") {
-            entityGroupName = ed.entityNode."@group-name"
-        } else {
-            entityGroupName = defaultGroupName
-        }
+        entityGroupName = ed.getEntityGroupName()
         entityGroupNameMap.put(entityName, entityGroupName)
         return entityGroupName
     }
@@ -1186,7 +1176,7 @@ class EntityFacadeImpl implements EntityFacade {
 
     protected Map<String, Map<String, String>> javaTypeByGroup = [:]
     String getFieldJavaType(String fieldType, EntityDefinition ed) {
-        String groupName = this.getEntityGroupName(ed)
+        String groupName = ed.getEntityGroupName()
         Map<String, String> javaTypeMap = javaTypeByGroup.get(groupName)
         if (javaTypeMap == null) {
             javaTypeMap = new HashMap()
@@ -1209,7 +1199,7 @@ class EntityFacadeImpl implements EntityFacade {
 
     protected Map<String, Map<String, String>> sqlTypeByGroup = [:]
     protected String getFieldSqlType(String fieldType, EntityDefinition ed) {
-        String groupName = this.getEntityGroupName(ed)
+        String groupName = ed.getEntityGroupName()
         Map<String, String> sqlTypeMap = sqlTypeByGroup.get(groupName)
         if (sqlTypeMap == null) {
             sqlTypeMap = new HashMap()

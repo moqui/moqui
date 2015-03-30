@@ -683,7 +683,7 @@ abstract class EntityFindBase implements EntityFind {
             eli.setQueryCondition(whereCondition)
             eli.setOrderByFields(orderByExpanded)
 
-            Node databaseNode = this.efi.getDatabaseNode(this.efi.getEntityGroupName(ed))
+            Node databaseNode = this.efi.getDatabaseNode(ed.getEntityGroupName())
             if (this.limit != null && databaseNode != null && databaseNode."@offset-style" == "cursor") {
                 el = eli.getPartialList(this.offset ?: 0, this.limit, true)
             } else {
@@ -775,7 +775,7 @@ abstract class EntityFindBase implements EntityFind {
         eli.setOrderByFields(orderByExpanded)
 
         // NOTE: if we are doing offset/limit with a cursor no good way to limit results, but we'll at least jump to the offset
-        Node databaseNode = this.efi.getDatabaseNode(this.efi.getEntityGroupName(ed))
+        Node databaseNode = this.efi.getDatabaseNode(ed.getEntityGroupName())
         // NOTE: allow databaseNode to be null because custom (non-JDBC) datasources may not have one
         if (this.offset != null && databaseNode != null && databaseNode."@offset-style" == "cursor") {
             if (!eli.absolute(offset)) {

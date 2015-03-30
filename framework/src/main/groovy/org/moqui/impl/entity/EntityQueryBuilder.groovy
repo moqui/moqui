@@ -11,6 +11,8 @@
  */
 package org.moqui.impl.entity
 
+import org.moqui.impl.StupidJavaUtilities
+
 import java.nio.ByteBuffer
 import java.sql.Blob
 import java.sql.Clob
@@ -68,7 +70,7 @@ class EntityQueryBuilder {
     }
 
     Connection makeConnection() {
-        this.connection = this.efi.getConnection(this.efi.getEntityGroupName(mainEntityDefinition))
+        this.connection = this.efi.getConnection(mainEntityDefinition.getEntityGroupName())
         return this.connection
     }
 
@@ -367,7 +369,7 @@ class EntityQueryBuilder {
         String javaType = efi.getFieldJavaType((String) fieldNode."@type", ed)
         int typeValue = EntityFacadeImpl.getJavaTypeInt(javaType)
         if (value != null) {
-            if (!StupidUtilities.isInstanceOf(value, javaType)) {
+            if (!StupidJavaUtilities.isInstanceOf(value, javaType)) {
                 // this is only an info level message because under normal operation for most JDBC
                 // drivers this will be okay, but if not then the JDBC driver will throw an exception
                 // and when lower debug levels are on this should help give more info on what happened
@@ -393,7 +395,7 @@ class EntityQueryBuilder {
             }
         }
 
-        boolean useBinaryTypeForBlob = ("true" == efi.getDatabaseNode(efi.getEntityGroupName(ed))."@use-binary-type-for-blob")
+        boolean useBinaryTypeForBlob = ("true" == efi.getDatabaseNode(ed.getEntityGroupName())."@use-binary-type-for-blob")
         try {
             setPreparedStatementValue(ps, index, value, typeValue, useBinaryTypeForBlob, efi)
         } catch (EntityException e) {
@@ -405,8 +407,12 @@ class EntityQueryBuilder {
 
     static void setPreparedStatementValue(PreparedStatement ps, int index, Object value, EntityDefinition ed,
                                           EntityFacadeImpl efi) throws EntityException {
-        boolean useBinaryTypeForBlob = ("true" == efi.getDatabaseNode(efi.getEntityGroupName(ed))."@use-binary-type-for-blob")
         int typeValue = value ? EntityFacadeImpl.getJavaTypeInt(value.class.name) : 1
+        // useBinaryTypeForBlob is only needed for types 11/Object and 12/Blob, faster to not determine otherwise
+        boolean useBinaryTypeForBlob = false
+        if (typeValue == 11 || typeValue == 12) {
+            useBinaryTypeForBlob = ("true" == efi.getDatabaseNode(ed.getEntityGroupName())."@use-binary-type-for-blob")
+        }
         setPreparedStatementValue(ps, index, value, typeValue, useBinaryTypeForBlob, efi)
 
     }

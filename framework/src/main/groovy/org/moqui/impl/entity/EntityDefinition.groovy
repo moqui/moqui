@@ -41,6 +41,7 @@ public class EntityDefinition {
     protected String internalEntityName
     protected String fullEntityName
     protected String shortAlias
+    protected String groupName = null
     protected Node internalEntityNode
     protected final Map<String, Boolean> fieldSimpleMap = new HashMap<String, Boolean>()
     protected final Map<String, Node> fieldNodeMap = new HashMap<String, Node>()
@@ -124,6 +125,19 @@ public class EntityDefinition {
         return isView
     }
     boolean hasFunctionAlias() { return isViewEntity() && this.internalEntityNode."alias".find({ it."@function" }) }
+
+    String getEntityGroupName() {
+        if (groupName == null) {
+            if (entityNode."@is-dynamic-view" == "true") {
+                Node entityNode = this.internalEntityNode
+                // use the name of the first member-entity
+                String memberEntityName = entityNode."member-entity".find({ !it."@join-from-alias" })?."@entity-name"
+                groupName = efi.getEntityGroupName(memberEntityName)
+            }
+            groupName = entityNode."@group-name" ?: efi.getDefaultGroupName()
+        }
+        return groupName
+    }
 
     String getDefaultDescriptionField() {
         ListOrderedSet nonPkFields = getFieldNames(false, true, false)
@@ -572,7 +586,7 @@ public class EntityDefinition {
     }
 
     String getFullTableName() {
-        if (efi.getDatabaseNode(efi.getEntityGroupName(this))?."@use-schemas" != "false") {
+        if (efi.getDatabaseNode(getEntityGroupName())?."@use-schemas" != "false") {
             String schemaName = getSchemaName()
             return schemaName ? schemaName + "." + getTableName() : getTableName()
         } else {
@@ -581,7 +595,7 @@ public class EntityDefinition {
     }
 
     String getSchemaName() {
-        String schemaName = efi.getDatasourceNode(efi.getEntityGroupName(this))?."@schema-name"
+        String schemaName = efi.getDatasourceNode(getEntityGroupName())?."@schema-name"
         return schemaName ?: null
     }
 

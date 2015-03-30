@@ -36,7 +36,7 @@ class EntityFindBuilder extends EntityQueryBuilder {
 
     void addLimitOffset(Integer limit, Integer offset) {
         if (limit == null && offset == null) return
-        Node databaseNode = this.efi.getDatabaseNode(this.efi.getEntityGroupName(mainEntityDefinition))
+        Node databaseNode = this.efi.getDatabaseNode(mainEntityDefinition.getEntityGroupName())
         // if no databaseNode do nothing, means it is not a standard SQL/JDBC database
         if (databaseNode != null) {
             if (databaseNode."@offset-style" == "limit") {
@@ -139,7 +139,7 @@ class EntityFindBuilder extends EntityQueryBuilder {
         Node entityNode = localEntityDefinition.getEntityNode()
 
         if (localEntityDefinition.isViewEntity()) {
-            Node databaseNode = this.efi.getDatabaseNode(this.efi.getEntityGroupName(localEntityDefinition))
+            Node databaseNode = this.efi.getDatabaseNode(localEntityDefinition.getEntityGroupName())
             String joinStyle = databaseNode?."@join-style" ?: "ansi"
 
             if ("ansi" != joinStyle && "ansi-no-parenthesis" != joinStyle) {
