@@ -58,6 +58,7 @@ class EntityFacadeImpl implements EntityFacade {
     protected final Map<String, List<EntityEcaRule>> eecaRulesByEntityName = new HashMap()
     protected final Map<String, String> entityGroupNameMap = new HashMap()
     protected final Map<String, Node> databaseNodeByGroupName = new HashMap()
+    protected final Map<String, Node> datasourceNodeByGroupName = new HashMap()
     protected final String defaultGroupName
     protected final TimeZone databaseTimeZone
     protected final Locale databaseLocale
@@ -816,9 +817,16 @@ class EntityFacadeImpl implements EntityFacade {
         return datasourceNode."@database-conf-name"
     }
 
+    @CompileStatic
     Node getDatasourceNode(String groupName) {
+        Node node = datasourceNodeByGroupName.get(groupName)
+        if (node != null) return node
+        return findDatasourceNode(groupName)
+    }
+    protected Node findDatasourceNode(String groupName) {
         Node dsNode = (Node) ecfi.confXmlRoot."entity-facade"[0].datasource.find({ it."@group-name" == groupName })
         if (dsNode == null) dsNode = (Node) ecfi.confXmlRoot."entity-facade"[0].datasource.find({ it."@group-name" == defaultGroupName })
+        datasourceNodeByGroupName.put(groupName, dsNode)
         return dsNode
     }
 
