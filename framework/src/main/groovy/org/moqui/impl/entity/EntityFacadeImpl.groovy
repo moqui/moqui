@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.entity
 
+import groovy.transform.CompileStatic
 import org.apache.commons.collections.set.ListOrderedSet
 
 import org.moqui.context.Cache
@@ -113,14 +114,19 @@ class EntityFacadeImpl implements EntityFacade {
         entityDataDocument = new EntityDataDocument(this)
     }
 
+    @CompileStatic
     ExecutionContextFactoryImpl getEcfi() { return ecfi }
     EntityCache getEntityCache() { return entityCache }
     EntityDataFeed getEntityDataFeed() { return entityDataFeed }
     EntityDataDocument getEntityDataDocument() { return entityDataDocument }
+    @CompileStatic
     String getDefaultGroupName() { return defaultGroupName }
 
+    @CompileStatic
     TimeZone getDatabaseTimeZone() { return databaseTimeZone }
+    @CompileStatic
     Locale getDatabaseLocale() { return databaseLocale }
+    @CompileStatic
     Calendar getCalendarForTzLc() {
         // the OLD approach using user's TimeZone/Locale, bad idea because user may change for same record, getting different value, etc
         // return efi.getEcfi().getExecutionContext().getUser().getCalendarForTzLcOnly()
@@ -168,6 +174,7 @@ class EntityFacadeImpl implements EntityFacade {
         return groupNames
     }
 
+    @CompileStatic
     static int getTxIsolationFromString(String isolationLevel) {
         if (!isolationLevel) return -1
         if ("Serializable".equals(isolationLevel)) {
@@ -564,7 +571,9 @@ class EntityFacadeImpl implements EntityFacade {
         }
     }
 
+    @CompileStatic
     boolean hasEecaRules(String entityName) { return eecaRulesByEntityName.get(entityName) as boolean }
+    @CompileStatic
     void runEecaRules(String entityName, Map fieldValues, String operation, boolean before) {
         List<EntityEcaRule> lst = eecaRulesByEntityName.get(entityName)
         if (lst) {
@@ -649,6 +658,7 @@ class EntityFacadeImpl implements EntityFacade {
         return entityInfoList
     }
 
+    @CompileStatic
     boolean isEntityDefined(String entityName) {
         if (!entityName) return false
         // optimization, common case: if it's in the location cache it is exists, even if expired; if it isn't there
@@ -670,6 +680,7 @@ class EntityFacadeImpl implements EntityFacade {
         }
     }
 
+    @CompileStatic
     EntityDefinition getEntityDefinition(String entityName) {
         if (!entityName) return null
         EntityDefinition ed = (EntityDefinition) this.entityDefinitionCache.get(entityName)
@@ -677,6 +688,7 @@ class EntityFacadeImpl implements EntityFacade {
         return loadEntityDefinition(entityName)
     }
 
+    @CompileStatic
     void clearEntityDefinitionFromCache(String entityName) {
         EntityDefinition ed = (EntityDefinition) this.entityDefinitionCache.get(entityName)
         if (ed != null) {
@@ -705,7 +717,7 @@ class EntityFacadeImpl implements EntityFacade {
                 if (ed.getPkFieldNames().size() > 1) continue
             }
 
-            eil.add((Map<String, Object>) [entityName:ed.entityName, "package":ed.entityNode."@package-name",
+            eil.add([entityName:ed.entityName, "package":ed.entityNode."@package-name",
                     isView:(ed.isViewEntity() ? "true" : "false"), fullEntityName:ed.fullEntityName])
         }
 
@@ -739,7 +751,7 @@ class EntityFacadeImpl implements EntityFacade {
                 functionName = aliasVal.functionName
             }
 
-            efl.add((Map<String, Object>) [entityName:en, fieldName:fn, type:fieldNode."@type", cardinality:"one",
+            efl.add([entityName:en, fieldName:fn, type:fieldNode."@type", cardinality:"one",
                     inDbView:inDbView, functionName:functionName])
         }
 
@@ -767,7 +779,7 @@ class EntityFacadeImpl implements EntityFacade {
                         functionName = aliasVal.functionName
                     }
                 }
-                efl.add((Map<String, Object>) [entityName:relInfo.relatedEntityName, fieldName:fn, type:fieldNode."@type",
+                efl.add([entityName:relInfo.relatedEntityName, fieldName:fn, type:fieldNode."@type",
                         cardinality:relInfo.type, title:relInfo.title, inDbView:inDbView, functionName:functionName])
             }
         }
@@ -776,11 +788,15 @@ class EntityFacadeImpl implements EntityFacade {
         return efl
     }
 
+    @CompileStatic
     Node getDatabaseNode(String groupName) {
         Node node = databaseNodeByGroupName.get(groupName)
         if (node != null) return node
+        return findDatabaseNode(groupName)
+    }
+    protected Node findDatabaseNode(String groupName) {
         String databaseConfName = getDatabaseConfName(groupName)
-        node = (Node) ecfi.confXmlRoot."database-list"[0].database.find({ it."@name" == databaseConfName })
+        Node node = (Node) ecfi.confXmlRoot."database-list"[0].database.find({ it."@name" == databaseConfName })
         databaseNodeByGroupName.put(groupName, node)
         return node
     }
@@ -802,6 +818,7 @@ class EntityFacadeImpl implements EntityFacade {
     /* ========================= */
 
     @Override
+    @CompileStatic
     EntityDatasourceFactory getDatasourceFactory(String groupName) {
         EntityDatasourceFactory edf = datasourceFactoryByGroupMap.get(groupName)
         if (edf == null) edf = datasourceFactoryByGroupMap.get(defaultGroupName)
@@ -810,9 +827,11 @@ class EntityFacadeImpl implements EntityFacade {
     }
 
     @Override
+    @CompileStatic
     EntityConditionFactory getConditionFactory() { return this.entityConditionFactory }
 
     @Override
+    @CompileStatic
     EntityValue makeValue(String entityName) {
         if (!entityName) throw new EntityException("No entityName passed to EntityFacade.makeValue")
         EntityDatasourceFactory edf = getDatasourceFactory(getEntityGroupName(entityName))
@@ -820,8 +839,10 @@ class EntityFacadeImpl implements EntityFacade {
     }
 
     @Override
+    @CompileStatic
     EntityFind makeFind(String entityName) { return find(entityName) }
     @Override
+    @CompileStatic
     EntityFind find(String entityName) {
         if (!entityName) throw new EntityException("No entityName passed to EntityFacade.makeFind")
         EntityDatasourceFactory edf = getDatasourceFactory(getEntityGroupName(entityName))
@@ -830,6 +851,7 @@ class EntityFacadeImpl implements EntityFacade {
 
     final static Map<String, String> operationByMethod = [get:'find', post:'create', put:'store', patch:'update', delete:'delete']
     @Override
+    @CompileStatic
     Object rest(String operation, List<String> entityPath, Map parameters) {
         if (!operation) throw new EntityException("Operation (method) must be specified")
         operation = operationByMethod.get(operation.toLowerCase()) ?: operation
@@ -906,11 +928,11 @@ class EntityFacadeImpl implements EntityFacade {
                 EntityList el = ef.list()
                 // support pagination, at least "X-Total-Count" header if find is paginated
                 long count = ef.count()
-                int pageIndex = ef.getPageIndex()
-                int pageSize = ef.getPageSize()
-                int pageMaxIndex = ((BigDecimal) (count - 1)).divide(pageSize, 0, BigDecimal.ROUND_DOWN) as int
-                int pageRangeLow = pageIndex * pageSize + 1
-                int pageRangeHigh = (pageIndex * pageSize) + pageSize
+                long pageIndex = ef.getPageIndex()
+                long pageSize = ef.getPageSize()
+                long pageMaxIndex = ((count - 1) as BigDecimal).divide(pageSize as BigDecimal, 0, BigDecimal.ROUND_DOWN).longValue()
+                long pageRangeLow = pageIndex * pageSize + 1
+                long pageRangeHigh = (pageIndex * pageSize) + pageSize
                 if (pageRangeHigh > count) pageRangeHigh = count
 
                 parameters.put('xTotalCount', count)
@@ -930,6 +952,7 @@ class EntityFacadeImpl implements EntityFacade {
         }
     }
 
+    @CompileStatic
     EntityList getValueListFromPlainMap(Map value, String entityName) {
         if (!entityName) entityName = value."_entity"
         if (!entityName) throw new EntityException("No entityName passed and no _entity field in value Map")
@@ -941,6 +964,7 @@ class EntityFacadeImpl implements EntityFacade {
         addValuesFromPlainMapRecursive(ed, value, valueList)
         return valueList
     }
+    @CompileStatic
     void addValuesFromPlainMapRecursive(EntityDefinition ed, Map value, EntityList valueList) {
         EntityValue newEntityValue = makeValue(ed.getFullEntityName())
 
@@ -967,8 +991,9 @@ class EntityFacadeImpl implements EntityFacade {
                 } else if (relParmObj instanceof List) {
                     for (Object relParmEntry in relParmObj) {
                         if (relParmEntry instanceof Map) {
-                            relParmEntry.putAll(pkMap)
-                            addValuesFromPlainMapRecursive(relInfo.relatedEd, relParmEntry, valueList)
+                            Map relParmEntryMap = (Map) relParmEntry
+                            relParmEntryMap.putAll(pkMap)
+                            addValuesFromPlainMapRecursive(relInfo.relatedEd, relParmEntryMap, valueList)
                         } else {
                             logger.warn("In entity auto create for entity ${ed.getFullEntityName()} found list for relationship ${relKey} with a non-Map entry: ${relParmEntry}")
                         }
@@ -981,6 +1006,7 @@ class EntityFacadeImpl implements EntityFacade {
 
 
     @Override
+    @CompileStatic
     EntityListIterator sqlFind(String sql, List<Object> sqlParameterList, String entityName, List<String> fieldList) {
         EntityDefinition ed = this.getEntityDefinition(entityName)
         this.entityDbMeta.checkTableRuntime(ed)
@@ -1032,14 +1058,15 @@ class EntityFacadeImpl implements EntityFacade {
     }
 
     @Override
+    @CompileStatic
     String sequencedIdPrimary(String seqName, Long staggerMax, Long bankSize) {
         try {
             // is the seqName an entityName?
             EntityDefinition ed = getEntityDefinition(seqName)
             if (ed != null) {
                 String groupName = ed.getEntityGroupName()
-                if (ed.getEntityNode()?."@sequence-primary-use-uuid" == "true" ||
-                        getDatasourceNode(groupName)?."@sequence-primary-use-uuid" == "true")
+                if (ed.getEntityNode()?.attributes()?.get('@sequence-primary-use-uuid') == "true" ||
+                        getDatasourceNode(groupName)?.attributes()?.get('sequence-primary-use-uuid') == "true")
                     return UUID.randomUUID().toString()
             }
         } catch (EntityException e) {
@@ -1181,21 +1208,27 @@ class EntityFacadeImpl implements EntityFacade {
     }
 
     protected Map<String, Map<String, String>> javaTypeByGroup = [:]
+    @CompileStatic
     String getFieldJavaType(String fieldType, EntityDefinition ed) {
         String groupName = ed.getEntityGroupName()
+        Map<String, String> javaTypeMap = javaTypeByGroup.get(groupName)
+        if (javaTypeMap != null) {
+            String ft = javaTypeMap.get(fieldType)
+            if (ft != null) return ft
+        }
+        return getFieldJavaTypeFromDbNode(groupName, fieldType, ed)
+    }
+    protected getFieldJavaTypeFromDbNode(String groupName, String fieldType, EntityDefinition ed) {
         Map<String, String> javaTypeMap = javaTypeByGroup.get(groupName)
         if (javaTypeMap == null) {
             javaTypeMap = new HashMap()
             javaTypeByGroup.put(groupName, javaTypeMap)
-        } else {
-            String ft = javaTypeMap.get(fieldType)
-            if (ft != null) return ft
         }
 
         Node databaseNode = this.getDatabaseNode(groupName)
         String javaType = databaseNode ? databaseNode."database-type".find({ it.@type == fieldType })?."@java-type" : null
         if (!javaType) {
-            Node databaseListNode = this.ecfi.confXmlRoot."database-list"[0]
+            Node databaseListNode = (Node) this.ecfi.confXmlRoot."database-list"[0]
             javaType = databaseListNode ? databaseListNode."dictionary-type".find({ it.@type == fieldType })?."@java-type" : null
             if (!javaType) throw new EntityException("Could not find Java type for field type [${fieldType}] on entity [${ed.getFullEntityName()}]")
         }
@@ -1204,26 +1237,33 @@ class EntityFacadeImpl implements EntityFacade {
     }
 
     protected Map<String, Map<String, String>> sqlTypeByGroup = [:]
+    @CompileStatic
     protected String getFieldSqlType(String fieldType, EntityDefinition ed) {
         String groupName = ed.getEntityGroupName()
+        Map<String, String> sqlTypeMap = sqlTypeByGroup.get(groupName)
+        if (sqlTypeMap != null) {
+            String st = sqlTypeMap.get(fieldType)
+            if (st != null) return st
+        }
+        return getFieldSqlTypeFromDbNode(groupName, fieldType, ed)
+    }
+    protected getFieldSqlTypeFromDbNode(String groupName, String fieldType, EntityDefinition ed) {
         Map<String, String> sqlTypeMap = sqlTypeByGroup.get(groupName)
         if (sqlTypeMap == null) {
             sqlTypeMap = new HashMap()
             sqlTypeByGroup.put(groupName, sqlTypeMap)
-        } else {
-            String st = sqlTypeMap.get(fieldType)
-            if (st != null) return st
         }
 
         Node databaseNode = this.getDatabaseNode(groupName)
         String sqlType = databaseNode ? databaseNode."database-type".find({ it.@type == fieldType })?."@sql-type" : null
         if (!sqlType) {
-            Node databaseListNode = this.ecfi.confXmlRoot."database-list"[0]
+            Node databaseListNode = (Node) this.ecfi.confXmlRoot."database-list"[0]
             sqlType = databaseListNode ? databaseListNode."dictionary-type".find({ it.@type == fieldType })?."@default-sql-type" : null
             if (!sqlType) throw new EntityException("Could not find SQL type for field type [${fieldType}] on entity [${ed.getFullEntityName()}]")
         }
         sqlTypeMap.put(fieldType, sqlType)
         return sqlType
+
     }
 
     protected static final Map<String, Integer> fieldTypeIntMap = [
@@ -1256,6 +1296,7 @@ class EntityFacadeImpl implements EntityFacade {
             "java.sql.Clob":13, "Clob":13,
             "java.util.Date":14,
             "java.util.ArrayList":15, "java.util.HashSet":15, "java.util.LinkedHashSet":15, "java.util.LinkedList":15]
+    @CompileStatic
     public static int getJavaTypeInt(String javaType) {
         Integer typeInt = javaIntTypeMap[javaType]
         if (!typeInt) throw new EntityException("Java type " + javaType + " not supported for entity fields")

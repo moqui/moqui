@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.context
 
+import groovy.transform.CompileStatic
 import org.kie.api.KieServices
 import org.kie.api.builder.KieBuilder
 import org.kie.api.builder.Message
@@ -450,6 +451,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
         return internalSecurityManager
     }
+    @CompileStatic
     CredentialsMatcher getCredentialsMatcher(String hashType) {
         HashedCredentialsMatcher hcm = new HashedCredentialsMatcher()
         if (hashType) {
@@ -459,26 +461,33 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         }
         return hcm
     }
+    @CompileStatic
     static String getRandomSalt() { return StupidUtilities.getRandomString(8) }
     String getPasswordHashType() {
-        Node passwordNode = confXmlRoot."user-facade"[0]."password"[0]
+        Node passwordNode = (Node) confXmlRoot."user-facade"[0]."password"[0]
         return passwordNode."@encrypt-hash-type" ?: "SHA-256"
     }
+    @CompileStatic
     String getSimpleHash(String source, String salt) { return getSimpleHash(source, salt, getPasswordHashType()) }
+    @CompileStatic
     String getSimpleHash(String source, String salt, String hashType) {
         return new SimpleHash(hashType ?: getPasswordHashType(), source, salt).toString()
     }
 
     // ========== Getters ==========
 
+    @CompileStatic
     CacheFacadeImpl getCacheFacade() { return this.cacheFacade }
 
+    @CompileStatic
     EntityFacadeImpl getEntityFacade() { return getEntityFacade(getExecutionContext().getTenantId()) }
+    @CompileStatic
     EntityFacadeImpl getEntityFacade(String tenantId) {
         EntityFacadeImpl efi = this.entityFacadeByTenantMap.get(tenantId)
         if (efi == null) efi = initEntityFacade(tenantId)
         return efi
     }
+    @CompileStatic
     synchronized EntityFacadeImpl initEntityFacade(String tenantId) {
         EntityFacadeImpl efi = this.entityFacadeByTenantMap.get(tenantId)
         if (efi != null) return efi
@@ -489,20 +498,27 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         return efi
     }
 
+    @CompileStatic
     LoggerFacadeImpl getLoggerFacade() { return loggerFacade }
 
+    @CompileStatic
     ResourceFacadeImpl getResourceFacade() { return resourceFacade }
 
+    @CompileStatic
     ScreenFacadeImpl getScreenFacade() { return screenFacade }
 
+    @CompileStatic
     ServiceFacadeImpl getServiceFacade() { return serviceFacade }
 
+    @CompileStatic
     TransactionFacadeImpl getTransactionFacade() { return transactionFacade }
 
+    @CompileStatic
     L10nFacade getL10nFacade() { return l10nFacade }
 
     // =============== Apache Camel Methods ===============
     @Override
+    @CompileStatic
     CamelContext getCamelContext() { return camelContext }
 
     MoquiServiceComponent getMoquiServiceComponent() { return moquiServiceComponent }
@@ -522,6 +538,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     // =============== ElasticSearch Methods ===============
     @Override
+    @CompileStatic
     Client getElasticSearchClient() { return elasticSearchClient }
 
     protected void initElasticSearch() {
@@ -555,7 +572,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     KieContainer getKieContainer(String componentName) {
         KieServices services = KieServices.Factory.get()
 
-        ReleaseId releaseId = kieComponentReleaseIdCache.get(componentName)
+        ReleaseId releaseId = (ReleaseId) kieComponentReleaseIdCache.get(componentName)
         if (releaseId == null) releaseId = buildKieModule(componentName, services)
 
         if (releaseId != null) return services.newKieContainer(releaseId)
@@ -563,7 +580,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     }
 
     protected synchronized ReleaseId buildKieModule(String componentName, KieServices services) {
-        ReleaseId releaseId = kieComponentReleaseIdCache.get(componentName)
+        ReleaseId releaseId = (ReleaseId) kieComponentReleaseIdCache.get(componentName)
         if (releaseId != null) return releaseId
 
         ResourceReference kieRr = getResourceFacade().getLocationReference("component://${componentName}/kie")
@@ -650,6 +667,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     // ========== Interface Implementations ==========
 
     @Override
+    @CompileStatic
     ExecutionContext getExecutionContext() {
         ExecutionContextImpl ec = this.activeContext.get()
         if (ec) {
@@ -664,6 +682,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         }
     }
 
+    @CompileStatic
     ExecutionContextImpl getEci() { return (ExecutionContextImpl) this.getExecutionContext() }
 
     void destroyActiveExecutionContext() {
@@ -714,32 +733,41 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     void destroyComponent(String componentName) throws BaseException { componentLocationMap.remove(componentName) }
 
     @Override
+    @CompileStatic
     Map<String, String> getComponentBaseLocations() {
         return Collections.unmodifiableMap(componentLocationMap)
     }
 
     @Override
+    @CompileStatic
     L10nFacade getL10n() { getL10nFacade() }
 
     @Override
+    @CompileStatic
     ResourceFacade getResource() { getResourceFacade() }
 
     @Override
+    @CompileStatic
     LoggerFacade getLogger() { getLoggerFacade() }
 
     @Override
+    @CompileStatic
     CacheFacade getCache() { getCacheFacade() }
 
     @Override
+    @CompileStatic
     TransactionFacade getTransaction() { getTransactionFacade() }
 
     @Override
+    @CompileStatic
     EntityFacade getEntity() { getEntityFacade(getExecutionContext()?.getTenantId()) }
 
     @Override
+    @CompileStatic
     ServiceFacade getService() { getServiceFacade() }
 
     @Override
+    @CompileStatic
     ScreenFacade getScreen() { getScreenFacade() }
 
     // ========== Server Stat Tracking ==========
@@ -784,7 +812,9 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             'moqui.entity.document.DataDocumentCondition', 'moqui.entity.feed.DataFeedAndDocument',
             'moqui.entity.view.DbViewEntity', 'moqui.entity.view.DbViewEntityMember',
             'moqui.entity.view.DbViewEntityKeyMap', 'moqui.entity.view.DbViewEntityAlias'])
-    void countArtifactHit(String artifactType, String artifactSubType, String artifactName, Map parameters,
+
+    @CompileStatic
+    void countArtifactHit(String artifactType, String artifactSubType, String artifactName, Map<String, Object> parameters,
                           long startTime, long endTime, Long outputSize) {
         // don't count the ones this calls
         if (artifactType == "service" && artifactName.contains("moqui.server.ArtifactHit")) return
@@ -797,13 +827,13 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         // NOTE: never save individual hits for entity artifact hits, way too heavy and also avoids self-reference
         //     (could also be done by checking for ArtifactHit/etc of course)
         if (artifactPersistHit(artifactType, artifactSubType)) {
-            Map<String, Object> ahp = (Map<String, Object>) [visitId:eci.user.visitId, userId:eci.user.userId,
+            Map<String, Object> ahp = new HashMap<String, Object>([visitId:eci.user.visitId, userId:eci.user.userId,
                 artifactType:artifactType, artifactSubType:artifactSubType, artifactName:artifactName,
-                startDateTime:new Timestamp(startTime), runningTimeMillis:runningTimeMillis]
+                startDateTime:new Timestamp(startTime), runningTimeMillis:runningTimeMillis])
 
             if (parameters) {
                 StringBuilder ps = new StringBuilder()
-                for (Map.Entry pme in parameters) {
+                for (Map.Entry<String, Object> pme in parameters.entrySet()) {
                     if (!pme.value) continue
                     if (pme.key?.contains("password")) continue
                     if (ps.length() > 0) ps.append(",")
@@ -823,7 +853,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
                 ahp.wasError = "N"
             }
             if (eci.web != null) {
-                String fullUrl = eci.web.requestUrl
+                String fullUrl = eci.web.getRequestUrl()
                 fullUrl = (fullUrl.length() > 255) ? fullUrl.substring(0, 255) : fullUrl.toString()
                 ahp.requestUrl = fullUrl
                 ahp.referrerUrl = eci.web.request.getHeader("Referrer") ?: ""
@@ -848,12 +878,13 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
                 if (logger.isTraceEnabled()) logger.trace("Adding to ArtifactHitBin [${artifactType}.${artifactSubType}:${artifactName}] current hit start [${new Timestamp(startTime)}], bin start [${ahb.get("binStartDateTime")}] bin length ${hitBinLengthMillis/1000} seconds")
             }
 
-            ahb.hitCount += 1
-            ahb.totalTimeMillis += runningTimeMillis
-            if (runningTimeMillis < ahb.minTimeMillis) ahb.minTimeMillis = runningTimeMillis
-            if (runningTimeMillis > ahb.maxTimeMillis) ahb.maxTimeMillis = runningTimeMillis
+            ahb.hitCount = (ahb.hitCount as Long) + 1
+            ahb.totalTimeMillis = (ahb.totalTimeMillis as Long) + runningTimeMillis
+            if (runningTimeMillis < (ahb.minTimeMillis as Long)) ahb.minTimeMillis = runningTimeMillis
+            if (runningTimeMillis > (ahb.maxTimeMillis as Long)) ahb.maxTimeMillis = runningTimeMillis
         }
     }
+    @CompileStatic
     protected synchronized Map<String, Object> advanceArtifactHitBin(String artifactType, String artifactSubType,
                                                      String artifactName, long startTime, int hitBinLengthMillis) {
         Map<String, Object> ahb = artifactHitBinByType.get(artifactType + "." + artifactSubType + ":" + artifactName)
@@ -871,11 +902,12 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
         return makeArtifactHitBinMap(artifactType, artifactSubType, artifactName, startTime)
     }
+    @CompileStatic
     protected Map<String, Object> makeArtifactHitBinMap(String artifactType, String artifactSubType,
                                                         String artifactName, long startTime) {
-        Map<String, Object> ahb = (Map<String, Object>) [artifactType:artifactType, artifactSubType:artifactSubType,
+        Map<String, Object> ahb = [artifactType:artifactType, artifactSubType:artifactSubType,
                 artifactName:artifactName, binStartDateTime:new Timestamp(startTime), binEndDateTime:null,
-                hitCount:0, totalTimeMillis:0, minTimeMillis:Long.MAX_VALUE, maxTimeMillis:0]
+                hitCount:0L, totalTimeMillis:0L, minTimeMillis:Long.MAX_VALUE, maxTimeMillis:0]
         ahb.serverIpAddress = localhostAddress?.getHostAddress() ?: "127.0.0.1"
         ahb.serverHostName = localhostAddress?.getHostName() ?: "localhost"
         artifactHitBinByType.put(artifactType + "." + artifactSubType + ":" + artifactName, ahb)

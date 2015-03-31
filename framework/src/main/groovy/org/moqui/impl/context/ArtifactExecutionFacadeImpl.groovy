@@ -84,9 +84,11 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
     }
 
     @Override
+    @CompileStatic
     ArtifactExecutionInfo peek() { return this.artifactExecutionInfoStack.peekFirst() }
 
     @Override
+    @CompileStatic
     ArtifactExecutionInfo pop() {
         if (this.artifactExecutionInfoStack.size() > 0) {
             ArtifactExecutionInfoImpl lastAeii = artifactExecutionInfoStack.removeFirst()
@@ -99,10 +101,12 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
     }
 
     @Override
+    @CompileStatic
     void push(String name, String typeEnumId, String actionEnumId, boolean requiresAuthz) {
         push(new ArtifactExecutionInfoImpl(name, typeEnumId, actionEnumId), requiresAuthz)
     }
     @Override
+    @CompileStatic
     void push(ArtifactExecutionInfo aei, boolean requiresAuthz) {
         ArtifactExecutionInfoImpl aeii = (ArtifactExecutionInfoImpl) aei
         // do permission check for this new aei that current user is trying to access
@@ -127,6 +131,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
     }
 
     @Override
+    @CompileStatic
     Deque<ArtifactExecutionInfo> getStack() { return this.artifactExecutionInfoStack }
     String getStackNameString() {
         StringBuilder sb = new StringBuilder()
@@ -191,12 +196,18 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
         if (aeii.authorizedActionEnumId != "AUTHZA_ALL") aeii.authorizedActionEnumId = "AUTHZA_VIEW"
     }
 
+    @CompileStatic
     boolean disableAuthz() { boolean alreadyDisabled = this.authzDisabled; this.authzDisabled = true; return alreadyDisabled }
+    @CompileStatic
     void enableAuthz() { this.authzDisabled = false }
+    @CompileStatic
     boolean getAuthzDisabled() { return authzDisabled }
 
+    @CompileStatic
     boolean disableEntityEca() { boolean alreadyDisabled = this.entityEcaDisabled; this.entityEcaDisabled = true; return alreadyDisabled }
+    @CompileStatic
     void enableEntityEca() { this.entityEcaDisabled = false }
+    @CompileStatic
     boolean entityEcaDisabled() { return this.entityEcaDisabled }
 
     /** Checks to see if username is permitted to access given resource.
@@ -207,6 +218,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
      * @param eci
      * @return
      */
+    @CompileStatic
     static boolean isPermitted(String username, String resourceAccess, Timestamp nowTimestamp, ExecutionContextImpl eci) {
         int firstColon = resourceAccess.indexOf(":")
         int secondColon = resourceAccess.indexOf(":", firstColon+1)

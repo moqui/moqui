@@ -13,6 +13,7 @@ package org.moqui.impl.context
 
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
+import groovy.transform.CompileStatic
 import org.moqui.context.ArtifactAuthorizationException
 import org.moqui.context.ArtifactTarpitException
 import org.moqui.context.ContextStack
@@ -184,6 +185,8 @@ class WebFacadeImpl implements WebFacade {
         if (wi.beforeLogoutActions) wi.beforeLogoutActions.run(eci)
     }
 
+    @Override
+    @CompileStatic
     String getRequestUrl() {
         StringBuilder requestUrl = new StringBuilder()
         requestUrl.append(request.getScheme())
@@ -367,7 +370,7 @@ class WebFacadeImpl implements WebFacade {
                     responseObj = [messages:eci.message.getMessagesString()]
                 } else if (responseObj instanceof Map && !responseObj.containsKey("messages")) {
                     Map responseMap = new HashMap()
-                    responseMap.putAll((Map) responseObj)
+                    responseMap.putAll(responseObj)
                     responseMap.put("messages", eci.message.getMessagesString())
                     responseObj = responseMap
                 }

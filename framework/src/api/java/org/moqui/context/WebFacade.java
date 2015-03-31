@@ -21,6 +21,7 @@ import javax.servlet.http.HttpSession;
 
 /** Web Facade for access to HTTP Servlet objects and information. */
 public interface WebFacade {
+    String getRequestUrl();
     Map<String, Object> getParameters();
 
     HttpServletRequest getRequest();
