@@ -1129,9 +1129,12 @@ class ScreenRenderImpl implements ScreenRender {
         String value = ""
         if (widgetNode."@text") {
             // push onto the context and then expand the text
-            ec.context.push(ev)
-            value = ec.resource.evaluateStringExpand((String) widgetNode."@text", null)
-            ec.context.pop()
+            ec.context.push(ev.getMap())
+            try {
+                value = ec.resource.evaluateStringExpand((String) widgetNode."@text", null)
+            } finally {
+                ec.context.pop()
+            }
         } else {
             // get the value of the default description field for the entity
             String defaultDescriptionField = ed.getDefaultDescriptionField()

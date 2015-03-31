@@ -14,7 +14,9 @@ New Features:
 
 Bug Fixes:
 
-TODO
+- Fixed issue with XML Form display-entity where an EntityValue was pushed
+  onto the context (bad in the first place, changed to push Map clone of
+  EV) and if there was an error in the string expand it stayed
 
 ===========================================================================
 Release 1.5.1 - 29 Mar 2015
