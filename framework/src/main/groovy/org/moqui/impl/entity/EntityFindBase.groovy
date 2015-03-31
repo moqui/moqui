@@ -469,7 +469,7 @@ abstract class EntityFindBase implements EntityFind {
         if (this.havingEntityCondition != null) return false
         if (this.limit != null || this.offset != null) return false
         if (this.useCache != null && !this.useCache) return false
-        String entityCache = this.getEntityDef().getEntityNode()."@use-cache"
+        String entityCache = this.getEntityDef().getUseCache()
         return ((this.useCache == Boolean.TRUE && entityCache != "never") || entityCache == "true")
     }
 

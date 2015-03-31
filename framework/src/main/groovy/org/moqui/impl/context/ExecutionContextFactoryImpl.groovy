@@ -74,6 +74,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     protected final String confPath
     protected final Node confXmlRoot
+    protected Node serverStatsNode
 
     protected StupidClassLoader cachedClassLoader
     protected InetAddress localhostAddress = null
@@ -169,8 +170,6 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         }
 
         confXmlRoot = this.initConfig()
-        skipStatsCond = confXmlRoot."server-stats"[0]."@stats-skip-condition"
-        hitBinLengthMillis = (confXmlRoot."server-stats"[0]."@bin-length-seconds" as Integer)*1000 ?: 900000
 
         preFacadeInit()
 
@@ -261,6 +260,10 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     }
 
     protected void preFacadeInit() {
+        serverStatsNode = (Node) confXmlRoot.'server-stats'[0]
+        skipStatsCond = serverStatsNode."@stats-skip-condition"
+        hitBinLengthMillis = (serverStatsNode."@bin-length-seconds" as Integer)*1000 ?: 900000
+
         try {
             localhostAddress = InetAddress.getLocalHost()
         } catch (UnknownHostException e) {
@@ -430,7 +433,11 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     String getRuntimePath() { return runtimePath }
     Node getConfXmlRoot() { return confXmlRoot }
-    Node getServerStatsNode() { return (Node) confXmlRoot.'server-stats'[0] }
+    Node getServerStatsNode() { return serverStatsNode }
+    Node getArtifactExecutionNode(String artifactTypeEnumId) {
+        return (Node) eci.ecfi.confXmlRoot."artifact-execution-facade"[0]."artifact-execution"
+                .find({ it."@type" == artifactTypeEnumId })
+    }
 
     InetAddress getLocalhostAddress() { return localhostAddress }
 
@@ -780,7 +787,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     @CompileStatic
     protected boolean artifactPersistHit(String artifactType, String artifactSubType) {
         if ("entity".equals(artifactType)) return false
-        String cacheKey = artifactType + "#" + artifactSubType
+        String cacheKey = artifactType + artifactSubType
         Boolean ph = artifactPersistHitByType.get(cacheKey)
         if (ph == null) {
             Node artifactStats = getArtifactStatsNode(artifactType, artifactSubType)
@@ -791,14 +798,14 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     }
     @CompileStatic
     protected boolean artifactPersistBin(String artifactType, String artifactSubType) {
-        String cacheKey = artifactType + "#" + artifactSubType
-        Boolean ph = artifactPersistBinByType.get(cacheKey)
-        if (ph == null) {
+        String cacheKey = artifactType + artifactSubType
+        Boolean pb = artifactPersistBinByType.get(cacheKey)
+        if (pb == null) {
             Node artifactStats = getArtifactStatsNode(artifactType, artifactSubType)
-            ph = 'true'.equals(artifactStats.attributes().get('persist-bin'))
-            artifactPersistBinByType.put(cacheKey, ph)
+            pb = 'true'.equals(artifactStats.attributes().get('persist-bin'))
+            artifactPersistBinByType.put(cacheKey, pb)
         }
-        return ph
+        return pb
     }
 
     protected Node getArtifactStatsNode(String artifactType, String artifactSubType) {
@@ -869,7 +876,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             eci.service.async().name("create", "moqui.server.ArtifactHit").parameters(ahp).call()
         }
         if (artifactPersistBin(artifactType, artifactSubType)) {
-            String binKey = artifactType + "." + artifactSubType + ":" + artifactName
+            String binKey = new StringBuilder().append(artifactType).append('.').append(artifactSubType).append(':').append(artifactName).toString()
             Map<String, Object> ahb = artifactHitBinByType.get(binKey)
             if (ahb == null) ahb = makeArtifactHitBinMap(binKey, artifactType, artifactSubType, artifactName, startTime)
 
@@ -882,10 +889,10 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
                 if (logger.isTraceEnabled()) logger.trace("Adding to ArtifactHitBin [${artifactType}.${artifactSubType}:${artifactName}] current hit start [${new Timestamp(startTime)}], bin start [${ahb.get("binStartDateTime")}] bin length ${hitBinLengthMillis/1000} seconds")
             }
 
-            ahb.hitCount = (ahb.hitCount as Long) + 1
-            ahb.totalTimeMillis = (ahb.totalTimeMillis as Long) + runningTimeMillis
-            if (runningTimeMillis < (ahb.minTimeMillis as Long)) ahb.minTimeMillis = runningTimeMillis
-            if (runningTimeMillis > (ahb.maxTimeMillis as Long)) ahb.maxTimeMillis = runningTimeMillis
+            ahb.hitCount = ((Long) ahb.hitCount) + 1
+            ahb.totalTimeMillis = ((Long) ahb.totalTimeMillis) + runningTimeMillis
+            if (runningTimeMillis < ((Long) ahb.minTimeMillis)) ahb.minTimeMillis = runningTimeMillis
+            if (runningTimeMillis > ((Long) ahb.maxTimeMillis)) ahb.maxTimeMillis = runningTimeMillis
         }
     }
     @CompileStatic

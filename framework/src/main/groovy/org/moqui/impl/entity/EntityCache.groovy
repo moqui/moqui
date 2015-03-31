@@ -112,12 +112,16 @@ class EntityCache {
             CacheFacade cf = efi.getEcfi().getCacheFacade()
             EntityDefinition ed = evb.getEntityDefinition()
             Map evbMap = evb.getMap()
-            if ('never'.equals(ed.getEntityNode().attributes().get('use-cache'))) return
+            if ('never'.equals(ed.getUseCache())) return
             String fullEntityName = ed.getFullEntityName()
-            EntityCondition pkCondition = efi.getConditionFactory().makeCondition(evb.getPrimaryKeys())
+
+            // init this as null, set below if needed (common case it isn't, will perform better
+            EntityCondition pkCondition = null
 
             // clear one cache
             if (cf.cacheExists("entity.record.one.${fullEntityName}.${efi.tenantId}")) {
+                pkCondition = efi.getConditionFactory().makeCondition(evb.getPrimaryKeys())
+
                 Cache entityOneCache = getCacheOne(fullEntityName)
                 Ehcache eocEhc = entityOneCache.getInternalCache()
                 // clear by PK, most common scenario
@@ -152,6 +156,8 @@ class EntityCache {
             // logger.warn("============= clearing list for entity ${fullEntityName}, for pkCondition [${pkCondition}] cacheExists=${efi.ecfi.getCacheFacade().cacheExists("entity.${efi.tenantId}.list.${fullEntityName}")}")
             // clear list cache, use reverse-associative Map (also a Cache)
             if (cf.cacheExists("entity.record.list.${fullEntityName}.${efi.tenantId}")) {
+                if (pkCondition == null) pkCondition = efi.getConditionFactory().makeCondition(evb.getPrimaryKeys())
+
                 // if this was a create the RA cache won't help, so go through EACH entry and see if it matches the created value
                 if (isCreate) {
                     CacheImpl entityListCache = getCacheList(fullEntityName)

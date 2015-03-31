@@ -32,6 +32,7 @@ import org.moqui.entity.EntityCondition
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+@CompileStatic
 public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
     protected final static Logger logger = LoggerFactory.getLogger(ArtifactExecutionFacadeImpl.class)
 
@@ -65,9 +66,8 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
     boolean isAuthzEnabled(String artifactTypeEnumId) {
         Boolean en = artifactTypeAuthzEnabled.get(artifactTypeEnumId)
         if (en == null) {
-            Node aeNode = (Node) eci.ecfi.confXmlRoot."artifact-execution-facade"[0]."artifact-execution"
-                    .find({ it."@type" == artifactTypeEnumId })
-            en = aeNode != null ? !(aeNode."@authz-enabled" == "false") : true
+            Node aeNode = eci.getEcfi().getArtifactExecutionNode(artifactTypeEnumId)
+            en = aeNode != null ? !(aeNode.attributes().get('authz-enabled') == "false") : true
             artifactTypeAuthzEnabled.put(artifactTypeEnumId, en)
         }
         return en
@@ -75,20 +75,17 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
     boolean isTarpitEnabled(String artifactTypeEnumId) {
         Boolean en = artifactTypeTarpitEnabled.get(artifactTypeEnumId)
         if (en == null) {
-            Node aeNode = (Node) eci.ecfi.confXmlRoot."artifact-execution-facade"[0]."artifact-execution"
-                    .find({ it."@type" == artifactTypeEnumId })
-            en = aeNode != null ? !(aeNode."@tarpit-enabled" == "false") : true
+            Node aeNode = eci.getEcfi().getArtifactExecutionNode(artifactTypeEnumId)
+            en = aeNode != null ? !(aeNode.attributes().get('tarpit-enabled') == "false") : true
             artifactTypeTarpitEnabled.put(artifactTypeEnumId, en)
         }
         return en
     }
 
     @Override
-    @CompileStatic
     ArtifactExecutionInfo peek() { return this.artifactExecutionInfoStack.peekFirst() }
 
     @Override
-    @CompileStatic
     ArtifactExecutionInfo pop() {
         if (this.artifactExecutionInfoStack.size() > 0) {
             ArtifactExecutionInfoImpl lastAeii = artifactExecutionInfoStack.removeFirst()
@@ -101,12 +98,10 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
     }
 
     @Override
-    @CompileStatic
     void push(String name, String typeEnumId, String actionEnumId, boolean requiresAuthz) {
         push(new ArtifactExecutionInfoImpl(name, typeEnumId, actionEnumId), requiresAuthz)
     }
     @Override
-    @CompileStatic
     void push(ArtifactExecutionInfo aei, boolean requiresAuthz) {
         ArtifactExecutionInfoImpl aeii = (ArtifactExecutionInfoImpl) aei
         // do permission check for this new aei that current user is trying to access
@@ -131,7 +126,6 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
     }
 
     @Override
-    @CompileStatic
     Deque<ArtifactExecutionInfo> getStack() { return this.artifactExecutionInfoStack }
     String getStackNameString() {
         StringBuilder sb = new StringBuilder()
@@ -196,18 +190,12 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
         if (aeii.authorizedActionEnumId != "AUTHZA_ALL") aeii.authorizedActionEnumId = "AUTHZA_VIEW"
     }
 
-    @CompileStatic
     boolean disableAuthz() { boolean alreadyDisabled = this.authzDisabled; this.authzDisabled = true; return alreadyDisabled }
-    @CompileStatic
     void enableAuthz() { this.authzDisabled = false }
-    @CompileStatic
     boolean getAuthzDisabled() { return authzDisabled }
 
-    @CompileStatic
     boolean disableEntityEca() { boolean alreadyDisabled = this.entityEcaDisabled; this.entityEcaDisabled = true; return alreadyDisabled }
-    @CompileStatic
     void enableEntityEca() { this.entityEcaDisabled = false }
-    @CompileStatic
     boolean entityEcaDisabled() { return this.entityEcaDisabled }
 
     /** Checks to see if username is permitted to access given resource.
@@ -218,7 +206,6 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
      * @param eci
      * @return
      */
-    @CompileStatic
     static boolean isPermitted(String username, String resourceAccess, Timestamp nowTimestamp, ExecutionContextImpl eci) {
         int firstColon = resourceAccess.indexOf(":")
         int secondColon = resourceAccess.indexOf(":", firstColon+1)
@@ -282,9 +269,12 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                             long maxHitsDuration = artifactTarpit.getLong('maxHitsDuration')
                             // count hits in this duration; start with 1 to count the current hit
                             long hitsInDuration = 1
-                            // clone the list to avoid a ConcurrentModificationException
-                            // TODO: a better approach to concurrency that won't ever miss hits would be better
-                            for (Long hitTime in (List<Long>) hitTimeList?.clone()) if ((hitTime - checkTime) < maxHitsDuration) hitsInDuration++
+                            if (hitTimeList) {
+                                // copy the list to avoid a ConcurrentModificationException
+                                // TODO: a better approach to concurrency that won't ever miss hits would be better
+                                List<Long> hitTimeListCopy = new ArrayList(hitTimeList)
+                                for (Long hitTime in hitTimeListCopy) if ((hitTime - checkTime) < maxHitsDuration) hitsInDuration++
+                            }
                             // logger.warn("TOREMOVE artifact [${tarpitKey}], now has ${hitsInDuration} hits in ${maxHitsDuration} seconds")
                             if (hitsInDuration > artifactTarpit.getLong('maxHitsCount') && artifactTarpit.getLong('tarpitDuration') > lockForSeconds) {
                                 lockForSeconds = artifactTarpit.getLong('tarpitDuration')
@@ -313,7 +303,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                     if (lockForSeconds > 0) {
                         eci.getService().sync().name('create', 'moqui.security.ArtifactTarpitLock').parameters(
                                 [userId:userId, artifactName:aeii.getName(), artifactTypeEnumId:aeii.getTypeEnumId(),
-                                releaseDateTime:(new Timestamp(checkTime + (lockForSeconds * 1000).intValue()))]).call()
+                                releaseDateTime:(new Timestamp(checkTime + ((lockForSeconds as BigDecimal) * 1000).intValue()))]).call()
                         tarpitHitCache.remove(tarpitKey)
                     }
                 }

@@ -17,11 +17,9 @@ import org.moqui.impl.StupidUtilities
 
 import javax.sql.rowset.serial.SerialBlob
 import java.sql.Date
-import java.sql.Time
 import java.sql.Timestamp
 
 import org.apache.commons.collections.set.ListOrderedSet
-import org.apache.commons.collections.map.ListOrderedMap
 
 import org.moqui.entity.EntityCondition
 import org.moqui.entity.EntityCondition.JoinOperator
@@ -63,6 +61,7 @@ public class EntityDefinition {
     protected Boolean needsAuditLogVal = null
     protected Boolean needsEncryptVal = null
     protected Boolean createOnlyVal = null
+    protected String useCache = null
 
     protected List<Node> expandedRelationshipList = null
     // this is kept separately for quick access to relationships by name or short-alias
@@ -203,6 +202,12 @@ public class EntityDefinition {
         }
 
         return needsEncryptVal
+    }
+
+    @CompileStatic
+    String getUseCache() {
+        if (useCache == null) useCache = internalEntityNode.attributes().get('use-cache')
+        return useCache
     }
 
     @CompileStatic
