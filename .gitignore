@@ -58,6 +58,7 @@ local.properties
 # NetBeans files
 nbproject/private/
 nbbuild/
+.nb-gradle/
 dist/
 nbdist/
 nbactions.xml
