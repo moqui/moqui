@@ -11,10 +11,13 @@
  */
 package org.moqui.impl.entity
 
+import groovy.transform.CompileStatic
 import org.apache.commons.codec.binary.Base64
 import org.moqui.impl.StupidUtilities
 
 import javax.sql.rowset.serial.SerialBlob
+import java.sql.Date
+import java.sql.Time
 import java.sql.Timestamp
 
 import org.apache.commons.collections.set.ListOrderedSet
@@ -193,6 +196,7 @@ public class EntityDefinition {
         return needsEncryptVal
     }
 
+    @CompileStatic
     Node getFieldNode(String fieldName) {
         Node fn = fieldNodeMap.get(fieldName)
         if (fn != null) return fn
@@ -221,6 +225,7 @@ public class EntityDefinition {
         return fn
     }
 
+    @CompileStatic
     protected Node makeUserFieldNode(EntityValue userField) {
         String fieldType = userField.fieldType ?: "text-long"
         if (fieldType == "text-very-long" || fieldType == "binary-very-long")
@@ -865,7 +870,8 @@ public class EntityDefinition {
         return newMap
     }
 
-    void setFields(Map<String, ?> src, Map<String, Object> dest, boolean setIfEmpty, String namePrefix, Boolean pks) {
+    @CompileStatic
+    void setFields(Map<String, Object> src, Map<String, Object> dest, boolean setIfEmpty, String namePrefix, Boolean pks) {
         if (src == null) return
 
         boolean hasNamePrefix = namePrefix as boolean
@@ -916,6 +922,7 @@ public class EntityDefinition {
         }
     }
 
+    @CompileStatic
     void setString(String name, String value, Map<String, Object> dest) {
         if (value == null || value == "null") {
             dest.put(name, null)
@@ -926,14 +933,15 @@ public class EntityDefinition {
         dest.put(name, convertFieldString(name, value))
     }
 
+    @CompileStatic
     Object convertFieldString(String name, String value) {
-        if (value == "null") value = null
+        if (value == 'null') value = null
 
         Object outValue
         Node fieldNode = this.getFieldNode(name)
 
-        String fieldType = fieldNode."@type"
-        String javaType = fieldType ? (EntityFacadeImpl.fieldTypeJavaMap.get(fieldType) ?: efi.getFieldJavaType(fieldType, this)) : "String"
+        String fieldType = fieldNode.attributes().get('type')
+        String javaType = fieldType ? (EntityFacadeImpl.fieldTypeJavaMap.get(fieldType) ?: efi.getFieldJavaType(fieldType, this)) : 'String'
         Integer typeValue = (fieldType ? EntityFacadeImpl.fieldTypeIntMap.get(fieldType) : null) ?: EntityFacadeImpl.getJavaTypeInt(javaType)
 
         boolean isEmpty = value.length() == 0
@@ -944,7 +952,7 @@ public class EntityDefinition {
                 case 2: // outValue = java.sql.Timestamp.valueOf(value);
                     if (isEmpty) { outValue = null; break }
                     outValue = efi.getEcfi().getL10nFacade().parseTimestamp(value, null)
-                    if (outValue == null) throw new BaseException("The value [${value}] is not a valid date/time")
+                    if (((Object) outValue) == null) throw new BaseException("The value [${value}] is not a valid date/time")
                     break
                 case 3: // outValue = java.sql.Time.valueOf(value);
                     if (isEmpty) { outValue = null; break }
@@ -989,13 +997,14 @@ public class EntityDefinition {
         return outValue
     }
 
+    @CompileStatic
     String getFieldString(String name, Object value) {
         if (value == null) return null
 
         String outValue
         Node fieldNode = this.getFieldNode(name)
 
-        String fieldType = fieldNode."@type"
+        String fieldType = fieldNode.attributes().get('type')
         String javaType = fieldType ? (EntityFacadeImpl.fieldTypeJavaMap.get(fieldType) ?: efi.getFieldJavaType(fieldType, this)) : "String"
         Integer typeValue = (fieldType ? EntityFacadeImpl.fieldTypeIntMap.get(fieldType) : null) ?: EntityFacadeImpl.getJavaTypeInt(javaType)
 
@@ -1036,15 +1045,16 @@ public class EntityDefinition {
         return outValue
     }
 
+    @CompileStatic
     String getFieldStringForFile(String name, Object value) {
         if (value == null) return null
 
         String outValue
         if (value instanceof Timestamp) {
             // use a Long number, no TZ issues
-            outValue = ((Timestamp) value).getTime().toString()
+            outValue = value.getTime() as String
         } else if (value instanceof BigDecimal) {
-            outValue = ((BigDecimal) value).toPlainString()
+            outValue = value.toPlainString()
         } else {
             outValue = getFieldString(name, value)
         }

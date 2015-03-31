@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.context
 
+import groovy.transform.CompileStatic
 import org.moqui.context.ArtifactExecutionInfo
 import org.moqui.entity.EntityValue
 import org.moqui.impl.StupidUtilities
@@ -46,18 +47,27 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
 
     @Override
     String getName() { return this.name }
+
     @Override
+    @CompileStatic
     String getTypeEnumId() { return this.typeEnumId }
+
     @Override
+    @CompileStatic
     String getActionEnumId() { return this.actionEnumId }
 
     @Override
+    @CompileStatic
     String getAuthorizedUserId() { return this.authorizedUserId }
     void setAuthorizedUserId(String authorizedUserId) { this.authorizedUserId = authorizedUserId }
+
     @Override
+    @CompileStatic
     String getAuthorizedAuthzTypeId() { return this.authorizedAuthzTypeId }
     void setAuthorizedAuthzTypeId(String authorizedAuthzTypeId) { this.authorizedAuthzTypeId = authorizedAuthzTypeId }
+
     @Override
+    @CompileStatic
     String getAuthorizedActionEnumId() { return this.authorizedActionEnumId }
     void setAuthorizedActionEnumId(String authorizedActionEnumId) { this.authorizedActionEnumId = authorizedActionEnumId }
 
@@ -65,6 +75,7 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
     boolean isAuthorizationInheritable() { return this.authorizationInheritable }
     void setAuthorizationInheritable(boolean isAuthorizationInheritable) { this.authorizationInheritable = isAuthorizationInheritable}
 
+    @CompileStatic
     void copyAacvInfo(EntityValue aacv, String userId) {
         this.authorizedUserId = userId
         this.authorizedAuthzTypeId = (String) aacv.get('authzTypeEnumId')
@@ -72,6 +83,7 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
         this.authorizationInheritable = aacv.get('inheritAuthz') == "Y"
     }
 
+    @CompileStatic
     void copyAuthorizedInfo(ArtifactExecutionInfoImpl aeii) {
         this.authorizedUserId = aeii.authorizedUserId
         this.authorizedAuthzTypeId = aeii.authorizedAuthzTypeId

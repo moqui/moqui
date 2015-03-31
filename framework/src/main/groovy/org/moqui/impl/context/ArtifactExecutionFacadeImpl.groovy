@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.context
 
+import groovy.transform.CompileStatic
 import org.moqui.context.ArtifactTarpitException
 import org.moqui.impl.entity.EntityValueBase
 
@@ -292,15 +293,15 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                                 .filterByCondition(efi.getConditionFactory().makeCondition('releaseDateTime', ComparisonOperator.GREATER_THAN, ufi.getNowTimestamp()), true)
                         if (tarpitLockList) {
                             Timestamp releaseDateTime = tarpitLockList.first.getTimestamp('releaseDateTime')
-                            int retryAfterSeconds = (releaseDateTime.getTime() - System.currentTimeMillis())/1000
-                            throw new ArtifactTarpitException("User [${userId}] has accessed ${artifactTypeDescriptionMap.get(aeii.getTypeEnumId())?:aeii.getTypeEnumId()} [${aeii.getName()}] too many times and may not again until ${releaseDateTime} (retry after ${retryAfterSeconds} seconds)", retryAfterSeconds)
+                            int retryAfterSeconds = (releaseDateTime.getTime() - (System.currentTimeMillis())/1000).intValue()
+                            throw new ArtifactTarpitException("User [${userId}] has accessed ${artifactTypeDescriptionMap.get(aeii.getTypeEnumId())?:aeii.getTypeEnumId()} [${aeii.getName()}] too many times and may not again until ${releaseDateTime} (retry after ${retryAfterSeconds} seconds)".toString(), retryAfterSeconds)
                         }
                     }
                     // record the tarpit lock
                     if (lockForSeconds > 0) {
                         eci.getService().sync().name('create', 'moqui.security.ArtifactTarpitLock').parameters(
                                 [userId:userId, artifactName:aeii.getName(), artifactTypeEnumId:aeii.getTypeEnumId(),
-                                releaseDateTime:(new Timestamp(checkTime + (lockForSeconds*1000)))]).call()
+                                releaseDateTime:(new Timestamp(checkTime + (lockForSeconds * 1000).intValue()))]).call()
                         tarpitHitCache.remove(tarpitKey)
                     }
                 }
@@ -381,7 +382,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                         continue
                     // check the filterMap
                     if (aacv.get('filterMap') && aeii.parameters) {
-                        Map<String, Object> filterMapObj = eci.getResource().evaluateContextField(aacv.getString('filterMap'), null)
+                        Map<String, Object> filterMapObj = (Map<String, Object>) eci.getResource().evaluateContextField(aacv.getString('filterMap'), null)
                         boolean allMatches = true
                         for (Map.Entry<String, Object> filterEntry in filterMapObj.entrySet()) {
                             if (filterEntry.getValue() != aeii.parameters.get(filterEntry.getKey())) allMatches = false

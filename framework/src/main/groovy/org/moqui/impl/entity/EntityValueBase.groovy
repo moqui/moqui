@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.entity
 
+import groovy.transform.CompileStatic
 import org.apache.commons.codec.binary.Base64
 import org.apache.commons.collections.set.ListOrderedSet
 
@@ -113,6 +114,7 @@ abstract class EntityValueBase implements EntityValue {
     Map getMap() { return new HashMap(valueMap) }
 
     @Override
+    @CompileStatic
     Object get(String name) {
         EntityDefinition ed = getEntityDefinition()
 
@@ -125,7 +127,7 @@ abstract class EntityValueBase implements EntityValue {
             // if this is not a valid field name but is a valid relationship name, do a getRelated or getRelatedOne to return an EntityList or an EntityValue
             Node relationship = ed.getRelationshipNode(name)
             if (relationship != null) {
-                if (relationship."@type" == "many") {
+                if ('many'.equals(relationship.attributes().get('type'))) {
                     return this.findRelated(name, null, null, null, null)
                 } else {
                     return this.findRelatedOne(name, null, null)
@@ -136,7 +138,7 @@ abstract class EntityValueBase implements EntityValue {
         }
 
         // if enabled use moqui.basic.LocalizedEntityField for any localized fields
-        if (fieldNode."@enable-localization" == "true") {
+        if ('true'.equals(fieldNode.attributes().get('enable-localization'))) {
             String localeStr = getEntityFacadeImpl().ecfi.getExecutionContext().getUser().getLocale()?.toString()
             if (localeStr) {
                 List<String> pks = ed.getPkFieldNames()
@@ -163,9 +165,11 @@ abstract class EntityValueBase implements EntityValue {
             }
         }
 
-        if (fieldNode."@is-user-field" == "true") {
+        if ('true'.equals(fieldNode.attributes().get('is-user-field'))) {
             // get if from the UserFieldValue entity instead
-            Map<String, Object> parms = [entityName: ed.getFullEntityName(), fieldName: name]
+            Map<String, Object> parms = new HashMap<>()
+            parms.put('entityName', ed.getFullEntityName())
+            parms.put('fieldName', name)
             addThreeFieldPkValues(parms)
 
             boolean alreadyDisabled = efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz()
@@ -213,6 +217,7 @@ abstract class EntityValueBase implements EntityValue {
     }
 
     @Override
+    @CompileStatic
     EntityValue set(String name, Object value) {
         put(name, value)
         return this
@@ -280,7 +285,8 @@ abstract class EntityValueBase implements EntityValue {
     }
 
     @Override
-    EntityValue setFields(Map<String, ?> fields, boolean setIfEmpty, String namePrefix, Boolean pks) {
+    @CompileStatic
+    EntityValue setFields(Map<String, Object> fields, boolean setIfEmpty, String namePrefix, Boolean pks) {
         entityDefinition.setFields(fields, this, setIfEmpty, namePrefix, pks)
         return this
     }
@@ -450,6 +456,7 @@ abstract class EntityValueBase implements EntityValue {
         }
     }
 
+    @CompileStatic
     protected void addThreeFieldPkValues(Map<String, Object> parms) {
         EntityDefinition ed = getEntityDefinition()
 
@@ -750,6 +757,7 @@ abstract class EntityValueBase implements EntityValue {
     }
 
     @Override
+    @CompileStatic
     Object put(String name, Object value) {
         EntityDefinition ed = getEntityDefinition()
         Node fieldNode = ed.getFieldNode(name)
@@ -760,7 +768,7 @@ abstract class EntityValueBase implements EntityValue {
         Object curValue = valueMap.get(name)
         if (curValue != value) {
             modified = true
-            if (fieldNode."@is-pk" == "true") pkModified = true
+            if ('true'.equals(fieldNode.attributes().get('is-pk'))) pkModified = true
             if (curValue != null) {
                 if (dbValueMap == null) dbValueMap = [:]
                 dbValueMap.put(name, curValue)

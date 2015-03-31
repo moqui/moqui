@@ -115,7 +115,7 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
      * @param pks If null, get all values, if TRUE just get PKs, if FALSE just get non-PKs
      * @return reference to this for convenience
      */
-    EntityValue setFields(Map<String, ?> fields, boolean setIfEmpty, String namePrefix, Boolean pks);
+    EntityValue setFields(Map<String, Object> fields, boolean setIfEmpty, String namePrefix, Boolean pks);
 
     /** Get the next guaranteed unique seq id for this entity, and set it in the primary key field. This will set it in
      * the first primary key field in the entity definition, but it really should be used for entities with only one
