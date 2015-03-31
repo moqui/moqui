@@ -214,12 +214,13 @@ class EntityDataDocument {
                 Map<String, Object> docMap = documentMapMap.get(docId)
                 if (docMap == null) {
                     // add special entries
-                    docMap = (Map<String, Object>) [_type:dataDocumentId, _id:docId]
-                    docMap.put("_timestamp", efi.ecfi.getL10nFacade().format(
+                    docMap = [_type:dataDocumentId, _id:docId]
+                    docMap.put('_timestamp', efi.ecfi.getL10nFacade().format(
                             thruUpdatedStamp ?: new Timestamp(System.currentTimeMillis()), "yyyy-MM-dd'T'HH:mm:ssZ"))
                     String _index = efi.getEcfi().getExecutionContext().getTenantId()
                     if (dataDocument.indexName) _index = _index + "__" + dataDocument.indexName
-                    docMap.put("_index", _index.toLowerCase())
+                    docMap.put('_index', _index.toLowerCase())
+                    docMap.put('_entity', primaryEd.getShortAlias() ?: primaryEd.getFullEntityName())
 
                     // add Map for primary entity
                     Map primaryEntityMap = [:]
@@ -231,7 +232,8 @@ class EntityDataDocument {
                             if (value) primaryEntityMap.put(fieldName, value)
                         }
                     }
-                    docMap.put((String) relationshipAliasMap.get(primaryEntityName) ?: primaryEntityName, primaryEntityMap)
+                    // docMap.put((String) relationshipAliasMap.get(primaryEntityName) ?: primaryEntityName, primaryEntityMap)
+                    docMap.putAll(primaryEntityMap)
 
                     documentMapMap.put(docId, docMap)
                 }
@@ -304,10 +306,10 @@ class EntityDataDocument {
             if (fieldTreeEntry.getKey() instanceof String && fieldTreeEntry.getKey() == "_ALIAS") continue
             if (fieldTreeEntry.getValue() instanceof Map) {
                 String relationshipName = fieldTreeEntry.getKey()
-                String relDocumentAlias = relationshipAliasMap.get(relationshipName) ?: relationshipName
                 Map fieldTreeChild = (Map) fieldTreeEntry.getValue()
 
                 Node relationshipNode = parentEd.getRelationshipNode(relationshipName)
+                String relDocumentAlias = relationshipAliasMap.get(relationshipName) ?: relationshipNode.'@short-alias' ?: relationshipName
                 EntityDefinition relatedEd = efi.getEntityDefinition((String) relationshipNode."@related-entity-name")
                 boolean isOneRelationship = ((String) relationshipNode."@type").startsWith("one")
 
@@ -455,15 +457,13 @@ class EntityDataDocument {
             relationshipAliasMap.put((String) dataDocumentRelAlias.relationshipName, (String) dataDocumentRelAlias.documentAlias)
 
         String primaryEntityName = dataDocument.primaryEntityName
-        String primaryEntityAlias = relationshipAliasMap.get(primaryEntityName) ?: primaryEntityName
+        // String primaryEntityAlias = relationshipAliasMap.get(primaryEntityName) ?: primaryEntityName
         EntityDefinition primaryEd = efi.getEntityDefinition(primaryEntityName)
 
-        Map rootProperties = [:]
+        Map rootProperties = [_entity:[type:'string', index:'not_analyzed']]
         Map mappingMap = [properties:rootProperties]
 
-        Map primaryProperties = [:]
-        rootProperties.put(primaryEntityAlias, [properties:primaryProperties])
-
+        List<String> remainingPkFields = new ArrayList(primaryEd.getPkFieldNames())
         for (EntityValue dataDocumentField in dataDocumentFieldList) {
             String fieldPath = dataDocumentField.fieldPath
             if (!fieldPath.contains(':')) {
@@ -476,7 +476,9 @@ class EntityDataDocument {
                 String mappingType = esTypeMap.get(fieldType) ?: 'string'
                 Map propertyMap = [type:mappingType]
                 if (fieldType.startsWith("id")) propertyMap.index = 'not_analyzed'
-                primaryProperties.put(fieldName, propertyMap)
+                rootProperties.put(fieldName, propertyMap)
+
+                if (remainingPkFields.contains(dataDocumentField.fieldPath)) remainingPkFields.remove((String) dataDocumentField.fieldPath)
                 continue
             }
 
@@ -513,6 +515,16 @@ class EntityDataDocument {
                     currentProperties.put(fieldName, propertyMap)
                 }
             }
+        }
+
+        // now get all the PK fields not aliased explicitly
+        for (String remainingPkName in remainingPkFields) {
+            Node fieldNode = primaryEd.getFieldNode(remainingPkName)
+            String fieldType = fieldNode."@type"
+            String mappingType = esTypeMap.get(fieldType) ?: 'string'
+            Map propertyMap = [type:mappingType]
+            if (fieldType.startsWith("id")) propertyMap.index = 'not_analyzed'
+            rootProperties.put(remainingPkName, propertyMap)
         }
 
         return mappingMap

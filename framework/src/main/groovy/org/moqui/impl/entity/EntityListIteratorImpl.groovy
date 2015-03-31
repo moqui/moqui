@@ -76,7 +76,7 @@ class EntityListIteratorImpl implements EntityListIterator {
 
                     /* leaving commented as might be useful for future con pool debugging:
                     try {
-                        def dataSource = efi.getDatasourceFactory(efi.getEntityGroupName(entityDefinition)).getDataSource()
+                        def dataSource = efi.getDatasourceFactory(entityDefinition.getEntityGroupName()).getDataSource()
                         logger.warn("=========== elii after close pool available size: ${dataSource.poolAvailableSize()}/${dataSource.poolTotalSize()}; ${dataSource.getMinPoolSize()}-${dataSource.getMaxPoolSize()}")
                     } catch (Throwable t) {
                         logger.warn("========= pool size error ${t.toString()}")

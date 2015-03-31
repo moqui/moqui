@@ -15,6 +15,7 @@ import org.apache.commons.validator.routines.CreditCardValidator
 import org.apache.commons.validator.routines.EmailValidator
 import org.apache.commons.validator.routines.UrlValidator
 import org.moqui.impl.FtlNodeWrapper
+import org.moqui.impl.StupidJavaUtilities
 import org.moqui.impl.StupidUtilities
 import org.moqui.impl.StupidWebUtilities
 import org.moqui.impl.actions.XmlAction
@@ -302,7 +303,7 @@ class ServiceDefinition {
                 if (validate) eci.message.addValidationError(null, "${namePrefix}${parameterName}", getServiceName(), "Field was type [${parameterValue?.class?.name}], expecting type [${type}]", null)
                 continue
             }
-            if (converted == null && !parameterValue && parameterValue != null && !StupidUtilities.isInstanceOf(parameterValue, type)) {
+            if (converted == null && !parameterValue && parameterValue != null && !StupidJavaUtilities.isInstanceOf(parameterValue, type)) {
                 // we have an empty value of a different type, just set it to null
                 parameterValue = null
                 // put the final parameterValue back into the parameters Map
@@ -456,7 +457,7 @@ class ServiceDefinition {
         if (parameterValue == null) return null
 
         String type = parameterNode."@type" ?: "String"
-        if (!StupidUtilities.isInstanceOf(parameterValue, type)) {
+        if (!StupidJavaUtilities.isInstanceOf(parameterValue, type)) {
             // do type conversion if possible
             String format = parameterNode."@format"
             Object converted = null
@@ -798,7 +799,7 @@ class ServiceDefinition {
                 if (((Collection) value).size() > 0) {
                     String subType = typeParentNode."subtype"[0]."@type"
                     Object subValue = ((Collection) value).iterator().next()
-                    if (!StupidUtilities.isInstanceOf(subValue, subType)) {
+                    if (!StupidJavaUtilities.isInstanceOf(subValue, subType)) {
                         eci.message.addError("Parameter [${parameterName}] passed to service [${getServiceName()}] had a subtype [${subValue.class.name}], expecting subtype [${subType}]")
                     } else {
                         // try the next level down
@@ -807,7 +808,7 @@ class ServiceDefinition {
                 }
             } else if (value instanceof Map) {
                 // for each subtype element check its name/type
-                Map mapVal = (Map) value
+                Map mapVal = value
                 for (Node stNode in typeParentNode."subtype") {
                     String subName = stNode."@name"
                     String subType = stNode."@type"
@@ -815,7 +816,7 @@ class ServiceDefinition {
 
                     Object subValue = mapVal.get(subName)
                     if (!subValue) continue
-                    if (!StupidUtilities.isInstanceOf(subValue, subType)) {
+                    if (!StupidJavaUtilities.isInstanceOf(subValue, subType)) {
                         eci.message.addError("Parameter [${parameterName}] passed to service [${getServiceName()}] had a subtype [${subValue.class.name}], expecting subtype [${subType}]")
                     } else {
                         // try the next level down

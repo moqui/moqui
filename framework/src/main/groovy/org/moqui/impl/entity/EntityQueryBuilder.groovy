@@ -11,6 +11,10 @@
  */
 package org.moqui.impl.entity
 
+import groovy.transform.CompileStatic
+import org.moqui.impl.StupidJavaUtilities
+import org.moqui.entity.EntityException
+
 import java.nio.ByteBuffer
 import java.sql.Blob
 import java.sql.Clob
@@ -25,8 +29,6 @@ import java.sql.Types
 import javax.sql.rowset.serial.SerialClob
 import javax.sql.rowset.serial.SerialBlob
 
-import org.moqui.entity.EntityException
-import org.moqui.impl.StupidUtilities
 import javax.crypto.Cipher
 import javax.crypto.SecretKey
 import javax.crypto.SecretKeyFactory
@@ -41,7 +43,7 @@ class EntityQueryBuilder {
     protected final static Logger logger = LoggerFactory.getLogger(EntityQueryBuilder.class)
 
     protected EntityFacadeImpl efi
-    protected EntityDefinition mainEntityDefinition
+    EntityDefinition mainEntityDefinition
     protected StringBuilder sqlTopLevel = new StringBuilder()
     protected List<EntityConditionParameter> parameters = new ArrayList()
 
@@ -68,7 +70,7 @@ class EntityQueryBuilder {
     }
 
     Connection makeConnection() {
-        this.connection = this.efi.getConnection(this.efi.getEntityGroupName(mainEntityDefinition))
+        this.connection = this.efi.getConnection(mainEntityDefinition.getEntityGroupName())
         return this.connection
     }
 
@@ -142,8 +144,8 @@ class EntityQueryBuilder {
 
     static String sanitizeColumnName(String colName) {
         String interim = colName.replace('.', '_').replace('(','_').replace(')','_').replace('+','_').replace(' ','')
-        while (interim.charAt(0) == '_') interim = interim.substring(1)
-        while (interim.charAt(interim.length()-1) == '_') interim = interim.substring(0, interim.length()-1)
+        while (interim.charAt(0) == (char) '_') interim = interim.substring(1)
+        while (interim.charAt(interim.length()-1) == (char) '_') interim = interim.substring(0, interim.length()-1)
         while (interim.contains('__')) interim = interim.replace('__', '_')
         return interim
     }
@@ -191,10 +193,11 @@ class EntityQueryBuilder {
         String toString() { return fieldNode."@name" + ":" + value }
     }
 
+    @CompileStatic
     static void getResultSetValue(ResultSet rs, int index, Node fieldNode, EntityValueImpl entityValueImpl,
                                             EntityFacadeImpl efi) throws EntityException {
-        String fieldName = fieldNode."@name"
-        String fieldType = fieldNode."@type"
+        String fieldName = (String) fieldNode.attributes().get('name')
+        String fieldType = fieldNode.attributes().get('type')
         // jump straight to the type int for common/OOTB field types for FAR better performance than hunting through conf elements
         Integer directTypeInt = EntityFacadeImpl.fieldTypeIntMap.get(fieldType)
         Integer typeValue
@@ -315,7 +318,7 @@ class EntityQueryBuilder {
         }
 
         // if field is to be encrypted, do it now
-        if (value && fieldNode."@encrypt" == "true") {
+        if (value && fieldNode.attributes().get('encrypt') == 'true') {
             if (typeValue != 1) throw new IllegalArgumentException("The encrypt attribute was set to true on non-String field [${fieldName}] of entity [${entityValueImpl.getEntityName()}]")
             String original = value.toString()
             try {
@@ -329,7 +332,7 @@ class EntityQueryBuilder {
     }
 
     public static String enDeCrypt(String value, boolean encrypt, EntityFacadeImpl efi) {
-        Node entityFacadeNode = efi.ecfi.confXmlRoot."entity-facade"[0]
+        Node entityFacadeNode = (Node) efi.ecfi.confXmlRoot."entity-facade"[0]
         String pwStr = entityFacadeNode."@crypt-pass"
         if (!pwStr) throw new IllegalArgumentException("No entity-facade.@crypt-pass setting found, NOT doing encryption")
 
@@ -360,14 +363,15 @@ class EntityQueryBuilder {
         return encrypt ? Hex.encodeHexString(outBytes) : new String(outBytes)
     }
 
+    @CompileStatic
     static void setPreparedStatementValue(PreparedStatement ps, int index, Object value, Node fieldNode,
                                           EntityDefinition ed, EntityFacadeImpl efi) throws EntityException {
         String entityName = ed.getFullEntityName()
-        String fieldName = fieldNode."@name"
-        String javaType = efi.getFieldJavaType((String) fieldNode."@type", ed)
+        String fieldName = fieldNode.attributes().get('name')
+        String javaType = efi.getFieldJavaType((String) fieldNode.attributes().get('type'), ed)
         int typeValue = EntityFacadeImpl.getJavaTypeInt(javaType)
         if (value != null) {
-            if (!StupidUtilities.isInstanceOf(value, javaType)) {
+            if (!StupidJavaUtilities.isInstanceOf(value, javaType)) {
                 // this is only an info level message because under normal operation for most JDBC
                 // drivers this will be okay, but if not then the JDBC driver will throw an exception
                 // and when lower debug levels are on this should help give more info on what happened
@@ -376,7 +380,7 @@ class EntityQueryBuilder {
                     fieldClassName = "byte[]"
                 }
 
-                if (logger.traceEnabled) logger.trace("Type of field " + entityName + "." + fieldNode."@name" +
+                if (logger.isTraceEnabled()) logger.trace("Type of field " + entityName + "." + fieldNode.attributes().get('name') +
                         " is " + fieldClassName + ", was expecting " + javaType + " this may " +
                         "indicate an error in the configuration or in the class, and may result " +
                         "in an SQL-Java data conversion error. Will use the real field type: " +
@@ -386,14 +390,17 @@ class EntityQueryBuilder {
             }
 
             // if field is to be encrypted, do it now
-            if (fieldNode."@encrypt" == "true") {
+            if ('true'.equals(fieldNode.attributes().get('encrypt'))) {
                 if (typeValue != 1) throw new IllegalArgumentException("The encrypt attribute was set to true on non-String field [${fieldName}] of entity [${entityName}]")
                 String original = value.toString()
                 value = enDeCrypt(original, true, efi)
             }
         }
 
-        boolean useBinaryTypeForBlob = ("true" == efi.getDatabaseNode(efi.getEntityGroupName(ed))."@use-binary-type-for-blob")
+        boolean useBinaryTypeForBlob = false
+        if (typeValue == 11 || typeValue == 12) {
+            useBinaryTypeForBlob = ("true" == efi.getDatabaseNode(ed.getEntityGroupName()).attributes().get('use-binary-type-for-blob'))
+        }
         try {
             setPreparedStatementValue(ps, index, value, typeValue, useBinaryTypeForBlob, efi)
         } catch (EntityException e) {
@@ -403,15 +410,21 @@ class EntityQueryBuilder {
         }
     }
 
+    @CompileStatic
     static void setPreparedStatementValue(PreparedStatement ps, int index, Object value, EntityDefinition ed,
                                           EntityFacadeImpl efi) throws EntityException {
-        boolean useBinaryTypeForBlob = ("true" == efi.getDatabaseNode(efi.getEntityGroupName(ed))."@use-binary-type-for-blob")
         int typeValue = value ? EntityFacadeImpl.getJavaTypeInt(value.class.name) : 1
+        // useBinaryTypeForBlob is only needed for types 11/Object and 12/Blob, faster to not determine otherwise
+        boolean useBinaryTypeForBlob = false
+        if (typeValue == 11 || typeValue == 12) {
+            useBinaryTypeForBlob = ("true" == efi.getDatabaseNode(ed.getEntityGroupName()).attributes().get('use-binary-type-for-blob'))
+        }
         setPreparedStatementValue(ps, index, value, typeValue, useBinaryTypeForBlob, efi)
 
     }
 
     /* This is called by the other two setPreparedStatementValue methods */
+    @CompileStatic
     static void setPreparedStatementValue(PreparedStatement ps, int index, Object value, int typeValue,
                                           boolean useBinaryTypeForBlob, EntityFacadeImpl efi) throws EntityException {
         try {
@@ -437,12 +450,12 @@ class EntityQueryBuilder {
                     if (value != null) { ps.setDate(index, dt, efi.getCalendarForTzLc()) }
                     else { ps.setNull(index, Types.DATE) }
                     break
-                case 5: if (value != null) { ps.setInt(index, (Integer) value) } else { ps.setNull(index, Types.NUMERIC) }; break
-                case 6: if (value != null) { ps.setLong(index, (Long) value) } else { ps.setNull(index, Types.NUMERIC) }; break
-                case 7: if (value != null) { ps.setFloat(index, (Float) value) } else { ps.setNull(index, Types.NUMERIC) }; break
-                case 8: if (value != null) { ps.setDouble(index, (Double) value) } else { ps.setNull(index, Types.NUMERIC) }; break
-                case 9: if (value != null) { ps.setBigDecimal(index, (BigDecimal) value) } else { ps.setNull(index, Types.NUMERIC) }; break
-                case 10: if (value != null) { ps.setBoolean(index, (Boolean) value) } else { ps.setNull(index, Types.BOOLEAN) }; break
+                case 5: if (value != null) { ps.setInt(index, value as Integer) } else { ps.setNull(index, Types.NUMERIC) }; break
+                case 6: if (value != null) { ps.setLong(index, value as Long) } else { ps.setNull(index, Types.NUMERIC) }; break
+                case 7: if (value != null) { ps.setFloat(index, value as Float) } else { ps.setNull(index, Types.NUMERIC) }; break
+                case 8: if (value != null) { ps.setDouble(index, value as Double) } else { ps.setNull(index, Types.NUMERIC) }; break
+                case 9: if (value != null) { ps.setBigDecimal(index, value as BigDecimal) } else { ps.setNull(index, Types.NUMERIC) }; break
+                case 10: if (value != null) { ps.setBoolean(index, value as Boolean) } else { ps.setNull(index, Types.BOOLEAN) }; break
                 case 11:
                     if (value != null) {
                         try {
@@ -467,18 +480,18 @@ class EntityQueryBuilder {
                     if (value instanceof byte[]) {
                         ps.setBytes(index, (byte[]) value)
                     } else if (value instanceof ArrayList) {
-                        byte[] theBytes = new byte[((ArrayList) value).size()]
-                        ((ArrayList) value).toArray(theBytes)
+                        byte[] theBytes = new byte[(value).size()]
+                        value.toArray(theBytes)
                         ps.setBytes(index, theBytes)
                     } else if (value instanceof ByteBuffer) {
-                        ps.setBytes(index, ((ByteBuffer) value).array())
+                        ps.setBytes(index, (value).array())
                     } else if (value instanceof String) {
-                        ps.setBytes(index, ((String) value).getBytes())
+                        ps.setBytes(index, (value).getBytes())
                     } else if (value instanceof Blob) {
                         // calling setBytes instead of setBlob
                         // ps.setBlob(index, (Blob) value)
-                        Blob blb = (Blob) value
-                        ps.setBytes(index, blb.getBytes(1, (int) blb.length()))
+                        // Blob blb = value
+                        ps.setBytes(index, value.getBytes(1, (int) value.length()))
                     } else {
                         if (value != null) {
                             throw new IllegalArgumentException("Type not supported for BLOB field: ${value.getClass().getName()}")
@@ -494,7 +507,7 @@ class EntityQueryBuilder {
                 }
             }
         } catch (SQLException sqle) {
-            throw new EntityException("SQL Exception while setting value: " + sqle.toString(), sqle)
+            throw new EntityException("SQL Exception while setting value [${value}](${value?.getClass()?.getName()}), type ${typeValue}: " + sqle.toString(), sqle)
         } catch (Exception e) {
             throw new EntityException("Error while setting value: " + e.toString(), e)
         }

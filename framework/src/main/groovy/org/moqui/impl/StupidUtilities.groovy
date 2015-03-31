@@ -27,6 +27,8 @@ import org.slf4j.LoggerFactory
 class StupidUtilities {
     protected final static Logger logger = LoggerFactory.getLogger(StupidUtilities.class)
 
+    /** Use StupidJavaUtilities.isInstanceOf() */
+    @Deprecated
     static boolean isInstanceOf(Object theObjectInQuestion, String javaType) {
         Class theClass = StupidClassLoader.commonJavaClassesMap.get(javaType)
         if (theClass == null) theClass = StupidUtilities.class.getClassLoader().loadClass(javaType)

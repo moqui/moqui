@@ -11,32 +11,21 @@
  */
 package org.moqui.impl.context
 
+import groovy.transform.CompileStatic
 import org.elasticsearch.client.Client
 import org.kie.api.runtime.KieContainer
 import org.kie.api.runtime.KieSession
 import org.kie.api.runtime.StatelessKieSession
-import org.moqui.context.ContextStack
-import org.moqui.context.ExecutionContext
-import org.moqui.context.NotificationMessage
-import org.moqui.context.NotificationMessageListener
-import org.moqui.context.UserFacade
-import org.moqui.context.MessageFacade
-import org.moqui.context.L10nFacade
-import org.moqui.context.ResourceFacade
-import org.moqui.context.LoggerFacade
-import org.moqui.context.CacheFacade
-import org.moqui.context.TransactionFacade
+import org.moqui.context.*
 import org.moqui.entity.EntityFacade
 import org.moqui.entity.EntityList
 import org.moqui.service.ServiceFacade
-import org.moqui.context.ScreenFacade
-import org.moqui.context.ArtifactExecutionFacade
-import org.moqui.context.WebFacade
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpServletRequest
 import org.apache.camel.CamelContext
 import org.moqui.entity.EntityValue
 
+@CompileStatic
 class ExecutionContextImpl implements ExecutionContext {
 
     protected ExecutionContextFactoryImpl ecfi
@@ -57,13 +46,13 @@ class ExecutionContextImpl implements ExecutionContext {
         contextRoot.put("ec", this)
     }
 
-    ExecutionContextFactoryImpl getEcfi() { ecfi }
+    ExecutionContextFactoryImpl getEcfi() { return ecfi }
 
     @Override
-    ContextStack getContext() { context }
+    ContextStack getContext() { return context }
 
     @Override
-    Map<String, Object> getContextRoot() { context.getRootMap() }
+    Map<String, Object> getContextRoot() { return context.getRootMap() }
 
     @Override
     String getTenantId() { tenantId ?: "DEFAULT" }
@@ -79,6 +68,7 @@ class ExecutionContextImpl implements ExecutionContext {
 
     @Override
     WebFacade getWeb() { webFacade }
+    WebFacadeImpl getWebImpl() { webFacade }
 
     @Override
     UserFacade getUser() { if (userFacade != null) return userFacade else return (userFacade = new UserFacadeImpl(this)) }
@@ -87,7 +77,8 @@ class ExecutionContextImpl implements ExecutionContext {
     MessageFacade getMessage() { if (messageFacade != null) return messageFacade else return (messageFacade = new MessageFacadeImpl()) }
 
     @Override
-    ArtifactExecutionFacade getArtifactExecution() {
+    ArtifactExecutionFacade getArtifactExecution() { return getArtifactExecutionImpl() }
+    ArtifactExecutionFacadeImpl getArtifactExecutionImpl() {
         if (artifactExecutionFacade != null) return artifactExecutionFacade
         else return (artifactExecutionFacade = new ArtifactExecutionFacadeImpl(this))
     }
@@ -132,7 +123,7 @@ class ExecutionContextImpl implements ExecutionContext {
             if (topic) parameters.topic = topic
             EntityList nmbuList = entity.find("moqui.security.user.NotificationMessageByUser").condition(parameters).list()
             for (EntityValue nmbu in nmbuList) {
-                NotificationMessageImpl nmi = new NotificationMessageImpl(eci)
+                NotificationMessageImpl nmi = new NotificationMessageImpl(this)
                 nmi.populateFromValue(nmbu)
                 nmList.add(nmi)
             }

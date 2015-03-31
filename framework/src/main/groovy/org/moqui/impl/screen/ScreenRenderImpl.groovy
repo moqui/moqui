@@ -42,8 +42,6 @@ import org.moqui.entity.EntityCondition.ComparisonOperator
 import org.moqui.impl.entity.EntityValueImpl
 import org.moqui.impl.StupidUtilities
 
-import java.sql.Timestamp
-
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -1066,7 +1064,7 @@ class ScreenRenderImpl implements ScreenRender {
                 // use some Groovy goodness to get an object property, only do if this is NOT a Map (that is handled by
                 //     putting all Map entries in the context for each row)
                 Object entryObj = ec.getContext().get(formNode."@list-entry")
-                if (!(entryObj instanceof Map)) {
+                if (entryObj != null && !(entryObj instanceof Map)) {
                     try {
                         value = entryObj.getAt(fieldName)
                     } catch (MissingPropertyException e) {
@@ -1131,9 +1129,12 @@ class ScreenRenderImpl implements ScreenRender {
         String value = ""
         if (widgetNode."@text") {
             // push onto the context and then expand the text
-            ec.context.push(ev)
-            value = ec.resource.evaluateStringExpand((String) widgetNode."@text", null)
-            ec.context.pop()
+            ec.context.push(ev.getMap())
+            try {
+                value = ec.resource.evaluateStringExpand((String) widgetNode."@text", null)
+            } finally {
+                ec.context.pop()
+            }
         } else {
             // get the value of the default description field for the entity
             String defaultDescriptionField = ed.getDefaultDescriptionField()

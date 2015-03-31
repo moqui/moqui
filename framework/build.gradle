@@ -14,7 +14,7 @@ tasks.withType(JavaCompile) {
     options.compilerArgs << "-Xlint:unchecked"
 }
 
-// Leaving this commented out, for some reason REALLY slows things down (about 10x, in Java 1.7.0_71 on Mac)
+// Leaving this commented out, REALLY slows things down (about 10x in Java 1.7.0_71 and 1.7.0_75, about 6x in 1.8.0_40, all on Mac)
 // tasks.withType(GroovyCompile) { groovyOptions.optimizationOptions.indy = true }
 
 apply plugin: 'groovy'
@@ -142,22 +142,22 @@ dependencies {
     }
 
     // ElasticSearch Libraries, including Lucene
-    apiCompile name: 'elasticsearch', version: '1.4.4' // Apache 2.0
-    compile name: 'elasticsearch', version: '1.4.4' // Apache 2.0
+    apiCompile name: 'elasticsearch', version: '1.5.0' // Apache 2.0
+    compile name: 'elasticsearch', version: '1.5.0' // Apache 2.0
     compile name: 'elasticsearch-groovy', version: '1.4.4' // Apache 2.0
-    compile name: 'lucene-analyzers-common', version: '4.10.3' // Apache 2.0
-    compile name: 'lucene-core', version: '4.10.3' // Apache 2.0
-    compile name: 'lucene-grouping', version: '4.10.3' // Apache 2.0
-    compile name: 'lucene-highlighter', version: '4.10.3' // Apache 2.0
-    compile name: 'lucene-join', version: '4.10.3' // Apache 2.0
-    compile name: 'lucene-memory', version: '4.10.3' // Apache 2.0
-    compile name: 'lucene-queries', version: '4.10.3' // Apache 2.0
-    compile name: 'lucene-queryparser', version: '4.10.3' // Apache 2.0
-    compile name: 'lucene-sandbox', version: '4.10.3' // Apache 2.0
-    compile name: 'lucene-suggest', version: '4.10.3' // Apache 2.0
+    compile name: 'lucene-analyzers-common', version: '4.10.4' // Apache 2.0
+    compile name: 'lucene-core', version: '4.10.4' // Apache 2.0
+    compile name: 'lucene-grouping', version: '4.10.4' // Apache 2.0
+    compile name: 'lucene-highlighter', version: '4.10.4' // Apache 2.0
+    compile name: 'lucene-join', version: '4.10.4' // Apache 2.0
+    compile name: 'lucene-memory', version: '4.10.4' // Apache 2.0
+    compile name: 'lucene-queries', version: '4.10.4' // Apache 2.0
+    compile name: 'lucene-queryparser', version: '4.10.4' // Apache 2.0
+    compile name: 'lucene-sandbox', version: '4.10.4' // Apache 2.0
+    compile name: 'lucene-suggest', version: '4.10.4' // Apache 2.0
     runtime name: 'jts', version: '1.13' // LGPL (runtime only, needed by spatial4j)
     runtime name: 'spatial4j', version: '0.4.1' // Apache 2.0
-    runtime name: 'lucene-spatial', version: '4.10.3' // Apache 2.0
+    runtime name: 'lucene-spatial', version: '4.10.4' // Apache 2.0
 
     // Rules Libraries: Drools/jBPM/etc
     apiCompile name: 'kie-api', version: '6.0.0.Final' // Apache 2.0

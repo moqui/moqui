@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.context
 
+import groovy.transform.CompileStatic
 import org.moqui.context.Cache
 import org.moqui.context.L10nFacade
 import org.moqui.entity.EntityValue
@@ -28,6 +29,7 @@ import org.apache.commons.validator.routines.CalendarValidator
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+@CompileStatic
 public class L10nFacadeImpl implements L10nFacade {
     protected final static Logger logger = LoggerFactory.getLogger(L10nFacadeImpl.class)
 

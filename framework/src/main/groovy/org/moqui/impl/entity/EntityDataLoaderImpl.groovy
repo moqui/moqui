@@ -18,9 +18,11 @@ import org.apache.commons.csv.CSVRecord
 import org.moqui.BaseException
 import org.moqui.context.ExecutionContext
 import org.moqui.impl.service.ServiceCallSyncImpl
+import org.moqui.impl.service.ServiceDefinition
 import org.moqui.impl.service.ServiceFacadeImpl
 import org.moqui.service.ServiceCallSync
 
+import javax.sql.rowset.serial.SerialBlob
 import javax.xml.parsers.SAXParserFactory
 
 import org.apache.commons.codec.binary.Base64
@@ -135,20 +137,29 @@ class EntityDataLoaderImpl implements EntityDataLoader {
     }
 
     void internalRun(EntityXmlHandler exh, EntityCsvHandler ech, EntityJsonHandler ejh) {
+        // make sure reverse relationships exist
+        efi.createAllAutoReverseManyRelationships()
+
         boolean reenableEeca = false
         if (this.disableEeca) reenableEeca = !this.efi.ecfi.eci.artifactExecution.disableEntityEca()
 
         // if no xmlText or locations, so find all of the component and entity-facade files
         if (!this.xmlText && !this.csvText && !this.jsonText && !this.locationList) {
-            // if we're loading seed type data, add entity def files to the list of locations to load
+            // if we're loading seed type data, add configured (Moqui Conf XML) entity def files to the list of locations to load
             if (!dataTypes || dataTypes.contains("seed")) {
-                for (ResourceReference entityRr in efi.getAllEntityFileLocations())
+                for (ResourceReference entityRr in efi.getConfEntityFileLocations())
                     if (!entityRr.location.endsWith(".eecas.xml")) locationList.add(entityRr.location)
             }
 
-            // loop through all of the entity-facade.load-entity nodes, check each for "<entities>" root element
+            // loop through all of the entity-facade.load-data nodes
             for (Node loadData in efi.ecfi.getConfXmlRoot()."entity-facade"[0]."load-data") {
                 locationList.add((String) loadData."@location")
+            }
+
+            // if we're loading seed type data, add COMPONENT entity def files to the list of locations to load
+            if (!dataTypes || dataTypes.contains("seed")) {
+                for (ResourceReference entityRr in efi.getComponentEntityFileLocations())
+                    if (!entityRr.location.endsWith(".eecas.xml")) locationList.add(entityRr.location)
             }
 
             for (String location in efi.ecfi.getComponentBaseLocations().values()) {
@@ -178,6 +189,10 @@ class EntityDataLoaderImpl implements EntityDataLoader {
             logger.info(lm.toString())
             logger.info("Loading data types: ${dataTypes ?: 'ALL'}")
         }
+
+        // efi.createAllAutoReverseManyRelationships()
+        // logger.warn("========== Waiting 45s to attach profiler")
+        // Thread.sleep(45000)
 
         TransactionFacade tf = efi.ecfi.transactionFacade
         boolean suspendedTransaction = false
@@ -240,6 +255,9 @@ class EntityDataLoaderImpl implements EntityDataLoader {
         }
 
         if (reenableEeca) this.efi.ecfi.eci.artifactExecution.enableEntityEca()
+
+        // logger.warn("========== Done loading, waiting for a long time so process is still running for profiler")
+        // Thread.sleep(60*1000*100)
     }
 
     void loadSingleFile(String location, EntityXmlHandler exh, EntityCsvHandler ech, EntityJsonHandler ejh) {
@@ -310,9 +328,11 @@ class EntityDataLoaderImpl implements EntityDataLoader {
     }
     static class LoadValueHandler extends ValueHandler {
         protected ServiceFacadeImpl sfi
+        protected ExecutionContext ec
         LoadValueHandler(EntityDataLoaderImpl edli) {
             super(edli)
             sfi = edli.getEfi().getEcfi().getServiceFacade()
+            ec = edli.getEfi().getEcfi().getExecutionContext()
         }
         void handleValue(EntityValue value) {
             if (edli.dummyFks) value.checkFks(true)
@@ -330,11 +350,21 @@ class EntityDataLoaderImpl implements EntityDataLoader {
         }
         void handlePlainMap(String entityName, Map value) {
             Map results = sfi.sync().name('store', entityName).parameters(value).call()
-            if (logger.isInfoEnabled()) logger.info("Called store service for entity [${entityName}] in data load, results: ${results}")
+            if (logger.isTraceEnabled()) logger.trace("Called store service for entity [${entityName}] in data load, results: ${results}")
+            if (ec.getMessage().hasError()) {
+                String errStr = ec.getMessage().getErrorsString()
+                ec.getMessage().clearErrors()
+                throw new BaseException("Error handling data load plain Map: ${errStr}")
+            }
         }
         void handleService(ServiceCallSync scs) {
             Map results = scs.call()
             if (logger.isInfoEnabled()) logger.info("Called service [${scs.getServiceName()}] in data load, results: ${results}")
+            if (ec.getMessage().hasError()) {
+                String errStr = ec.getMessage().getErrorsString()
+                ec.getMessage().clearErrors()
+                throw new BaseException("Error handling data load service call: ${errStr}")
+            }
         }
     }
     static class ListValueHandler extends ValueHandler {
@@ -360,8 +390,13 @@ class EntityDataLoaderImpl implements EntityDataLoader {
         protected EntityDataLoaderImpl edli
         protected ValueHandler valueHandler
 
-        protected EntityValueImpl currentEntityValue = null
-        protected ServiceCallSyncImpl currentScs = null
+        protected EntityDefinition currentEntityDef = null
+        protected ServiceDefinition currentServiceDef = null
+        protected Map rootValueMap = null
+        // use a List as a stack, element 0 is the top
+        protected List<Map> valueMapStack = null
+        protected List<EntityDefinition> relatedEdStack = null
+
         protected String currentFieldName = null
         protected StringBuilder currentFieldValue = null
         protected long valuesRead = 0
@@ -398,61 +433,123 @@ class EntityDataLoaderImpl implements EntityDataLoader {
             }
             if (!loadElements) return
 
-            if (currentEntityValue != null || currentScs != null) {
-                // nested value/CDATA element
-                currentFieldName = qName
-            } else {
-                String entityName = qName
-                // get everything after a colon, but replace - with # for verb#noun separation
-                if (entityName.contains(':')) entityName = entityName.substring(entityName.indexOf(':') + 1)
-                if (entityName.contains('-')) entityName = entityName.replace('-', '#')
+            String entityName = qName
+            // get everything after a colon, but replace - with # for verb#noun separation
+            if (entityName.contains(':')) entityName = entityName.substring(entityName.indexOf(':') + 1)
+            if (entityName.contains('-')) entityName = entityName.replace('-', '#')
 
-                if (edli.efi.isEntityDefined(entityName)) {
-                    currentEntityValue = (EntityValueImpl) edli.efi.makeValue(entityName)
-
-                    int length = attributes.getLength()
-                    for (int i = 0; i < length; i++) {
-                        String name = attributes.getLocalName(i)
-                        String value = attributes.getValue(i)
-                        if (!name) name = attributes.getQName(i)
-
-                        try {
-                            // treat empty strings as nulls
-                            if (value) {
-                                if (currentEntityValue.getEntityDefinition().isField(name)) {
-                                    currentEntityValue.setString(name, value)
-                                } else {
-                                    logger.warn("Ignoring invalid attribute name [${name}] for entity [${currentEntityValue.getEntityName()}] with value [${value}] because it is not field of that entity")
-                                }
+            if (currentEntityDef != null) {
+                EntityDefinition checkEd = currentEntityDef
+                if (relatedEdStack) checkEd = relatedEdStack.get(0)
+                if (checkEd.isField(entityName)) {
+                    // nested value/CDATA element
+                    currentFieldName = entityName
+                } else if (checkEd.getRelationshipInfo(entityName) != null) {
+                    EntityDefinition.RelationshipInfo relInfo = checkEd.getRelationshipInfo(entityName)
+                    Map curRelMap = getAttributesMap(attributes, relInfo.relatedEd)
+                    String relationshipName = relInfo.getRelationshipName()
+                    if (valueMapStack) {
+                        Map prevValueMap = valueMapStack.get(0)
+                        if (prevValueMap.containsKey(relationshipName)) {
+                            Object prevRelValue = prevValueMap.get(relationshipName)
+                            if (prevRelValue instanceof List) {
+                                prevRelValue.add(curRelMap)
                             } else {
-                                currentEntityValue.set(name, null)
+                                prevValueMap.put(relationshipName, [prevRelValue, curRelMap])
                             }
-                        } catch (Exception e) {
-                            logger.warn("Could not set field [${entityName}.${name}] to the value [${value}]", e)
-                        }
-                    }
-                } else if (edli.sfi.isServiceDefined(entityName)) {
-                    currentScs = (ServiceCallSyncImpl) edli.sfi.sync().name(entityName)
-                    int length = attributes.getLength()
-                    for (int i = 0; i < length; i++) {
-                        String name = attributes.getLocalName(i)
-                        String value = attributes.getValue(i)
-                        if (!name) name = attributes.getQName(i)
-
-                        // treat empty strings as nulls
-                        if (value) {
-                            currentScs.parameter(name, value)
                         } else {
-                            currentScs.parameter(name, null)
+                            prevValueMap.put(relationshipName, curRelMap)
                         }
+                        valueMapStack.add(0, curRelMap)
+                        relatedEdStack.add(0, relInfo.relatedEd)
+                    } else {
+                        if (rootValueMap.containsKey(relationshipName)) {
+                            Object prevRelValue = rootValueMap.get(relationshipName)
+                            if (prevRelValue instanceof List) {
+                                prevRelValue.add(curRelMap)
+                            } else {
+                                rootValueMap.put(relationshipName, [prevRelValue, curRelMap])
+                            }
+                        } else {
+                            rootValueMap.put(relationshipName, curRelMap)
+                        }
+                        valueMapStack = [curRelMap]
+                        relatedEdStack = [relInfo.relatedEd]
                     }
+                } else if (edli.efi.isEntityDefined(entityName)) {
+                    EntityDefinition subEd = edli.efi.getEntityDefinition(entityName)
+                    Map curRelMap = getAttributesMap(attributes, subEd)
+                    String relationshipName = subEd.getFullEntityName()
+                    if (valueMapStack) {
+                        Map prevValueMap = valueMapStack.get(0)
+                        if (prevValueMap.containsKey(relationshipName)) {
+                            Object prevRelValue = prevValueMap.get(relationshipName)
+                            if (prevRelValue instanceof List) {
+                                prevRelValue.add(curRelMap)
+                            } else {
+                                prevValueMap.put(relationshipName, [prevRelValue, curRelMap])
+                            }
+                        } else {
+                            prevValueMap.put(relationshipName, curRelMap)
+                        }
+                        valueMapStack.add(0, curRelMap)
+                        relatedEdStack.add(0, subEd)
+                    } else {
+                        if (rootValueMap.containsKey(relationshipName)) {
+                            Object prevRelValue = rootValueMap.get(relationshipName)
+                            if (prevRelValue instanceof List) {
+                                prevRelValue.add(curRelMap)
+                            } else {
+                                rootValueMap.put(relationshipName, [prevRelValue, curRelMap])
+                            }
+                        } else {
+                            rootValueMap.put(relationshipName, curRelMap)
+                        }
+                        valueMapStack = [curRelMap]
+                        relatedEdStack = [subEd]
+                    }
+                } else {
+                    logger.warn("Found element [${entityName}] under element for entity [${checkEd.getFullEntityName()}] and it is not a field or relationship so ignoring")
+                }
+            } else if (currentServiceDef != null) {
+                currentFieldName = qName
+                // TODO: support nested elements for services? ie look for attributes, somehow handle subelements, etc
+            } else {
+                if (edli.efi.isEntityDefined(entityName)) {
+                    currentEntityDef = edli.efi.getEntityDefinition(entityName)
+                    rootValueMap = getAttributesMap(attributes, currentEntityDef)
+                } else if (edli.sfi.isServiceDefined(entityName)) {
+                    currentServiceDef = edli.sfi.getServiceDefinition(entityName)
+                    rootValueMap = getAttributesMap(attributes, null)
                 } else {
                     throw new SAXException("Found element [${qName}] name, transformed to [${entityName}], that is not a valid entity name or service name")
                 }
             }
         }
+        static Map getAttributesMap(Attributes attributes, EntityDefinition checkEd) {
+            Map attrMap = [:]
+            int length = attributes.getLength()
+            for (int i = 0; i < length; i++) {
+                String name = attributes.getLocalName(i)
+                String value = attributes.getValue(i)
+                if (!name) name = attributes.getQName(i)
+
+                if (checkEd == null || checkEd.isField(name)) {
+                    // treat empty strings as nulls
+                    if (value) {
+                        attrMap.put(name, value)
+                    } else {
+                        attrMap.put(name, null)
+                    }
+                } else {
+                    logger.warn("Ignoring invalid attribute name [${name}] for entity [${checkEd.getFullEntityName()}] with value [${value}] because it is not field of that entity")
+                }
+            }
+            return attrMap
+        }
+
         void characters(char[] chars, int offset, int length) {
-            if ((currentEntityValue != null || currentScs != null) && currentFieldName) {
+            if (rootValueMap && currentFieldName) {
                 if (currentFieldValue == null) currentFieldValue = new StringBuilder()
                 currentFieldValue.append(chars, offset, length)
             }
@@ -466,51 +563,59 @@ class EntityDataLoaderImpl implements EntityDataLoader {
 
             if (currentFieldName != null) {
                 if (currentFieldValue) {
-                    if (currentEntityValue != null) {
-                        EntityDefinition ed = currentEntityValue.getEntityDefinition()
-                        if (ed.isField(currentFieldName)) {
-                            Node fieldNode = ed.getFieldNode(currentFieldName)
+                    if (currentEntityDef != null) {
+                        if (currentEntityDef.isField(currentFieldName)) {
+                            Node fieldNode = currentEntityDef.getFieldNode(currentFieldName)
                             String type = fieldNode."@type"
                             if (type == "binary-very-long") {
                                 byte[] binData = Base64.decodeBase64(currentFieldValue.toString())
-                                currentEntityValue.setBytes(currentFieldName, binData)
+                                rootValueMap.put(currentFieldName, new SerialBlob(binData))
                             } else {
-                                currentEntityValue.setString(currentFieldName, currentFieldValue.toString())
+                                rootValueMap.put(currentFieldName, currentFieldValue.toString())
                             }
                         } else {
-                            logger.warn("Ignoring invalid field name [${currentFieldName}] found for the entity ${currentEntityValue.getEntityName()} with value ${currentFieldValue}")
+                            logger.warn("Ignoring invalid field name [${currentFieldName}] found for the entity ${currentEntityDef.getFullEntityName()} with value ${currentFieldValue}")
                         }
-                    } else if (currentScs != null) {
-                        currentScs.parameter(currentFieldName, currentFieldValue)
+                    } else if (currentServiceDef != null) {
+                        rootValueMap.put(currentFieldName, currentFieldValue)
                     }
                     currentFieldValue = null
                 }
                 currentFieldName = null
+            } else if (valueMapStack) {
+                // end of nested relationship element, just pop the last
+                valueMapStack.remove(0)
+                relatedEdStack.remove(0)
+                valuesRead++
             } else {
-                if (currentEntityValue != null) {
+                if (currentEntityDef != null) {
                     // before we write currentValue check to see if PK is there, if not and it is one field, generate it from a sequence using the entity name
-                    if (!currentEntityValue.containsPrimaryKey()) {
-                        if (currentEntityValue.getEntityDefinition().getPkFieldNames().size() == 1) {
+                    /* Don't need to do this here any more, now calling the store service which will handle it
+                    if (!currentEntityDef.containsPrimaryKey(rootValueMap)) {
+                        if (currentEntityDef.getPkFieldNames().size() == 1) {
                             currentEntityValue.setSequencedIdPrimary()
                         } else {
                             throw new SAXException("Cannot process value with incomplete primary key for [${currentEntityValue.getEntityName()}] with more than 1 primary key field: " + currentEntityValue)
                         }
                     }
+                    */
 
                     try {
-                        valueHandler.handleValue(currentEntityValue)
+                        // if (currentEntityDef.getFullEntityName().contains("DbForm")) logger.warn("========= DbForm rootValueMap: ${rootValueMap}")
+                        valueHandler.handlePlainMap(currentEntityDef.getFullEntityName(), rootValueMap)
                         valuesRead++
-                        currentEntityValue = null
+                        currentEntityDef = null
                     } catch (EntityException e) {
-                        throw new SAXException("Error storing entity [${currentEntityValue.getEntityName()}] value: " + e.toString(), e)
+                        throw new SAXException("Error storing entity [${currentEntityDef.getFullEntityName()}] value: " + e.toString(), e)
                     }
-                } else if (currentScs != null) {
+                } else if (currentServiceDef != null) {
                     try {
+                        ServiceCallSync currentScs = edli.sfi.sync().name(currentServiceDef.getServiceName()).parameters(rootValueMap)
                         valueHandler.handleService(currentScs)
                         valuesRead++
-                        currentScs = null
+                        currentServiceDef = null
                     } catch (Exception e) {
-                        throw new SAXException("Error running service [${currentScs.getServiceName()}]: " + e.toString(), e)
+                        throw new SAXException("Error running service [${currentServiceDef.getServiceName()}]: " + e.toString(), e)
                     }
                 }
             }

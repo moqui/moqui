@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.entity
 
+import groovy.transform.CompileStatic
 import org.apache.commons.collections.set.ListOrderedSet
 
 import org.moqui.entity.EntityException
@@ -22,6 +23,7 @@ import org.slf4j.LoggerFactory
 import java.sql.Connection
 import java.sql.ResultSet
 
+@CompileStatic
 class EntityValueImpl extends EntityValueBase {
     protected final static Logger logger = LoggerFactory.getLogger(EntityValueImpl.class)
 
@@ -31,7 +33,7 @@ class EntityValueImpl extends EntityValueBase {
     public EntityValue cloneValue() {
         EntityValueImpl newObj = new EntityValueImpl(getEntityDefinition(), getEntityFacadeImpl())
         newObj.getValueMap().putAll(getValueMap())
-        if (getDbValueMap()) newObj.setDbValueMap((Map<String, Object>) getDbValueMap().clone())
+        if (getDbValueMap()) newObj.setDbValueMap(new HashMap<String, Object>(getDbValueMap()))
         // don't set mutable (default to mutable even if original was not) or modified (start out not modified)
         return newObj
     }
@@ -174,10 +176,13 @@ class EntityValueImpl extends EntityValueBase {
     boolean refreshExtended() {
         EntityDefinition ed = getEntityDefinition()
 
+        // table doesn't exist, just return null
+        if (!getEntityFacadeImpl().getEntityDbMeta().tableExists(ed)) return null
+
         // NOTE: this simple approach may not work for view-entities, but not restricting for now
 
         List<String> pkFieldList = ed.getPkFieldNames()
-        ListOrderedSet nonPkFieldList = ed.getFieldNames(false, true, false)
+        List<String> nonPkFieldList = ed.getNonPkFieldNames()
         // NOTE: even if there are no non-pk fields do a refresh in order to see if the record exists or not
 
         EntityQueryBuilder eqb = new EntityQueryBuilder(ed, getEntityFacadeImpl())
@@ -205,7 +210,10 @@ class EntityValueImpl extends EntityValueBase {
 
         boolean retVal = false
         try {
-            getEntityFacadeImpl().entityDbMeta.checkTableRuntime(ed)
+            // don't check create, above tableExists check is done:
+            // efi.getEntityDbMeta().checkTableRuntime(ed)
+            // if this is a view-entity and any table in it exists check/create all or will fail with optional members, etc
+            if (ed.isViewEntity()) getEntityFacadeImpl().getEntityDbMeta().checkTableRuntime(ed)
 
             eqb.makeConnection()
             eqb.makePreparedStatement()
