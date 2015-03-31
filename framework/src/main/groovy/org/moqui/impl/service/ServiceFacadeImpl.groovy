@@ -364,8 +364,9 @@ class ServiceFacadeImpl implements ServiceFacade {
 
     @CompileStatic
     void runSecaRules(String serviceName, Map<String, Object> parameters, Map<String, Object> results, String when) {
+        // NOTE: no need to remove the hash, ServiceCallSyncImpl now passes a service name with no hash
         // remove the hash if there is one to more consistently match the service name
-        serviceName = StupidJavaUtilities.removeChar(serviceName, (char) '#')
+        // serviceName = StupidJavaUtilities.removeChar(serviceName, (char) '#')
         List<ServiceEcaRule> lst = secaRulesByServiceName.get(serviceName)
         if (lst) {
             ExecutionContext ec = ecfi.getExecutionContext()
@@ -375,8 +376,9 @@ class ServiceFacadeImpl implements ServiceFacade {
 
     @CompileStatic
     void registerTxSecaRules(String serviceName, Map<String, Object> parameters, Map<String, Object> results) {
+        // NOTE: no need to remove the hash, ServiceCallSyncImpl now passes a service name with no hash
         // remove the hash if there is one to more consistently match the service name
-        serviceName = StupidJavaUtilities.removeChar(serviceName, (char) '#')
+        // serviceName = StupidJavaUtilities.removeChar(serviceName, (char) '#')
         List<ServiceEcaRule> lst = secaRulesByServiceName.get(serviceName)
         if (lst) for (ServiceEcaRule ser in lst)
             if (ser.when.startsWith("tx-")) ser.registerTx(serviceName, parameters, results, ecfi)

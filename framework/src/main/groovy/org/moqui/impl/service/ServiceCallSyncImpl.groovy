@@ -157,7 +157,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         String tenantId = currentParameters.authTenantId
 
         // in-parameter validation
-        sfi.runSecaRules(getServiceName(), currentParameters, null, "pre-validate")
+        sfi.runSecaRules(getServiceNameNoHash(), currentParameters, null, "pre-validate")
         if (sd != null) sd.convertValidateCleanParameters(currentParameters, eci)
         // if error(s) in parameters, return now with no results
         if (eci.getMessage().hasError()) {
@@ -175,7 +175,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         }
 
         // pre authentication and authorization SECA rules
-        sfi.runSecaRules(getServiceName(), currentParameters, null, "pre-auth")
+        sfi.runSecaRules(getServiceNameNoHash(), currentParameters, null, "pre-auth")
 
         // push service call artifact execution, checks authz too
         // NOTE: don't require authz if the service def doesn't authenticate
@@ -239,7 +239,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                 // handle sd.serviceNode."@semaphore"; do this after local transaction created, etc.
                 checkAddSemaphore(sd, eci)
 
-                sfi.runSecaRules(getServiceName(), currentParameters, null, "pre-service")
+                sfi.runSecaRules(getServiceNameNoHash(), currentParameters, null, "pre-service")
 
                 if (logger.traceEnabled) logger.trace("Calling service [${getServiceName()}] pre-call input: ${currentParameters}")
 
@@ -247,10 +247,10 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                     // run the service through the ServiceRunner
                     result = sr.runService(sd, currentParameters)
                 } finally {
-                    sfi.registerTxSecaRules(getServiceName(), currentParameters, result)
+                    sfi.registerTxSecaRules(getServiceNameNoHash(), currentParameters, result)
                 }
 
-                sfi.runSecaRules(getServiceName(), currentParameters, result, "post-service")
+                sfi.runSecaRules(getServiceNameNoHash(), currentParameters, result, "post-service")
                 // if we got any errors added to the message list in the service, rollback for that too
                 if (eci.getMessage().hasError()) {
                     tf.rollback(beganTransaction, "Error running service [${getServiceName()}] (message): " + eci.getMessage().getErrorsString(), null)
@@ -291,7 +291,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                         parent = parent.getCause()
                     }
                 }
-                sfi.runSecaRules(getServiceName(), currentParameters, result, "post-commit")
+                sfi.runSecaRules(getServiceNameNoHash(), currentParameters, result, "post-commit")
             }
         } catch (TransactionException e) {
             throw e
@@ -368,7 +368,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         //     permissions, which will require authentication
         // done in calling method: sfi.runSecaRules(getServiceName(), currentParameters, null, "pre-auth")
 
-        sfi.runSecaRules(getServiceName(), currentParameters, null, "pre-validate")
+        sfi.runSecaRules(getServiceNameNoHash(), currentParameters, null, "pre-validate")
 
         // start with the settings for the default: use-or-begin
         boolean pauseResumeIfNeeded = false
@@ -384,7 +384,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
             boolean beganTransaction = beginTransactionIfNeeded ? tf.begin(null) : false
             if (useTransactionCache) tf.initTransactionCache()
             try {
-                sfi.runSecaRules(getServiceName(), currentParameters, null, "pre-service")
+                sfi.runSecaRules(getServiceNameNoHash(), currentParameters, null, "pre-service")
 
                 try {
                     EntityDefinition ed = sfi.getEcfi().getEntityFacade().getEntityDefinition(noun)
@@ -395,10 +395,10 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                         case "store": EntityAutoServiceRunner.storeEntity(sfi, ed, currentParameters, result, null); break
                     }
                 } finally {
-                    sfi.registerTxSecaRules(getServiceName(), currentParameters, result)
+                    sfi.registerTxSecaRules(getServiceNameNoHash(), currentParameters, result)
                 }
 
-                sfi.runSecaRules(getServiceName(), currentParameters, result, "post-service")
+                sfi.runSecaRules(getServiceNameNoHash(), currentParameters, result, "post-service")
             } catch (ArtifactAuthorizationException e) {
                 tf.rollback(beganTransaction, "Authorization error running service [${getServiceName()}] ", e)
                 // this is a local call, pass certain exceptions through
@@ -426,7 +426,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                         parent = parent.getCause()
                     }
                 }
-                sfi.runSecaRules(getServiceName(), currentParameters, result, "post-commit")
+                sfi.runSecaRules(getServiceNameNoHash(), currentParameters, result, "post-commit")
             }
         } catch (TransactionException e) {
             throw e

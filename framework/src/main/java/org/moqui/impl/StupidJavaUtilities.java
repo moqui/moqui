@@ -30,6 +30,7 @@ public class StupidJavaUtilities {
     }
 
     public static String removeChar(String orig, char ch) {
+        // NOTE: this seems to run pretty slow, plain replace might be faster, but avoiding its use anyway (in ServiceFacadeImpl for SECA rules)
         char[] newChars = new char[orig.length()];
         int origLength = orig.length();
         int lastPos = 0;

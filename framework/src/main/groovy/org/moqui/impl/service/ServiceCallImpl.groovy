@@ -41,6 +41,7 @@ class ServiceCallImpl implements ServiceCall {
 
     @Override
     String getServiceName() { return (path ? path + "." : "") + verb + (noun ? "#" + noun : "") }
+    String getServiceNameNoHash() { return (path ? path + "." : "") + verb + (noun ?: "") }
 
     @Override
     Map<String, Object> getCurrentParameters() { return parameters }
