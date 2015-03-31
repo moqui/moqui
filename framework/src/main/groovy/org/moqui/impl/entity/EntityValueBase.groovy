@@ -746,6 +746,7 @@ abstract class EntityValueBase implements EntityValue {
     boolean containsValue(Object o) { return values().contains(o) }
 
     @Override
+    @CompileStatic
     Object get(Object o) {
         if (o instanceof CharSequence) {
             // This may throw an exception, and let it; the Map interface doesn't provide for EntityException
