@@ -18,7 +18,6 @@ import org.moqui.entity.EntityCondition
 
 @CompileStatic
 class MapCondition extends EntityConditionImplBase {
-    protected volatile Class internalClass = null
     protected Map<String, Object> fieldMap
     protected EntityCondition.ComparisonOperator comparisonOperator
     protected EntityCondition.JoinOperator joinOperator
@@ -35,8 +34,6 @@ class MapCondition extends EntityConditionImplBase {
         this.joinOperator = joinOperator ?: AND
         curHashCode = createHashCode()
     }
-
-    Class getLocalClass() { if (this.internalClass == null) this.internalClass = this.getClass(); return this.internalClass }
 
     @Override
     void makeSqlWhere(EntityQueryBuilder eqb) {

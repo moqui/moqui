@@ -11,19 +11,23 @@
  */
 package org.moqui.impl.entity.condition
 
+import groovy.transform.CompileStatic
 import org.moqui.BaseException
 import org.moqui.impl.entity.EntityDefinition
 import org.moqui.impl.StupidJavaUtilities
 
+@CompileStatic
 class ConditionField {
     String entityAlias = null
     String fieldName
     EntityDefinition aliasEntityDef = null
     String aliasEntityName = null
+    protected int curHashCode
 
     ConditionField(String fieldName) {
         if (!fieldName) throw new BaseException("Empty fieldName not allowed")
         this.fieldName = fieldName.intern()
+        curHashCode = createHashCode()
     }
     ConditionField(String entityAlias, String fieldName, EntityDefinition aliasEntityDef) {
         if (!fieldName) throw new BaseException("Empty fieldName not allowed")
@@ -32,6 +36,7 @@ class ConditionField {
         this.aliasEntityDef = aliasEntityDef
         // NOTE: this is already intern()'ed
         if (aliasEntityDef != null) aliasEntityName = aliasEntityDef.getFullEntityName()
+        curHashCode = createHashCode()
     }
 
     String getColumnName(EntityDefinition ed) {
@@ -59,9 +64,10 @@ class ConditionField {
     String toString() { return (entityAlias ? entityAlias+"." : "") + fieldName }
 
     @Override
-    int hashCode() {
+    int hashCode() { return curHashCode }
+    protected int createHashCode() {
         return (entityAlias ? entityAlias.hashCode() : 0) + (fieldName ? fieldName.hashCode() : 0) +
-               (aliasEntityDef ? aliasEntityDef.hashCode() : 0)
+                (aliasEntityDef ? aliasEntityDef.hashCode() : 0)
     }
 
     @Override

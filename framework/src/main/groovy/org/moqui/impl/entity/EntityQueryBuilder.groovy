@@ -43,7 +43,7 @@ class EntityQueryBuilder {
     protected final static Logger logger = LoggerFactory.getLogger(EntityQueryBuilder.class)
 
     protected EntityFacadeImpl efi
-    protected EntityDefinition mainEntityDefinition
+    EntityDefinition mainEntityDefinition
     protected StringBuilder sqlTopLevel = new StringBuilder()
     protected List<EntityConditionParameter> parameters = new ArrayList()
 

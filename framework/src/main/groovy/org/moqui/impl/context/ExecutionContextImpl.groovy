@@ -77,7 +77,8 @@ class ExecutionContextImpl implements ExecutionContext {
     MessageFacade getMessage() { if (messageFacade != null) return messageFacade else return (messageFacade = new MessageFacadeImpl()) }
 
     @Override
-    ArtifactExecutionFacade getArtifactExecution() {
+    ArtifactExecutionFacade getArtifactExecution() { return getArtifactExecutionImpl() }
+    ArtifactExecutionFacadeImpl getArtifactExecutionImpl() {
         if (artifactExecutionFacade != null) return artifactExecutionFacade
         else return (artifactExecutionFacade = new ArtifactExecutionFacadeImpl(this))
     }

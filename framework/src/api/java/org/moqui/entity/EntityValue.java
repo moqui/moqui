@@ -74,7 +74,7 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
      * @param fields The fields Map to get the values from
      * @return reference to this for convenience
      */
-    EntityValue setAll(Map<String, ?> fields);
+    EntityValue setAll(Map<String, Object> fields);
 
     /** Sets the named field to the passed value, converting the value from a String to the corresponding type using 
      *   <code>Type.valueOf()</code>
@@ -187,7 +187,7 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
      * @param useCache Look in the cache before finding in the datasource. Defaults to setting on entity definition.
      * @return List of EntityValue instances as specified in the relation definition
      */
-    EntityList findRelated(String relationshipName, Map<String, ?> byAndFields, List<String> orderBy,
+    EntityList findRelated(String relationshipName, Map<String, Object> byAndFields, List<String> orderBy,
                                   Boolean useCache, Boolean forUpdate) throws EntityException;
 
     /** Get the named Related Entity for the EntityValue from the persistent store

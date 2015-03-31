@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.entity.condition
 
+import groovy.transform.CompileStatic
 import org.moqui.entity.EntityCondition
 import org.moqui.impl.entity.EntityQueryBuilder.EntityConditionParameter
 import org.moqui.impl.entity.EntityConditionFactoryImpl
@@ -19,14 +20,15 @@ import org.moqui.impl.entity.EntityQueryBuilder
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+@CompileStatic
 class FieldValueCondition extends EntityConditionImplBase {
     protected final static Logger logger = LoggerFactory.getLogger(FieldValueCondition.class)
 
-    protected volatile Class localClass = null
     protected ConditionField field
     protected EntityCondition.ComparisonOperator operator
     protected Object value
-    protected boolean ignoreCase = false
+    protected Boolean ignoreCase = false
+    protected int curHashCode
 
     FieldValueCondition(EntityConditionFactoryImpl ecFactoryImpl,
             ConditionField field, EntityCondition.ComparisonOperator operator, Object value) {
@@ -34,9 +36,8 @@ class FieldValueCondition extends EntityConditionImplBase {
         this.field = field
         this.operator = operator ?: EQUALS
         this.value = value
+        curHashCode = createHashCode()
     }
-
-    Class getLocalClass() { if (this.localClass == null) this.localClass = this.getClass(); return this.localClass }
 
     @Override
     void makeSqlWhere(EntityQueryBuilder eqb) {
@@ -106,6 +107,7 @@ class FieldValueCondition extends EntityConditionImplBase {
     boolean populateMap(Map<String, ?> map) {
         if (operator != EQUALS || ignoreCase || field.entityAlias) return false
         map.put(field.fieldName, value)
+        curHashCode = createHashCode()
         return true
     }
 
@@ -119,7 +121,7 @@ class FieldValueCondition extends EntityConditionImplBase {
     }
 
     @Override
-    EntityCondition ignoreCase() { this.ignoreCase = true; return this }
+    EntityCondition ignoreCase() { this.ignoreCase = true; curHashCode = createHashCode(); return this }
 
     @Override
     String toString() {
@@ -127,26 +129,27 @@ class FieldValueCondition extends EntityConditionImplBase {
     }
 
     @Override
-    int hashCode() {
+    int hashCode() { return curHashCode }
+    protected int createHashCode() {
         return (field ? field.hashCode() : 0) + operator.hashCode() + (value ? value.hashCode() : 0) + ignoreCase.hashCode()
     }
 
     @Override
     boolean equals(Object o) {
-        if (o == null || o.getClass() != this.getLocalClass()) return false
+        if (o == null || !(o instanceof FieldValueCondition)) return false
         FieldValueCondition that = (FieldValueCondition) o
-        if (!this.field.equalsConditionField(that.field)) return false
+        if (!field.equalsConditionField(that.field)) return false
         // NOTE: for Java Enums the != is WAY faster than the .equals
-        if (this.operator != that.operator) return false
-        if (this.value == null && that.value != null) return false
-        if (this.value != null) {
+        if (operator != that.operator) return false
+        if (value == null && that.value != null) return false
+        if (value != null) {
             if (that.value == null) {
                 return false
             } else {
-                if (!this.value.equals(that.value)) return false
+                if (!value.equals(that.value)) return false
             }
         }
-        if (this.ignoreCase != that.ignoreCase) return false
+        if (ignoreCase != that.ignoreCase) return false
         return true
     }
 }

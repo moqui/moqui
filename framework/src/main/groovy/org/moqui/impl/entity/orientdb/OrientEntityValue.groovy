@@ -84,7 +84,7 @@ class OrientEntityValue extends EntityValueBase {
     public EntityValue cloneValue() {
         OrientEntityValue newObj = new OrientEntityValue(getEntityDefinition(), getEntityFacadeImpl(), odf)
         newObj.getValueMap().putAll(getValueMap())
-        if (getDbValueMap()) newObj.setDbValueMap((Map<String, Object>) getDbValueMap().clone())
+        if (getDbValueMap()) newObj.setDbValueMap(new HashMap<String, Object>(getDbValueMap()))
         if (getRecordId() != null) newObj.setRecordId(getRecordId())
         // don't set mutable (default to mutable even if original was not) or modified (start out not modified)
         return newObj

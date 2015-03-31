@@ -320,20 +320,27 @@ public class EntityDefinition {
         return relNode
     }
 
-    static Map getRelationshipExpandedKeyMap(Node relationship, EntityDefinition relEd) {
-        ListOrderedMap eKeyMap = new ListOrderedMap()
-        if (!relationship."key-map" && ((String) relationship."@type").startsWith("one")) {
+    @CompileStatic
+    static Map<String, String> getRelationshipExpandedKeyMap(Node relationship, EntityDefinition relEd) {
+        Map<String, String> eKeyMap = [:]
+        if (!relationship.get("key-map") && ((String) relationship.attributes().get('type')).startsWith('one')) {
             // go through pks of related entity, assume field names match
             for (String pkFieldName in relEd.getPkFieldNames()) eKeyMap.put(pkFieldName, pkFieldName)
         } else {
-            for (Node keyMap in relationship."key-map") {
-                String relFn = keyMap."@related-field-name" ?: keyMap."@field-name"
-                if (!relEd.isField(relFn) && ((String) relationship."@type").startsWith("one")) {
+            for (Object childObj in relationship.children()) {
+                Node keyMap = null
+                if (childObj instanceof Node) keyMap = (Node) childObj
+                if (keyMap == null) continue
+                if (!'key-map'.equals(keyMap.name())) continue
+
+                String fieldName = keyMap.attributes().get('field-name')
+                String relFn = keyMap.attributes().get('related-field-name') ?: fieldName
+                if (!relEd.isField(relFn) && ((String) relationship.attributes().get('type')).startsWith("one")) {
                     List<String> pks = relEd.getPkFieldNames()
                     if (pks.size() == 1) relFn = pks.get(0)
                     // if we don't match these constraints and get this default we'll get an error later...
                 }
-                eKeyMap.put(keyMap."@field-name", relFn)
+                eKeyMap.put(fieldName, relFn)
             }
         }
         return eKeyMap
