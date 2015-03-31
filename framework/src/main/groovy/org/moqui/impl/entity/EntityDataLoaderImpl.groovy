@@ -145,15 +145,21 @@ class EntityDataLoaderImpl implements EntityDataLoader {
 
         // if no xmlText or locations, so find all of the component and entity-facade files
         if (!this.xmlText && !this.csvText && !this.jsonText && !this.locationList) {
-            // if we're loading seed type data, add entity def files to the list of locations to load
+            // if we're loading seed type data, add configured (Moqui Conf XML) entity def files to the list of locations to load
             if (!dataTypes || dataTypes.contains("seed")) {
-                for (ResourceReference entityRr in efi.getAllEntityFileLocations())
+                for (ResourceReference entityRr in efi.getConfEntityFileLocations())
                     if (!entityRr.location.endsWith(".eecas.xml")) locationList.add(entityRr.location)
             }
 
-            // loop through all of the entity-facade.load-entity nodes, check each for "<entities>" root element
+            // loop through all of the entity-facade.load-data nodes
             for (Node loadData in efi.ecfi.getConfXmlRoot()."entity-facade"[0]."load-data") {
                 locationList.add((String) loadData."@location")
+            }
+
+            // if we're loading seed type data, add COMPONENT entity def files to the list of locations to load
+            if (!dataTypes || dataTypes.contains("seed")) {
+                for (ResourceReference entityRr in efi.getComponentEntityFileLocations())
+                    if (!entityRr.location.endsWith(".eecas.xml")) locationList.add(entityRr.location)
             }
 
             for (String location in efi.ecfi.getComponentBaseLocations().values()) {

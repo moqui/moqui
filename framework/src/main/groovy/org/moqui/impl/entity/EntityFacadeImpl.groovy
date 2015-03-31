@@ -194,11 +194,22 @@ class EntityFacadeImpl implements EntityFacade {
 
     List<ResourceReference> getAllEntityFileLocations() {
         List<ResourceReference> entityRrList = new LinkedList()
+        entityRrList.addAll(getConfEntityFileLocations())
+        entityRrList.addAll(getComponentEntityFileLocations())
+        return entityRrList
+    }
+    List<ResourceReference> getConfEntityFileLocations() {
+        List<ResourceReference> entityRrList = new LinkedList()
 
         // loop through all of the entity-facade.load-entity nodes, check each for "<entities>" root element
         for (Node loadEntity in this.ecfi.getConfXmlRoot()."entity-facade"[0]."load-entity") {
             entityRrList.add(this.ecfi.resourceFacade.getLocationReference((String) loadEntity."@location"))
         }
+
+        return entityRrList
+    }
+    List<ResourceReference> getComponentEntityFileLocations() {
+        List<ResourceReference> entityRrList = new LinkedList()
 
         // loop through components look for XML files in the entity directory, check each for "<entities>" root element
         for (String location in this.ecfi.getComponentBaseLocations().values()) {
