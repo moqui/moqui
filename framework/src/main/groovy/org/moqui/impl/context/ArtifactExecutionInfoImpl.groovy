@@ -42,7 +42,9 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
         this.startTime = System.currentTimeMillis()
     }
 
+    @CompileStatic
     ArtifactExecutionInfoImpl setActionDetail(String detail) { this.actionDetail = detail; return this }
+    @CompileStatic
     ArtifactExecutionInfoImpl setParameters(Map<String, Object> parameters) { this.parameters = parameters; return this }
 
     @Override
@@ -109,15 +111,19 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
         return childrenRunningTime ?: 0
     }
 
+    @CompileStatic
     void setParent(ArtifactExecutionInfoImpl parentAeii) { this.parentAeii = parentAeii }
     @Override
+    @CompileStatic
     ArtifactExecutionInfo getParent() { return parentAeii }
     @Override
     BigDecimal getPercentOfParentTime() { parentAeii && endTime ?
         (((getRunningTime() / parentAeii.getRunningTime()) * 100) as BigDecimal).setScale(2, BigDecimal.ROUND_HALF_UP) : 0 }
 
 
+    @CompileStatic
     void addChild(ArtifactExecutionInfoImpl aeii) { childList.add(aeii) }
+    @CompileStatic
     List<ArtifactExecutionInfo> getChildList() { return childList }
 
     void print(Writer writer, int level, boolean children) {
@@ -134,6 +140,7 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
         if (children) for (ArtifactExecutionInfoImpl aeii in childList) aeii.print(writer, level + 1, true)
     }
 
+    @CompileStatic
     String getKeyString() { return name + ":" + typeEnumId + ":" + actionEnumId + ":" + actionDetail }
 
     static List<Map> hotSpotByTime(List<ArtifactExecutionInfoImpl> aeiiList, boolean ownTime, String orderBy) {

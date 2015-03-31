@@ -430,6 +430,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     String getRuntimePath() { return runtimePath }
     Node getConfXmlRoot() { return confXmlRoot }
+    Node getServerStatsNode() { return (Node) confXmlRoot.'server-stats'[0] }
 
     InetAddress getLocalhostAddress() { return localhostAddress }
 
@@ -668,9 +669,12 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     @Override
     @CompileStatic
-    ExecutionContext getExecutionContext() {
+    ExecutionContext getExecutionContext() { return getEci() }
+
+    @CompileStatic
+    ExecutionContextImpl getEci() {
         ExecutionContextImpl ec = this.activeContext.get()
-        if (ec) {
+        if (ec != null) {
             return ec
         } else {
             if (logger.traceEnabled) logger.trace("Creating new ExecutionContext in thread [${Thread.currentThread().id}:${Thread.currentThread().name}]")
@@ -681,9 +685,6 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             return ec
         }
     }
-
-    @CompileStatic
-    ExecutionContextImpl getEci() { return (ExecutionContextImpl) this.getExecutionContext() }
 
     void destroyActiveExecutionContext() {
         ExecutionContext ec = this.activeContext.get()
@@ -776,23 +777,25 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         return skipStatsCond ? getEci().getResource().evaluateCondition(skipStatsCond, null) : false
     }
 
+    @CompileStatic
     protected boolean artifactPersistHit(String artifactType, String artifactSubType) {
         if ("entity".equals(artifactType)) return false
         String cacheKey = artifactType + "#" + artifactSubType
         Boolean ph = artifactPersistHitByType.get(cacheKey)
         if (ph == null) {
             Node artifactStats = getArtifactStatsNode(artifactType, artifactSubType)
-            ph = artifactStats."@persist-hit" == "true"
+            ph = 'true'.equals(artifactStats.attributes().get('persist-hit'))
             artifactPersistHitByType.put(cacheKey, ph)
         }
         return ph
     }
+    @CompileStatic
     protected boolean artifactPersistBin(String artifactType, String artifactSubType) {
         String cacheKey = artifactType + "#" + artifactSubType
         Boolean ph = artifactPersistBinByType.get(cacheKey)
         if (ph == null) {
             Node artifactStats = getArtifactStatsNode(artifactType, artifactSubType)
-            ph = artifactStats."@persist-bin" == "true"
+            ph = 'true'.equals(artifactStats.attributes().get('persist-bin'))
             artifactPersistBinByType.put(cacheKey, ph)
         }
         return ph
@@ -866,14 +869,15 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             eci.service.async().name("create", "moqui.server.ArtifactHit").parameters(ahp).call()
         }
         if (artifactPersistBin(artifactType, artifactSubType)) {
-            Map<String, Object> ahb = artifactHitBinByType.get(artifactType + "." + artifactSubType + ":" + artifactName)
-            if (ahb == null) ahb = makeArtifactHitBinMap(artifactType, artifactSubType, artifactName, startTime)
+            String binKey = artifactType + "." + artifactSubType + ":" + artifactName
+            Map<String, Object> ahb = artifactHitBinByType.get(binKey)
+            if (ahb == null) ahb = makeArtifactHitBinMap(binKey, artifactType, artifactSubType, artifactName, startTime)
 
             // has the current bin expired since the last hit record?
             long binStartTime = ((Timestamp) ahb.get("binStartDateTime")).time
             if (startTime > (binStartTime + hitBinLengthMillis)) {
                 if (logger.isTraceEnabled()) logger.trace("Advancing ArtifactHitBin [${artifactType}.${artifactSubType}:${artifactName}] current hit start [${new Timestamp(startTime)}], bin start [${ahb.get("binStartDateTime")}] bin length ${hitBinLengthMillis/1000} seconds")
-                ahb = advanceArtifactHitBin(artifactType, artifactSubType, artifactName, startTime, hitBinLengthMillis)
+                ahb = advanceArtifactHitBin(binKey, artifactType, artifactSubType, artifactName, startTime, hitBinLengthMillis)
             } else {
                 if (logger.isTraceEnabled()) logger.trace("Adding to ArtifactHitBin [${artifactType}.${artifactSubType}:${artifactName}] current hit start [${new Timestamp(startTime)}], bin start [${ahb.get("binStartDateTime")}] bin length ${hitBinLengthMillis/1000} seconds")
             }
@@ -885,10 +889,10 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         }
     }
     @CompileStatic
-    protected synchronized Map<String, Object> advanceArtifactHitBin(String artifactType, String artifactSubType,
+    protected synchronized Map<String, Object> advanceArtifactHitBin(String binKey, String artifactType, String artifactSubType,
                                                      String artifactName, long startTime, int hitBinLengthMillis) {
-        Map<String, Object> ahb = artifactHitBinByType.get(artifactType + "." + artifactSubType + ":" + artifactName)
-        if (ahb == null) return makeArtifactHitBinMap(artifactType, artifactSubType, artifactName, startTime)
+        Map<String, Object> ahb = artifactHitBinByType.get(binKey)
+        if (ahb == null) return makeArtifactHitBinMap(binKey, artifactType, artifactSubType, artifactName, startTime)
 
         long binStartTime = ((Timestamp) ahb.get("binStartDateTime")).time
 
@@ -900,17 +904,17 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         // do this sync to avoid overhead of job scheduling for a very simple service call, and to avoid infinite recursion when EntityJobStore is in place
         executionContext.service.sync().name("create", "moqui.server.ArtifactHitBin").parameters(ahb).call()
 
-        return makeArtifactHitBinMap(artifactType, artifactSubType, artifactName, startTime)
+        return makeArtifactHitBinMap(binKey, artifactType, artifactSubType, artifactName, startTime)
     }
     @CompileStatic
-    protected Map<String, Object> makeArtifactHitBinMap(String artifactType, String artifactSubType,
+    protected Map<String, Object> makeArtifactHitBinMap(String binKey, String artifactType, String artifactSubType,
                                                         String artifactName, long startTime) {
         Map<String, Object> ahb = [artifactType:artifactType, artifactSubType:artifactSubType,
                 artifactName:artifactName, binStartDateTime:new Timestamp(startTime), binEndDateTime:null,
                 hitCount:0L, totalTimeMillis:0L, minTimeMillis:Long.MAX_VALUE, maxTimeMillis:0]
         ahb.serverIpAddress = localhostAddress?.getHostAddress() ?: "127.0.0.1"
         ahb.serverHostName = localhostAddress?.getHostName() ?: "localhost"
-        artifactHitBinByType.put(artifactType + "." + artifactSubType + ":" + artifactName, ahb)
+        artifactHitBinByType.put(binKey, ahb)
         return ahb
     }
 
