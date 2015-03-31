@@ -881,16 +881,23 @@ public class EntityDefinition {
 
             Object value = src.get(sourceFieldName)
             if (value != null || (evb != null ? evb.isFieldSet(sourceFieldName) : src.containsKey(sourceFieldName))) {
-                if (!StupidUtilities.isEmpty(value)) {
-                    if (value instanceof String) {
+                boolean isCharSequence = false
+                boolean isEmpty = false
+                if (value == null) {
+                    isEmpty = true
+                } else if (value instanceof CharSequence) {
+                    isCharSequence = true
+                    if (value.length() == 0) isEmpty = true
+                }
+
+                if (!isEmpty) {
+                    if (isCharSequence) {
                         try {
-                            this.setString(fieldName, value, dest)
-                        } catch (BaseException be) {
-                            this.efi.ecfi.executionContext.message.addValidationError(null, fieldName, null, be.getMessage(), be)
-                        }
-                    } else if (value instanceof CharSequence) {
-                        try {
-                            this.setString(fieldName, value.toString(), dest)
+                            if (value instanceof String) {
+                                this.setString(fieldName, value, dest)
+                            } else {
+                                this.setString(fieldName, value.toString(), dest)
+                            }
                         } catch (BaseException be) {
                             this.efi.ecfi.executionContext.message.addValidationError(null, fieldName, null, be.getMessage(), be)
                         }

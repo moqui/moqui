@@ -11,6 +11,7 @@ class MapCondition extends EntityConditionImplBase {
     protected EntityCondition.JoinOperator joinOperator
     protected boolean ignoreCase = false
     protected EntityConditionImplBase internalCond = null
+    protected int curHashCode
 
     MapCondition(EntityConditionFactoryImpl ecFactoryImpl,
             Map<String, ?> fieldMap, EntityCondition.ComparisonOperator comparisonOperator,
@@ -19,6 +20,7 @@ class MapCondition extends EntityConditionImplBase {
         this.fieldMap = fieldMap ? fieldMap : new HashMap()
         this.comparisonOperator = comparisonOperator ?: EQUALS
         this.joinOperator = joinOperator ?: AND
+        curHashCode = createHashCode()
     }
 
     Class getLocalClass() { if (this.internalClass == null) this.internalClass = this.getClass(); return this.internalClass }
@@ -48,6 +50,7 @@ class MapCondition extends EntityConditionImplBase {
     boolean populateMap(Map<String, ?> map) {
         if (joinOperator != AND || comparisonOperator != EQUALS || ignoreCase) return false
         map.putAll(fieldMap)
+        curHashCode = createHashCode()
         return true
     }
 
@@ -56,7 +59,7 @@ class MapCondition extends EntityConditionImplBase {
     }
 
     @Override
-    EntityCondition ignoreCase() { this.ignoreCase = true; return this }
+    EntityCondition ignoreCase() { this.ignoreCase = true; curHashCode = createHashCode(); return this }
 
     @Override
     String toString() {
@@ -95,7 +98,8 @@ class MapCondition extends EntityConditionImplBase {
     }
 
     @Override
-    int hashCode() {
+    int hashCode() { return curHashCode }
+    protected int createHashCode() {
         return (fieldMap ? fieldMap.hashCode() : 0) + comparisonOperator.hashCode() + joinOperator.hashCode() +
                 ignoreCase.hashCode()
     }
