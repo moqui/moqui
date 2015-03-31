@@ -34,10 +34,10 @@ public interface EntityConditionFactory {
     /** Default to JoinOperator of AND */
     EntityCondition makeCondition(List<EntityCondition> conditionList);
 
-    EntityCondition makeCondition(Map<String, ?> fieldMap, EntityCondition.ComparisonOperator comparisonOperator, EntityCondition.JoinOperator joinOperator);
+    EntityCondition makeCondition(Map<String, Object> fieldMap, EntityCondition.ComparisonOperator comparisonOperator, EntityCondition.JoinOperator joinOperator);
 
     /** Default to ComparisonOperator of EQUALS and JoinOperator of AND */
-    EntityCondition makeCondition(Map<String, ?> fieldMap);
+    EntityCondition makeCondition(Map<String, Object> fieldMap);
 
     EntityCondition makeConditionDate(String fromFieldName, String thruFieldName, Timestamp compareStamp);
 

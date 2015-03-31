@@ -107,7 +107,6 @@ class FieldValueCondition extends EntityConditionImplBase {
     boolean populateMap(Map<String, ?> map) {
         if (operator != EQUALS || ignoreCase || field.entityAlias) return false
         map.put(field.fieldName, value)
-        curHashCode = createHashCode()
         return true
     }
 

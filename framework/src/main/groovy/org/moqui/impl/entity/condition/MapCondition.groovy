@@ -60,7 +60,6 @@ class MapCondition extends EntityConditionImplBase {
     boolean populateMap(Map<String, ?> map) {
         if (joinOperator != AND || comparisonOperator != EQUALS || ignoreCase) return false
         map.putAll(fieldMap)
-        curHashCode = createHashCode()
         return true
     }
 

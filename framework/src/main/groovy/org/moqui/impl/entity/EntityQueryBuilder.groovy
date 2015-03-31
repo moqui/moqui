@@ -144,8 +144,8 @@ class EntityQueryBuilder {
 
     static String sanitizeColumnName(String colName) {
         String interim = colName.replace('.', '_').replace('(','_').replace(')','_').replace('+','_').replace(' ','')
-        while (interim.charAt(0) == '_') interim = interim.substring(1)
-        while (interim.charAt(interim.length()-1) == '_') interim = interim.substring(0, interim.length()-1)
+        while (interim.charAt(0) == (char) '_') interim = interim.substring(1)
+        while (interim.charAt(interim.length()-1) == (char) '_') interim = interim.substring(0, interim.length()-1)
         while (interim.contains('__')) interim = interim.replace('__', '_')
         return interim
     }
