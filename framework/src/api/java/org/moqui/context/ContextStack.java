@@ -253,7 +253,6 @@ public class ContextStack implements Map<String, Object> {
 
     @Override
     public int hashCode() {
-        logger.warn("======== ContextStack.hashCode at", new Exception());
         return this.stackList.hashCode();
     }
 
