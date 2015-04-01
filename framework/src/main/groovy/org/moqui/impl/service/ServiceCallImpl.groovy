@@ -22,6 +22,9 @@ class ServiceCallImpl implements ServiceCall {
     protected String noun = null
     protected ServiceDefinition sd = null
 
+    protected String serviceName = null
+    protected String serviceNameNoHash = null
+
     protected Map<String, Object> parameters = new HashMap<String, Object>()
 
     ServiceCallImpl(ServiceFacadeImpl sfi) { this.sfi = sfi }
@@ -40,8 +43,14 @@ class ServiceCallImpl implements ServiceCall {
     }
 
     @Override
-    String getServiceName() { return (path ? path + "." : "") + verb + (noun ? "#" + noun : "") }
-    String getServiceNameNoHash() { return (path ? path + "." : "") + verb + (noun ?: "") }
+    String getServiceName() {
+        if (serviceName == null) serviceName = (path ? path + "." : "") + verb + (noun ? "#" + noun : "")
+        return serviceName
+    }
+    String getServiceNameNoHash() {
+        if (serviceNameNoHash == null) serviceNameNoHash = (path ? path + "." : "") + verb + (noun ?: "")
+        return serviceNameNoHash
+    }
 
     @Override
     Map<String, Object> getCurrentParameters() { return parameters }

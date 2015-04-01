@@ -11,12 +11,14 @@
  */
 package org.moqui.impl.context
 
+import groovy.transform.CompileStatic
 import org.moqui.context.MessageFacade
 import org.moqui.context.ValidationError
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+@CompileStatic
 public class MessageFacadeImpl implements MessageFacade {
     protected final static Logger logger = LoggerFactory.getLogger(MessageFacadeImpl.class)
 
@@ -45,7 +47,7 @@ public class MessageFacadeImpl implements MessageFacade {
         this.validationErrorList.add(new ValidationError(form, field, serviceName, message, nested))
     }
 
-    boolean hasError() { return errorList || validationErrorList }
+    boolean hasError() { return errorList.size() > 0 || validationErrorList.size() > 0 }
     String getErrorsString() {
         StringBuilder errorBuilder = new StringBuilder()
         for (String errorMessage in errorList) errorBuilder.append(errorMessage).append("\n")

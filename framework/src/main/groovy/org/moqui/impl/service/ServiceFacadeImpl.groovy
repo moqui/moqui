@@ -138,28 +138,34 @@ class ServiceFacadeImpl implements ServiceFacade {
     boolean isEntityAutoPattern(String path, String verb, String noun) {
         // if no path, verb is create|update|delete and noun is a valid entity name, do an implicit entity-auto
         return !path && ("create".equals(verb) || "update".equals(verb) || "delete".equals(verb) || "store".equals(verb)) &&
-                getEcfi().getEntityFacade().getEntityDefinition(noun) != null
+                getEcfi().getEntityFacade().isEntityDefined(noun)
     }
 
 
     @CompileStatic
     ServiceDefinition getServiceDefinition(String serviceName) {
+        ServiceDefinition sd = (ServiceDefinition) serviceLocationCache.get(serviceName)
+        if (sd != null) return sd
+
+        // at this point sd is null, so if contains key we know the service doesn't exist
+        if (serviceLocationCache.containsKey(serviceName)) return null
+
+        // now try some acrobatics to find the service, these take longer to run hence trying to avoid
         String path = ServiceDefinition.getPathFromName(serviceName)
         String verb = ServiceDefinition.getVerbFromName(serviceName)
         String noun = ServiceDefinition.getNounFromName(serviceName)
         // logger.warn("Getting service definition for [${serviceName}], path=[${path}] verb=[${verb}] noun=[${noun}]")
 
         String cacheKey = makeCacheKey(path, verb, noun)
-        if (serviceLocationCache.containsKey(cacheKey)) {
-            // NOTE: this could be null if it's a known non-existing service
-            return (ServiceDefinition) serviceLocationCache.get(cacheKey)
-        }
+        sd = (ServiceDefinition) serviceLocationCache.get(cacheKey)
+        if (sd != null) return sd
+        if (serviceLocationCache.containsKey(cacheKey)) return null
 
-        return makeServiceDefinition(path, verb, noun)
+        return makeServiceDefinition(serviceName, path, verb, noun)
     }
 
     @CompileStatic
-    protected ServiceDefinition makeServiceDefinition(String path, String verb, String noun) {
+    protected ServiceDefinition makeServiceDefinition(String origServiceName, String path, String verb, String noun) {
         String cacheKey = makeCacheKey(path, verb, noun)
         if (serviceLocationCache.containsKey(cacheKey)) {
             // NOTE: this could be null if it's a known non-existing service
@@ -171,11 +177,13 @@ class ServiceFacadeImpl implements ServiceFacade {
             // NOTE: don't throw an exception for service not found (this is where we know there is no def), let service caller handle that
             // Put null in the cache to remember the non-existing service
             serviceLocationCache.put(cacheKey, null)
+            if (origServiceName != cacheKey) serviceLocationCache.put(origServiceName, null)
             return null
         }
 
         ServiceDefinition sd = new ServiceDefinition(this, path, serviceNode)
         serviceLocationCache.put(cacheKey, sd)
+        if (origServiceName != cacheKey) serviceLocationCache.put(origServiceName, sd)
         return sd
     }
 
@@ -183,15 +191,15 @@ class ServiceFacadeImpl implements ServiceFacade {
     protected static String makeCacheKey(String path, String verb, String noun) {
         // use a consistent format as the key in the cache, keeping in mind that the verb and noun may be merged in the serviceName passed in
         // no # here so that it doesn't matter if the caller used one or not
-        return (path ? path + "." : "") + verb + (noun ? noun : "")
+        return (path ? path + '.' : '') + verb + (noun ? noun : '')
     }
 
     protected Node findServiceNode(String path, String verb, String noun) {
         if (!path) return null
 
         // make a file location from the path
-        String partialLocation = path.replace('.', '/') + ".xml"
-        String servicePathLocation = "service/" + partialLocation
+        String partialLocation = path.replace('.', '/') + '.xml'
+        String servicePathLocation = 'service/' + partialLocation
 
         Node serviceNode = null
 

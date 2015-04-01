@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.service.runner
 
+import groovy.transform.CompileStatic
 import org.moqui.BaseException
 import org.moqui.entity.EntityList
 import org.moqui.entity.EntityValue
@@ -29,6 +30,7 @@ import org.slf4j.LoggerFactory
 
 import java.sql.Timestamp
 
+@CompileStatic
 public class EntityAutoServiceRunner implements ServiceRunner {
     protected final static Logger logger = LoggerFactory.getLogger(EntityAutoServiceRunner.class)
 
@@ -118,14 +120,14 @@ public class EntityAutoServiceRunner implements ServiceRunner {
             String singlePkParamName = pkFieldNames.get(0)
             Node singlePkField = ed.getFieldNode(singlePkParamName)
 
-            Object pkValue = parameters.get(singlePkField."@name")
+            Object pkValue = parameters.get(singlePkField.attributes().get('name'))
             if (pkValue) {
-                newEntityValue.set((String) singlePkField."@name", pkValue)
+                newEntityValue.set((String) singlePkField.attributes().get('name'), pkValue)
             } else {
                 // if it has a default value don't sequence the PK
-                if (!singlePkField."@default") {
+                if (!singlePkField.attributes().get('default')) {
                     newEntityValue.setSequencedIdPrimary()
-                    pkValue = newEntityValue.get(singlePkField."@name")
+                    pkValue = newEntityValue.get(singlePkField.attributes().get('name'))
                 }
             }
             if (outParamNames == null || outParamNames.contains(singlePkParamName))
@@ -137,7 +139,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
             newEntityValue.setFields(parameters, true, null, true)
             // if it has a default value don't sequence the PK
             Node doublePkSecondaryNode = ed.getFieldNode(doublePkSecondaryName)
-            if (!doublePkSecondaryNode."@default") {
+            if (!doublePkSecondaryNode.attributes().get('default')) {
                 newEntityValue.setSequencedIdSecondary()
                 if (outParamNames == null || outParamNames.contains(doublePkSecondaryName))
                     tempResult.put(doublePkSecondaryName, newEntityValue.get(doublePkSecondaryName))
@@ -186,18 +188,20 @@ public class EntityAutoServiceRunner implements ServiceRunner {
 
         // if a PK field has a @default get it and return it
         List<Node> pkNodes = ed.getFieldNodes(true, false, false)
-        for (Node pkNode in pkNodes) if (pkNode."@default")
-            tempResult.put((String) pkNode."@name", newEntityValue.get((String) pkNode."@name"))
+        for (Node pkNode in pkNodes) if (pkNode.attributes().get('default')) {
+            String pkName = (String) pkNode.attributes().get('name')
+            tempResult.put(pkName, newEntityValue.get(pkName))
+        }
 
         // check parameters Map for relationships
         Map nonFieldEntries = ed.cloneMapRemoveFields(parameters, null)
-        for (Map.Entry entry in nonFieldEntries) {
+        for (Map.Entry entry in nonFieldEntries.entrySet()) {
             Object relParmObj = entry.getValue()
             if (!relParmObj) continue
             // if the entry is not a Map or List ignore it, we're only looking for those
             if (!(relParmObj instanceof Map) && !(relParmObj instanceof List)) continue
 
-            String entryName = entry.getKey()
+            String entryName = (String) entry.getKey()
             if (parentPks != null && parentPks.containsKey(entryName)) continue
             if (otherFieldsToSkip.contains(entryName)) continue
 
@@ -215,19 +219,21 @@ public class EntityAutoServiceRunner implements ServiceRunner {
             }
 
             if (relParmObj instanceof Map) {
+                Map relParmMap = (Map) relParmObj
                 Map relResults = [:]
                 // add in all of the main entity's primary key fields, this is necessary for auto-generated, and to
                 //     allow them to be left out of related records
-                relParmObj.putAll(pkMap)
-                createRecursive(ecfi, subEd, relParmObj, relResults, null, pkMap)
+                relParmMap.putAll(pkMap)
+                createRecursive(ecfi, subEd, relParmMap, relResults, null, pkMap)
                 tempResult.put(entryName, relResults)
             } else if (relParmObj instanceof List) {
                 List relResultList = []
                 for (Object relParmEntry in relParmObj) {
                     Map relResults = [:]
                     if (relParmEntry instanceof Map) {
-                        relParmEntry.putAll(pkMap)
-                        createRecursive(ecfi, subEd, relParmEntry, relResults, null, pkMap)
+                        Map relParmMap = (Map) relParmEntry
+                        relParmMap.putAll(pkMap)
+                        createRecursive(ecfi, subEd, relParmMap, relResults, null, pkMap)
                     } else {
                         logger.warn("In entity auto create for entity ${ed.getFullEntityName()} found list for sub-object ${entryName} with a non-Map entry: ${relParmEntry}")
                     }
@@ -265,7 +271,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
                 // there was an old status, and in this call we are trying to change it, so do the StatusFlowTransition check
                 // NOTE that we are using a cached list from a common pattern so it should generally be there instead of a count that wouldn't
                 EntityList statusFlowTransitionList = ecfi.getEntityFacade().find("moqui.basic.StatusFlowTransition")
-                        .condition(["statusId":lookedUpStatusId, "toStatusId":parameterStatusId]).useCache(true).list()
+                        .condition(["statusId":lookedUpStatusId, "toStatusId":parameterStatusId] as Map<String, Object>).useCache(true).list()
                 if (!statusFlowTransitionList) {
                     // uh-oh, no valid change...
                     throw new ServiceException("In entity-auto update service for entity [${ed.fullEntityName}] no status change was found going from status [${lookedUpStatusId}] to status [${parameterStatusId}]")
@@ -378,13 +384,13 @@ public class EntityAutoServiceRunner implements ServiceRunner {
         if (parentPks) pkMap.putAll(parentPks)
 
         Map nonFieldEntries = ed.cloneMapRemoveFields(parameters, null)
-        for (Map.Entry entry in nonFieldEntries) {
+        for (Map.Entry entry in nonFieldEntries.entrySet()) {
             Object relParmObj = entry.getValue()
             if (!relParmObj) continue
             // if the entry is not a Map or List ignore it, we're only looking for those
             if (!(relParmObj instanceof Map) && !(relParmObj instanceof List)) continue
 
-            String entryName = entry.getKey()
+            String entryName = (String) entry.getKey()
             if (parentPks != null && parentPks.containsKey(entryName)) continue
             if (otherFieldsToSkip.contains(entryName)) continue
 
@@ -402,15 +408,16 @@ public class EntityAutoServiceRunner implements ServiceRunner {
             }
 
             if (relParmObj instanceof Map) {
+                Map relParmMap = (Map) relParmObj
                 Map relResults = [:]
-                storeRecursive(ecfi, subEd, relParmObj, relResults, null, pkMap)
+                storeRecursive(ecfi, subEd, relParmMap, relResults, null, pkMap)
                 result.put(entryName, relResults)
             } else if (relParmObj instanceof List) {
                 List relResultList = []
                 for (Object relParmEntry in relParmObj) {
                     Map relResults = [:]
                     if (relParmEntry instanceof Map) {
-                        storeRecursive(ecfi, subEd, relParmEntry, relResults, null, pkMap)
+                        storeRecursive(ecfi, subEd, (Map) relParmEntry, relResults, null, pkMap)
                     } else {
                         logger.warn("In entity auto create for entity ${ed.getFullEntityName()} found list for sub-object ${entryName} with a non-Map entry: ${relParmEntry}")
                     }
