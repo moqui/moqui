@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.screen
 
+import groovy.transform.CompileStatic
 import org.moqui.impl.actions.XmlAction
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.context.ContextStack
@@ -48,6 +49,7 @@ class ScreenSection {
         }
     }
 
+    @CompileStatic
     void render(ScreenRenderImpl sri) {
         ContextStack cs = (ContextStack) sri.ec.context
         if (sectionNode.name() == "section-iterate") {
@@ -58,9 +60,9 @@ class ScreenSection {
                 return
             }
             Iterator listIterator = null
-            if (list instanceof Iterator) listIterator = list
-            else if (list instanceof Map) listIterator = list.entrySet().iterator()
-            else if (list instanceof Iterable) listIterator = list.iterator()
+            if (list instanceof Iterator) listIterator = (Iterator) list
+            else if (list instanceof Map) listIterator = ((Map) list).entrySet().iterator()
+            else if (list instanceof Iterable) listIterator = ((Iterable) list).iterator()
 
             // TODO: handle paginate, paginate-size (lower priority...)
             int index = 0
@@ -90,6 +92,7 @@ class ScreenSection {
         }
     }
 
+    @CompileStatic
     protected void renderSingle(ScreenRenderImpl sri) {
         if (logger.traceEnabled) logger.trace("Begin rendering screen section at [${location}]")
         boolean conditionPassed = true

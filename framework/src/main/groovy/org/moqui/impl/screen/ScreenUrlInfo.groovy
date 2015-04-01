@@ -209,9 +209,9 @@ class ScreenUrlInfo {
         StringBuilder urlBuilder = new StringBuilder(baseUrl)
         if (alwaysUseFullPath) {
             // really get the full path instead of minimal
-            for (String pathName in this.fullPathNameList) urlBuilder.append('/').append(pathName)
+            if (fullPathNameList) for (String pathName in fullPathNameList) urlBuilder.append('/').append(pathName)
         } else {
-            for (String pathName in this.minimalPathNameList) urlBuilder.append('/').append(pathName)
+            if (minimalPathNameList) for (String pathName in minimalPathNameList) urlBuilder.append('/').append(pathName)
         }
         return urlBuilder.toString()
     }
@@ -223,13 +223,13 @@ class ScreenUrlInfo {
 
     String getUrl() {
         StringBuilder urlBuilder = new StringBuilder(baseUrl)
-        for (String pathName in this.fullPathNameList) urlBuilder.append('/').append(pathName)
+        if (fullPathNameList) for (String pathName in fullPathNameList) urlBuilder.append('/').append(pathName)
         return urlBuilder.toString()
     }
 
     String getScreenPathUrl() {
         StringBuilder urlBuilder = new StringBuilder(baseUrl)
-        for (String pathName in this.preTransitionPathNameList) urlBuilder.append('/').append(pathName)
+        if (preTransitionPathNameList) for (String pathName in preTransitionPathNameList) urlBuilder.append('/').append(pathName)
         return urlBuilder.toString()
     }
 

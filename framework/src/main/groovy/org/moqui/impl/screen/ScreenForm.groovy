@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.screen
 
+import groovy.transform.CompileStatic
 import org.apache.commons.collections.map.ListOrderedMap
 import org.apache.commons.collections.set.ListOrderedSet
 import org.moqui.impl.actions.XmlAction
@@ -356,6 +357,7 @@ class ScreenForm {
     }
 
     /** This is the main method for using an XML Form, the rendering is done based on the Node returned. */
+    @CompileStatic
     Node getFormNode() {
         // NOTE: this is cached in the ScreenRenderImpl as it may be called multiple times for a single form render
         List<Node> dbFormNodeList = getDbFormNodeList()
@@ -378,10 +380,14 @@ class ScreenForm {
 
             if (isDisplayOnly) {
                 // change all non-display fields to simple display elements
-                for (Node fieldNode in newFormNode."field") {
+                for (Object fieldObj in newFormNode.get("field")) {
+                    Node fieldNode = (Node) fieldObj
                     // don't replace header form, should be just for searching: if (fieldNode."header-field") fieldSubNodeToDisplay(newFormNode, fieldNode, (Node) fieldNode."header-field"[0])
-                    for (Node conditionalFieldNode in fieldNode."conditional-field") fieldSubNodeToDisplay(newFormNode, fieldNode, conditionalFieldNode)
-                    if (fieldNode."default-field") fieldSubNodeToDisplay(newFormNode, fieldNode, (Node) fieldNode."default-field"[0])
+                    for (Object conditionalFieldObj in fieldNode.get("conditional-field")) {
+                        Node conditionalFieldNode = (Node) conditionalFieldObj
+                        fieldSubNodeToDisplay(newFormNode, fieldNode, conditionalFieldNode)
+                    }
+                    if (fieldNode.get("default-field")) fieldSubNodeToDisplay(newFormNode, fieldNode, (Node) ((NodeList) fieldNode.get("default-field"))[0])
                 }
             }
 
@@ -392,6 +398,7 @@ class ScreenForm {
     }
 
     static Set displayOnlyIgnoreNodeNames = ["hidden", "ignored", "label", "image"] as Set
+    @CompileStatic
     protected void fieldSubNodeToDisplay(Node baseFormNode, Node fieldNode, Node fieldSubNode) {
         Node widgetNode = fieldSubNode.children() ? (Node) fieldSubNode.children().first() : null
         if (widgetNode == null) return
@@ -404,8 +411,9 @@ class ScreenForm {
 
         if (widgetNode.name() == "link") {
             // if it goes to a transition with service-call or actions then remove it, otherwise leave it
-            if ((!widgetNode."@url-type" || widgetNode."@url-type" == "transition") &&
-                    sd.getTransitionItem((String) widgetNode."@url", null).hasActionsOrSingleService()) {
+            String urlType = (String) widgetNode.attributes().get('url-type')
+            if ((!urlType || urlType == "transition") &&
+                    sd.getTransitionItem((String) widgetNode.attributes().get('url'), null).hasActionsOrSingleService()) {
                 fieldSubNode.remove(widgetNode)
             }
             return
@@ -416,31 +424,34 @@ class ScreenForm {
         // not as good, puts it after other child Nodes: fieldSubNode.remove(widgetNode); fieldSubNode.appendNode("display")
     }
 
+    @CompileStatic
     FtlNodeWrapper getFtlFormNode() { return FtlNodeWrapper.wrapNode(getFormNode()) }
 
+    @CompileStatic
     boolean isUpload(Node cachedFormNode) {
         if (isUploadForm != null) return isUploadForm
 
         // if there is a "file" element, then it's an upload form
-        boolean internalFileNode = internalFormNode.depthFirst().find({ it instanceof Node && it.name() == "file" }) as boolean
+        boolean internalFileNode = internalFormNode.depthFirst().find({ it instanceof Node && ((Node) it).name() == "file" }) as boolean
         if (internalFileNode) {
             isUploadForm = true
             return true
         } else {
             if (isDynamic || hasDbExtensions) {
                 Node testNode = cachedFormNode ?: getFormNode()
-                return testNode.depthFirst().find({ it instanceof Node && it.name() == "file" }) as boolean
+                return testNode.depthFirst().find({ it instanceof Node && ((Node) it).name() == "file" }) as boolean
             } else {
                 return false
             }
         }
     }
+    @CompileStatic
     boolean isFormHeaderForm(Node cachedFormNode) {
         if (isFormHeaderFormVal != null) return isFormHeaderFormVal
 
         // if there is a "header-field" element, then it needs a header form
         boolean internalFormHeaderFormVal = false
-        for (Node hfNode in (Collection<Node>) internalFormNode.depthFirst().findAll({ it instanceof Node && it.name() == "header-field" })) {
+        for (Node hfNode in (Collection<Node>) internalFormNode.depthFirst().findAll({ it instanceof Node && ((Node) it).name() == "header-field" })) {
             if (hfNode.children()) {
                 internalFormHeaderFormVal = true
                 break
@@ -453,7 +464,7 @@ class ScreenForm {
             if (isDynamic || hasDbExtensions) {
                 boolean extFormHeaderFormVal = false
                 Node testNode = cachedFormNode ?: getFormNode()
-                for (Node hfNode in (Collection<Node>) testNode.depthFirst().findAll({ it instanceof Node && it.name() == "header-field" })) {
+                for (Node hfNode in (Collection<Node>) testNode.depthFirst().findAll({ it instanceof Node && ((Node) it).name() == "header-field" })) {
                     if (hfNode.children()) {
                         extFormHeaderFormVal = true
                         break
@@ -466,19 +477,22 @@ class ScreenForm {
         }
     }
 
+    @CompileStatic
     Node getFieldValidateNode(String fieldName, Node cachedFormNode) {
         Node formNodeToUse = cachedFormNode ?: getFormNode()
-        Node fieldNode = (Node) formNodeToUse."field".find({ it.@name == fieldName })
+        Node fieldNode = (Node) formNodeToUse.get("field").find({ ((Node) it).attributes().get('name') == fieldName })
         if (fieldNode == null) throw new IllegalArgumentException("Tried to get in-parameter node for field [${fieldName}] that doesn't exist in form [${location}]")
-        if (fieldNode."@validate-service") {
-            ServiceDefinition sd = ecfi.getServiceFacade().getServiceDefinition((String) fieldNode."@validate-service")
-            if (sd == null) throw new IllegalArgumentException("Invalid validate-service name [${fieldNode."@validate-service"}] in field [${fieldName}] of form [${location}]")
-            Node parameterNode = sd.getInParameter(fieldNode."@validate-parameter" ?: fieldName)
+        String validateService = (String) fieldNode.attributes().get('validate-service')
+        String validateEntity = (String) fieldNode.attributes().get('validate-entity')
+        if (validateService) {
+            ServiceDefinition sd = ecfi.getServiceFacade().getServiceDefinition(validateService)
+            if (sd == null) throw new IllegalArgumentException("Invalid validate-service name [${validateService}] in field [${fieldName}] of form [${location}]")
+            Node parameterNode = sd.getInParameter((String) fieldNode.attributes().get('validate-parameter') ?: fieldName)
             return parameterNode
-        } else if (fieldNode."@validate-entity") {
-            EntityDefinition ed = ecfi.getEntityFacade().getEntityDefinition((String) fieldNode."@validate-entity")
-            if (ed == null) throw new IllegalArgumentException("Invalid validate-entity name [${fieldNode."@validate-entity"}] in field [${fieldName}] of form [${location}]")
-            Node efNode = ed.getFieldNode(fieldNode."@validate-field" ?: fieldName)
+        } else if (validateEntity) {
+            EntityDefinition ed = ecfi.getEntityFacade().getEntityDefinition(validateEntity)
+            if (ed == null) throw new IllegalArgumentException("Invalid validate-entity name [${validateEntity}] in field [${fieldName}] of form [${location}]")
+            Node efNode = ed.getFieldNode((String) fieldNode.attributes().get('validate-field') ?: fieldName)
             return efNode
         }
         return null
@@ -929,33 +943,37 @@ class ScreenForm {
         }
     }
 
+    @CompileStatic
     void runFormListRowActions(ScreenRenderImpl sri, Object listEntry, int index, boolean hasNext) {
         // NOTE: this runs in a pushed-/sub-context, so just drop it in and it'll get cleaned up automatically
         Node localFormNode = getFormNode()
-        if (localFormNode."@list-entry") {
-            sri.ec.context.put((String) localFormNode."@list-entry", listEntry)
-            sri.ec.context.put(((String) localFormNode."@list-entry") + "_index", index)
-            sri.ec.context.put(((String) localFormNode."@list-entry") + "_has_next", hasNext)
+        String listEntryStr = (String) localFormNode.attributes().get('list-entry')
+        if (listEntryStr) {
+            sri.ec.context.put(listEntryStr, listEntry)
+            sri.ec.context.put(listEntryStr + "_index", index)
+            sri.ec.context.put(listEntryStr + "_has_next", hasNext)
         } else {
             if (listEntry instanceof Map) {
                 sri.ec.context.putAll((Map) listEntry)
             } else {
                 sri.ec.context.put("listEntry", listEntry)
             }
-            sri.ec.context.put(((String) localFormNode."@list") + "_index", index)
-            sri.ec.context.put(((String) localFormNode."@list") + "_has_next", hasNext)
-            sri.ec.context.put(((String) localFormNode."@list") + "_entry", listEntry)
+            String listStr = (String) localFormNode.attributes().get('list')
+            sri.ec.context.put(listStr + "_index", index)
+            sri.ec.context.put(listStr + "_has_next", hasNext)
+            sri.ec.context.put(listStr + "_entry", listEntry)
         }
         if (rowActions) rowActions.run(sri.ec)
     }
 
+    @CompileStatic
     static ListOrderedMap getFieldOptions(Node widgetNode, ExecutionContext ec) {
         Node fieldNode = widgetNode.parent().parent()
         ListOrderedMap options = new ListOrderedMap()
         for (Node childNode in (Collection<Node>) widgetNode.children()) {
             if (childNode.name() == "entity-options") {
-                Node entityFindNode = childNode."entity-find"[0]
-                EntityFindImpl ef = (EntityFindImpl) ec.entity.find((String) entityFindNode."@entity-name")
+                Node entityFindNode = (Node) ((NodeList) childNode.get("entity-find"))[0]
+                EntityFindImpl ef = (EntityFindImpl) ec.entity.find((String) entityFindNode.attributes().get('entity-name'))
                 ef.findNode(entityFindNode)
 
                 EntityList eli = ef.list()
@@ -977,7 +995,7 @@ class ScreenForm {
                     ec.context.pop()
                 }
             } else if (childNode.name() == "list-options") {
-                Object listObject = ec.resource.evaluateContextField((String) childNode."@list", null)
+                Object listObject = ec.resource.evaluateContextField((String) childNode.attributes().get('list'), null)
                 if (listObject instanceof EntityListIterator) {
                     EntityListIterator eli
                     try {
@@ -992,7 +1010,7 @@ class ScreenForm {
                 } else {
                     for (Object listOption in listObject) {
                         if (listOption instanceof Map) {
-                            addFieldOption(options, fieldNode, childNode, listOption, ec)
+                            addFieldOption(options, fieldNode, childNode, (Map) listOption, ec)
                         } else {
                             options.put(listOption, listOption)
                             // addFieldOption(options, fieldNode, childNode, [entry:listOption], ec)
@@ -1000,31 +1018,33 @@ class ScreenForm {
                     }
                 }
             } else if (childNode.name() == "option") {
-                String key = ec.resource.evaluateStringExpand((String) childNode."@key", null)
-                String text = ec.resource.evaluateStringExpand((String) childNode."@text", null)
+                String key = ec.resource.evaluateStringExpand((String) childNode.attributes().get('key'), null)
+                String text = ec.resource.evaluateStringExpand((String) childNode.attributes().get('text'), null)
                 options.put(key, text ?: key)
             }
         }
         return options
     }
 
+    @CompileStatic
     static void addFieldOption(ListOrderedMap options, Node fieldNode, Node childNode, Map listOption,
                                ExecutionContext ec) {
         ec.context.push(listOption)
         try {
             String key = null
-            if (childNode."@key") {
-                key = ec.resource.evaluateStringExpand((String) childNode."@key", null)
+            String keyAttr = (String) childNode.attributes().get('key')
+            if (keyAttr) {
+                key = ec.resource.evaluateStringExpand(keyAttr, null)
                 // we just did a string expand, if it evaluates to a literal "null" then there was no value
                 if (key == "null") key = null
             } else if (listOption instanceof EntityValueImpl) {
                 String keyFieldName = listOption.getEntityDefinition().getPkFieldNames().get(0)
                 if (keyFieldName) key = ec.context.get(keyFieldName)
             }
-            if (key == null) key = ec.context.get(fieldNode."@name")
+            if (key == null) key = ec.context.get(fieldNode.attributes().get('name'))
             if (key == null) return
 
-            String text = childNode."@text"
+            String text = childNode.attributes().get('text')
             if (!text) {
                 if ((!(listOption instanceof EntityValueBase)
                             || ((EntityValueBase) listOption).getEntityDefinition().isField("description"))

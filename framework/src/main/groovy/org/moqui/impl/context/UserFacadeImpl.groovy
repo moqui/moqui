@@ -625,7 +625,7 @@ class UserFacadeImpl implements UserFacade {
         if (this.usernameStack.size() == 0) return null
         if (internalUserAccount == null) {
             internalUserAccount = eci.getEntity().find("moqui.security.UserAccount")
-                    .condition("username", this.getUsername()).useCache(false).disableAuthz().one()
+                    .condition("username", this.getUsername()).useCache(true).disableAuthz().one()
             // this is necessary as temporary values may have been set before the UserAccount was retrieved
             clearPerUserValues()
         }

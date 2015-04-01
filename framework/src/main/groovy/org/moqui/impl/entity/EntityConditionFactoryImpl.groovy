@@ -272,20 +272,20 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
         case ComparisonOperator.NOT_EQUAL:
             return value1 != value2
         case ComparisonOperator.LESS_THAN:
-            Comparable comp1 = makeComparable(value1)
-            Comparable comp2 = makeComparable(value2)
+            Comparable comp1 = StupidUtilities.makeComparable(value1)
+            Comparable comp2 = StupidUtilities.makeComparable(value2)
             return comp1 < comp2
         case ComparisonOperator.GREATER_THAN:
-            Comparable comp1 = makeComparable(value1)
-            Comparable comp2 = makeComparable(value2)
+            Comparable comp1 = StupidUtilities.makeComparable(value1)
+            Comparable comp2 = StupidUtilities.makeComparable(value2)
             return comp1 > comp2
         case ComparisonOperator.LESS_THAN_EQUAL_TO:
-            Comparable comp1 = makeComparable(value1)
-            Comparable comp2 = makeComparable(value2)
+            Comparable comp1 = StupidUtilities.makeComparable(value1)
+            Comparable comp2 = StupidUtilities.makeComparable(value2)
             return comp1 <= comp2
         case ComparisonOperator.GREATER_THAN_EQUAL_TO:
-            Comparable comp1 = makeComparable(value1)
-            Comparable comp2 = makeComparable(value2)
+            Comparable comp1 = StupidUtilities.makeComparable(value1)
+            Comparable comp2 = StupidUtilities.makeComparable(value2)
             return comp1 >= comp2
         case ComparisonOperator.IN:
             if (value2 instanceof Collection) {
@@ -303,20 +303,20 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
             }
         case ComparisonOperator.BETWEEN:
             if (value2 instanceof Collection && ((Collection) value2).size() == 2) {
-                Comparable comp1 = makeComparable(value1)
+                Comparable comp1 = StupidUtilities.makeComparable(value1)
                 Iterator iterator = ((Collection) value2).iterator()
-                Comparable lowObj = makeComparable(iterator.next())
-                Comparable highObj = makeComparable(iterator.next())
+                Comparable lowObj = StupidUtilities.makeComparable(iterator.next())
+                Comparable highObj = StupidUtilities.makeComparable(iterator.next())
                 return lowObj <= comp1 && comp1 < highObj
             } else {
                 return false
             }
         case ComparisonOperator.NOT_BETWEEN:
             if (value2 instanceof Collection && ((Collection) value2).size() == 2) {
-                Comparable comp1 = makeComparable(value1)
+                Comparable comp1 = StupidUtilities.makeComparable(value1)
                 Iterator iterator = ((Collection) value2).iterator()
-                Comparable lowObj = makeComparable(iterator.next())
-                Comparable highObj = makeComparable(iterator.next())
+                Comparable lowObj = StupidUtilities.makeComparable(iterator.next())
+                Comparable highObj = StupidUtilities.makeComparable(iterator.next())
                 return lowObj > comp1 && comp1 >= highObj
             } else {
                 return false
@@ -332,10 +332,5 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
         }
         // default return false
         return false
-    }
-
-    static Comparable makeComparable(Object obj) {
-        if (obj instanceof Comparable) return (Comparable) obj
-        else throw new IllegalArgumentException("Object of type [${obj.getClass().getName()}] is not Comparable, cannot compare")
     }
 }

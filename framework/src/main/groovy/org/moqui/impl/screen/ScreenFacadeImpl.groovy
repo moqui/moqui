@@ -12,6 +12,7 @@
 package org.moqui.impl.screen
 
 import freemarker.template.Template
+import groovy.transform.CompileStatic
 import org.moqui.context.ResourceReference
 import org.moqui.context.ScreenFacade
 import org.moqui.context.ScreenRender
@@ -77,6 +78,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
         return allLocations
     }
 
+    @CompileStatic
     boolean isScreen(String location) {
         if (!location.endsWith(".xml")) return false
         if (screenLocationCache.containsKey(location)) return true
@@ -91,6 +93,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
         }
     }
 
+    @CompileStatic
     ScreenDefinition getScreenDefinition(String location) {
         if (!location) return null
         ScreenDefinition sd = (ScreenDefinition) screenLocationCache.get(location)
@@ -148,6 +151,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
         return sd
     }
 
+    @CompileStatic
     Node getFormNode(String location) {
         if (!location) return null
         if (location.contains("#")) {
@@ -171,6 +175,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
         return mimeType
     }
 
+    @CompileStatic
     Template getTemplateByMode(String renderMode) {
         Template template = (Template) screenTemplateModeCache.get(renderMode)
         if (template) return template
@@ -202,6 +207,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
         return newTemplate
     }
 
+    @CompileStatic
     Template getTemplateByLocation(String templateLocation) {
         Template template = (Template) screenTemplateLocationCache.get(templateLocation)
         if (template) return template
@@ -230,6 +236,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
         return newTemplate
     }
 
+    @CompileStatic
     Node getWidgetTemplatesNodeByLocation(String templateLocation) {
         Node templatesNode = (Node) widgetTemplateLocationCache.get(templateLocation)
         if (templatesNode) return templatesNode
@@ -410,6 +417,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
         }
     }
 
+    @CompileStatic
     static String screenPathToString(List<String> screenPath) {
         StringBuilder sb = new StringBuilder()
         for (String screenName in screenPath) sb.append("/").append(screenName)

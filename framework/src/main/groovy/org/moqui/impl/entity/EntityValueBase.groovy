@@ -1099,7 +1099,9 @@ abstract class EntityValueBase implements EntityValue {
                         continue
                     }
 
-                    EntityList fieldOnlyUserFieldValueList = userFieldValueList.filterByAnd([fieldName: userFieldName])
+                    List<EntityValue> fieldOnlyUserFieldValueList = []
+                    for (EntityValue efVal in userFieldValueList)
+                        if (efVal.fieldName == userFieldName) fieldOnlyUserFieldValueList.add(efVal)
                     if (fieldOnlyUserFieldValueList) {
                         for (EntityValue userFieldValue in fieldOnlyUserFieldValueList) {
                             userFieldValue.valueText = this.getValueMap().get(userFieldName) as String

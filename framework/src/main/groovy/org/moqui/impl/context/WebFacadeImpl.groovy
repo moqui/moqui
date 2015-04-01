@@ -197,6 +197,7 @@ class WebFacadeImpl implements WebFacade {
         return requestUrl.toString()
     }
 
+    @CompileStatic
     void addDeclaredPathParameter(String name, String value) {
         if (declaredPathParameters == null) declaredPathParameters = new HashMap()
         declaredPathParameters.put(name, value)
@@ -207,6 +208,7 @@ class WebFacadeImpl implements WebFacade {
     List<ValidationError> getSavedValidationErrors() { return savedValidationErrors }
 
     @Override
+    @CompileStatic
     Map<String, Object> getParameters() {
         // NOTE: no blocking in these methods because the WebFacadeImpl is created for each thread
 
@@ -228,14 +230,17 @@ class WebFacadeImpl implements WebFacade {
     }
 
     @Override
+    @CompileStatic
     HttpServletRequest getRequest() { return request }
     @Override
+    @CompileStatic
     Map<String, Object> getRequestAttributes() {
         if (requestAttributes != null) return requestAttributes
         requestAttributes = new StupidWebUtilities.RequestAttributeMap(request)
         return requestAttributes
     }
     @Override
+    @CompileStatic
     Map<String, Object> getRequestParameters() {
         if (requestParameters != null) return requestParameters
 
@@ -258,6 +263,7 @@ class WebFacadeImpl implements WebFacade {
     @Override
     HttpSession getSession() { return request.getSession(true) }
     @Override
+    @CompileStatic
     Map<String, Object> getSessionAttributes() {
         if (sessionAttributes) return sessionAttributes
         sessionAttributes = new StupidWebUtilities.SessionAttributeMap(getSession())
@@ -267,6 +273,7 @@ class WebFacadeImpl implements WebFacade {
     @Override
     ServletContext getServletContext() { return getSession().getServletContext() }
     @Override
+    @CompileStatic
     Map<String, Object> getApplicationAttributes() {
         if (applicationAttributes) return applicationAttributes
         applicationAttributes = new StupidWebUtilities.ServletContextAttributeMap(getSession().getServletContext())
@@ -348,7 +355,7 @@ class WebFacadeImpl implements WebFacade {
         }
 
         // make sure we don't have a trailing slash
-        if (urlBuilder.charAt(urlBuilder.length()-1) == '/') urlBuilder.deleteCharAt(urlBuilder.length()-1)
+        if (urlBuilder.charAt(urlBuilder.length()-1) == (char) '/') urlBuilder.deleteCharAt(urlBuilder.length()-1)
 
         String urlValue = urlBuilder.toString()
         webappRootUrlByParms.put(cacheKey, urlValue)
@@ -360,6 +367,7 @@ class WebFacadeImpl implements WebFacade {
     Map<String, Object> getErrorParameters() { return errorParameters }
 
     @Override
+    @CompileStatic
     void sendJsonResponse(Object responseObj) {
         String jsonStr
         if (responseObj instanceof CharSequence) {
@@ -367,7 +375,7 @@ class WebFacadeImpl implements WebFacade {
         } else {
             if (eci.message.messages) {
                 if (responseObj == null) {
-                    responseObj = [messages:eci.message.getMessagesString()]
+                    responseObj = [messages:eci.message.getMessagesString()] as Map<String, Object>
                 } else if (responseObj instanceof Map && !responseObj.containsKey("messages")) {
                     Map responseMap = new HashMap()
                     responseMap.putAll(responseObj)
@@ -424,6 +432,7 @@ class WebFacadeImpl implements WebFacade {
     }
 
     @Override
+    @CompileStatic
     void sendTextResponse(String text) {
         String responseText
         if (eci.getMessage().hasError()) {
@@ -449,7 +458,9 @@ class WebFacadeImpl implements WebFacade {
     }
 
     @Override
+    @CompileStatic
     void sendResourceResponse(String location) { sendResourceResponse(location, false) }
+    @CompileStatic
     void sendResourceResponse(String location, boolean inline) {
         ResourceReference rr = eci.resource.getLocationReference(location)
         if (rr == null) throw new IllegalArgumentException("Resource not found at: ${location}")
@@ -471,12 +482,15 @@ class WebFacadeImpl implements WebFacade {
     }
 
     @Override
+    @CompileStatic
     void handleXmlRpcServiceCall() { new ServiceXmlRpcDispatcher(eci).dispatch(request, response) }
 
     @Override
+    @CompileStatic
     void handleJsonRpcServiceCall() { new ServiceJsonRpcDispatcher(eci).dispatch(request, response) }
 
     @Override
+    @CompileStatic
     void handleEntityRestCall(List<String> extraPathNameList) {
         ContextStack parmStack = (ContextStack) getParameters()
 

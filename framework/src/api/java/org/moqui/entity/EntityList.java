@@ -47,9 +47,9 @@ public interface EntityList extends List<EntityValue>, Iterable<EntityValue>, Cl
      *@param fields The name/value pairs that must match for a value to be included in the output list.
      *@return List of EntityValue objects that match the values in the fields parameter.
      */
-    EntityList filterByAnd(Map<String, ?> fields);
+    EntityList filterByAnd(Map<String, Object> fields);
 
-    EntityList removeByAnd(Map<String, ?> fields);
+    EntityList removeByAnd(Map<String, Object> fields);
 
     /** Modify this EntityList so that it includes (or excludes) values matching the condition.
      *

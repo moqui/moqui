@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.entity
 
+import groovy.transform.CompileStatic
 import org.moqui.entity.EntityCondition
 import org.moqui.impl.context.TransactionCache
 
@@ -27,6 +28,7 @@ import org.apache.commons.collections.set.ListOrderedSet
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+@CompileStatic
 class EntityListIteratorImpl implements EntityListIterator {
     protected final static Logger logger = LoggerFactory.getLogger(EntityListIteratorImpl.class)
 
