@@ -11,15 +11,15 @@
  */
 package org.moqui.impl.screen
 
-
+import groovy.transform.CompileStatic
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger
-import org.moqui.impl.actions.XmlAction
 import org.moqui.impl.FtlNodeWrapper
 import org.moqui.context.ContextStack
 
+@CompileStatic
 class ScreenWidgets {
-    protected final static Logger logger = LoggerFactory.getLogger(XmlAction.class)
+    protected final static Logger logger = LoggerFactory.getLogger(ScreenWidgets.class)
 
     protected Node widgetsNode
     protected FtlNodeWrapper widgetsFtlNode

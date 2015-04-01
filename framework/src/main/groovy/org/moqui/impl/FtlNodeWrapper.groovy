@@ -18,9 +18,11 @@ import freemarker.template.TemplateHashModel
 import freemarker.template.AdapterTemplateModel
 import freemarker.template.TemplateModel
 import freemarker.template.TemplateScalarModel
+import groovy.transform.CompileStatic
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger
 
+@CompileStatic
 class FtlNodeWrapper implements TemplateNodeModel, TemplateSequenceModel, TemplateHashModel, AdapterTemplateModel,
         TemplateScalarModel {
     protected final static Logger logger = LoggerFactory.getLogger(FtlNodeWrapper.class)

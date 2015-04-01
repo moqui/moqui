@@ -13,8 +13,6 @@ package org.moqui.impl.webapp;
 
 import org.moqui.impl.screen.ScreenDefinition;
 
-import java.util.List;
-
 public class ScreenResourceNotFoundException extends RuntimeException {
     ScreenDefinition rootSd;
     List<String> fullPathNameList;
@@ -25,7 +23,7 @@ public class ScreenResourceNotFoundException extends RuntimeException {
                                            Exception cause) {
         super("Could not find subscreen or transition or file/content [" + pathFromLastScreen +
                 (resourceLocation ? ":" + resourceLocation : "") + "] under screen [" +
-                lastSd.getLocation() + "] while finding url for path " + fullPathNameList + " under root screen [" +
+                lastSd.getLocation() + "] while finding url for path " + fullPathNameList + " under from screen [" +
                 rootSd.getLocation() + "]", cause)
         this.rootSd = rootSd
         this.fullPathNameList = fullPathNameList

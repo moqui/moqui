@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.screen
 
+import groovy.transform.CompileStatic
 import org.apache.commons.codec.net.URLCodec
 import org.moqui.BaseException
 import org.moqui.context.ExecutionContext
@@ -31,6 +32,7 @@ import org.moqui.impl.entity.EntityFacadeImpl
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+@CompileStatic
 class ScreenUrlInfo {
     protected final static Logger logger = LoggerFactory.getLogger(ScreenUrlInfo.class)
     protected final static URLCodec urlCodec = new URLCodec()
@@ -180,8 +182,9 @@ class ScreenUrlInfo {
             // if screen is limited to certain tenants, and current tenant is not in the Set, it is not permitted
             if (screenDef.getTenantsAllowed() && !screenDef.getTenantsAllowed().contains(ec.getTenantId())) return false
 
+            String requireAuthentication = (String) screenNode.attributes().get('require-authentication')
             if (!aefi.isPermitted(username, aeii, lastAeii,
-                    isLast ? (!screenNode."@require-authentication" || screenNode."@require-authentication" == "true") : false,
+                    isLast ? (!requireAuthentication || requireAuthentication == "true") : false,
                     false, ec.getUser().getNowTimestamp())) {
                 // logger.warn("TOREMOVE user ${username} is NOT allowed to view screen at path ${this.fullPathNameList} because of screen at ${screenDef.location}")
                 aefi.screenPermittedCache.put(permittedCacheKey, false)
@@ -282,7 +285,7 @@ class ScreenUrlInfo {
     String getParameterString() {
         StringBuilder ps = new StringBuilder()
         Map<String, String> pm = this.getParameterMap()
-        for (Map.Entry<String, String> pme in pm) {
+        for (Map.Entry<String, String> pme in pm.entrySet()) {
             if (!pme.value) continue
             if (ps.length() > 0) ps.append("&")
             ps.append(pme.key).append("=").append(urlCodec.encode(pme.value))
@@ -292,7 +295,7 @@ class ScreenUrlInfo {
     String getParameterPathString() {
         StringBuilder ps = new StringBuilder()
         Map<String, String> pm = this.getParameterMap()
-        for (Map.Entry<String, String> pme in pm) {
+        for (Map.Entry<String, String> pme in pm.entrySet()) {
             if (!pme.getValue()) continue
             ps.append("/~")
             ps.append(pme.getKey()).append("=").append(urlCodec.encode(pme.getValue()))
@@ -388,8 +391,8 @@ class ScreenUrlInfo {
 
         // encrypt is the default loop through screens if all are not secure/etc use http setting, otherwise https
         requireEncryption = false
-        if (rootSd?.webSettingsNode?."@require-encryption" != "false") requireEncryption = true
-        if (rootSd?.screenNode?."@begin-transaction" == "true") beginTransaction = true
+        if (rootSd?.webSettingsNode?.attributes()?.get('require-encryption') != "false") requireEncryption = true
+        if (rootSd?.screenNode?.attributes()?.get('begin-transaction') == "true") beginTransaction = true
 
         // start the render list with the from/base SD
         screenRenderDefList.add(fromSd)
@@ -451,7 +454,7 @@ class ScreenUrlInfo {
                     }
                 }
 
-                if (lastSd.screenNode."@allow-extra-path" == "true") {
+                if (lastSd.screenNode.attributes().get('allow-extra-path') == "true") {
                     // call it good
                     break
                 }
@@ -467,12 +470,12 @@ class ScreenUrlInfo {
                 // throw new IllegalArgumentException("Could not find screen at location [${nextLoc}], which is subscreen [${pathName}] in relative screen reference [${fromScreenPath}] in screen [${lastSd.location}]")
             }
 
-            if (nextSd.webSettingsNode?."@require-encryption" != "false") this.requireEncryption = true
-            if (nextSd.screenNode?."@begin-transaction" == "true") this.beginTransaction = true
-            if (nextSd.screenNode?."subscreens"?."@always-use-full-path" == "true") alwaysUseFullPath = true
+            if (nextSd.webSettingsNode?.attributes()?.get('require-encryption') != "false") this.requireEncryption = true
+            if (nextSd.screenNode?.attributes()?.get('begin-transaction') == "true") this.beginTransaction = true
+            if (nextSd.getSubscreensNode()?.attributes()?.get('always-use-full-path') == "true") alwaysUseFullPath = true
 
             // if standalone, clear out screenRenderDefList before adding this to it
-            if (nextSd.screenNode?."@standalone" == "true" || this.lastStandalone) {
+            if (nextSd.screenNode?.attributes()?.get('standalone') == "true" || this.lastStandalone) {
                 renderPathDifference += screenRenderDefList.size()
                 screenRenderDefList.clear()
             }
@@ -491,16 +494,19 @@ class ScreenUrlInfo {
         minimalPathNameList = new ArrayList(fullPathNameList)
 
         // beyond the last screenPathName, see if there are any screen.default-item values (keep following until none found)
-        while (targetTransition == null && fileResourceRef == null && lastSd.screenNode."subscreens" && lastSd.screenNode."subscreens"."@default-item"[0]) {
-            String subscreenName = lastSd.screenNode."subscreens"."@default-item"[0]
-            if (lastSd.screenNode."subscreens"?."@always-use-full-path"?.getAt(0) == "true") alwaysUseFullPath = true
+        while (targetTransition == null && fileResourceRef == null && (String) lastSd.getSubscreensNode()?.attributes()?.get('default-item')) {
+            String subscreenName = (String) lastSd.getSubscreensNode()?.attributes()?.get('default-item')
+            if (lastSd.getSubscreensNode()?.attributes()?.get('always-use-full-path') == "true") alwaysUseFullPath = true
             // logger.warn("TOREMOVE lastSd ${minimalPathNameList} subscreens: ${lastSd.screenNode?.subscreens}, alwaysUseFullPath=${alwaysUseFullPath}, from ${lastSd.screenNode."subscreens"?."@always-use-full-path"?.getAt(0)}, subscreenName=${subscreenName}")
 
             // if any conditional-default.@condition eval to true, use that conditional-default.@item instead
-            for (Node conditionalDefaultNode in lastSd.screenNode."subscreens"."conditional-default") {
-                if (!conditionalDefaultNode."@condition") continue
-                if (ec.resource.evaluateCondition((String) conditionalDefaultNode."@condition", null)) {
-                    subscreenName = conditionalDefaultNode."@item"
+            NodeList condDefaultList = (NodeList) lastSd.getSubscreensNode()?.get("conditional-default")
+            if (condDefaultList) for (Object conditionalDefaultObj in condDefaultList) {
+                Node conditionalDefaultNode = (Node) conditionalDefaultObj
+                String condStr = (String) conditionalDefaultNode.attributes().get('condition')
+                if (!condStr) continue
+                if (ec.resource.evaluateCondition(condStr, null)) {
+                    subscreenName = conditionalDefaultNode.attributes().get('item')
                     break
                 }
             }
@@ -534,11 +540,11 @@ class ScreenUrlInfo {
                 // throw new BaseException("Could not find screen at location [${nextLoc}], which is default subscreen [${subscreenName}] in screen [${lastSd.location}]")
             }
 
-            if (nextSd.webSettingsNode?."@require-encryption" != "false") this.requireEncryption = true
-            if (nextSd.screenNode?."@begin-transaction" == "true") this.beginTransaction = true
+            if (nextSd.webSettingsNode?.attributes()?.get('require-encryption') != "false") this.requireEncryption = true
+            if (nextSd.screenNode?.attributes()?.get('begin-transaction') == "true") this.beginTransaction = true
 
             // if standalone, clear out screenRenderDefList before adding this to it
-            if (nextSd.screenNode?."@standalone" == "true" || this.lastStandalone) {
+            if (nextSd.screenNode?.attributes()?.get('standalone') == "true" || this.lastStandalone) {
                 renderPathDifference += screenRenderDefList.size()
                 screenRenderDefList.clear()
             }
