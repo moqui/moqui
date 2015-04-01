@@ -147,7 +147,7 @@ abstract class EntityValueBase implements EntityValue {
                     String pkValue = get(pks.get(0))
                     if (pkValue) {
                         EntityFind lefFind = getEntityFacadeImpl().find("moqui.basic.LocalizedEntityField")
-                        lefFind.condition([entityName:ed.getFullEntityName(), fieldName:name, pkValue:pkValue, locale:localeStr])
+                        lefFind.condition([entityName:ed.getFullEntityName(), fieldName:name, pkValue:pkValue, locale:localeStr] as Map<String, Object>)
                         EntityValue lefValue = lefFind.useCache(true).one()
                         if (lefValue) return lefValue.localized
                         // no result found, try with shortened locale

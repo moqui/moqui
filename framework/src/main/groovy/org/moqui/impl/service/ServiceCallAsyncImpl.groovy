@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.service
 
+import groovy.transform.CompileStatic
 import org.moqui.impl.context.ArtifactExecutionInfoImpl
 import org.moqui.service.ServiceCallAsync
 import org.moqui.service.ServiceResultReceiver
@@ -26,6 +27,7 @@ import org.quartz.JobBuilder
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+@CompileStatic
 class ServiceCallAsyncImpl extends ServiceCallImpl implements ServiceCallAsync {
     protected final static Logger logger = LoggerFactory.getLogger(ServiceCallAsyncImpl.class)
 
@@ -79,7 +81,7 @@ class ServiceCallAsyncImpl extends ServiceCallImpl implements ServiceCallAsync {
         if (sd == null && !isEntityAutoPattern()) throw new IllegalArgumentException("Could not find service with name [${getServiceName()}]")
 
         if (sd != null) {
-            String serviceType = sd.serviceNode."@type" ?: "inline"
+            String serviceType = (String) sd.serviceNode.attributes().get('type') ?: "inline"
             if (serviceType == "interface") throw new IllegalArgumentException("Cannot run interface service [${getServiceName()}]")
             ServiceRunner sr = sfi.getServiceRunner(serviceType)
             if (sr == null) throw new IllegalArgumentException("Could not find service runner for type [${serviceType}] for service [${getServiceName()}]")

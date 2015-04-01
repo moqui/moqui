@@ -68,7 +68,7 @@ public interface EntityFind extends java.io.Serializable {
      *
      * @return Returns this for chaining of method calls.
      */
-    EntityFind condition(Map<String, ?> fields);
+    EntityFind condition(Map<String, Object> fields);
 
     /** Add a EntityCondition to the find (where clause).
      *

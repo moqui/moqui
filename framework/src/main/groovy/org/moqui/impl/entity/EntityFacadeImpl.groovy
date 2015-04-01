@@ -117,8 +117,11 @@ class EntityFacadeImpl implements EntityFacade {
 
     @CompileStatic
     ExecutionContextFactoryImpl getEcfi() { return ecfi }
+    @CompileStatic
     EntityCache getEntityCache() { return entityCache }
+    @CompileStatic
     EntityDataFeed getEntityDataFeed() { return entityDataFeed }
+    @CompileStatic
     EntityDataDocument getEntityDataDocument() { return entityDataDocument }
     @CompileStatic
     String getDefaultGroupName() { return defaultGroupName }
@@ -531,6 +534,7 @@ class EntityFacadeImpl implements EntityFacade {
         if (logger.infoEnabled && relationshipsCreated > 0) logger.info("Created ${relationshipsCreated} automatic reverse-many relationships")
     }
 
+    @CompileStatic
     int getEecaRuleCount() {
         int count = 0
         for (List ruleList in eecaRulesByEntityName.values()) count += ruleList.size()
@@ -830,6 +834,7 @@ class EntityFacadeImpl implements EntityFacade {
         return dsNode
     }
 
+    @CompileStatic
     EntityDbMeta getEntityDbMeta() { return dbMeta ? dbMeta : (dbMeta = new EntityDbMeta(this)) }
 
     /* ========================= */

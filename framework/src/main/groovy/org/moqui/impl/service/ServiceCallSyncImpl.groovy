@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.service
 
+import groovy.transform.CompileStatic
 import org.moqui.BaseException
 import org.moqui.context.ArtifactAuthorizationException
 import org.moqui.context.TransactionException
@@ -29,6 +30,7 @@ import java.sql.Timestamp
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+@CompileStatic
 class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
     protected final static Logger logger = LoggerFactory.getLogger(ServiceCallSyncImpl.class)
 
@@ -152,8 +154,8 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         long callStartTime = System.currentTimeMillis()
 
         // get these before cleaning up the parameters otherwise will be removed
-        String userId = currentParameters.authUserAccount?.userId ?: currentParameters.authUsername
-        String password = currentParameters.authUserAccount?.currentPassword ?: currentParameters.authPassword
+        String userId = ((Map) currentParameters.authUserAccount)?.userId ?: currentParameters.authUsername
+        String password = ((Map) currentParameters.authUserAccount)?.currentPassword ?: currentParameters.authPassword
         String tenantId = currentParameters.authTenantId
 
         // in-parameter validation
@@ -273,7 +275,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                 }
             } finally {
                 // clear the semaphore
-                String semaphore = sd.getServiceNode()."@semaphore"
+                String semaphore = sd.getServiceNode().attributes().get('semaphore')
                 if (semaphore == "fail" || semaphore == "wait") {
                     eci.getService().sync().name("delete", "moqui.service.semaphore.ServiceSemaphore")
                             .parameters([serviceName:getServiceName()]).requireNewTransaction(true).call()
@@ -322,12 +324,12 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
     }
 
     protected void checkAddSemaphore(ServiceDefinition sd, ExecutionContextImpl eci) {
-        String semaphore = sd.getServiceNode()."@semaphore"
+        String semaphore = sd.getServiceNode().attributes().get('semaphore')
         if (semaphore == "fail" || semaphore == "wait") {
             EntityValue serviceSemaphore = eci.getEntity().find("moqui.service.semaphore.ServiceSemaphore")
                     .condition("serviceName", getServiceName()).useCache(false).one()
             if (serviceSemaphore) {
-                long ignoreMillis = ((sd.getServiceNode()."@semaphore-ignore" ?: "3600") as Long) * 1000
+                long ignoreMillis = ((sd.getServiceNode().attributes().get('semaphore-ignore') ?: "3600") as Long) * 1000
                 Timestamp lockTime = serviceSemaphore.getTimestamp("lockTime")
                 if (System.currentTimeMillis() > (lockTime.getTime() + ignoreMillis)) {
                     eci.getService().sync().name("delete", "moqui.service.semaphore.ServiceSemaphore")
@@ -337,8 +339,8 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                 if (semaphore == "fail") {
                     throw new ServiceException("An instance of service [${getServiceName()}] is already running (thread [${serviceSemaphore.lockThread}], locked at ${serviceSemaphore.lockTime}) and it is setup to fail on semaphore conflict.")
                 } else {
-                    long sleepTime = ((sd.getServiceNode()."@semaphore-sleep" ?: "5") as Long) * 1000
-                    long timeoutTime = ((sd.getServiceNode()."@semaphore-timeout" ?: "120") as Long) * 1000
+                    long sleepTime = ((sd.getServiceNode().attributes().get('semaphore-sleep') ?: "5") as Long) * 1000
+                    long timeoutTime = ((sd.getServiceNode().attributes().get('semaphore-timeout') ?: "120") as Long) * 1000
                     long startTime = System.currentTimeMillis()
                     boolean semaphoreCleared = false
                     while (System.currentTimeMillis() < (startTime + timeoutTime)) {

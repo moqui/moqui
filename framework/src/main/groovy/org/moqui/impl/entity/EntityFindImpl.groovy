@@ -11,6 +11,8 @@
  */
 package org.moqui.impl.entity
 
+import groovy.transform.CompileStatic
+
 import java.sql.ResultSet
 import java.sql.Connection
 import java.sql.SQLException
@@ -23,6 +25,7 @@ import org.moqui.impl.entity.condition.EntityConditionImplBase
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+@CompileStatic
 class EntityFindImpl extends EntityFindBase {
     protected final static Logger logger = LoggerFactory.getLogger(EntityFindImpl.class)
 

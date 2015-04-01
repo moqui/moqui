@@ -11,6 +11,9 @@
  */
 package org.moqui.impl.entity
 
+import groovy.transform.CompileStatic
+import groovy.transform.TypeChecked
+import groovy.transform.TypeCheckingMode
 import org.moqui.impl.context.TransactionCache
 
 import java.sql.ResultSet
@@ -34,6 +37,7 @@ import org.moqui.impl.entity.condition.ListCondition
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+@CompileStatic
 abstract class EntityFindBase implements EntityFind {
     protected final static Logger logger = LoggerFactory.getLogger(EntityFindBase.class)
 
@@ -107,9 +111,9 @@ abstract class EntityFindBase implements EntityFind {
     }
 
     @Override
-    EntityFind condition(Map<String, ?> fields) {
+    EntityFind condition(Map<String, Object> fields) {
         if (!fields) return this
-        if (this.simpleAndMap == null) this.simpleAndMap = new HashMap()
+        if (this.simpleAndMap == null) this.simpleAndMap = new HashMap<String, Object>()
         getEntityDef().setFields(fields, this.simpleAndMap, true, null, null)
         return this
     }
@@ -119,7 +123,8 @@ abstract class EntityFindBase implements EntityFind {
         if (condition == null) return this
         if (whereEntityCondition) {
             // use ListCondition instead of ANDing two at a time to avoid a bunch of nested ANDs
-            if (whereEntityCondition instanceof ListCondition && whereEntityCondition.getOperator() == EntityCondition.AND) {
+            if (whereEntityCondition instanceof ListCondition &&
+                    ((ListCondition) whereEntityCondition).getOperator() == EntityCondition.AND) {
                 ((ListCondition) whereEntityCondition).addCondition((EntityConditionImplBase) condition)
             } else {
                 whereEntityCondition =
@@ -237,9 +242,9 @@ abstract class EntityFindBase implements EntityFind {
                         if (value) {
                             Collection valueList = null
                             if (value instanceof CharSequence) {
-                                valueList = value.toString().split(",")
+                                valueList = Arrays.asList(value.toString().split(","))
                             } else if (value instanceof Collection) {
-                                valueList = value
+                                valueList = (Collection) value
                             }
                             if (valueList) {
                                 cond = efi.conditionFactory.makeCondition(fn,
@@ -292,15 +297,21 @@ abstract class EntityFindBase implements EntityFind {
         return this
     }
 
+    @TypeChecked(TypeCheckingMode.SKIP)
     EntityFind findNode(Node node) {
         ExecutionContext ec = this.efi.ecfi.executionContext
 
-        this.entity((String) node["@entity-name"])
-        if (node["@cache"]) { this.useCache(node["@cache"] == "true") }
-        if (node["@for-update"]) this.forUpdate(node["@for-update"] == "true")
-        if (node["@distinct"]) this.distinct(node["@distinct"] == "true")
-        if (node["@offset"]) this.offset(node["@offset"] as Integer)
-        if (node["@limit"]) this.limit(node["@limit"] as Integer)
+        this.entity((String) node.attributes().get('entity-name'))
+        String cache = node.attributes().get('cache')
+        if (cache) { this.useCache(cache == "true") }
+        String forUpdate = node.attributes().get('for-update')
+        if (forUpdate) this.forUpdate(forUpdate == "true")
+        String distinct = node.attributes().get('distinct')
+        if (distinct) this.distinct(distinct == "true")
+        String offset = node.attributes().get('offset')
+        if (offset) this.offset(offset as Integer)
+        String limit = node.attributes().get('limit')
+        if (limit) this.limit(limit as Integer)
         for (Node sf in (Collection<Node>) node["select-field"]) this.selectField((String) sf["@field-name"])
         for (Node ob in (Collection<Node>) node["order-by"]) this.orderBy((String) ob["@field-name"])
 
@@ -321,7 +332,7 @@ abstract class EntityFindBase implements EntityFind {
             this.condition((EntityCondition) ec.resource.evaluateContextField((String) eco["@field"], null))
 
         if (node["search-form-inputs"]) {
-            Node sfiNode = (Node) node["search-form-inputs"].first
+            Node sfiNode = (Node) node["search-form-inputs"].first()
             searchFormInputs((String) sfiNode["@input-fields-map"], (String) sfiNode["@default-order-by"], (sfiNode["@paginate"] ?: "true") as boolean)
         }
         if (node["having-econditions"]) {
@@ -407,7 +418,7 @@ abstract class EntityFindBase implements EntityFind {
     Integer getLimit() { return this.limit }
 
     @Override
-    int getPageIndex() { return offset == null ? 0 : offset/getPageSize() }
+    int getPageIndex() { return offset == null ? 0 : (offset/getPageSize()).intValue() }
     @Override
     int getPageSize() { return limit ?: 20 }
 
@@ -503,12 +514,13 @@ abstract class EntityFindBase implements EntityFind {
         Node entityNode = ed.getEntityNode()
         ExecutionContext ec = efi.getEcfi().getExecutionContext()
 
-        if (ed.isViewEntity() && (!entityNode."member-entity" || !entityNode."alias"))
+        if (ed.isViewEntity() && (!entityNode.get("member-entity") || !entityNode.get("alias")))
             throw new EntityException("Cannot do find for view-entity with name [${entityName}] because it has no member entities or no aliased fields.")
 
+        String authorizeSkip = (String) entityNode.attributes().get('authorize-skip')
         ec.getArtifactExecution().push(
                 new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW").setActionDetail("one"),
-                (entityNode."@authorize-skip" != "true" && !entityNode."@authorize-skip"?.contains("view")))
+                (authorizeSkip != "true" && !authorizeSkip?.contains("view")))
 
         // find EECA rules deprecated, not worth performance hit: efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-one", true)
 
@@ -528,7 +540,7 @@ abstract class EntityFindBase implements EntityFind {
         }
 
         // try the TX cache before the entity cache, may be more up-to-date
-        EntityValue txcValue = txCache != null ? txCache.oneGet(this) : null
+        EntityValueBase txcValue = txCache != null ? txCache.oneGet(this) : null
 
         boolean doCache = this.shouldCache()
         CacheImpl entityOneCache = doCache ? efi.getEntityCache().getCacheOne(getEntityDef().getFullEntityName()) : null
@@ -576,7 +588,7 @@ abstract class EntityFindBase implements EntityFind {
         // final ECA trigger
         // find EECA rules deprecated, not worth performance hit: efi.runEecaRules(ed.getFullEntityName(), newEntityValue, "find-one", false)
         // count the artifact hit
-        efi.ecfi.countArtifactHit("entity", "one", ed.getFullEntityName(), simpleAndMap, startTime, System.currentTimeMillis(), newEntityValue ? 1 : 0)
+        efi.ecfi.countArtifactHit("entity", "one", ed.getFullEntityName(), simpleAndMap, startTime, System.currentTimeMillis(), newEntityValue ? 1L : 0L)
         // pop the ArtifactExecutionInfo
         ec.getArtifactExecution().pop()
 
@@ -614,12 +626,13 @@ abstract class EntityFindBase implements EntityFind {
         Node entityNode = ed.getEntityNode()
         ExecutionContext ec = efi.getEcfi().getExecutionContext()
 
-        if (ed.isViewEntity() && (!entityNode."member-entity" || !entityNode."alias"))
+        if (ed.isViewEntity() && (!entityNode.get("member-entity") || !entityNode.get("alias")))
             throw new EntityException("Cannot do find for view-entity with name [${entityName}] because it has no member entities or no aliased fields.")
 
+        String authorizeSkip = (String) entityNode.attributes().get('authorize-skip')
         ec.getArtifactExecution().push(
                 new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW").setActionDetail("list"),
-                (entityNode."@authorize-skip" != "true" && !entityNode."@authorize-skip"?.contains("view")))
+                (authorizeSkip != "true" && !authorizeSkip?.contains("view")))
 
         // there may not be a simpleAndMap, but that's all we have that can be treated directly by the EECA
         // find EECA rules deprecated, not worth performance hit: efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-list", true)
@@ -627,8 +640,12 @@ abstract class EntityFindBase implements EntityFind {
         List<String> orderByExpanded = new ArrayList()
         // add the manually specified ones, then the ones in the view entity's entity-condition
         if (this.getOrderBy()) orderByExpanded.addAll(this.getOrderBy())
-        def ecObList = ed.getEntityNode()."entity-condition"?.first?."order-by"
-        if (ecObList) for (Node orderBy in ecObList) orderByExpanded.add((String) orderBy."@field-name")
+
+        NodeList entityConditionList = (NodeList) entityNode.get("entity-condition")
+        Node entityConditionNode = entityConditionList ? (Node) entityConditionList.first() : null
+        NodeList ecObList = (NodeList) entityConditionNode?.get("order-by")
+        if (ecObList) for (Object orderBy in ecObList)
+            orderByExpanded.add((String) ((Node) orderBy).attributes().get('field-name'))
 
         EntityConditionImplBase whereCondition = (EntityConditionImplBase) getWhereEntityCondition()
 
@@ -638,7 +655,7 @@ abstract class EntityFindBase implements EntityFind {
         // NOTE: don't cache if there is a having condition, for now just support where
         boolean doEntityCache = this.shouldCache()
         CacheImpl entityListCache = doEntityCache ? efi.getEntityCache().getCacheList(getEntityDef().getFullEntityName()) : null
-        EntityList cacheList = null
+        EntityListImpl cacheList = null
         if (doEntityCache) cacheList = efi.getEntityCache().getFromListCache(ed, whereCondition, orderByExpanded, entityListCache)
 
         EntityListImpl el
@@ -659,7 +676,7 @@ abstract class EntityFindBase implements EntityFind {
             if (!this.fieldsToSelect || txCache != null || doEntityCache) this.selectFields(ed.getFieldNames(true, true, false))
             // TODO: this will not handle query conditions on UserFields, it will blow up in fact
 
-            if (ed.isViewEntity() && ed.getEntityNode()."entity-condition"?.first?."@distinct" == "true") this.distinct(true)
+            if (ed.isViewEntity() && entityConditionNode?.attributes()?.get('distinct') == "true") this.distinct(true)
 
             EntityConditionImplBase viewWhere = ed.makeViewWhereCondition()
             if (whereCondition && viewWhere) {
@@ -684,10 +701,10 @@ abstract class EntityFindBase implements EntityFind {
             eli.setOrderByFields(orderByExpanded)
 
             Node databaseNode = this.efi.getDatabaseNode(ed.getEntityGroupName())
-            if (this.limit != null && databaseNode != null && databaseNode."@offset-style" == "cursor") {
-                el = eli.getPartialList(this.offset ?: 0, this.limit, true)
+            if (this.limit != null && databaseNode != null && databaseNode.attributes().get('offset-style') == "cursor") {
+                el = (EntityListImpl) eli.getPartialList(this.offset ?: 0, this.limit, true)
             } else {
-                el = eli.getCompleteList(true)
+                el = (EntityListImpl) eli.getCompleteList(true)
             }
 
             if (txCache != null) txCache.listPut(ed, whereCondition, el)
@@ -701,7 +718,7 @@ abstract class EntityFindBase implements EntityFind {
         // find EECA rules deprecated, not worth performance hit: efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-list", false)
         // count the artifact hit
         efi.ecfi.countArtifactHit("entity", "list", ed.getFullEntityName(), simpleAndMap, startTime,
-                System.currentTimeMillis(), el ? el.size() : 0)
+                System.currentTimeMillis(), el ? (long) el.size() : 0L)
         // pop the ArtifactExecutionInfo
         ec.getArtifactExecution().pop()
 
@@ -723,12 +740,13 @@ abstract class EntityFindBase implements EntityFind {
         Node entityNode = ed.getEntityNode()
         ExecutionContext ec = efi.getEcfi().getExecutionContext()
 
-        if (ed.isViewEntity() && (!entityNode."member-entity" || !entityNode."alias"))
+        if (ed.isViewEntity() && (!entityNode.get("member-entity") || !entityNode.get("alias")))
             throw new EntityException("Cannot do find for view-entity with name [${entityName}] because it has no member entities or no aliased fields.")
 
+        String authorizeSkip = (String) entityNode.attributes().get('authorize-skip')
         ec.getArtifactExecution().push(
                 new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW").setActionDetail("iterator"),
-                (entityNode."@authorize-skip" != "true" && !entityNode."@authorize-skip"?.contains("view")))
+                (authorizeSkip != "true" && !authorizeSkip?.contains("view")))
 
         // there may not be a simpleAndMap, but that's all we have that can be treated directly by the EECA
         // find EECA rules deprecated, not worth performance hit: efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-iterator", true)
@@ -736,8 +754,12 @@ abstract class EntityFindBase implements EntityFind {
         List<String> orderByExpanded = new ArrayList()
         // add the manually specified ones, then the ones in the view entity's entity-condition
         if (this.getOrderBy()) orderByExpanded.addAll(this.getOrderBy())
-        def ecObList = ed.getEntityNode()."entity-condition"?.first?."order-by"
-        if (ecObList) for (Node orderBy in ecObList) orderByExpanded.add((String) orderBy."@field-name")
+
+        NodeList entityConditionList = (NodeList) entityNode.get("entity-condition")
+        Node entityConditionNode = entityConditionList ? (Node) entityConditionList.first() : null
+        NodeList ecObList = (NodeList) entityConditionNode?.get("order-by")
+        if (ecObList) for (Object orderBy in ecObList)
+            orderByExpanded.add((String) ((Node) orderBy).attributes().get('field-name'))
 
         // order by fields need to be selected (at least on some databases, Derby is one of them)
         if (this.fieldsToSelect && getDistinct() && orderByExpanded) {
@@ -750,7 +772,7 @@ abstract class EntityFindBase implements EntityFind {
         if (!this.fieldsToSelect) this.selectFields(ed.getFieldNames(true, true, false))
         // TODO: this will not handle query conditions on UserFields, it will blow up in fact
 
-        if (ed.isViewEntity() && ed.getEntityNode()."entity-condition"?.first?."@distinct" == "true") this.distinct(true)
+        if (ed.isViewEntity() && entityConditionNode?.attributes()?.get('distinct') == "true") this.distinct(true)
 
         EntityConditionImplBase whereCondition = (EntityConditionImplBase) getWhereEntityCondition()
         EntityConditionImplBase viewWhere = ed.makeViewWhereCondition()
@@ -777,7 +799,7 @@ abstract class EntityFindBase implements EntityFind {
         // NOTE: if we are doing offset/limit with a cursor no good way to limit results, but we'll at least jump to the offset
         Node databaseNode = this.efi.getDatabaseNode(ed.getEntityGroupName())
         // NOTE: allow databaseNode to be null because custom (non-JDBC) datasources may not have one
-        if (this.offset != null && databaseNode != null && databaseNode."@offset-style" == "cursor") {
+        if (this.offset != null && databaseNode != null && databaseNode.attributes().get('offset-style') == "cursor") {
             if (!eli.absolute(offset)) {
                 // can't seek to desired offset? not enough results, just go to after last result
                 eli.afterLast()
@@ -811,9 +833,10 @@ abstract class EntityFindBase implements EntityFind {
         Node entityNode = ed.getEntityNode()
         ExecutionContext ec = efi.getEcfi().getExecutionContext()
 
+        String authorizeSkip = (String) entityNode.attributes().get('authorize-skip')
         ec.getArtifactExecution().push(
                 new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW").setActionDetail("count"),
-                (entityNode."@authorize-skip" != "true" && !entityNode."@authorize-skip"?.contains("view")))
+                (authorizeSkip != "true" && !authorizeSkip?.contains("view")))
 
         // there may not be a simpleAndMap, but that's all we have that can be treated directly by the EECA
         // find EECA rules deprecated, not worth performance hit: efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-count", true)
@@ -833,7 +856,9 @@ abstract class EntityFindBase implements EntityFind {
             if (!this.fieldsToSelect) this.selectFields(ed.getFieldNames(true, true, false))
             // TODO: this will not handle query conditions on UserFields, it will blow up in fact
 
-            if (ed.isViewEntity() && ed.getEntityNode()."entity-condition"?.first?."@distinct" == "true") this.distinct(true)
+            NodeList entityConditionList = (NodeList) entityNode.get("entity-condition")
+            Node entityConditionNode = entityConditionList ? (Node) entityConditionList.first() : null
+            if (ed.isViewEntity() && entityConditionNode?.attributes()?.get('distinct') == "true") this.distinct(true)
 
             EntityConditionImplBase viewWhere = ed.makeViewWhereCondition()
             if (whereCondition && viewWhere) {

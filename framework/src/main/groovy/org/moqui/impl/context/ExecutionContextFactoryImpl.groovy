@@ -837,9 +837,9 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         // NOTE: never save individual hits for entity artifact hits, way too heavy and also avoids self-reference
         //     (could also be done by checking for ArtifactHit/etc of course)
         if (artifactPersistHit(artifactType, artifactSubType)) {
-            Map<String, Object> ahp = new HashMap<String, Object>([visitId:eci.user.visitId, userId:eci.user.userId,
+            Map<String, Object> ahp = [visitId:eci.user.visitId, userId:eci.user.userId,
                 artifactType:artifactType, artifactSubType:artifactSubType, artifactName:artifactName,
-                startDateTime:new Timestamp(startTime), runningTimeMillis:runningTimeMillis])
+                startDateTime:new Timestamp(startTime), runningTimeMillis:runningTimeMillis] as Map<String, Object>
 
             if (parameters) {
                 StringBuilder ps = new StringBuilder()

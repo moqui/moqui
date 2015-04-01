@@ -12,6 +12,8 @@
 package org.moqui.impl.entity
 
 import groovy.transform.CompileStatic
+import groovy.transform.TypeChecked
+import groovy.transform.TypeCheckingMode
 import org.moqui.impl.StupidJavaUtilities
 import org.moqui.entity.EntityException
 
@@ -39,6 +41,7 @@ import org.apache.commons.codec.binary.Hex
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+@CompileStatic
 class EntityQueryBuilder {
     protected final static Logger logger = LoggerFactory.getLogger(EntityQueryBuilder.class)
 
@@ -60,14 +63,10 @@ class EntityQueryBuilder {
     EntityDefinition getMainEd() { return mainEntityDefinition }
 
     /** @return StringBuilder meant to be appended to */
-    StringBuilder getSqlTopLevel() {
-        return this.sqlTopLevel
-    }
+    StringBuilder getSqlTopLevel() { return this.sqlTopLevel }
 
     /** returns List of EntityConditionParameter meant to be added to */
-    List<EntityConditionParameter> getParameters() {
-        return this.parameters
-    }
+    List<EntityConditionParameter> getParameters() { return this.parameters }
 
     Connection makeConnection() {
         this.connection = this.efi.getConnection(mainEntityDefinition.getEntityGroupName())
@@ -167,6 +166,7 @@ class EntityQueryBuilder {
         }
     }
 
+    @CompileStatic
     static class EntityConditionParameter {
         protected final static Logger logger = LoggerFactory.getLogger(EntityConditionParameter.class)
 
@@ -190,10 +190,9 @@ class EntityQueryBuilder {
         }
 
         @Override
-        String toString() { return fieldNode."@name" + ":" + value }
+        String toString() { return ((String) fieldNode.attributes().get('name')) + ':' + value }
     }
 
-    @CompileStatic
     static void getResultSetValue(ResultSet rs, int index, Node fieldNode, EntityValueImpl entityValueImpl,
                                             EntityFacadeImpl efi) throws EntityException {
         String fieldName = (String) fieldNode.attributes().get('name')
@@ -331,6 +330,7 @@ class EntityQueryBuilder {
         entityValueImpl.getValueMap().put(fieldName, value)
     }
 
+    @TypeChecked(TypeCheckingMode.SKIP)
     public static String enDeCrypt(String value, boolean encrypt, EntityFacadeImpl efi) {
         Node entityFacadeNode = (Node) efi.ecfi.confXmlRoot."entity-facade"[0]
         String pwStr = entityFacadeNode."@crypt-pass"
@@ -363,7 +363,6 @@ class EntityQueryBuilder {
         return encrypt ? Hex.encodeHexString(outBytes) : new String(outBytes)
     }
 
-    @CompileStatic
     static void setPreparedStatementValue(PreparedStatement ps, int index, Object value, Node fieldNode,
                                           EntityDefinition ed, EntityFacadeImpl efi) throws EntityException {
         String entityName = ed.getFullEntityName()
@@ -410,7 +409,6 @@ class EntityQueryBuilder {
         }
     }
 
-    @CompileStatic
     static void setPreparedStatementValue(PreparedStatement ps, int index, Object value, EntityDefinition ed,
                                           EntityFacadeImpl efi) throws EntityException {
         int typeValue = value ? EntityFacadeImpl.getJavaTypeInt(value.class.name) : 1
@@ -424,7 +422,6 @@ class EntityQueryBuilder {
     }
 
     /* This is called by the other two setPreparedStatementValue methods */
-    @CompileStatic
     static void setPreparedStatementValue(PreparedStatement ps, int index, Object value, int typeValue,
                                           boolean useBinaryTypeForBlob, EntityFacadeImpl efi) throws EntityException {
         try {

@@ -11,8 +11,10 @@
  */
 package org.moqui.impl.service
 
+import groovy.transform.CompileStatic
 import org.moqui.service.ServiceCall
 
+@CompileStatic
 class ServiceCallImpl implements ServiceCall {
     protected ServiceFacadeImpl sfi
     protected String path = null
@@ -22,9 +24,7 @@ class ServiceCallImpl implements ServiceCall {
 
     protected Map<String, Object> parameters = new HashMap<String, Object>()
 
-    ServiceCallImpl(ServiceFacadeImpl sfi) {
-        this.sfi = sfi
-    }
+    ServiceCallImpl(ServiceFacadeImpl sfi) { this.sfi = sfi }
 
     protected void setServiceName(String serviceName) {
         sd = sfi.getServiceDefinition(serviceName)

@@ -290,7 +290,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                         // check the ArtifactTarpitLock for the current artifact attempt before seeing if there is a new lock to create
                         // NOTE: this only runs if we are recording a hit time for an artifact, so no performance impact otherwise
                         EntityList tarpitLockList = efi.find('moqui.security.ArtifactTarpitLock')
-                                .condition([userId:userId, artifactName:aeii.getName(), artifactTypeEnumId:aeii.getTypeEnumId()])
+                                .condition([userId:userId, artifactName:aeii.getName(), artifactTypeEnumId:aeii.getTypeEnumId()] as Map<String, Object>)
                                 .useCache(true).list()
                                 .filterByCondition(efi.getConditionFactory().makeCondition('releaseDateTime', ComparisonOperator.GREATER_THAN, ufi.getNowTimestamp()), true)
                         if (tarpitLockList) {
