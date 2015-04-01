@@ -12,6 +12,8 @@
 package org.moqui.impl
 
 import groovy.transform.CompileStatic
+import groovy.transform.TypeChecked
+import groovy.transform.TypeCheckingMode
 
 import java.nio.charset.Charset
 import java.sql.Time
@@ -40,6 +42,8 @@ class StupidUtilities {
         return theClass.isInstance(theObjectInQuestion)
     }
 
+    // NOTE: TypeCheckingMode.SKIP here because Groovy does weird things with asType with CompileStatic
+    @TypeChecked(TypeCheckingMode.SKIP)
     static Object basicConvert(Object value, String javaType) {
         if (value == null) return null
 
@@ -52,7 +56,8 @@ class StupidUtilities {
                 return Boolean.valueOf((String) value)
             } else {
                 // let groovy do the work
-                return value.asType(theClass)
+                Object newVal = value.asType(theClass)
+                return newVal
             }
         } catch (Throwable t) {
             logger.warn("Error doing type conversion to [${javaType}] for value [${value}]", t)
