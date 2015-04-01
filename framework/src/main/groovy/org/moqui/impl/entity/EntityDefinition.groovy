@@ -206,7 +206,7 @@ public class EntityDefinition {
 
     @CompileStatic
     String getUseCache() {
-        if (useCache == null) useCache = internalEntityNode.attributes().get('use-cache')
+        if (useCache == null) useCache = internalEntityNode.attributes().get('cache') ?: 'false'
         return useCache
     }
 
