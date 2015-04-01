@@ -146,8 +146,6 @@ public class ContextStack implements Map<String, Object> {
             } else {
                 return null;
             }
-            // the "context" key always gets a self-reference, effectively the top of the stack
-            if ("context".equals(key)) return this;
         }
 
         // optimize for non-null get, avoid double lookup with containsKey/get
@@ -171,7 +169,10 @@ public class ContextStack implements Map<String, Object> {
                     return null;
                 }
             }
+
             // didn't find it
+            // the "context" key always gets a self-reference; look for this last as it takes a sec and is uncommon
+            if ("context".equals(key)) return this;
             return null;
         }
     }
@@ -251,7 +252,10 @@ public class ContextStack implements Map<String, Object> {
     }
 
     @Override
-    public int hashCode() { return this.stackList.hashCode(); }
+    public int hashCode() {
+        logger.warn("======== ContextStack.hashCode at", new Exception());
+        return this.stackList.hashCode();
+    }
 
     @Override
     public boolean equals(Object o) {

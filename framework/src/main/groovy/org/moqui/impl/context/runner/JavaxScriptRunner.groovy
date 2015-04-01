@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.context.runner
 
+import groovy.transform.CompileStatic
 import org.moqui.BaseException
 import org.moqui.context.Cache
 import org.moqui.context.ExecutionContext
@@ -45,6 +46,7 @@ class JavaxScriptRunner implements ScriptRunner {
         return this
     }
 
+    @CompileStatic
     Object run(String location, String method, ExecutionContext ec) {
         // this doesn't support methods, so if passed warn about that
         if (method) logger.warn("Tried to invoke script at [${location}] with method [${method}] through javax.script (JSR-223) runner which does NOT support methods, so it is being ignored.", new BaseException("Script Run Location"))
@@ -55,16 +57,17 @@ class JavaxScriptRunner implements ScriptRunner {
 
     void destroy() { }
 
+    @CompileStatic
     static Object bindAndRun(String location, ExecutionContext ec, ScriptEngine engine, Cache scriptLocationCache) {
         Bindings bindings = new SimpleBindings()
-        for (Map.Entry ce in ec.getContext()) bindings.put((String) ce.getKey(), ce.getValue())
+        for (Map.Entry ce in ec.getContext().entrySet()) bindings.put((String) ce.getKey(), ce.getValue())
 
         Object result
         if (engine instanceof Compilable) {
             // cache the CompiledScript
             CompiledScript script = (CompiledScript) scriptLocationCache.get(location)
             if (script == null) {
-                script = ((Compilable) engine).compile(ec.getResource().getLocationText(location, false))
+                script = engine.compile(ec.getResource().getLocationText(location, false))
                 scriptLocationCache.put(location, script)
             }
             result = script.eval(bindings)

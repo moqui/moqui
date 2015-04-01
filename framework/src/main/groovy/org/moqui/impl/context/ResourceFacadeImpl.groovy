@@ -151,6 +151,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
     @CompileStatic
     ExecutionContextFactoryImpl getEcfi() { return ecfi }
+    @CompileStatic
     Map<String, TemplateRenderer> getTemplateRenderers() { return templateRenderers }
 
     Repository getContentRepository(String name) { return contentRepositories.get(name) }
@@ -232,6 +233,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
         return text
     }
 
+    @CompileStatic
     DataSource getLocationDataSource(String location) {
         ResourceReference fileResourceRef = getLocationReference(location)
 
@@ -260,6 +262,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
     }
 
     @Override
+    @CompileStatic
     void renderTemplateInCurrentContext(String location, Writer writer) {
         TemplateRenderer tr = getTemplateRendererByLocation(location)
         if (tr != null) {
@@ -326,6 +329,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
         }
     }
 
+    @CompileStatic
     Object setInContext(String field, String from, String value, String defaultValue, String type, String setIfEmpty) {
         def tempValue = getValueFromContext(from, value, defaultValue, type)
         ecfi.getExecutionContext().getContext().put("_tempValue", tempValue)
@@ -333,6 +337,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
         return tempValue
     }
+    @CompileStatic
     Object getValueFromContext(String from, String value, String defaultValue, String type) {
         def tempValue = from ? evaluateContextField(from, "") : evaluateStringExpand(value, "")
         if (!tempValue && defaultValue) tempValue = evaluateStringExpand(defaultValue, "")

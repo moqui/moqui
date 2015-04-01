@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.context.runner
 
+import groovy.transform.CompileStatic
 import org.codehaus.groovy.runtime.InvokerHelper
 
 import org.moqui.context.Cache
@@ -38,6 +39,7 @@ class GroovyScriptRunner implements ScriptRunner {
         return this
     }
 
+    @CompileStatic
     Object run(String location, String method, ExecutionContext ec) {
         Script script = InvokerHelper.createScript(getGroovyByLocation(location), new ContextBinding(ec.context))
         Object result
@@ -51,11 +53,13 @@ class GroovyScriptRunner implements ScriptRunner {
 
     void destroy() { }
 
+    @CompileStatic
     Class getGroovyByLocation(String location) {
         Class gc = (Class) scriptGroovyLocationCache.get(location)
         if (!gc) gc = loadGroovy(location)
         return gc
     }
+    @CompileStatic
     protected Class loadGroovy(String location) {
         Class gc = (Class) scriptGroovyLocationCache.get(location)
         if (!gc) {
