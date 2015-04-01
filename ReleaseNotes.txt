@@ -10,7 +10,10 @@ Moqui Framework 1.5.2 is a minor new feature and bug fix release.
 New Features:
 
 - Various performance improvements based on profiling, this time focusing
-  on entity and service level operations
+  on entity and service level operations but also some screen/etc related
+  ones; a big part of this is using the Groovy @CompileStatic annotation
+  for strict typing and direct method calls for improved performance in
+  various frequently called parts of the framework
 
 Bug Fixes:
 
