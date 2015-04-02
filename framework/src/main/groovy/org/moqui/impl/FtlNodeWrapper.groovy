@@ -138,10 +138,12 @@ class FtlNodeWrapper implements TemplateNodeModel, TemplateSequenceModel, Templa
             TemplateScalarModel {
         protected Object key
         protected Object value
+        protected String valueStr
         protected FtlNodeWrapper parentNode
         FtlAttributeWrapper(Object key, Object value, FtlNodeWrapper parentNode) {
             this.key = key
             this.value = value
+            valueStr = value != null ? value as String : null
             this.parentNode = parentNode
         }
 
@@ -163,7 +165,7 @@ class FtlNodeWrapper implements TemplateNodeModel, TemplateSequenceModel, Templa
         int size() { return 1 }
 
         // TemplateScalarModel methods
-        String getAsString() { return value != null ? value as String : null }
+        String getAsString() { return valueStr }
 
         @Override
         String toString() { return getAsString() }
