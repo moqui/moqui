@@ -978,7 +978,7 @@ class ScreenForm {
 
                 EntityList eli = ef.list()
 
-                if (ef.getUseCache()) {
+                if (ef.shouldCache()) {
                     // do the date filtering after the query
                     for (Node df in (Collection<Node>) entityFindNode["date-filter"]) {
                         EntityCondition dateEc = ec.entity.conditionFactory.makeConditionDate((String) df["@from-field-name"] ?: "fromDate",
