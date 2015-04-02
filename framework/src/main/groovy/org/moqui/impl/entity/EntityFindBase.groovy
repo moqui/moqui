@@ -315,7 +315,8 @@ abstract class EntityFindBase implements EntityFind {
         for (Node sf in (Collection<Node>) node["select-field"]) this.selectField((String) sf["@field-name"])
         for (Node ob in (Collection<Node>) node["order-by"]) this.orderBy((String) ob["@field-name"])
 
-        if (!this.getUseCache()) {
+        // logger.warn("=== shouldCache ${this.entityName} ${shouldCache()}, limit=${this.limit}, offset=${this.offset}, useCache=${this.useCache}, getEntityDef().getUseCache()=${this.getEntityDef().getUseCache()}")
+        if (!this.shouldCache()) {
             for (Node df in (Collection<Node>) node["date-filter"])
                 this.condition(ec.entity.conditionFactory.makeConditionDate((String) df["@from-field-name"] ?: "fromDate",
                         (String) df["@thru-field-name"] ?: "thruDate",
@@ -475,7 +476,7 @@ abstract class EntityFindBase implements EntityFind {
         return pks
     }
 
-    protected boolean shouldCache() {
+    public boolean shouldCache() {
         if (this.dynamicView) return false
         if (this.havingEntityCondition != null) return false
         if (this.limit != null || this.offset != null) return false
