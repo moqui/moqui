@@ -280,20 +280,29 @@ class WebFacadeImpl implements WebFacade {
         return applicationAttributes
     }
     @Override
+    @CompileStatic
     String getWebappRootUrl(boolean requireFullUrl, Boolean useEncryption) {
         return getWebappRootUrl(this.webappMoquiName, null, requireFullUrl, useEncryption, eci)
     }
 
+    @CompileStatic
     static String getWebappRootUrl(String webappName, String servletContextPath, boolean requireFullUrl, Boolean useEncryption, ExecutionContextImpl eci) {
         WebFacade webFacade = eci.getWeb()
-        boolean requireEncryption = useEncryption == null && webFacade != null ? webFacade.getRequest().isSecure() : useEncryption
-        boolean needFullUrl = requireFullUrl ||
-                (requireEncryption && webFacade != null && !webFacade.getRequest().isSecure()) ||
-                (!requireEncryption && webFacade != null && webFacade.getRequest().isSecure())
+        HttpServletRequest request = webFacade?.getRequest()
+        boolean requireEncryption = useEncryption == null && request != null ? request.isSecure() : useEncryption
+        boolean needFullUrl = requireFullUrl || request == null ||
+                (requireEncryption && !request.isSecure()) || (!requireEncryption && request.isSecure())
 
-        String cacheKey = webappName + servletContextPath + needFullUrl + requireEncryption
+        String cacheKey = webappName + servletContextPath + needFullUrl.toString() + requireEncryption.toString()
         String cachedRootUrl = webappRootUrlByParms.get(cacheKey)
         if (cachedRootUrl != null) return cachedRootUrl
+
+        String urlValue = makeWebappRootUrl(webappName, servletContextPath, eci, webFacade, requireEncryption, needFullUrl)
+        webappRootUrlByParms.put(cacheKey, urlValue)
+        return urlValue
+    }
+    static String makeWebappRootUrl(String webappName, String servletContextPath, ExecutionContextImpl eci, WebFacade webFacade,
+                                    boolean requireEncryption, boolean needFullUrl) {
 
         Node webappNode = (Node) eci.ecfi.confXmlRoot."webapp-list"[0]."webapp".find({ it.@name == webappName })
         StringBuilder urlBuilder = new StringBuilder()
@@ -358,7 +367,6 @@ class WebFacadeImpl implements WebFacade {
         if (urlBuilder.charAt(urlBuilder.length()-1) == (char) '/') urlBuilder.deleteCharAt(urlBuilder.length()-1)
 
         String urlValue = urlBuilder.toString()
-        webappRootUrlByParms.put(cacheKey, urlValue)
         return urlValue
     }
 
