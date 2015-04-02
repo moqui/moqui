@@ -295,7 +295,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                                 .filterByCondition(efi.getConditionFactory().makeCondition('releaseDateTime', ComparisonOperator.GREATER_THAN, ufi.getNowTimestamp()), true)
                         if (tarpitLockList) {
                             Timestamp releaseDateTime = tarpitLockList.first.getTimestamp('releaseDateTime')
-                            int retryAfterSeconds = (releaseDateTime.getTime() - (System.currentTimeMillis())/1000).intValue()
+                            int retryAfterSeconds = ((releaseDateTime.getTime() - System.currentTimeMillis())/1000).intValue()
                             throw new ArtifactTarpitException("User [${userId}] has accessed ${artifactTypeDescriptionMap.get(aeii.getTypeEnumId())?:aeii.getTypeEnumId()} [${aeii.getName()}] too many times and may not again until ${releaseDateTime} (retry after ${retryAfterSeconds} seconds)".toString(), retryAfterSeconds)
                         }
                     }
