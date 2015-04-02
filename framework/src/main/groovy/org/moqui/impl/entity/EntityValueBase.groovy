@@ -60,6 +60,8 @@ abstract class EntityValueBase implements EntityValue {
     /* Used to keep old field values such as before an update or other sync with DB; mostly useful for EECA rules */
     private Map<String, Object> oldDbValueMap = null
 
+    private Map<String, Map<String, String>> localizedByLocaleByField = null
+
     protected boolean modified = false
     protected boolean pkModified = false
     protected boolean mutable = true
@@ -142,27 +144,70 @@ abstract class EntityValueBase implements EntityValue {
         if ('true'.equals(fieldNode.attributes().get('enable-localization'))) {
             String localeStr = getEntityFacadeImpl().ecfi.getExecutionContext().getUser().getLocale()?.toString()
             if (localeStr) {
-                List<String> pks = ed.getPkFieldNames()
-                if (pks.size() == 1) {
-                    String pkValue = get(pks.get(0))
-                    if (pkValue) {
-                        EntityFind lefFind = getEntityFacadeImpl().find("moqui.basic.LocalizedEntityField")
-                        lefFind.condition([entityName:ed.getFullEntityName(), fieldName:name, pkValue:pkValue, locale:localeStr] as Map<String, Object>)
-                        EntityValue lefValue = lefFind.useCache(true).one()
-                        if (lefValue) return lefValue.localized
-                        // no result found, try with shortened locale
-                        if (localeStr.contains("_")) {
-                            lefFind.condition("locale", localeStr.substring(0, localeStr.indexOf("_")))
-                            lefValue = lefFind.useCache(true).one()
-                            if (lefValue) return lefValue.localized
+                Object internalValue = valueMap.get(name)
+
+                boolean knownNoLocalized = false
+                if (localizedByLocaleByField == null) {
+                    localizedByLocaleByField = new HashMap<String, Map<String, String>>()
+                } else {
+                    Map<String, String> localizedByLocale = localizedByLocaleByField.get(name)
+                    if (localizedByLocale != null) {
+                        if (localizedByLocale.containsKey(localeStr)) {
+                            String cachedLocalized = localizedByLocale.get(localeStr)
+                            if (cachedLocalized) {
+                                // logger.warn("======== field ${name}:${internalValue} found cached localized ${cachedLocalized}")
+                                return cachedLocalized
+                            } else {
+                                // logger.warn("======== field ${name}:${internalValue} known no localized")
+                                knownNoLocalized = true
+                            }
                         }
                     }
                 }
-                // no luck? try getting a localized value from moqui.basic.LocalizedMessage
-                EntityFind lmFind = getEntityFacadeImpl().find("moqui.basic.LocalizedMessage")
-                lmFind.condition([original:valueMap.get(name), locale:localeStr])
-                EntityValue lmValue = lmFind.useCache(true).one()
-                if (lmValue) return lmValue.localized
+
+                if (!knownNoLocalized) {
+                    List<String> pks = ed.getPkFieldNames()
+                    if (pks.size() == 1) {
+                        String pkValue = get(pks.get(0))
+                        if (pkValue) {
+                            // logger.warn("======== field ${name}:${internalValue} finding LocalizedEntityField, localizedByLocaleByField=${localizedByLocaleByField}")
+                            EntityFind lefFind = getEntityFacadeImpl().find("moqui.basic.LocalizedEntityField")
+                            lefFind.condition([entityName:ed.getFullEntityName(), fieldName:name, pkValue:pkValue, locale:localeStr] as Map<String, Object>)
+                            EntityValue lefValue = lefFind.useCache(true).one()
+                            if (lefValue) {
+                                String localized = (String) lefValue.localized
+                                StupidUtilities.addToMapInMap(name, localeStr, localized, localizedByLocaleByField)
+                                return localized
+                            }
+                            // no result found, try with shortened locale
+                            if (localeStr.contains("_")) {
+                                lefFind.condition("locale", localeStr.substring(0, localeStr.indexOf("_")))
+                                lefValue = lefFind.useCache(true).one()
+                                if (lefValue) {
+                                    String localized = (String) lefValue.localized
+                                    StupidUtilities.addToMapInMap(name, localeStr, localized, localizedByLocaleByField)
+                                    return localized
+                                }
+                            }
+                        }
+                    }
+                    // no luck? try getting a localized value from moqui.basic.LocalizedMessage
+                    // logger.warn("======== field ${name}:${internalValue} finding LocalizedMessage")
+                    EntityFind lmFind = getEntityFacadeImpl().find("moqui.basic.LocalizedMessage")
+                    lmFind.condition([original:internalValue, locale:localeStr])
+                    EntityValue lmValue = lmFind.useCache(true).one()
+                    if (lmValue) {
+                        String localized = lmValue.localized
+                        StupidUtilities.addToMapInMap(name, localeStr, localized, localizedByLocaleByField)
+                        return localized
+                    }
+
+                    // we didn't find a localized value, remember that so we don't do the queries again (common case)
+                    StupidUtilities.addToMapInMap(name, localeStr, null, localizedByLocaleByField)
+                    // logger.warn("======== field ${name}:${internalValue} remembering no localized, localizedByLocaleByField=${localizedByLocaleByField}")
+                }
+
+                return internalValue
             }
         }
 
