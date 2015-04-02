@@ -252,6 +252,12 @@ class ScreenDefinition {
     }
 
     @CompileStatic
+    boolean hasTransition(String name) {
+        for (TransitionItem curTi in transitionByName.values()) if (curTi.name == name) return true
+        return false
+    }
+
+    @CompileStatic
     TransitionItem getTransitionItem(String name, String method) {
         method = method ? method.toLowerCase() : ""
         TransitionItem ti = (TransitionItem) transitionByName.get(name + "#" + method)
@@ -272,7 +278,7 @@ class ScreenDefinition {
     SubscreensItem getSubscreensItem(String name) { return (SubscreensItem) subscreensByName.get(name) }
 
     @CompileStatic
-    List<String> findSubscreenPath(List<String> remainingPathNameList, String requestMethod) {
+    List<String> findSubscreenPath(List<String> remainingPathNameList) {
         if (!remainingPathNameList) return null
         String curName = remainingPathNameList.get(0)
         SubscreensItem curSsi = getSubscreensItem(curName)
@@ -281,7 +287,7 @@ class ScreenDefinition {
                 List<String> subPathNameList = new ArrayList<>(remainingPathNameList)
                 subPathNameList.remove(0)
                 ScreenDefinition subSd = sfi.getScreenDefinition(curSsi.getLocation())
-                List<String> subPath = subSd.findSubscreenPath(subPathNameList, requestMethod)
+                List<String> subPath = subSd.findSubscreenPath(subPathNameList)
                 if (!subPath) return null
                 subPath.add(0, curName)
                 return subPath
@@ -291,8 +297,7 @@ class ScreenDefinition {
         }
 
         // if this is a transition right under this screen use it before searching subscreens
-        TransitionItem ti = getTransitionItem(curName, requestMethod)
-        if (ti != null) return remainingPathNameList
+        if (hasTransition(curName)) return remainingPathNameList
 
         // breadth first by looking at subscreens of each subscreen on a first pass
         for (Map.Entry<String, SubscreensItem> entry in subscreensByName.entrySet()) {
@@ -308,7 +313,7 @@ class ScreenDefinition {
                     List<String> subPathNameList = new ArrayList<>(remainingPathNameList)
                     subPathNameList.remove(0)
                     ScreenDefinition subSubSd = sfi.getScreenDefinition(subSsi.getLocation())
-                    List<String> subPath = subSubSd.findSubscreenPath(subPathNameList, requestMethod)
+                    List<String> subPath = subSubSd.findSubscreenPath(subPathNameList)
                     // found a partial match, not the full thing, no match so give up
                     if (!subPath) return null
                     // we've found it two deep, add both names, sub name first
@@ -327,7 +332,7 @@ class ScreenDefinition {
                 if (logger.isTraceEnabled()) logger.trace("Screen [${entry.getKey()}] at location [${entry.getValue().getLocation()}] not found, subscreen of [${this.getLocation()}]")
                 continue
             }
-            List<String> subPath = subSd.findSubscreenPath(remainingPathNameList, requestMethod)
+            List<String> subPath = subSd.findSubscreenPath(remainingPathNameList)
             if (subPath) {
                 subPath.add(0, entry.getKey())
                 return subPath
@@ -570,12 +575,12 @@ class ScreenDefinition {
         boolean checkCondition(ExecutionContext ec) { return condition ? condition.checkCondition(ec) : true }
 
         @CompileStatic
-        void setAllParameters(ScreenUrlInfo screenUrlInfo, ExecutionContext ec) {
+        void setAllParameters(List<String> extraPathNameList, ExecutionContext ec) {
             // get the path parameters
-            if (screenUrlInfo.getExtraPathNameList() && getPathParameterList()) {
+            if (extraPathNameList && getPathParameterList()) {
                 List<String> pathParameterList = getPathParameterList()
                 int i = 0
-                for (String extraPathName in screenUrlInfo.getExtraPathNameList()) {
+                for (String extraPathName in extraPathNameList) {
                     if (pathParameterList.size() > i) {
                         if (ec.getWeb()) ((WebFacadeImpl) ec.getWeb()).addDeclaredPathParameter(pathParameterList.get(i), extraPathName)
                         ec.getContext().put(pathParameterList.get(i), extraPathName)
@@ -622,7 +627,11 @@ class ScreenDefinition {
             }
 
             ScreenUrlInfo screenUrlInfo = sri.getScreenUrlInfo()
-            setAllParameters(screenUrlInfo, ec)
+            ScreenUrlInfo.UrlInstance screenUrlInstance = sri.getScreenUrlInstance()
+            setAllParameters(screenUrlInfo.getExtraPathNameList(), ec)
+            // for alias transitions rendered in-request put the parameters in the context
+            if (screenUrlInstance.getTransitionAliasParameters()) ec.getContext().putAll(screenUrlInstance.getTransitionAliasParameters())
+
 
             if (!checkCondition(ec)) {
                 sri.ec.message.addError("Condition failed for transition [${location}], not running actions or redirecting")
@@ -710,8 +719,8 @@ class ScreenDefinition {
         boolean getSaveParameters() { return saveParameters }
 
         @CompileStatic
-        Map expandParameters(ScreenUrlInfo screenUrlInfo, ExecutionContext ec) {
-            transitionItem.setAllParameters(screenUrlInfo, ec)
+        Map expandParameters(List<String> extraPathNameList, ExecutionContext ec) {
+            transitionItem.setAllParameters(extraPathNameList, ec)
 
             Map ep = new HashMap()
             for (ParameterItem pi in parameterMap.values()) ep.put(pi.getName(), pi.getValue(ec))

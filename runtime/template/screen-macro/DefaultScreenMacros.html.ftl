@@ -32,16 +32,16 @@ This Work includes contributions authored by David E. Jones, not as a
         <#-- <#assign menuUrlInfo = sri.buildUrl("")> -->
         <#-- <ul id="${menuId}"<#if .node["@width"]?has_content> style="width: ${.node["@width"]};"</#if>> -->
             <#-- <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
-                <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
-                <#if urlInfo?exists && urlInfo.inCurrentScreenPath><#assign currentItemName = ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)></#if>
+                <#assign urlInstance = sri.buildUrl(subscreensItem.name)>
+                <#if urlInstance?exists && urlInstance.inCurrentScreenPath><#assign currentItemName = ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)></#if>
             </#list> -->
             <li id="${menuId}" class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">${menuTitle} <i class="glyphicon glyphicon-chevron-right"></i></a>
                 <ul class="dropdown-menu">
                     <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
-                        <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
-                        <#if urlInfo.isPermitted()>
-                            <li class="<#if urlInfo.inCurrentScreenPath>active</#if>"><a href="<#if urlInfo.disableLink>#<#else>${urlInfo.minimalPathUrlWithParams}</#if>">${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}</a></li>
+                        <#assign urlInstance = sri.buildUrl(subscreensItem.name)>
+                        <#if urlInstance.isPermitted()>
+                            <li class="<#if urlInstance.inCurrentScreenPath>active</#if>"><a href="<#if urlInstance.disableLink>#<#else>${urlInstance.minimalPathUrlWithParams}</#if>">${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}</a></li>
                         </#if>
                     </#list>
                 </ul>
@@ -50,9 +50,9 @@ This Work includes contributions authored by David E. Jones, not as a
             <li><a href="${menuUrlInfo.minimalPathUrlWithParams}">${menuTitle}<#-- very usable without this: <#if currentItemName?has_content> (${currentItemName})</#if> - -></a>
                 <ul>
                     <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
-                        <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
-                        <#if urlInfo.isPermitted()>
-                            <li class="<#if urlInfo.inCurrentScreenPath>ui-state-active</#if>"><a href="<#if urlInfo.disableLink>#<#else>${urlInfo.minimalPathUrlWithParams}</#if>">${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}</a></li>
+                        <#assign urlInstance = sri.buildUrl(subscreensItem.name)>
+                        <#if urlInstance.isPermitted()>
+                            <li class="<#if urlInstance.inCurrentScreenPath>ui-state-active</#if>"><a href="<#if urlInstance.disableLink>#<#else>${urlInstance.minimalPathUrlWithParams}</#if>">${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}</a></li>
                         </#if>
                     </#list>
                 </ul>
@@ -69,9 +69,9 @@ This Work includes contributions authored by David E. Jones, not as a
         <#if displayMenu!>
             <ul<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if> class="nav nav-tabs" role="tablist">
                 <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
-                    <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
-                    <#if urlInfo.isPermitted()>
-                        <li class="<#if urlInfo.inCurrentScreenPath>active</#if><#if urlInfo.disableLink> disabled</#if>"><#if urlInfo.disableLink>${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}<#else><a href="${urlInfo.minimalPathUrlWithParams}">${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}</a></#if></li>
+                    <#assign urlInstance = sri.buildUrl(subscreensItem.name)>
+                    <#if urlInstance.isPermitted()>
+                        <li class="<#if urlInstance.inCurrentScreenPath>active</#if><#if urlInstance.disableLink> disabled</#if>"><#if urlInstance.disableLink>${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}<#else><a href="${urlInstance.minimalPathUrlWithParams}">${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}</a></#if></li>
                     </#if>
                 </#list>
             </ul>
@@ -106,16 +106,16 @@ This Work includes contributions authored by David E. Jones, not as a
         <#-- <#assign menuUrlInfo = sri.buildUrl("")> -->
         <#-- <ul id="${menuId}"<#if .node["@width"]?has_content> style="width: ${.node["@menu-width"]};"</#if>>  ->
             <#-- <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
-                <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
-                <#if urlInfo.inCurrentScreenPath><#assign currentItemName = ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)></#if>
+                <#assign urlInstance = sri.buildUrl(subscreensItem.name)>
+                <#if urlInstance.inCurrentScreenPath><#assign currentItemName = ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)></#if>
             </#list> -->
             <li id="${menuId}" class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">${menuTitle} <i class="glyphicon glyphicon-chevron-right"></i></a>
                 <ul class="dropdown-menu">
                     <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
-                        <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
-                        <#if urlInfo.isPermitted()>
-                            <li class="<#if urlInfo.inCurrentScreenPath>active</#if>"><a href="<#if urlInfo.disableLink>#<#else>${urlInfo.minimalPathUrlWithParams}</#if>">${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}</a></li>
+                        <#assign urlInstance = sri.buildUrl(subscreensItem.name)>
+                        <#if urlInstance.isPermitted()>
+                            <li class="<#if urlInstance.inCurrentScreenPath>active</#if>"><a href="<#if urlInstance.disableLink>#<#else>${urlInstance.minimalPathUrlWithParams}</#if>">${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}</a></li>
                         </#if>
                     </#list>
                 </ul>
@@ -124,9 +124,9 @@ This Work includes contributions authored by David E. Jones, not as a
             <li><a href="${menuUrlInfo.minimalPathUrlWithParams}">${menuTitle}<#-- very usable without this: <#if currentItemName?has_content> (${currentItemName})</#if> - -></a>
                 <ul>
                     <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
-                        <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
-                        <#if urlInfo.isPermitted()>
-                            <li class="<#if urlInfo.inCurrentScreenPath>ui-state-active</#if>"><a href="<#if urlInfo.disableLink>#<#else>${urlInfo.minimalPathUrlWithParams}</#if>">${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}</a></li>
+                        <#assign urlInstance = sri.buildUrl(subscreensItem.name)>
+                        <#if urlInstance.isPermitted()>
+                            <li class="<#if urlInstance.inCurrentScreenPath>ui-state-active</#if>"><a href="<#if urlInstance.disableLink>#<#else>${urlInstance.minimalPathUrlWithParams}</#if>">${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}</a></li>
                         </#if>
                     </#list>
                 </ul>
@@ -151,16 +151,16 @@ This Work includes contributions authored by David E. Jones, not as a
         <#if displayMenu!>
             <ul<#if .node["@id"]?has_content> id="${.node["@id"]}-menu"</#if> class="nav nav-tabs" role="tablist">
             <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
-                <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
-                <#if urlInfo.isPermitted()>
+                <#assign urlInstance = sri.buildUrl(subscreensItem.name)>
+                <#if urlInstance.isPermitted()>
                     <#if dynamic>
-                        <#assign urlInfo = urlInfo.addParameter("lastStandalone", "true")>
-                        <#if urlInfo.inCurrentScreenPath>
+                        <#assign urlInstance = urlInstance.addParameter("lastStandalone", "true")>
+                        <#if urlInstance.inCurrentScreenPath>
                             <#assign dynamicActive = subscreensItem_index>
-                            <#assign urlInfo = urlInfo.addParameters(ec.web.requestParameters)>
+                            <#assign urlInstance = urlInstance.addParameters(ec.web.requestParameters)>
                         </#if>
                     </#if>
-                    <li class="<#if urlInfo.disableLink>disabled<#elseif urlInfo.inCurrentScreenPath>active</#if>"><a href="<#if urlInfo.disableLink>#<#else>${urlInfo.minimalPathUrlWithParams}</#if>">${subscreensItem.menuTitle}</a></li>
+                    <li class="<#if urlInstance.disableLink>disabled<#elseif urlInstance.inCurrentScreenPath>active</#if>"><a href="<#if urlInstance.disableLink>#<#else>${urlInstance.minimalPathUrlWithParams}</#if>">${subscreensItem.menuTitle}</a></li>
                 </#if>
             </#list>
             </ul>
@@ -337,10 +337,10 @@ ${sri.renderSection(.node["@name"])}
 
 <#macro "dynamic-container">
     <#assign divId><@nodeId .node/></#assign>
-    <#assign urlInfo = sri.makeUrlByType(.node["@transition"], "transition", .node, "true").addParameter("_dynamic_container_id", divId)>
+    <#assign urlInstance = sri.makeUrlByType(.node["@transition"], "transition", .node, "true").addParameter("_dynamic_container_id", divId)>
     <div id="${divId}"><img src="/images/wait_anim_16x16.gif" alt="Loading..."></div>
     <#assign afterScreenScript>
-        function load${divId}() { $("#${divId}").load("${urlInfo.passThroughSpecialParameters().urlWithParams}", function() { <#-- activateAllButtons() --> }) }
+        function load${divId}() { $("#${divId}").load("${urlInstance.passThroughSpecialParameters().urlWithParams}", function() { <#-- activateAllButtons() --> }) }
         load${divId}();
     </#assign>
     <#t>${sri.appendToScriptWriter(afterScreenScript)}
@@ -348,7 +348,7 @@ ${sri.renderSection(.node["@name"])}
 
 <#macro "dynamic-dialog">
     <#assign buttonText = ec.resource.evaluateStringExpand(.node["@button-text"], "")>
-    <#assign urlInfo = sri.makeUrlByType(.node["@transition"], "transition", .node, "true")>
+    <#assign urlInstance = sri.makeUrlByType(.node["@transition"], "transition", .node, "true")>
     <#assign divId><@nodeId .node/></#assign>
 
     <button id="${divId}-button" type="button" data-toggle="modal" data-target="#${divId}" data-original-title="${buttonText}" data-placement="bottom" class="btn btn-primary btn-sm"><i class="glyphicon glyphicon-share"></i> ${buttonText}</button>
@@ -366,7 +366,7 @@ ${sri.renderSection(.node["@name"])}
             </div>
         </div>
     </div>
-    <script>$("#${divId}").on("show.bs.modal", function (e) { $("#${divId}-body").load('${urlInfo.urlWithParams}') })</script>
+    <script>$("#${divId}").on("show.bs.modal", function (e) { $("#${divId}-body").load('${urlInstance.urlWithParams}') })</script>
     <#if _openDialog! == divId><#assign afterScreenScript>$('#${divId}').modal('show')</#assign><#t>${sri.appendToScriptWriter(afterScreenScript)}</#if>
 
     <#-- jQuery dialog:
@@ -374,7 +374,7 @@ ${sri.renderSection(.node["@name"])}
     <div id="${divId}" title="${buttonText}"></div>
     <#assign afterScreenScript>
         $("#${divId}").dialog({autoOpen:false, height:${.node["@height"]!"600"}, width:${.node["@width"]!"600"},
-            modal:false, open: function() { $(this).load('${urlInfo.urlWithParams}', function() { activateAllButtons() }) } });
+            modal:false, open: function() { $(this).load('${urlInstance.urlWithParams}', function() { activateAllButtons() }) } });
         $("#${divId}-button").click(function() { $("#${divId}").dialog("open"); return false; });
     </#assign>
     <#t>${sri.appendToScriptWriter(afterScreenScript)}
@@ -446,25 +446,25 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#assign linkNode = .node>
     <#if linkNode["@condition"]?has_content><#assign conditionResult = ec.resource.evaluateCondition(linkNode["@condition"], "")><#else><#assign conditionResult = true></#if>
     <#if conditionResult>
-        <#assign urlInfo = sri.makeUrlByType(.node["@url"], .node["@url-type"]!"transition", .node, .node["@expand-transition-url"]!"true")>
+        <#assign urlInstance = sri.makeUrlByType(.node["@url"], .node["@url-type"]!"transition", .node, .node["@expand-transition-url"]!"true")>
         <#assign divId><@nodeId .node/></#assign>
-        <@linkFormForm linkNode divId urlInfo/>
-        <@linkFormLink linkNode divId urlInfo/>
+        <@linkFormForm linkNode divId urlInstance/>
+        <@linkFormLink linkNode divId urlInstance/>
     </#if>
 </#macro>
-<#macro linkFormLink linkNode linkFormId urlInfo>
-    <#if urlInfo.disableLink>
+<#macro linkFormLink linkNode linkFormId urlInstance>
+    <#if urlInstance.disableLink>
         <a href="#"<#if linkFormId?has_content> id="${linkFormId}"</#if>class="<#if linkNode["@link-type"]! != "anchor" && linkNode["@link-type"]! != "hidden-form-link">btn btn-metis-5 btn-sm</#if><#if .node["@style"]?has_content> ${ec.resource.evaluateStringExpand(.node["@style"], "")}</#if>"><#if linkNode["@icon"]?has_content><i class="${linkNode["@icon"]}"></i></#if>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}</a>
     <#else>
         <#assign confirmationMessage = ec.resource.evaluateStringExpand(linkNode["@confirmation"]!, "")/>
         <#if (linkNode["@link-type"]! == "anchor" || linkNode["@link-type"]! == "anchor-button") ||
             ((!linkNode["@link-type"]?has_content || linkNode["@link-type"] == "auto") &&
-             ((linkNode["@url-type"]?has_content && linkNode["@url-type"] != "transition") || (!urlInfo.hasActions)))>
+             ((linkNode["@url-type"]?has_content && linkNode["@url-type"] != "transition") || (!urlInstance.hasActions)))>
             <#if linkNode["@dynamic-load-id"]?has_content>
                 <#-- NOTE: the void(0) is needed for Firefox and other browsers that render the result of the JS expression -->
-                <#assign urlText>javascript:{$('#${linkNode["@dynamic-load-id"]}').load('${urlInfo.urlWithParams}'); void(0);}</#assign>
+                <#assign urlText>javascript:{$('#${linkNode["@dynamic-load-id"]}').load('${urlInstance.urlWithParams}'); void(0);}</#assign>
             <#else>
-                <#assign urlText = urlInfo.urlWithParams/>
+                <#assign urlText = urlInstance.urlWithParams/>
             </#if>
             <a href="${urlText}"<#if linkFormId?has_content> id="${linkFormId}"</#if><#if linkNode["@target-window"]?has_content> target="${linkNode["@target-window"]}"</#if><#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if> class="<#if linkNode["@link-type"]! != "anchor">btn btn-primary btn-sm</#if><#if linkNode["@style"]?has_content> ${ec.resource.evaluateStringExpand(linkNode["@style"], "")}</#if>"><#if linkNode["@icon"]?has_content><i class="${linkNode["@icon"]}"></i></#if>
             <#t><#if linkNode["image"]?has_content><#visit linkNode["image"][0]><#else>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}</#if>
@@ -482,17 +482,17 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
         </#if>
     </#if>
 </#macro>
-<#macro linkFormForm linkNode linkFormId urlInfo>
-    <#if urlInfo.disableLink>
+<#macro linkFormForm linkNode linkFormId urlInstance>
+    <#if urlInstance.disableLink>
         <#-- do nothing -->
     <#else>
         <#if (linkNode["@link-type"]! == "anchor" || linkNode["@link-type"]! == "anchor-button") ||
             ((!linkNode["@link-type"]?has_content || linkNode["@link-type"] == "auto") &&
-             ((linkNode["@url-type"]?has_content && linkNode["@url-type"] != "transition") || (!urlInfo.hasActions)))>
+             ((linkNode["@url-type"]?has_content && linkNode["@url-type"] != "transition") || (!urlInstance.hasActions)))>
             <#-- do nothing -->
         <#else>
-            <form method="post" action="${urlInfo.url}" name="${linkFormId!""}"<#if linkFormId?has_content> id="${linkFormId}"</#if><#if linkNode["@target-window"]?has_content> target="${linkNode["@target-window"]}"</#if>>
-                <#assign targetParameters = urlInfo.getParameterMap()>
+            <form method="post" action="${urlInstance.url}" name="${linkFormId!""}"<#if linkFormId?has_content> id="${linkFormId}"</#if><#if linkNode["@target-window"]?has_content> target="${linkNode["@target-window"]}"</#if>>
+                <#assign targetParameters = urlInstance.getParameterMap()>
                 <#-- NOTE: using .keySet() here instead of ?keys because ?keys was returning all method names with the other keys, not sure why -->
                 <#if targetParameters?has_content><#list targetParameters.keySet() as pKey>
                     <input type="hidden" name="${pKey?html}" value="${targetParameters.get(pKey)?default("")?html}"/>
@@ -525,8 +525,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
 </#macro>
 <#macro editable>
     <#-- for docs on JS usage see: http://www.appelsiini.net/projects/jeditable -->
-    <#assign urlInfo = sri.makeUrlByType(.node["@transition"], "transition", .node, "true")>
-    <#assign urlParms = urlInfo.getParameterMap()>
+    <#assign urlInstance = sri.makeUrlByType(.node["@transition"], "transition", .node, "true")>
+    <#assign urlParms = urlInstance.getParameterMap()>
     <#assign divId><@nodeId .node/></#assign>
     <#assign labelType = .node["@type"]?default("span")>
     <#assign labelValue = ec.resource.evaluateStringExpand(.node["@text"], "")>
@@ -534,7 +534,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#if labelValue?trim?has_content>
         <${labelType} id="${divId}" class="editable-label"><#if .node["@encode"]! == "true">${labelValue?html?replace("\n", "<br>")}<#else>${labelValue}</#if></${labelType}>
         <#assign afterScreenScript>
-        $("#${divId}").editable("${urlInfo.url}", { indicator:"${ec.l10n.getLocalizedMessage("Saving")}",
+        $("#${divId}").editable("${urlInstance.url}", { indicator:"${ec.l10n.getLocalizedMessage("Saving")}",
             tooltip:"${ec.l10n.getLocalizedMessage("Click to edit")}", cancel:"${ec.l10n.getLocalizedMessage("Cancel")}",
             submit:"${ec.l10n.getLocalizedMessage("Save")}", name:"${parameterName}",
             type:"${.node["@widget-type"]!"textarea"}", cssclass:"editable-form",
@@ -560,12 +560,12 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     ${sri.setSingleFormMapInContext(formNode)}
     <#assign skipStart = (formNode["@skip-start"]! == "true")>
     <#assign skipEnd = (formNode["@skip-end"]! == "true")>
-    <#assign urlInfo = sri.makeUrlByType(formNode["@transition"], "transition", null, "false")>
+    <#assign urlInstance = sri.makeUrlByType(formNode["@transition"], "transition", null, "false")>
     <#assign formId>${ec.resource.evaluateStringExpand(formNode["@name"], "")}<#if sectionEntryIndex?has_content>_${sectionEntryIndex}</#if></#assign>
     <#assign inFieldRow = false>
     <#assign bigRow = false>
     <#if !skipStart>
-    <form name="${formId}" id="${formId}" class="validation-engine-init" method="post" action="${urlInfo.url}"<#if sri.isFormUpload(formNode["@name"])> enctype="multipart/form-data"</#if>>
+    <form name="${formId}" id="${formId}" class="validation-engine-init" method="post" action="${urlInstance.url}"<#if sri.isFormUpload(formNode["@name"])> enctype="multipart/form-data"</#if>>
         <input type="hidden" name="moquiFormName" value="${formNode["@name"]}">
     </#if>
         <fieldset class="form-horizontal"><#-- was form-single-outer -->
@@ -854,8 +854,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
         <div class="form-list-paginate">
             <!-- page ${context[listName + "PageIndex"]} of ${context[listName + "PageMaxIndex"]} -->
             <#if (context[listName + "PageIndex"] > 0)>
-                <#assign firstUrlInfo = sri.getCurrentScreenUrl().cloneUrlInfo().addParameter("pageIndex", 0)>
-                <#assign previousUrlInfo = sri.getCurrentScreenUrl().cloneUrlInfo().addParameter("pageIndex", (context[listName + "PageIndex"] - 1))>
+                <#assign firstUrlInfo = sri.getScreenUrlInfo().getInstance(sri, false).addParameter("pageIndex", 0)>
+                <#assign previousUrlInfo = sri.getScreenUrlInfo().getInstance(sri, false).addParameter("pageIndex", (context[listName + "PageIndex"] - 1))>
                 <a href="${firstUrlInfo.getUrlWithParams()}">|&lt;</a>
                 <a href="${previousUrlInfo.getUrlWithParams()}">&lt;</a>
             <#else>
@@ -864,8 +864,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
             </#if>
             <span>${context[listName + "PageRangeLow"]} - ${context[listName + "PageRangeHigh"]} / ${context[listName + "Count"]}</span>
             <#if (context[listName + "PageIndex"] < context[listName + "PageMaxIndex"])>
-                <#assign lastUrlInfo = sri.getCurrentScreenUrl().cloneUrlInfo().addParameter("pageIndex", context[listName + "PageMaxIndex"])>
-                <#assign nextUrlInfo = sri.getCurrentScreenUrl().cloneUrlInfo().addParameter("pageIndex", context[listName + "PageIndex"] + 1)>
+                <#assign lastUrlInfo = sri.getScreenUrlInfo().getInstance(sri, false).addParameter("pageIndex", context[listName + "PageMaxIndex"])>
+                <#assign nextUrlInfo = sri.getScreenUrlInfo().getInstance(sri, false).addParameter("pageIndex", context[listName + "PageIndex"] + 1)>
                 <a href="${nextUrlInfo.getUrlWithParams()}">&gt;</a>
                 <a href="${lastUrlInfo.getUrlWithParams()}">&gt;|</a>
             <#else>
@@ -1088,9 +1088,9 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
             <#assign caseInsensitive = fieldSubNode["@show-order-by"]! == "case-insensitive">
             <#assign orderByField = ec.context.orderByField!>
             <#assign ascActive = orderByField?has_content && orderByField?contains(fieldNode["@name"]) && !orderByField?starts_with("-")>
-            <#assign ascOrderByUrlInfo = sri.getCurrentScreenUrl().cloneUrlInfo().addParameter("orderByField", "+" + caseInsensitive?string("^","") + fieldNode["@name"])>
+            <#assign ascOrderByUrlInfo = sri.getScreenUrlInfo().getInstance(sri, false).addParameter("orderByField", "+" + caseInsensitive?string("^","") + fieldNode["@name"])>
             <#assign descActive = orderByField?has_content && orderByField?contains(fieldNode["@name"]) && orderByField?starts_with("-")>
-            <#assign descOrderByUrlInfo = sri.getCurrentScreenUrl().cloneUrlInfo().addParameter("orderByField", "-" + caseInsensitive?string("^","") + fieldNode["@name"])>
+            <#assign descOrderByUrlInfo = sri.getScreenUrlInfo().getInstance(sri, false).addParameter("orderByField", "-" + caseInsensitive?string("^","") + fieldNode["@name"])>
             <a href="${ascOrderByUrlInfo.getUrlWithParams()}" class="form-order-by<#if ascActive> active</#if>">+</a><a href="${descOrderByUrlInfo.getUrlWithParams()}" class="form-order-by<#if descActive> active</#if>">-</a>
             <#-- the old way, show + or -:
             <#if !orderByField?has_content || orderByField?starts_with("-") || !orderByField?contains(fieldNode["@name"])><#assign orderByField = ("+" + fieldNode["@name"])><#else><#assign orderByField = ("-" + fieldNode["@name"])></#if>
@@ -1426,7 +1426,7 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
         <#assign formName = ec.resource.evaluateStringExpand(formNode["@name"], "")>
         <#assign afterFormScript>
             function populate_${id}() {
-                $.ajax({ type:'POST', url:'${sri.screenUrlInfo.url}/${doNode["@transition"]}', data:{ <#list depNodeList as depNode>'${depNode["@field"]}': $('#${formName}_${depNode["@field"]}<#if listEntryIndex?has_content>_${listEntryIndex}</#if><#if sectionEntryIndex?has_content>_${sectionEntryIndex}</#if>').val()<#if depNode_has_next>, </#if></#list> }, dataType:'json' }).done(
+                $.ajax({ type:'POST', url:'${sri.screenUrlInstance.url}/${doNode["@transition"]}', data:{ <#list depNodeList as depNode>'${depNode["@field"]}': $('#${formName}_${depNode["@field"]}<#if listEntryIndex?has_content>_${listEntryIndex}</#if><#if sectionEntryIndex?has_content>_${sectionEntryIndex}</#if>').val()<#if depNode_has_next>, </#if></#list> }, dataType:'json' }).done(
                     function(list) {
                         if (list) {
                             $('#${id}').html(""); /* clear out the drop-down */

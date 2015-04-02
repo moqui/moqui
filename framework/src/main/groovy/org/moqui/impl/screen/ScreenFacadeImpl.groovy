@@ -405,8 +405,10 @@ public class ScreenFacadeImpl implements ScreenFacade {
 
             for (ScreenDefinition.ResponseItem ri in ti.conditionalResponseList) {
                 if (ri.urlType && ri.urlType != "transition" && ri.urlType != "screen") continue
-                ScreenUrlInfo sui = new ScreenUrlInfo(ecfi.getEci(), si.rootInfo.sd, null, null,
-                        si.sd, si.screenPath, ri.url, null, null)
+                String expandedUrl = ri.url
+                if (expandedUrl.contains('${')) expandedUrl = ecfi.getResource().evaluateStringExpand(expandedUrl, "")
+                ScreenUrlInfo sui = new ScreenUrlInfo(ecfi.getScreenFacade(), si.rootInfo.sd,
+                        si.sd, si.screenPath, expandedUrl, null)
                 if (sui.targetScreen == null) continue
                 String targetScreenPath = screenPathToString(sui.getPreTransitionPathNameList())
                 responseScreenPathSet.add(targetScreenPath)

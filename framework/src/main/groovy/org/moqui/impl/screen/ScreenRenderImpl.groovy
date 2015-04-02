@@ -20,6 +20,7 @@ import org.moqui.context.ArtifactTarpitException
 import org.moqui.impl.context.ResourceFacadeImpl
 import org.moqui.impl.context.UserFacadeImpl
 import org.moqui.impl.entity.EntityValueBase
+import org.moqui.impl.screen.ScreenUrlInfo.UrlInstance
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -65,6 +66,7 @@ class ScreenRenderImpl implements ScreenRender {
 
     protected List<String> originalScreenPathNameList = new ArrayList<String>()
     protected ScreenUrlInfo screenUrlInfo = null
+    protected UrlInstance screenUrlInstance = null
     protected Map<String, ScreenUrlInfo> subscreenUrlInfos = new HashMap()
     protected int screenPathIndex = 0
     protected Set<String> stopRenderScreenLocations = new HashSet()
@@ -74,7 +76,7 @@ class ScreenRenderImpl implements ScreenRender {
     protected String webappName = null
 
     protected String renderMode = null
-    protected String characterEncoding = null
+    protected String characterEncoding = "UTF-8"
     /** For HttpServletRequest/Response renders this will be set on the response either as this default or a value
      * determined during render, especially for screen sub-content based on the extension of the filename. */
     protected String outputContentType = null
@@ -109,6 +111,7 @@ class ScreenRenderImpl implements ScreenRender {
     ExecutionContext getEc() { return localEc }
     ScreenFacadeImpl getSfi() { return sfi }
     ScreenUrlInfo getScreenUrlInfo() { return screenUrlInfo }
+    UrlInstance getScreenUrlInstance() { return screenUrlInstance }
 
     @Override
     ScreenRender rootScreen(String rootScreenLocation) { this.rootScreenLocation = rootScreenLocation; return this }
@@ -215,7 +218,7 @@ class ScreenRenderImpl implements ScreenRender {
             }
         } else {
             // run the transition
-            ri = screenUrlInfo.targetTransition.run(this)
+            ri = screenUrlInstance.targetTransition.run(this)
         }
 
         ec.getArtifactExecution().pop()
@@ -230,18 +233,19 @@ class ScreenRenderImpl implements ScreenRender {
 
         if (logger.traceEnabled) logger.trace("Rendering screen [${rootScreenLocation}] with path list [${originalScreenPathNameList}]")
 
-        this.screenUrlInfo = new ScreenUrlInfo(this, rootScreenDef, originalScreenPathNameList, null, null,
+        screenUrlInfo = new ScreenUrlInfo(this, rootScreenDef, originalScreenPathNameList, null,
                 (ec.getWeb() != null && ec.getWeb().requestParameters.lastStandalone == "true"))
+        screenUrlInstance = screenUrlInfo.getInstance(this, null)
         if (ec.getWeb()) {
             // clear out the parameters used for special screen URL config
             if (ec.getWeb().requestParameters.lastStandalone) ec.getWeb().requestParameters.lastStandalone = ""
 
             // if screenUrlInfo has any parameters add them to the request (probably came from a transition acting as an alias)
-            Map<String, String> suiParameterMap = this.screenUrlInfo.parameterMap
+            Map<String, String> suiParameterMap = screenUrlInstance.getTransitionAliasParameters()
             if (suiParameterMap) ec.getWeb().requestParameters.putAll(suiParameterMap)
 
             // add URL parameters, if there were any in the URL (in path info or after ?)
-            this.screenUrlInfo.addParameters(ec.getWeb().requestParameters)
+            screenUrlInstance.addParameters(ec.getWeb().requestParameters)
         }
 
         // check webapp settings for each screen in the path
@@ -267,11 +271,11 @@ class ScreenRenderImpl implements ScreenRender {
         if (this.response != null) response.setCharacterEncoding(this.characterEncoding)
 
         // if there is a transition run that INSTEAD of the screen to render
-        if (screenUrlInfo.getTargetTransition()) {
+        if (screenUrlInstance.getTargetTransition()) {
             // if this transition has actions and request was not secure or any parameters were not in the body
             // return an error, helps prevent XSRF attacks
-            if (request != null && screenUrlInfo.getTargetTransition().hasActionsOrSingleService() &&
-                    !screenUrlInfo.getTargetTransition().isReadOnly()) {
+            if (request != null && screenUrlInstance.getTargetTransition().hasActionsOrSingleService() &&
+                    !screenUrlInstance.getTargetTransition().isReadOnly()) {
                 if ((!request.isSecure() && getWebappNode().attributes().get('https-enabled') != "false") ||
                         request.getQueryString() ||
                         StupidWebUtilities.getPathInfoParameterMap(request.getPathInfo())) {
@@ -285,13 +289,13 @@ class ScreenRenderImpl implements ScreenRender {
 
             long transitionStartTime = System.currentTimeMillis()
 
-            boolean beginTransaction = screenUrlInfo.getTargetTransition().getBeginTransaction()
+            boolean beginTransaction = screenUrlInstance.getTargetTransition().getBeginTransaction()
             boolean beganTransaction = beginTransaction ? sfi.getEcfi().getTransactionFacade().begin(null) : false
             ResponseItem ri = null
             try {
                 ri = recursiveRunTransition(screenUrlInfo.screenPathDefList.iterator())
             } catch (Throwable t) {
-                sfi.ecfi.transactionFacade.rollback(beganTransaction, "Error running transition in [${screenUrlInfo.url}]", t)
+                sfi.ecfi.transactionFacade.rollback(beganTransaction, "Error running transition in [${screenUrlInstance.url}]", t)
                 throw t
             } finally {
                 try {
@@ -308,13 +312,13 @@ class ScreenRenderImpl implements ScreenRender {
 
                 if (screenUrlInfo.targetScreen.screenNode.attributes().get('track-artifact-hit') != "false") {
                     sfi.ecfi.countArtifactHit("transition", ri?.type ?: "",
-                            screenUrlInfo.getTargetTransition().parentScreen.getLocation() + "#" + screenUrlInfo.getTargetTransition().name,
+                            screenUrlInstance.getTargetTransition().parentScreen.getLocation() + "#" + screenUrlInstance.getTargetTransition().name,
                             (ec.getWeb() ? ec.getWeb().requestParameters : null), transitionStartTime,
                             System.currentTimeMillis(), null)
                 }
             }
 
-            if (ri == null) throw new IllegalArgumentException("No response found for transition [${screenUrlInfo.targetTransition.name}] on screen [${screenUrlInfo.targetScreen.location}]")
+            if (ri == null) throw new IllegalArgumentException("No response found for transition [${screenUrlInstance.targetTransition.name}] on screen [${screenUrlInfo.targetScreen.location}]")
 
             if (ri.saveCurrentScreen && ec.getWeb() != null) {
                 StringBuilder screenPath = new StringBuilder()
@@ -354,7 +358,7 @@ class ScreenRenderImpl implements ScreenRender {
 
                 if (urlType == "plain") {
                     StringBuilder ps = new StringBuilder()
-                    Map<String, String> pm = (Map<String, String>) ri.expandParameters(getScreenUrlInfo(), ec)
+                    Map<String, String> pm = (Map<String, String>) ri.expandParameters(screenUrlInfo.getExtraPathNameList(), ec)
                     if (pm) {
                         for (Map.Entry<String, String> pme in pm.entrySet()) {
                             if (!pme.value) continue
@@ -370,14 +374,14 @@ class ScreenRenderImpl implements ScreenRender {
                     response.sendRedirect(fullUrl)
                 } else {
                     // default is screen-path
-                    ScreenUrlInfo fullUrl = buildUrl(rootScreenDef, screenUrlInfo.preTransitionPathNameList, url)
-                    fullUrl.addParameters(ri.expandParameters(getScreenUrlInfo(), ec))
+                    UrlInstance fullUrl = buildUrl(rootScreenDef, screenUrlInfo.preTransitionPathNameList, url)
+                    fullUrl.addParameters(ri.expandParameters(screenUrlInfo.getExtraPathNameList(), ec))
                     // if this was a screen-last and the screen has declared parameters include them in the URL
                     Map savedParameters = ((WebFacadeImpl) ec.getWeb())?.getSavedParameters()
-                    ScreenUrlInfo.copySpecialParameters(savedParameters, fullUrl.getPathParameterMap())
+                    UrlInstance.copySpecialParameters(savedParameters, fullUrl.getOtherParameterMap())
                     // screen parameters
-                    if (ri.type == "screen-last" && savedParameters && fullUrl.getTargetScreen()?.getParameterMap()) {
-                        for (String parmName in fullUrl.getTargetScreen().getParameterMap().keySet()) {
+                    if (ri.type == "screen-last" && savedParameters && fullUrl.sui.getTargetScreen()?.getParameterMap()) {
+                        for (String parmName in fullUrl.sui.getTargetScreen().getParameterMap().keySet()) {
                             if (savedParameters.get(parmName))
                                 fullUrl.addParameter(parmName, savedParameters.get(parmName))
                         }
@@ -437,7 +441,7 @@ class ScreenRenderImpl implements ScreenRender {
                                     (ec.getWeb() ? ec.getWeb().requestParameters : null), resourceStartTime,
                                     System.currentTimeMillis(), (long) totalLen)
                         }
-                        if (logger.traceEnabled) logger.trace("Sent binary response of length [${totalLen}] with from file [${screenUrlInfo.fileResourceRef.location}] for request to [${screenUrlInfo.url}]")
+                        if (logger.traceEnabled) logger.trace("Sent binary response of length [${totalLen}] with from file [${screenUrlInfo.fileResourceRef.location}] for request to [${screenUrlInstance.url}]")
                         return
                     } finally {
                         if (is != null) is.close()
@@ -472,7 +476,7 @@ class ScreenRenderImpl implements ScreenRender {
                         int length = text.getBytes(charset).length
                         if (response != null) response.setContentLength(length)
 
-                        if (logger.traceEnabled) logger.trace("Sending text response of length [${length}] with [${charset}] encoding from file [${screenUrlInfo.fileResourceRef.location}] for request to [${screenUrlInfo.url}]")
+                        if (logger.traceEnabled) logger.trace("Sending text response of length [${length}] with [${charset}] encoding from file [${screenUrlInfo.fileResourceRef.location}] for request to [${screenUrlInstance.url}]")
 
                         writer.write(text)
 
@@ -482,7 +486,7 @@ class ScreenRenderImpl implements ScreenRender {
                                     System.currentTimeMillis(), (long) length)
                         }
                     } else {
-                        logger.warn("Not sending text response from file [${screenUrlInfo.fileResourceRef.location}] for request to [${screenUrlInfo.url}] because no text was found in the file.")
+                        logger.warn("Not sending text response from file [${screenUrlInfo.fileResourceRef.location}] for request to [${screenUrlInstance.url}] because no text was found in the file.")
                     }
                 }
             } else {
@@ -655,7 +659,7 @@ class ScreenRenderImpl implements ScreenRender {
                 if (loginPathAttr) loginPath = loginPathAttr
             }
 
-            if (screenUrlInfo.isLastStandalone() || screenUrlInfo.getTargetTransition() != null) {
+            if (screenUrlInfo.isLastStandalone() || screenUrlInstance.getTargetTransition() != null) {
                 // respond with 401 and the login screen instead of a redirect; JS client libraries handle this much better
                 List<String> pathElements = loginPath.split("/") as List
                 if (loginPath.startsWith("/")) {
@@ -671,8 +675,9 @@ class ScreenRenderImpl implements ScreenRender {
                 return false
             } else {
                 // now prepare and send the redirect
-                ScreenUrlInfo sui = new ScreenUrlInfo(this, rootScreenDef, [], loginPath, false, false)
-                response.sendRedirect(sui.url)
+                ScreenUrlInfo suInfo = new ScreenUrlInfo(this, rootScreenDef, [], loginPath, false)
+                UrlInstance urlInstance = suInfo.getInstance(this, false)
+                response.sendRedirect(urlInstance.url)
                 return false
             }
         }
@@ -684,7 +689,7 @@ class ScreenRenderImpl implements ScreenRender {
             // save messages in session before redirecting so they can be displayed on the next screen
             if (ec.getWeb()) ((WebFacadeImpl) ec.getWeb()).saveMessagesToSession()
             // redirect to the same URL this came to
-            response.sendRedirect(screenUrlInfo.getUrlWithParams())
+            response.sendRedirect(screenUrlInstance.getUrlWithParams())
             return false
         }
 
@@ -961,60 +966,78 @@ class ScreenRenderImpl implements ScreenRender {
         return outText
     }
 
-    ScreenUrlInfo buildUrl(String subscreenPath) {
+    ScreenUrlInfo buildUrlInfo(String subscreenPathOrig) {
+        String subscreenPath = subscreenPathOrig?.contains("\${") ? ec.resource.evaluateStringExpand(subscreenPathOrig, "") : subscreenPathOrig
+
         List<String> pathList = getActiveScreenPath()
         StringBuilder keyBuilder = new StringBuilder()
         for (String pathElem in pathList) keyBuilder.append(pathElem).append("/")
         String key = keyBuilder.append(subscreenPath).toString()
 
-        if (subscreenUrlInfos.containsKey(key)) return subscreenUrlInfos.get(key)
-        ScreenUrlInfo sui = new ScreenUrlInfo(this, null, null, subscreenPath, null, null)
+        ScreenUrlInfo csui = subscreenUrlInfos.get(key)
+        if (csui != null) {
+            // logger.warn("========== found cached ScreenUrlInfo ${key}")
+            return csui
+        }  else {
+            // logger.warn("========== DID NOT find cached ScreenUrlInfo ${key}")
+        }
+
+        ScreenUrlInfo sui = new ScreenUrlInfo(this, null, null, subscreenPath, null)
         subscreenUrlInfos.put(key, sui)
         return sui
     }
 
-    ScreenUrlInfo buildUrl(ScreenDefinition fromSd, List<String> fromPathList, String subscreenPath) {
-        ScreenUrlInfo ui = new ScreenUrlInfo(this, fromSd, fromPathList, subscreenPath, null, null)
-        return ui
+    UrlInstance buildUrl(String subscreenPath) {
+        return buildUrlInfo(subscreenPath).getInstance(this, null)
     }
 
-    ScreenUrlInfo makeUrlByType(String origUrl, String urlType, FtlNodeWrapper parameterParentNodeWrapper,
+    UrlInstance buildUrl(ScreenDefinition fromSd, List<String> fromPathList, String subscreenPathOrig) {
+        String subscreenPath = subscreenPathOrig?.contains("\${") ? ec.resource.evaluateStringExpand(subscreenPathOrig, "") : subscreenPathOrig
+        ScreenUrlInfo ui = new ScreenUrlInfo(this, fromSd, fromPathList, subscreenPath, null)
+        return ui.getInstance(this, null)
+    }
+
+    UrlInstance makeUrlByType(String origUrl, String urlType, FtlNodeWrapper parameterParentNodeWrapper,
                                 String expandTransitionUrlString) {
         return makeUrlByTypeGroovyNode(origUrl, urlType, parameterParentNodeWrapper?.groovyNode, expandTransitionUrlString)
     }
-    ScreenUrlInfo makeUrlByTypeGroovyNode(String origUrl, String urlType, Node parameterParentNode,
+    UrlInstance makeUrlByTypeGroovyNode(String origUrl, String urlType, Node parameterParentNode,
                                 String expandTransitionUrlString) {
         Boolean expandTransitionUrl = expandTransitionUrlString != null ? expandTransitionUrlString == "true" : null
         /* TODO handle urlType=content
             A content location (without the content://). URL will be one that can access that content.
          */
-        String url = origUrl?.contains("\${") ? ec.resource.evaluateStringExpand(origUrl, "") : origUrl
-        ScreenUrlInfo sui
+        ScreenUrlInfo suInfo
         String urlTypeExpanded = ec.resource.evaluateStringExpand(urlType, "")
         switch (urlTypeExpanded) {
             // for transition we want a URL relative to the current screen, so just pass that to buildUrl
-            case "transition": sui = new ScreenUrlInfo(this, null, null, url, expandTransitionUrl, null); break;
-            case "screen": sui = new ScreenUrlInfo(this, null, null, url, expandTransitionUrl, null); break;
+            case "transition": suInfo = buildUrlInfo(origUrl); break;
+            case "screen": suInfo = buildUrlInfo(origUrl); break;
             case "content": throw new IllegalArgumentException("The url-type of content is not yet supported"); break;
             case "plain":
-            default: sui = new ScreenUrlInfo(this, url); break;
+            default:
+                String url = origUrl?.contains("\${") ? ec.resource.evaluateStringExpand(origUrl, "") : origUrl
+                suInfo = new ScreenUrlInfo(this, url)
+                break
         }
 
-        if (sui != null && parameterParentNode != null) {
+        UrlInstance urli = suInfo.getInstance(this, expandTransitionUrl)
+
+        if (parameterParentNode != null) {
             String parameterMapStr = (String) parameterParentNode.attributes().get('parameter-map')
             if (parameterMapStr) {
                 def ctxParameterMap = ec.resource.evaluateContextField(parameterMapStr, "")
-                if (ctxParameterMap) sui.addParameters((Map) ctxParameterMap)
+                if (ctxParameterMap) urli.addParameters((Map) ctxParameterMap)
             }
             for (Object parameterObj in parameterParentNode.get("parameter")) {
                 Node parameterNode = (Node) parameterObj
                 String name = (String) parameterNode.attributes().get('name')
-                sui.addParameter(name, getContextValue(
+                urli.addParameter(name, getContextValue(
                         (String) parameterNode.attributes().get('from') ?: name, (String) parameterNode.attributes().get('value')))
             }
         }
 
-        return sui
+        return urli
     }
 
     Object getContextValue(String from, String value) {
@@ -1182,17 +1205,18 @@ class ScreenRenderImpl implements ScreenRender {
         return true
     }
     boolean isActiveInCurrentMenu() {
+        List<String> currentScreenPath = screenUrlInfo ? new ArrayList(screenUrlInfo.fullPathNameList) : null
         for (SubscreensItem ssi in getActiveScreenDef().subscreensByName.values()) {
             if (!ssi.menuInclude) continue
-            ScreenUrlInfo urlInfo = buildUrl(ssi.name)
-            if (urlInfo.inCurrentScreenPath) return true
+            ScreenUrlInfo urlInfo = buildUrlInfo(ssi.name)
+            if (urlInfo.getInCurrentScreenPath(currentScreenPath)) return true
         }
         return false
     }
 
-    ScreenUrlInfo getCurrentScreenUrl() { return screenUrlInfo }
+    UrlInstance getCurrentScreenUrl() { return screenUrlInstance }
     URI getBaseLinkUri() {
-        String urlString = baseLinkUrl ?: getCurrentScreenUrl().getScreenPathUrl()
+        String urlString = baseLinkUrl ?: screenUrlInstance.getScreenPathUrl()
         // logger.warn("=================== urlString=${urlString}, baseLinkUrl=${baseLinkUrl}")
         URL blu = new URL(urlString)
         // NOTE: not including user info, query, or fragment... should consider them?
