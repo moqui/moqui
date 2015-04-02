@@ -85,6 +85,7 @@ class EntityCache {
         return null
     }
     void putInListCache(EntityDefinition ed, EntityListImpl el, EntityCondition whereCondition, CacheImpl entityListCache) {
+        if (whereCondition == null) return
         if (entityListCache == null) entityListCache = getCacheList(ed.getFullEntityName())
 
         EntityList elToCache = el ?: EntityListImpl.EMPTY
