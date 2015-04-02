@@ -106,6 +106,7 @@ class CacheImpl implements Cache {
 
     @Override
     Object put(Serializable key, Object value) {
+        if (key == null) throw new IllegalArgumentException("Cannot put value in cache [${getName()}] with null key")
         // use quiet get to not update stats as this isn't an explicit user get
         Element originalElement = this.ehcache.getQuiet(key)
         this.ehcache.put(new Element(key, value))
