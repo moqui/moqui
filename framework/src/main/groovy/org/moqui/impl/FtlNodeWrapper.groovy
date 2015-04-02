@@ -56,6 +56,16 @@ class FtlNodeWrapper implements TemplateNodeModel, TemplateSequenceModel, Templa
     // TemplateHashModel methods
 
     TemplateModel get(String s) {
+        // first try the attribute and children caches, then if not found in either pick it apart and create what is needed
+
+        FtlAttributeWrapper attributeWrapper = attributeWrapperMap.get(s)
+        if (attributeWrapper != null) return attributeWrapper
+        if (attributeWrapperMap.containsKey(s)) return null
+
+        FtlNodeListWrapper nodeListWrapper = childrenByName.get(s)
+        if (nodeListWrapper != null) return nodeListWrapper
+        if (childrenByName.containsKey(s)) return null
+
         if (s.startsWith("@")) {
             // check for @@text
             if (s == "@@text") {
@@ -64,21 +74,14 @@ class FtlNodeWrapper implements TemplateNodeModel, TemplateSequenceModel, Templa
             }
 
             String key = s.substring(1)
-            FtlAttributeWrapper attributeWrapper = attributeWrapperMap.get(key)
-            if (attributeWrapper != null) return attributeWrapper
-            if (attributeWrapperMap.containsKey(key)) return null
 
             String attrValue = groovyNode.attribute(key)
             attributeWrapper = attrValue != null ? new FtlAttributeWrapper(key, attrValue, this) : null
-            attributeWrapperMap.put(key, attributeWrapper)
+            attributeWrapperMap.put(s, attributeWrapper)
             return attributeWrapper
         }
 
-        // no @prefix, looking for a child node
-        FtlNodeListWrapper nodeListWrapper = childrenByName.get(s)
-        if (nodeListWrapper != null) return nodeListWrapper
-        if (childrenByName.containsKey(s)) return null
-
+        // no @ prefix, looking for a child node
         List childList = groovyNode.children().findAll({ it instanceof Node && it.name() == s })
         // logger.info("Looking for child nodes with name [${s}] found: ${childList}")
         nodeListWrapper = new FtlNodeListWrapper(childList, this)
