@@ -12,7 +12,7 @@
 package org.moqui.impl.actions
 
 import freemarker.core.Environment
-
+import groovy.transform.CompileStatic
 import org.codehaus.groovy.runtime.InvokerHelper
 
 import org.moqui.BaseException
@@ -25,6 +25,7 @@ import org.moqui.impl.context.ContextBinding
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+@CompileStatic
 class XmlAction {
     protected final static Logger logger = LoggerFactory.getLogger(XmlAction.class)
 
