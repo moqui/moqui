@@ -14,6 +14,7 @@ package org.moqui.impl.screen
 import groovy.transform.CompileStatic
 import org.apache.commons.codec.net.URLCodec
 import org.moqui.BaseException
+import org.moqui.context.Cache
 import org.moqui.context.ExecutionContext
 import org.moqui.context.ResourceReference
 import org.moqui.impl.StupidUtilities
@@ -86,6 +87,64 @@ class ScreenUrlInfo {
     protected ScreenUrlInfo() { }
 
     /** Stub mode for ScreenUrlInfo, represent a plain URL and not a screen URL */
+    static ScreenUrlInfo getScreenUrlInfo(ScreenRenderImpl sri, String url) {
+        Cache screenUrlPermCache = sri.getSfi().screenUrlPermCache
+        ScreenUrlInfo cached = (ScreenUrlInfo) screenUrlPermCache.get(url)
+        if (cached != null) return cached
+
+        ScreenUrlInfo newSui = new ScreenUrlInfo(sri, url)
+        screenUrlPermCache.put(url, newSui)
+        return newSui
+    }
+
+    static ScreenUrlInfo getScreenUrlInfo(ScreenFacadeImpl sfi, ScreenDefinition rootSd, ScreenDefinition fromScreenDef,
+                                          List<String> fpnl, String subscreenPath, Boolean lastStandalone) {
+        Cache screenUrlPermCache = sfi.screenUrlPermCache
+        String cacheKey = makeCacheKey(rootSd, fpnl, subscreenPath, lastStandalone)
+        ScreenUrlInfo cached = (ScreenUrlInfo) screenUrlPermCache.get(cacheKey)
+        if (cached != null) return cached
+
+        ScreenUrlInfo newSui = new ScreenUrlInfo(sfi, rootSd, fromScreenDef, fpnl, subscreenPath, lastStandalone)
+        screenUrlPermCache.put(cacheKey, newSui)
+        return newSui
+    }
+
+    static ScreenUrlInfo getScreenUrlInfo(ScreenRenderImpl sri, ScreenDefinition fromScreenDef, List<String> fpnl,
+                                          String subscreenPath, Boolean lastStandalone) {
+        ScreenDefinition rootSd = sri.getRootScreenDef()
+        ScreenDefinition fromSd = fromScreenDef
+        List<String> fromPathList = fpnl
+        if (fromSd == null) fromSd = sri.getActiveScreenDef()
+        if (fromPathList == null) fromPathList = sri.getActiveScreenPath()
+
+        Cache screenUrlPermCache = sri.getSfi().screenUrlPermCache
+        String cacheKey = makeCacheKey(rootSd, fromPathList, subscreenPath, lastStandalone)
+        ScreenUrlInfo cached = (ScreenUrlInfo) screenUrlPermCache.get(cacheKey)
+        if (cached != null) return cached
+
+        ScreenUrlInfo newSui = new ScreenUrlInfo(sri.getSfi(), rootSd, fromSd, fromPathList, subscreenPath, lastStandalone)
+        screenUrlPermCache.put(cacheKey, newSui)
+        return newSui
+    }
+
+    static String makeCacheKey(ScreenDefinition rootSd, List<String> fpnl, String subscreenPath, Boolean lastStandalone) {
+        StringBuilder sb = new StringBuilder()
+        // shouldn't be too many root screens, so the screen name (filename) should be sufficiently unique and much shorter
+        sb.append(rootSd.getScreenName()).append(":")
+        // if (fromScreenDef != null) sb.append(fromScreenDef.getScreenName()).append(":")
+        boolean hasSsp = subscreenPath != null && subscreenPath.length() > 0
+        boolean skipFpnl = hasSsp && subscreenPath.charAt(0) == (char) '/'
+        // NOTE: we will get more cache hits (less cache redundancy) if we combine with fpnl and use cleanupPathNameList,
+        //     but is it worth it? no, let there be redundant cache entries for the same screen path, will be faster
+        if (!skipFpnl && fpnl) for (String fpn in fpnl) sb.append('/').append(fpn)
+        if (hasSsp) sb.append(subscreenPath)
+        if (lastStandalone) sb.append(":LS")
+
+        // logger.warn("======= makeCacheKey subscreenPath=${subscreenPath}, fpnl=${fpnl}\n key=${sb}")
+        return sb.toString()
+    }
+
+    /** Stub mode for ScreenUrlInfo, represent a plain URL and not a screen URL */
     ScreenUrlInfo(ScreenRenderImpl sri, String url) {
         this.sfi = sri.getSfi()
         this.ecfi = sfi.getEcfi()
@@ -100,21 +159,6 @@ class ScreenUrlInfo {
         this.rootSd = rootSd
         fromSd = fromScreenDef
         fromPathList = fpnl
-        fromScreenPath = subscreenPath ?: ""
-        this.lastStandalone = lastStandalone != null ? lastStandalone : false
-
-        initUrl()
-    }
-
-    ScreenUrlInfo(ScreenRenderImpl sri, ScreenDefinition fromScreenDef, List<String> fpnl, String subscreenPath, Boolean lastStandalone) {
-        this.sfi = sri.getSfi()
-        this.ecfi = sfi.getEcfi()
-        this.rootSd = sri.getRootScreenDef()
-
-        fromSd = fromScreenDef
-        fromPathList = fpnl
-        if (fromSd == null) fromSd = sri.getActiveScreenDef()
-        if (fromPathList == null) fromPathList = sri.getActiveScreenPath()
         fromScreenPath = subscreenPath ?: ""
         this.lastStandalone = lastStandalone != null ? lastStandalone : false
 
@@ -552,7 +596,7 @@ class ScreenUrlInfo {
                 // create a ScreenUrlInfo, then copy its info into this
                 String expandedUrl = ti.defaultResponse.url
                 if (expandedUrl.contains('${')) expandedUrl = ec.getResource().evaluateStringExpand(expandedUrl, "")
-                ScreenUrlInfo aliasUrlInfo = new ScreenUrlInfo(sri.getSfi(), sui.rootSd, sui.fromSd,
+                ScreenUrlInfo aliasUrlInfo = getScreenUrlInfo(sri.getSfi(), sui.rootSd, sui.fromSd,
                         sui.preTransitionPathNameList, expandedUrl,
                         (sui.lastStandalone || transitionAliasParameters.lastStandalone == "true"))
 

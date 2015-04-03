@@ -233,7 +233,7 @@ class ScreenRenderImpl implements ScreenRender {
 
         if (logger.traceEnabled) logger.trace("Rendering screen [${rootScreenLocation}] with path list [${originalScreenPathNameList}]")
 
-        screenUrlInfo = new ScreenUrlInfo(this, rootScreenDef, originalScreenPathNameList, null,
+        screenUrlInfo = ScreenUrlInfo.getScreenUrlInfo(this, rootScreenDef, originalScreenPathNameList, null,
                 (ec.getWeb() != null && ec.getWeb().requestParameters.lastStandalone == "true"))
         screenUrlInstance = screenUrlInfo.getInstance(this, null)
         if (ec.getWeb()) {
@@ -675,7 +675,7 @@ class ScreenRenderImpl implements ScreenRender {
                 return false
             } else {
                 // now prepare and send the redirect
-                ScreenUrlInfo suInfo = new ScreenUrlInfo(this, rootScreenDef, [], loginPath, false)
+                ScreenUrlInfo suInfo = ScreenUrlInfo.getScreenUrlInfo(this, rootScreenDef, [], loginPath, false)
                 UrlInstance urlInstance = suInfo.getInstance(this, false)
                 response.sendRedirect(urlInstance.url)
                 return false
@@ -711,7 +711,7 @@ class ScreenRenderImpl implements ScreenRender {
     }
 
     ScreenDefinition getRootScreenDef() { return rootScreenDef }
-    ScreenDefinition getActiveScreenDef() { return overrideActiveScreenDef ?: screenUrlInfo.screenRenderDefList[screenPathIndex] }
+    ScreenDefinition getActiveScreenDef() { return overrideActiveScreenDef ?: screenUrlInfo.screenRenderDefList.get(screenPathIndex) }
 
     List<String> getActiveScreenPath() {
         // handle case where root screen is first/zero in list versus a standalone screen
@@ -982,7 +982,7 @@ class ScreenRenderImpl implements ScreenRender {
             // logger.warn("========== DID NOT find cached ScreenUrlInfo ${key}")
         }
 
-        ScreenUrlInfo sui = new ScreenUrlInfo(this, null, null, subscreenPath, null)
+        ScreenUrlInfo sui = ScreenUrlInfo.getScreenUrlInfo(this, null, null, subscreenPath, null)
         subscreenUrlInfos.put(key, sui)
         return sui
     }
@@ -993,7 +993,7 @@ class ScreenRenderImpl implements ScreenRender {
 
     UrlInstance buildUrl(ScreenDefinition fromSd, List<String> fromPathList, String subscreenPathOrig) {
         String subscreenPath = subscreenPathOrig?.contains("\${") ? ec.resource.evaluateStringExpand(subscreenPathOrig, "") : subscreenPathOrig
-        ScreenUrlInfo ui = new ScreenUrlInfo(this, fromSd, fromPathList, subscreenPath, null)
+        ScreenUrlInfo ui = ScreenUrlInfo.getScreenUrlInfo(this, fromSd, fromPathList, subscreenPath, null)
         return ui.getInstance(this, null)
     }
 
@@ -1017,7 +1017,7 @@ class ScreenRenderImpl implements ScreenRender {
             case "plain":
             default:
                 String url = origUrl?.contains("\${") ? ec.resource.evaluateStringExpand(origUrl, "") : origUrl
-                suInfo = new ScreenUrlInfo(this, url)
+                suInfo = ScreenUrlInfo.getScreenUrlInfo(this, url)
                 break
         }
 

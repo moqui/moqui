@@ -36,6 +36,7 @@ class ScreenDefinition {
     protected final Node screenNode
     protected final Node subscreensNode
     protected final String location
+    protected final String screenName
     Long sourceLastModified = null
 
     protected Map<String, ParameterItem> parameterByName = new HashMap()
@@ -61,6 +62,9 @@ class ScreenDefinition {
         this.location = location
 
         long startTime = System.currentTimeMillis()
+
+        String filename = location.contains("/") ? location.substring(location.lastIndexOf("/")+1) : location
+        screenName = filename.contains(".") ? filename.substring(0, filename.indexOf(".")) : filename
 
         // parameter
         for (Node parameterNode in screenNode."parameter")
@@ -224,10 +228,7 @@ class ScreenDefinition {
     Set<String> getTenantsAllowed() { return tenantsAllowed }
 
     @CompileStatic
-    String getScreenName() {
-        String filename = location.contains("/") ? location.substring(location.lastIndexOf("/")+1) : location
-        return filename.contains(".") ? filename.substring(0, filename.indexOf(".")) : filename
-    }
+    String getScreenName() { return screenName }
 
     String getDefaultMenuName() {
         if (screenNode."@default-menu-title") return screenNode."@default-menu-title"

@@ -30,6 +30,8 @@ public class ScreenFacadeImpl implements ScreenFacade {
 
     protected final Cache screenLocationCache
     protected final Cache screenLocationPermCache
+    // used by ScreenUrlInfo
+    final Cache screenUrlPermCache
     protected final Cache screenInfoCache
     protected final Cache screenInfoRefRevCache
     protected final Cache screenTemplateModeCache
@@ -42,6 +44,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
         this.ecfi = ecfi
         this.screenLocationCache = ecfi.cacheFacade.getCache("screen.location")
         this.screenLocationPermCache = ecfi.cacheFacade.getCache("screen.location.perm")
+        this.screenUrlPermCache = ecfi.cacheFacade.getCache("screen.url.perm")
         this.screenInfoCache = ecfi.cacheFacade.getCache("screen.info")
         this.screenInfoRefRevCache = ecfi.cacheFacade.getCache("screen.info.ref.rev")
         this.screenTemplateModeCache = ecfi.cacheFacade.getCache("screen.template.mode")
@@ -407,7 +410,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
                 if (ri.urlType && ri.urlType != "transition" && ri.urlType != "screen") continue
                 String expandedUrl = ri.url
                 if (expandedUrl.contains('${')) expandedUrl = ecfi.getResource().evaluateStringExpand(expandedUrl, "")
-                ScreenUrlInfo sui = new ScreenUrlInfo(ecfi.getScreenFacade(), si.rootInfo.sd,
+                ScreenUrlInfo sui = ScreenUrlInfo.getScreenUrlInfo(ecfi.getScreenFacade(), si.rootInfo.sd,
                         si.sd, si.screenPath, expandedUrl, null)
                 if (sui.targetScreen == null) continue
                 String targetScreenPath = screenPathToString(sui.getPreTransitionPathNameList())
