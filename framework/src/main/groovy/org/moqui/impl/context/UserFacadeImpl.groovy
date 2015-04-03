@@ -11,7 +11,7 @@
  */
 package org.moqui.impl.context
 
-import org.moqui.BaseException
+import groovy.transform.CompileStatic
 import org.moqui.context.NotificationMessage
 import org.moqui.entity.EntityCondition
 
@@ -37,6 +37,7 @@ import org.apache.shiro.subject.support.DefaultSubjectContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+@CompileStatic
 class UserFacadeImpl implements UserFacade {
     protected final static Logger logger = LoggerFactory.getLogger(UserFacadeImpl.class)
     protected final static Set<String> allUserGroupIdOnly = new HashSet(["ALL_USERS"])
@@ -149,11 +150,11 @@ class UserFacadeImpl implements UserFacade {
 
         this.visitId = session.getAttribute("moqui.visitId")
         if (!this.visitId && !eci.getEcfi().getSkipStats()) {
-            Node serverStatsNode = eci.getEcfi().getConfXmlRoot()."server-stats"[0]
+            Node serverStatsNode = eci.getEcfi().getServerStatsNode()
 
             // handle visitorId and cookie
             String cookieVisitorId = null
-            if (serverStatsNode."@visitor-enabled" != "false") {
+            if (serverStatsNode.attributes().get('visitor-enabled') != "false") {
                 Cookie[] cookies = request.getCookies()
                 if (cookies != null) {
                     for (int i = 0; i < cookies.length; i++) {
@@ -187,17 +188,18 @@ class UserFacadeImpl implements UserFacade {
                 }
             }
 
-            if (serverStatsNode."@visit-enabled" != "false") {
+            if (serverStatsNode.attributes().get('visit-enabled') != "false") {
                 // create and persist Visit
                 String contextPath = session.getServletContext().getContextPath()
                 String webappId = contextPath.length() > 1 ? contextPath.substring(1) : "ROOT"
                 String fullUrl = eci.web.requestUrl
                 fullUrl = (fullUrl.length() > 255) ? fullUrl.substring(0, 255) : fullUrl.toString()
-                Map parameters = [sessionId:session.id, webappName:webappId, fromDate:new Timestamp(session.getCreationTime()),
+                Map<String, Object> parameters = new HashMap<String, Object>([sessionId:session.id, webappName:webappId,
+                        fromDate:new Timestamp(session.getCreationTime()),
                         initialLocale:getLocale().toString(), initialRequest:fullUrl,
                         initialReferrer:request.getHeader("Referrer")?:"",
                         initialUserAgent:request.getHeader("User-Agent")?:"",
-                        clientHostName:request.getRemoteHost(), clientUser:request.getRemoteUser()]
+                        clientHostName:request.getRemoteHost(), clientUser:request.getRemoteUser()])
 
                 InetAddress address = eci.getEcfi().getLocalhostAddress()
                 parameters.serverIpAddress = address?.getHostAddress() ?: "127.0.0.1"
@@ -280,10 +282,12 @@ class UserFacadeImpl implements UserFacade {
         }
     }
 
+    /* No longer used, EntityFacadeImpl uses it's own method now
     Calendar getCalendarForTzLcOnly() {
         if (calendarForTzLcOnly != null) return calendarForTzLcOnly
         return calendarForTzLcOnly = getCalendarSafe()
     }
+    */
 
     @Override
     void setTimeZone(TimeZone tz) {
@@ -451,7 +455,7 @@ class UserFacadeImpl implements UserFacade {
             loggedInAnonymous = false
 
             // after successful login trigger the after-login actions
-            if (eci.web != null) eci.web.runAfterLoginActions()
+            if (eci.getWebImpl() != null) eci.getWebImpl().runAfterLoginActions()
         } catch (AuthenticationException ae) {
             // others to consider handling differently (these all inherit from AuthenticationException):
             //     UnknownAccountException, IncorrectCredentialsException, ExpiredCredentialsException,
@@ -487,7 +491,7 @@ class UserFacadeImpl implements UserFacade {
         loggedInAnonymous = false
 
         // after successful login trigger the after-login actions
-        if (eci.web != null) eci.web.runAfterLoginActions()
+        if (eci.getWebImpl() != null) eci.getWebImpl().runAfterLoginActions()
 
         clearPerUserValues()
         return true
@@ -496,7 +500,7 @@ class UserFacadeImpl implements UserFacade {
     @Override
     void logoutUser() {
         // before logout trigger the before-logout actions
-        if (eci.web != null) eci.web.runBeforeLogoutActions()
+        if (eci.getWebImpl() != null) eci.getWebImpl().runBeforeLogoutActions()
 
         if (usernameStack) {
             usernameStack.removeFirst()
@@ -531,7 +535,7 @@ class UserFacadeImpl implements UserFacade {
     boolean hasPermission(String userPermissionId) { return hasPermission(getUserId(), userPermissionId, getNowTimestamp(), eci) }
 
     static boolean hasPermission(String username, String userPermissionId, Timestamp whenTimestamp, ExecutionContextImpl eci) {
-        if (whenTimestamp == null) whenTimestamp = new Timestamp(System.currentTimeMillis())
+        if ((Object) whenTimestamp == null) whenTimestamp = new Timestamp(System.currentTimeMillis())
         boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
         try {
             EntityValue ua = eci.getEntity().find("moqui.security.UserAccount").condition("userId", username).useCache(true).one()
@@ -551,7 +555,7 @@ class UserFacadeImpl implements UserFacade {
 
     static boolean isInGroup(String username, String userGroupId, Timestamp whenTimestamp, ExecutionContextImpl eci) {
         if (userGroupId == "ALL_USERS") return true
-        if (whenTimestamp == null) whenTimestamp = new Timestamp(System.currentTimeMillis())
+        if ((Object) whenTimestamp == null) whenTimestamp = new Timestamp(System.currentTimeMillis())
         boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
         try {
             EntityValue ua = eci.getEntity().find("moqui.security.UserAccount").condition("userId", username).useCache(true).one()
@@ -614,14 +618,14 @@ class UserFacadeImpl implements UserFacade {
     String getUserId() { return getUserAccount()?.userId }
 
     @Override
-    String getUsername() { return this.usernameStack.size() > 0 ? this.usernameStack.peekFirst() : null }
+    String getUsername() { return this.usernameStack.peekFirst() }
 
     @Override
     EntityValue getUserAccount() {
         if (this.usernameStack.size() == 0) return null
         if (internalUserAccount == null) {
             internalUserAccount = eci.getEntity().find("moqui.security.UserAccount")
-                    .condition("username", this.getUsername()).useCache(false).disableAuthz().one()
+                    .condition("username", this.getUsername()).useCache(true).disableAuthz().one()
             // this is necessary as temporary values may have been set before the UserAccount was retrieved
             clearPerUserValues()
         }
@@ -645,6 +649,6 @@ class UserFacadeImpl implements UserFacade {
     @Override
     List<NotificationMessage> getNotificationMessages(String topic) {
         if (!getUserId()) return []
-        return eci.getEcfi().getNotificationMessages(getUserId(), topic)
+        return eci.getNotificationMessages(getUserId(), topic)
     }
 }

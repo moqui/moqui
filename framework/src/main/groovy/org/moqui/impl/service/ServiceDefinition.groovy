@@ -11,10 +11,12 @@
  */
 package org.moqui.impl.service
 
+import groovy.transform.CompileStatic
 import org.apache.commons.validator.routines.CreditCardValidator
 import org.apache.commons.validator.routines.EmailValidator
 import org.apache.commons.validator.routines.UrlValidator
 import org.moqui.impl.FtlNodeWrapper
+import org.moqui.impl.StupidJavaUtilities
 import org.moqui.impl.StupidUtilities
 import org.moqui.impl.StupidWebUtilities
 import org.moqui.impl.actions.XmlAction
@@ -36,6 +38,8 @@ class ServiceDefinition {
 
     protected ServiceFacadeImpl sfi
     protected Node serviceNode
+    protected Node inParametersNode
+    protected Node outParametersNode
     protected String path = null
     protected String verb = null
     protected String noun = null
@@ -142,6 +146,9 @@ class ServiceDefinition {
         } else {
             internalTransactionTimeout = null
         }
+
+        inParametersNode = (Node) serviceNode."in-parameters"[0]
+        outParametersNode = (Node) serviceNode."out-parameters"[0]
     }
 
     void mergeAutoParameters(Node parametersNode, Node autoParameters) {
@@ -195,20 +202,32 @@ class ServiceDefinition {
         return baseParameterNode
     }
 
+    @CompileStatic
     Node getServiceNode() { return serviceNode }
 
+    @CompileStatic
     String getServiceName() { return (path ? path + "." : "") + verb + (noun ? "#" + noun : "") }
+    @CompileStatic
     String getPath() { return path }
+    @CompileStatic
     String getVerb() { return verb }
+    @CompileStatic
     String getNoun() { return noun }
 
+    @CompileStatic
     String getAuthenticate() { return internalAuthenticate }
+    @CompileStatic
     String getServiceType() { return internalServiceType }
+    @CompileStatic
     boolean getTxIgnore() { return internalTxIgnore }
+    @CompileStatic
     boolean getTxForceNew() { return internalTxForceNew }
+    @CompileStatic
     boolean getTxUseCache() { return internalTxUseCache }
+    @CompileStatic
     Integer getTxTimeout() { return internalTransactionTimeout }
 
+    @CompileStatic
     static String getPathFromName(String serviceName) {
         String p = serviceName
         // do hash first since a noun following hash may have dots in it
@@ -216,6 +235,7 @@ class ServiceDefinition {
         if (!p.contains(".")) return null
         return p.substring(0, p.lastIndexOf("."))
     }
+    @CompileStatic
     static String getVerbFromName(String serviceName) {
         String v = serviceName
         // do hash first since a noun following hash may have dots in it
@@ -223,61 +243,70 @@ class ServiceDefinition {
         if (v.contains(".")) v = v.substring(v.lastIndexOf(".") + 1)
         return v
     }
+    @CompileStatic
     static String getNounFromName(String serviceName) {
         if (!serviceName.contains("#")) return null
         return serviceName.substring(serviceName.lastIndexOf("#") + 1)
     }
 
+    static final Map<String, String> verbAuthzActionIdMap = [create:'AUTHZA_CREATE', update:'AUTHZA_UPDATE',
+            store:'AUTHZA_UPDATE', delete:'AUTHZA_DELETE', view:'AUTHZA_VIEW', find:'AUTHZA_VIEW']
+    @CompileStatic
     static String getVerbAuthzActionId(String theVerb) {
         // default to require the "All" authz action, and for special verbs default to something more appropriate
-        String authzAction = "AUTHZA_ALL"
-        switch (theVerb) {
-            case "create": authzAction = "AUTHZA_CREATE"; break
-            case "update": authzAction = "AUTHZA_UPDATE"; break
-            case "delete": authzAction = "AUTHZA_DELETE"; break
-            case "view":
-            case "find": authzAction = "AUTHZA_VIEW"; break
-        }
+        String authzAction = verbAuthzActionIdMap.get(theVerb)
+        if (authzAction == null) authzAction = 'AUTHZA_ALL'
         return authzAction
     }
 
+    @CompileStatic
     String getLocation() {
         // TODO: see if the location is an alias from the conf -> service-facade
-        return serviceNode."@location"
+        return serviceNode.attributes().get('location')
     }
-    String getMethod() { return serviceNode."@method" }
+    @CompileStatic
+    String getMethod() { return serviceNode.attributes().get('method') }
 
+    @CompileStatic
     XmlAction getXmlAction() { return xmlAction }
 
-    Node getInParameter(String name) { return (Node) serviceNode."in-parameters"[0]."parameter".find({ it."@name" == name }) }
+    Node getInParameter(String name) { return (Node) inParametersNode."parameter".find({ it."@name" == name }) }
     Set<String> getInParameterNames() {
         Set<String> inNames = new HashSet()
-        for (Node parameter in serviceNode."in-parameters"[0]."parameter") inNames.add(parameter."@name")
+        for (Node parameter in inParametersNode."parameter") inNames.add((String) parameter."@name")
         return inNames
     }
 
-    Node getOutParameter(String name) { return (Node) serviceNode."out-parameters"[0]."parameter".find({ it."@name" == name }) }
+    Node getOutParameter(String name) { return (Node) outParametersNode."parameter".find({ it."@name" == name }) }
     Set<String> getOutParameterNames() {
         Set<String> outNames = new HashSet()
-        for (Node parameter in serviceNode."out-parameters"[0]."parameter") outNames.add(parameter."@name")
+        for (Node parameter in outParametersNode."parameter") outNames.add((String) parameter."@name")
         return outNames
     }
 
+    @CompileStatic
     void convertValidateCleanParameters(Map<String, Object> parameters, ExecutionContextImpl eci) {
         // even if validate is false still apply defaults, convert defined params, etc
-        checkParameterMap("", parameters, parameters, (Node) serviceNode."in-parameters"[0], this.serviceNode."@validate" != "false", eci)
+        checkParameterMap("", parameters, parameters, inParametersNode, serviceNode.attributes().get('validate') != "false", eci)
     }
 
+    @CompileStatic
     protected void checkParameterMap(String namePrefix, Map<String, Object> rootParameters, Map parameters,
                                      Node parametersParentNode, boolean validate, ExecutionContextImpl eci) {
-        Set<String> parameterNames = new HashSet()
-        for (Node parameter in parametersParentNode."parameter") parameterNames.add(parameter."@name")
+        Map<String, Node> parameterNodeMap = new HashMap<String, Node>()
+        NodeList parameterNodeList = (NodeList) parametersParentNode.get("parameter")
+        for (Object parameterObj in parameterNodeList) {
+            Node parameter = (Node) parameterObj
+            String name = (String) parameter.attributes().get('name')
+            parameterNodeMap.put(name, parameter)
+        }
+
         // if service is to be validated, go through service in-parameters definition and only get valid parameters
         // go through a set that is both the defined in-parameters and the keySet of passed in parameters
         Set<String> iterateSet = new HashSet(parameters.keySet())
-        iterateSet.addAll(parameterNames)
+        iterateSet.addAll(parameterNodeMap.keySet())
         for (String parameterName in iterateSet) {
-            if (!parameterNames.contains(parameterName)) {
+            if (!parameterNodeMap.containsKey(parameterName)) {
                 if (validate) {
                     parameters.remove(parameterName)
                     if (logger.traceEnabled && parameterName != "ec")
@@ -287,9 +316,9 @@ class ServiceDefinition {
                 continue
             }
 
-            Node parameterNode = (Node) parametersParentNode."parameter".find({ it."@name" == parameterName })
+            Node parameterNode = parameterNodeMap.get(parameterName)
             Object parameterValue = parameters.get(parameterName)
-            String type = parameterNode."@type" ?: "String"
+            String type = (String) parameterNode.attributes().get('type') ?: "String"
 
             // check type
             Object converted = checkConvertType(parameterNode, namePrefix, parameterName, parameterValue, rootParameters, eci)
@@ -302,20 +331,20 @@ class ServiceDefinition {
                 if (validate) eci.message.addValidationError(null, "${namePrefix}${parameterName}", getServiceName(), "Field was type [${parameterValue?.class?.name}], expecting type [${type}]", null)
                 continue
             }
-            if (converted == null && !parameterValue && parameterValue != null && !StupidUtilities.isInstanceOf(parameterValue, type)) {
+            if (converted == null && !parameterValue && parameterValue != null && !StupidJavaUtilities.isInstanceOf(parameterValue, type)) {
                 // we have an empty value of a different type, just set it to null
                 parameterValue = null
                 // put the final parameterValue back into the parameters Map
                 parameters.put(parameterName, parameterValue)
             }
 
-            if (validate) checkSubtype(parameterName, parameterNode, parameterValue, eci)
+            if (validate && parameterNode.get("subtype")) checkSubtype(parameterName, parameterNode, parameterValue, eci)
             if (validate) validateParameterHtml(parameterNode, namePrefix, parameterName, parameterValue, eci)
 
             // do this after the convert so defaults are in place
             // check if required and empty - use groovy non-empty rules for String only
             if (StupidUtilities.isEmpty(parameterValue)) {
-                if (validate && parameterNode."@required" == "true") {
+                if (validate && parameterNode.attributes().get('required') == "true") {
                     eci.message.addValidationError(null, "${namePrefix}${parameterName}", getServiceName(), "Field cannot be empty", null)
                 }
                 // NOTE: should we change empty values to null? for now, no
@@ -328,10 +357,10 @@ class ServiceDefinition {
             // now check parameter sub-elements
             if (parameterValue instanceof Map) {
                 // any parameter sub-nodes?
-                if (parameterNode."parameter")
+                if (parameterNode.get("parameter"))
                     checkParameterMap("${namePrefix}${parameterName}.", rootParameters, (Map) parameterValue, parameterNode, validate, eci)
             } else if (parameterValue instanceof Node) {
-                if (parameterNode."parameter")
+                if (parameterNode.get("parameter"))
                     checkParameterNode("${namePrefix}${parameterName}.", rootParameters, (Node) parameterValue, parameterNode, validate, eci)
             }
         }
@@ -342,8 +371,8 @@ class ServiceDefinition {
         // NOTE: don't worry about extra attributes or sub-Nodes... let them through
 
         // go through attributes of Node, validate each that corresponds to a parameter def
-        for (Map.Entry attrEntry in nodeValue.attributes()) {
-            String parameterName = attrEntry.getKey()
+        for (Map.Entry attrEntry in nodeValue.attributes().entrySet()) {
+            String parameterName = (String) attrEntry.getKey()
             Node parameterNode = (Node) parametersParentNode."parameter".find({ it."@name" == parameterName })
             if (parameterNode == null) {
                 // NOTE: consider complaining here to not allow additional attributes, that could be annoying though so for now do not...
@@ -434,20 +463,23 @@ class ServiceDefinition {
         }
     }
 
+    @CompileStatic
     protected Object checkConvertType(Node parameterNode, String namePrefix, String parameterName, Object parameterValue,
                                       Map<String, Object> rootParameters, ExecutionContextImpl eci) {
         // set the default if applicable
         boolean parameterIsEmpty = StupidUtilities.isEmpty(parameterValue)
-        if (parameterIsEmpty && parameterNode."@default") {
+        String defaultStr = (String) parameterNode.attributes().get('default')
+        if (parameterIsEmpty && defaultStr) {
             ((ContextStack) eci.context).push(rootParameters)
-            parameterValue = eci.getResource().evaluateContextField((String) parameterNode."@default", "${this.location}_${parameterName}_default")
+            parameterValue = eci.getResource().evaluateContextField(defaultStr, "${this.location}_${parameterName}_default")
             // logger.warn("For parameter ${namePrefix}${parameterName} new value ${parameterValue} from default [${parameterNode.'@default'}] and context: ${eci.context}")
             ((ContextStack) eci.context).pop()
         }
         // set the default-value if applicable
-        if (parameterIsEmpty && parameterNode."@default-value") {
+        String defaultValueStr = (String) parameterNode.attributes().get('default-value')
+        if (parameterIsEmpty && defaultValueStr) {
             ((ContextStack) eci.context).push(rootParameters)
-            parameterValue = eci.getResource().evaluateStringExpand((String) parameterNode."@default-value", "${this.location}_${parameterName}_default_value")
+            parameterValue = eci.getResource().evaluateStringExpand(defaultValueStr, "${this.location}_${parameterName}_default_value")
             // logger.warn("For parameter ${namePrefix}${parameterName} new value ${parameterValue} from default-value [${parameterNode.'@default-value'}] and context: ${eci.context}")
             ((ContextStack) eci.context).pop()
         }
@@ -455,10 +487,10 @@ class ServiceDefinition {
         // if null value, don't try to convert
         if (parameterValue == null) return null
 
-        String type = parameterNode."@type" ?: "String"
-        if (!StupidUtilities.isInstanceOf(parameterValue, type)) {
+        String type = (String) parameterNode.attributes().get('type') ?: "String"
+        if (!StupidJavaUtilities.isInstanceOf(parameterValue, type)) {
             // do type conversion if possible
-            String format = parameterNode."@format"
+            String format = (String) parameterNode.attributes().get('format')
             Object converted = null
             boolean isString = parameterValue instanceof CharSequence
             boolean isEmptyString = isString && ((CharSequence) parameterValue).length() == 0
@@ -501,7 +533,7 @@ class ServiceDefinition {
                     case "Timestamp":
                     case "java.sql.Timestamp":
                         converted = eci.l10n.parseTimestamp((String) parameterValue, format)
-                        if (converted == null) {
+                        if ((Object) converted == null) {
                             eci.message.addValidationError(null, "${namePrefix}${parameterName}", getServiceName(), "Value [${parameterValue}] could not be converted to a ${type}" + (format ? " using format [${format}]": ""), null)
                         }
                         break
@@ -511,7 +543,7 @@ class ServiceDefinition {
                     case "java.util.List":
                         String valueStr = (String) parameterValue
                         // strip off square braces
-                        if (valueStr.charAt(0) == '[' && valueStr.charAt(valueStr.length()-1) == ']')
+                        if (valueStr.charAt(0) == ((char) '[') && valueStr.charAt(valueStr.length()-1) == ((char) ']'))
                             valueStr = valueStr.substring(1, valueStr.length()-1)
                         // split by comma or just create a list with the single string
                         if (valueStr.contains(",")) converted = Arrays.asList(valueStr.split(","))
@@ -521,7 +553,7 @@ class ServiceDefinition {
                     case "java.util.Set":
                         String valueStr = (String) parameterValue
                         // strip off square braces
-                        if (valueStr.charAt(0) == '[' && valueStr.charAt(valueStr.length()-1) == ']')
+                        if (valueStr.charAt(0) == ((char) '[') && valueStr.charAt(valueStr.length()-1) == ((char) ']'))
                             valueStr = valueStr.substring(1, valueStr.length()-1)
                         // split by comma or just create a list with the single string
                         if (valueStr.contains(",")) converted = new HashSet(valueStr.split(",").collect())
@@ -538,27 +570,33 @@ class ServiceDefinition {
         return parameterValue
     }
 
+    @CompileStatic
     protected void validateParameterHtml(Node parameterNode, String namePrefix, String parameterName, Object parameterValue,
                                          ExecutionContextImpl eci) {
         // check for none/safe/any HTML
         boolean isString = parameterValue instanceof CharSequence
-        if ((isString || parameterValue instanceof List) &&
-                parameterNode."@allow-html" != "any") {
-            boolean allowSafe = (parameterNode."@allow-html" == "safe")
+        String allowHtml = (String) parameterNode.attributes().get('allow-html')
+        if ((isString || parameterValue instanceof List) && allowHtml != "any") {
+            boolean allowSafe = (allowHtml == "safe")
 
             if (isString) {
                 canonicalizeAndCheckHtml(parameterName, parameterValue.toString(), allowSafe, eci)
             } else {
                 List lst = parameterValue as List
-                parameterValue = new ArrayList(lst.size())
-                for (Object obj in lst) {
-                    if (obj instanceof CharSequence)
-                        parameterValue.add(canonicalizeAndCheckHtml(parameterName, obj.toString(), allowSafe, eci))
+                List lstClone = new ArrayList(lst)
+                lst.clear()
+                for (Object obj in lstClone) {
+                    if (obj instanceof CharSequence) {
+                        lst.add(canonicalizeAndCheckHtml(parameterName, obj.toString(), allowSafe, eci))
+                    } else {
+                        lst.add(obj)
+                    }
                 }
             }
         }
     }
 
+    @CompileStatic
     protected boolean validateParameter(Node vpNode, String parameterName, Object pv, ExecutionContextImpl eci) {
         // run through validations under parameter node
 
@@ -579,6 +617,7 @@ class ServiceDefinition {
         return allPass
     }
 
+    @CompileStatic
     protected boolean validateParameterSingle(Node valNode, String parameterName, Object pv, ExecutionContextImpl eci) {
         switch (valNode.name()) {
         case "val-or":
@@ -600,18 +639,20 @@ class ServiceDefinition {
                 return false
             }
             String pvString = pv.toString()
-            if (valNode."@regexp" && !pvString.matches((String) valNode."@regexp")) {
+            String regexp = (String) valNode.attributes().get('regexp')
+            if (regexp && !pvString.matches(regexp)) {
                 // a message attribute should always be there, but just in case we'll have a default
-                eci.message.addValidationError(null, parameterName, getServiceName(), valNode."@message" ?: "Value [${pv}] did not match expression [${valNode."@regexp"}]", null)
+                eci.message.addValidationError(null, parameterName, getServiceName(), (String) valNode.attributes().get('message') ?: "Value [${pv}] did not match expression [${regexp}]", null)
                 return false
             }
             return true
         case "number-range":
             // go to BigDecimal through String to get more accurate value
             BigDecimal bdVal = new BigDecimal(pv as String)
-            if (valNode."@min") {
-                BigDecimal min = new BigDecimal((String) valNode."@min")
-                if (valNode."@min-include-equals" == "false") {
+            String minStr = (String) valNode.attributes().get('min')
+            if (minStr) {
+                BigDecimal min = new BigDecimal(minStr)
+                if (valNode.attributes().get('min-include-equals') == "false") {
                     if (bdVal <= min) {
                         eci.message.addValidationError(null, parameterName, getServiceName(), "Value [${pv}] must be greater than ${min}.", null)
                         return false
@@ -623,9 +664,10 @@ class ServiceDefinition {
                     }
                 }
             }
-            if (valNode."@max") {
-                BigDecimal max = new BigDecimal((String) valNode."@max")
-                if (valNode."@max-include-equals" == "true") {
+            String maxStr = (String) valNode.attributes().get('max')
+            if (maxStr) {
+                BigDecimal max = new BigDecimal(maxStr)
+                if (valNode.attributes().get('max-include-equals') == "true") {
                     if (max > bdVal) {
                         eci.message.addValidationError(null, parameterName, getServiceName(), "Value [${pv}] must be less than or equal to ${max}.", null)
                         return false
@@ -658,17 +700,19 @@ class ServiceDefinition {
             return true
         case "text-length":
             String str = pv as String
-            if (valNode."@min") {
-                int min = valNode."@min" as int
+            String minStr = (String) valNode.attributes().get('min')
+            if (minStr) {
+                int min = minStr as int
                 if (str.length() < min) {
-                    eci.message.addValidationError(null, parameterName, getServiceName(), "Value [${pv}], length ${str.length()}, is shorter than ${min} characters.", null)
+                    eci.message.addValidationError(null, parameterName, getServiceName(), "Value [${pv}], length ${str.length()}, is shorter than ${minStr} characters.", null)
                     return false
                 }
             }
-            if (valNode."@max") {
-                int max = valNode."@max" as int
+            String maxStr = (String) valNode.attributes().get('max')
+            if (maxStr) {
+                int max = maxStr as int
                 if (str.length() > max) {
-                    eci.message.addValidationError(null, parameterName, getServiceName(), "Value: [${pv}] length ${str.length()}, is longer than ${max} characters.", null)
+                    eci.message.addValidationError(null, parameterName, getServiceName(), "Value: [${pv}] length ${str.length()}, is longer than ${maxStr} characters.", null)
                     return false
                 }
             }
@@ -689,7 +733,7 @@ class ServiceDefinition {
             return true
         case "text-letters":
             String str = pv as String
-            for (char c in str) {
+            for (char c in str.getChars()) {
                 if (!Character.isLetter(c)) {
                     eci.message.addValidationError(null, parameterName, getServiceName(), "Value [${str}] must have only letters.", null)
                     return false
@@ -698,7 +742,7 @@ class ServiceDefinition {
             return true
         case "text-digits":
             String str = pv as String
-            for (char c in str) {
+            for (char c in str.getChars()) {
                 if (!Character.isDigit(c)) {
                     eci.message.addValidationError(null, parameterName, getServiceName(), "Value [${str}] must have only digits.", null)
                     return false
@@ -707,7 +751,7 @@ class ServiceDefinition {
             return true
         case "time-range":
             Calendar cal
-            String format = valNode."@format"
+            String format = valNode.attributes().get('format')
             if (pv instanceof CharSequence) {
                 cal = eci.getL10n().parseDateTime(pv.toString(), format)
             } else {
@@ -716,41 +760,42 @@ class ServiceDefinition {
                 // TODO: not sure if this will work: ((pv as java.util.Date).getTime())
                 cal.setTimeInMillis((pv as Date).getTime())
             }
-            if (valNode."@after") {
+            String after = (String) valNode.attributes().get('after')
+            if (after) {
                 // handle after date/time/date-time depending on type of parameter, support "now" too
-                String valString = valNode."@after"
                 Calendar compareCal
-                if (valString == "now") {
+                if (after == "now") {
                     compareCal = Calendar.getInstance()
                     compareCal.setTimeInMillis(eci.user.nowTimestamp.time)
                 } else {
-                    compareCal = eci.l10n.parseDateTime(valString, format)
+                    compareCal = eci.l10n.parseDateTime(after, format)
                 }
                 if (!cal.after(compareCal)) {
-                    eci.message.addValidationError(null, parameterName, getServiceName(), "Value [${pv}] is before ${valString}.", null)
+                    eci.message.addValidationError(null, parameterName, getServiceName(), "Value [${pv}] is before ${after}.", null)
                     return false
                 }
             }
-            if (valNode."@before") {
+            String before = (String) valNode.attributes().get('before')
+            if (before) {
                 // handle after date/time/date-time depending on type of parameter, support "now" too
-                String valString = valNode."@before"
                 Calendar compareCal
-                if (valString == "now") {
+                if (before == "now") {
                     compareCal = Calendar.getInstance()
                     compareCal.setTimeInMillis(eci.user.nowTimestamp.time)
                 } else {
-                    compareCal = eci.l10n.parseDateTime(valString, format)
+                    compareCal = eci.l10n.parseDateTime(before, format)
                 }
                 if (!cal.before(compareCal)) {
-                    eci.message.addValidationError(null, parameterName, getServiceName(), "Value [${pv}] is after ${valString}.", null)
+                    eci.message.addValidationError(null, parameterName, getServiceName(), "Value [${pv}] is after ${before}.", null)
                     return false
                 }
             }
             return true
         case "credit-card":
             long creditCardTypes = 0
-            if (valNode."@types") {
-                for (String cts in ((String) valNode."@types").split(","))
+            String types = (String) valNode.attributes().get('types')
+            if (types) {
+                for (String cts in types.split(","))
                     creditCardTypes += creditCardTypeMap.get(cts.trim())
             } else {
                 creditCardTypes = allCreditCards
@@ -767,6 +812,7 @@ class ServiceDefinition {
         return true
     }
 
+    @CompileStatic
     protected Object canonicalizeAndCheckHtml(String parameterName, String parameterValue, boolean allowSafe,
                                               ExecutionContextImpl eci) {
         Object value
@@ -798,7 +844,7 @@ class ServiceDefinition {
                 if (((Collection) value).size() > 0) {
                     String subType = typeParentNode."subtype"[0]."@type"
                     Object subValue = ((Collection) value).iterator().next()
-                    if (!StupidUtilities.isInstanceOf(subValue, subType)) {
+                    if (!StupidJavaUtilities.isInstanceOf(subValue, subType)) {
                         eci.message.addError("Parameter [${parameterName}] passed to service [${getServiceName()}] had a subtype [${subValue.class.name}], expecting subtype [${subType}]")
                     } else {
                         // try the next level down
@@ -807,7 +853,7 @@ class ServiceDefinition {
                 }
             } else if (value instanceof Map) {
                 // for each subtype element check its name/type
-                Map mapVal = (Map) value
+                Map mapVal = value
                 for (Node stNode in typeParentNode."subtype") {
                     String subName = stNode."@name"
                     String subType = stNode."@type"
@@ -815,7 +861,7 @@ class ServiceDefinition {
 
                     Object subValue = mapVal.get(subName)
                     if (!subValue) continue
-                    if (!StupidUtilities.isInstanceOf(subValue, subType)) {
+                    if (!StupidJavaUtilities.isInstanceOf(subValue, subType)) {
                         eci.message.addError("Parameter [${parameterName}] passed to service [${getServiceName()}] had a subtype [${subValue.class.name}], expecting subtype [${subType}]")
                     } else {
                         // try the next level down
@@ -827,7 +873,7 @@ class ServiceDefinition {
     }
 
     static final Map<String, Long> creditCardTypeMap =
-            (Map<String, Long>) [visa:CreditCardValidator.VISA, mastercard:CreditCardValidator.MASTERCARD,
+            [visa:CreditCardValidator.VISA, mastercard:CreditCardValidator.MASTERCARD,
                     amex:CreditCardValidator.AMEX, discover:CreditCardValidator.DISCOVER,
                     dinersclub:CreditCardValidator.DINERS]
     static final long allCreditCards = CreditCardValidator.VISA + CreditCardValidator.MASTERCARD +

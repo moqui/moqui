@@ -11,8 +11,40 @@
  */
 package org.moqui.impl;
 
-/** Methods that work better in Java than Groovy, helps with performance but mostly for syntax and language feature reasons */
-public class StupidJavaUtilities extends ClassLoader {
+/** Methods that work better in Java than Groovy, helps with performance and for syntax and language feature reasons */
+public class StupidJavaUtilities {
+    public static boolean isInstanceOf(Object theObjectInQuestion, String javaType) {
+        Class theClass = StupidClassLoader.commonJavaClassesMap.get(javaType);
+        if (theClass == null) {
+            try {
+                theClass = StupidJavaUtilities.class.getClassLoader().loadClass(javaType);
+            } catch (ClassNotFoundException e) { /* ignore */ }
+        }
+        if (theClass == null) {
+            try {
+                theClass = Thread.currentThread().getContextClassLoader().loadClass(javaType);
+            } catch (ClassNotFoundException e) { /* ignore */ }
+        }
+        if (theClass == null) throw new IllegalArgumentException("Cannot find class for type: ${javaType}");
+        return theClass.isInstance(theObjectInQuestion);
+    }
+
+    public static String removeChar(String orig, char ch) {
+        // NOTE: this seems to run pretty slow, plain replace might be faster, but avoiding its use anyway (in ServiceFacadeImpl for SECA rules)
+        char[] newChars = new char[orig.length()];
+        int origLength = orig.length();
+        int lastPos = 0;
+        for (int i = 0; i < origLength; i++) {
+            char curChar = orig.charAt(i);
+            if (curChar != ch) {
+                newChars[lastPos] = curChar;
+                lastPos++;
+            }
+        }
+        if (lastPos == origLength) return orig;
+        return new String(newChars, 0, lastPos);
+    }
+
     public static boolean internedStringsEqual(String s1, String s2) {
         if (s1 == null) {
             return (s2 == null);

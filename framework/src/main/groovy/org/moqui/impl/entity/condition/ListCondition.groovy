@@ -11,14 +11,16 @@
  */
 package org.moqui.impl.entity.condition
 
+import groovy.transform.CompileStatic
 import org.moqui.impl.entity.EntityConditionFactoryImpl
 import org.moqui.impl.entity.EntityQueryBuilder
 import org.moqui.entity.EntityCondition
 
+@CompileStatic
 class ListCondition extends EntityConditionImplBase {
-    protected volatile Class localClass = null
     protected List<EntityConditionImplBase> conditionList
     protected EntityCondition.JoinOperator operator
+    protected int curHashCode
 
     ListCondition(EntityConditionFactoryImpl ecFactoryImpl,
             List<EntityConditionImplBase> conditionList, EntityCondition.JoinOperator operator) {
@@ -27,13 +29,15 @@ class ListCondition extends EntityConditionImplBase {
             Iterator<EntityConditionImplBase> conditionIter = conditionList.iterator()
             while (conditionIter.hasNext()) if (conditionIter.next() == null) conditionIter.remove()
         }
-        this.conditionList = conditionList ?: new LinkedList()
+        this.conditionList = conditionList ?: new LinkedList<EntityConditionImplBase>()
         this.operator = operator ?: AND
+        curHashCode = createHashCode()
     }
 
-    Class getLocalClass() { if (this.localClass == null) this.localClass = this.getClass(); return this.localClass }
-
-    void addCondition(EntityConditionImplBase condition) { if (condition != null) conditionList.add(condition) }
+    void addCondition(EntityConditionImplBase condition) {
+        if (condition != null) conditionList.add(condition)
+        curHashCode = createHashCode()
+    }
 
     EntityCondition.JoinOperator getOperator() { return operator }
 
@@ -89,13 +93,14 @@ class ListCondition extends EntityConditionImplBase {
     }
 
     @Override
-    int hashCode() {
+    int hashCode() { return curHashCode }
+    protected int createHashCode() {
         return (conditionList ? conditionList.hashCode() : 0) + operator.hashCode()
     }
 
     @Override
     boolean equals(Object o) {
-        if (o == null || o.getClass() != this.getLocalClass()) return false
+        if (o == null || !(o instanceof ListCondition)) return false
         ListCondition that = (ListCondition) o
         // NOTE: for Java Enums the != is WAY faster than the .equals
         if (this.operator != that.operator) return false

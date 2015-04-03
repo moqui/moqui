@@ -1,27 +1,39 @@
+/*
+ * This Work is in the public domain and is provided on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+ * including, without limitation, any warranties or conditions of TITLE,
+ * NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+ * You are solely responsible for determining the appropriateness of using
+ * this Work and assume any risks associated with your use of this Work.
+ *
+ * This Work includes contributions authored by David E. Jones, not as a
+ * "work for hire", who hereby disclaims any copyright to the same.
+ */
 package org.moqui.impl.entity.condition
 
+import groovy.transform.CompileStatic
 import org.moqui.impl.entity.EntityConditionFactoryImpl
 import org.moqui.impl.entity.EntityQueryBuilder
 import org.moqui.entity.EntityCondition
 
+@CompileStatic
 class MapCondition extends EntityConditionImplBase {
-    protected volatile Class internalClass = null
     protected Map<String, Object> fieldMap
     protected EntityCondition.ComparisonOperator comparisonOperator
     protected EntityCondition.JoinOperator joinOperator
-    protected boolean ignoreCase = false
+    protected Boolean ignoreCase = false
     protected EntityConditionImplBase internalCond = null
+    protected int curHashCode
 
     MapCondition(EntityConditionFactoryImpl ecFactoryImpl,
-            Map<String, ?> fieldMap, EntityCondition.ComparisonOperator comparisonOperator,
+            Map<String, Object> fieldMap, EntityCondition.ComparisonOperator comparisonOperator,
             EntityCondition.JoinOperator joinOperator) {
         super(ecFactoryImpl)
-        this.fieldMap = fieldMap ? fieldMap : new HashMap()
+        this.fieldMap = fieldMap ? fieldMap : new HashMap<String, Object>()
         this.comparisonOperator = comparisonOperator ?: EQUALS
         this.joinOperator = joinOperator ?: AND
+        curHashCode = createHashCode()
     }
-
-    Class getLocalClass() { if (this.internalClass == null) this.internalClass = this.getClass(); return this.internalClass }
 
     @Override
     void makeSqlWhere(EntityQueryBuilder eqb) {
@@ -52,11 +64,11 @@ class MapCondition extends EntityConditionImplBase {
     }
 
     void getAllAliases(Set<String> entityAliasSet, Set<String> fieldAliasSet) {
-        for (Map.Entry<String, Object> entry in fieldMap) fieldAliasSet.add(entry.key)
+        for (Map.Entry<String, Object> entry in fieldMap.entrySet()) fieldAliasSet.add(entry.key)
     }
 
     @Override
-    EntityCondition ignoreCase() { this.ignoreCase = true; return this }
+    EntityCondition ignoreCase() { this.ignoreCase = true; curHashCode = createHashCode(); return this }
 
     @Override
     String toString() {
@@ -95,20 +107,22 @@ class MapCondition extends EntityConditionImplBase {
     }
 
     @Override
-    int hashCode() {
+    int hashCode() { return curHashCode }
+    protected int createHashCode() {
         return (fieldMap ? fieldMap.hashCode() : 0) + comparisonOperator.hashCode() + joinOperator.hashCode() +
                 ignoreCase.hashCode()
     }
 
     @Override
     boolean equals(Object o) {
-        if (o == null || o.getClass() != this.getLocalClass()) return false
+        if (o == null || !(o instanceof MapCondition)) return false
         MapCondition that = (MapCondition) o
         // NOTE: for Java Enums the != is WAY faster than the .equals
-        if (this.comparisonOperator != that.comparisonOperator) return false
-        if (this.joinOperator != that.joinOperator) return false
-        if (this.ignoreCase != that.ignoreCase) return false
-        if (!this.fieldMap.equals(that.fieldMap)) return false
+        // NOTE2: Groovy overrides != making it slower...
+        if (!comparisonOperator.equals(that.comparisonOperator)) return false
+        if (!joinOperator.equals(that.joinOperator)) return false
+        if (ignoreCase.booleanValue() != that.ignoreCase.booleanValue()) return false
+        if (!fieldMap.equals(that.fieldMap)) return false
         return true
     }
 }

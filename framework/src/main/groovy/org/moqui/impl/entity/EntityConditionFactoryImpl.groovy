@@ -11,6 +11,8 @@
  */
 package org.moqui.impl.entity
 
+import groovy.transform.CompileStatic
+
 import java.sql.Timestamp
 
 import org.moqui.entity.EntityConditionFactory
@@ -31,6 +33,7 @@ import org.moqui.impl.StupidUtilities
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+@CompileStatic
 class EntityConditionFactoryImpl implements EntityConditionFactory {
     protected final static Logger logger = LoggerFactory.getLogger(EntityConditionFactoryImpl.class)
 
@@ -58,12 +61,19 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
     @Override
     EntityCondition makeCondition(List<EntityCondition> conditionList, JoinOperator operator) {
         if (!conditionList) return null
+        List<EntityConditionImplBase> newList = []
         Iterator<EntityCondition> conditionIter = conditionList.iterator()
-        while (conditionIter.hasNext()) if (conditionIter.next() == null) conditionIter.remove()
+        while (conditionIter.hasNext()) {
+            EntityCondition curCond = conditionIter.next()
+            if (curCond == null) conditionIter.remove()
+            // this is all they could be, all that is supported right now
+            if (curCond instanceof EntityConditionImplBase) newList.add((EntityConditionImplBase) curCond)
+            else throw new IllegalArgumentException("EntityCondition of type [${curCond.getClass().getName()}] not supported")
+        }
         if (conditionList.size() == 1) {
-            return conditionList.first()
+            return conditionList.get(0)
         } else {
-            return new ListCondition(this, (List<EntityConditionImplBase>) conditionList, operator)
+            return new ListCondition(this, newList, operator)
         }
     }
 
@@ -73,13 +83,13 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
     }
 
     @Override
-    EntityCondition makeCondition(Map<String, ?> fieldMap, ComparisonOperator comparisonOperator, JoinOperator joinOperator) {
+    EntityCondition makeCondition(Map<String, Object> fieldMap, ComparisonOperator comparisonOperator, JoinOperator joinOperator) {
         if (!fieldMap) return null
         return new MapCondition(this, fieldMap, comparisonOperator, joinOperator)
     }
 
     @Override
-    EntityCondition makeCondition(Map<String, ?> fieldMap) {
+    EntityCondition makeCondition(Map<String, Object> fieldMap) {
         if (!fieldMap) return null
         return new MapCondition(this, fieldMap, ComparisonOperator.EQUALS, JoinOperator.AND)
     }
@@ -90,7 +100,7 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
                 compareStamp ?: efi.getEcfi().getExecutionContext().getUser().getNowTimestamp())
     }
     EntityCondition makeConditionDate(String fromFieldName, String thruFieldName, Timestamp compareStamp, boolean ignoreIfEmpty) {
-        if (ignoreIfEmpty && compareStamp == null) return null
+        if (ignoreIfEmpty && (Object) compareStamp == null) return null
         return new DateCondition(this, fromFieldName, thruFieldName,
                 compareStamp ?: efi.getEcfi().getExecutionContext().getUser().getNowTimestamp())
     }
@@ -154,18 +164,19 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
     }
 
     EntityCondition makeActionCondition(Node node) {
-        return makeActionCondition((String) node["@field-name"],
-                (String) node["@operator"] ?: "equals", (String) (node["@from"] ?: node["@field-name"]),
-                (String) node["@value"], (String) node["@to-field-name"], (node["@ignore-case"] ?: "false") == "true",
-                (node["@ignore-if-empty"] ?: "false") == "true", (node["@or-null"] ?: "false") == "true",
-                ((String) node["@ignore"] ?: "false"))
+        Map attrs = node.attributes()
+        return makeActionCondition((String) attrs.get("field-name"),
+                (String) attrs.get("operator") ?: "equals", (String) (attrs.get("from") ?: attrs.get("field-name")),
+                (String) attrs.get("value"), (String) attrs.get("to-field-name"), (attrs.get("ignore-case") ?: "false") == "true",
+                (attrs.get("ignore-if-empty") ?: "false") == "true", (attrs.get("or-null") ?: "false") == "true",
+                ((String) attrs.get("ignore") ?: "false"))
     }
 
     EntityCondition makeActionConditions(Node node) {
         List<EntityCondition> condList = new ArrayList()
         List<Node> nodeChildren = (List<Node>) node.children()
         for (Node subCond in nodeChildren) condList.add(makeActionCondition(subCond))
-        return makeCondition(condList, getJoinOperator((String) node["@combine"]))
+        return makeCondition(condList, getJoinOperator((String) node.attributes().get("combine")))
     }
 
     protected static final Map<ComparisonOperator, String> comparisonOperatorStringMap = new HashMap()
@@ -262,13 +273,21 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
         case ComparisonOperator.NOT_EQUAL:
             return value1 != value2
         case ComparisonOperator.LESS_THAN:
-            return value1 < value2
+            Comparable comp1 = StupidUtilities.makeComparable(value1)
+            Comparable comp2 = StupidUtilities.makeComparable(value2)
+            return comp1 < comp2
         case ComparisonOperator.GREATER_THAN:
-            return value1 > value2
+            Comparable comp1 = StupidUtilities.makeComparable(value1)
+            Comparable comp2 = StupidUtilities.makeComparable(value2)
+            return comp1 > comp2
         case ComparisonOperator.LESS_THAN_EQUAL_TO:
-            return value1 <= value2
+            Comparable comp1 = StupidUtilities.makeComparable(value1)
+            Comparable comp2 = StupidUtilities.makeComparable(value2)
+            return comp1 <= comp2
         case ComparisonOperator.GREATER_THAN_EQUAL_TO:
-            return value1 >= value2
+            Comparable comp1 = StupidUtilities.makeComparable(value1)
+            Comparable comp2 = StupidUtilities.makeComparable(value2)
+            return comp1 >= comp2
         case ComparisonOperator.IN:
             if (value2 instanceof Collection) {
                 return ((Collection) value2).contains(value1)
@@ -285,19 +304,21 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
             }
         case ComparisonOperator.BETWEEN:
             if (value2 instanceof Collection && ((Collection) value2).size() == 2) {
+                Comparable comp1 = StupidUtilities.makeComparable(value1)
                 Iterator iterator = ((Collection) value2).iterator()
-                Object lowObj = iterator.next()
-                Object highObj = iterator.next()
-                return lowObj <= value1 && value1 < highObj
+                Comparable lowObj = StupidUtilities.makeComparable(iterator.next())
+                Comparable highObj = StupidUtilities.makeComparable(iterator.next())
+                return lowObj <= comp1 && comp1 < highObj
             } else {
                 return false
             }
         case ComparisonOperator.NOT_BETWEEN:
             if (value2 instanceof Collection && ((Collection) value2).size() == 2) {
+                Comparable comp1 = StupidUtilities.makeComparable(value1)
                 Iterator iterator = ((Collection) value2).iterator()
-                Object lowObj = iterator.next()
-                Object highObj = iterator.next()
-                return lowObj > value1 && value1 >= highObj
+                Comparable lowObj = StupidUtilities.makeComparable(iterator.next())
+                Comparable highObj = StupidUtilities.makeComparable(iterator.next())
+                return lowObj > comp1 && comp1 >= highObj
             } else {
                 return false
             }

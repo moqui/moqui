@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.entity
 
+import groovy.transform.CompileStatic
 import org.apache.commons.codec.binary.Base64
 import org.apache.commons.collections.set.ListOrderedSet
 
@@ -24,6 +25,7 @@ import org.moqui.entity.EntityValue
 import org.moqui.impl.StupidUtilities
 import org.moqui.impl.context.ArtifactExecutionInfoImpl
 import org.moqui.impl.context.ExecutionContextFactoryImpl
+import org.moqui.impl.context.ExecutionContextImpl
 import org.moqui.impl.context.TransactionCache
 import org.w3c.dom.Document
 import org.w3c.dom.Element
@@ -37,6 +39,7 @@ import javax.sql.rowset.serial.SerialBlob
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+@CompileStatic
 abstract class EntityValueBase implements EntityValue {
     protected final static Logger logger = LoggerFactory.getLogger(EntityValueBase.class)
 
@@ -56,6 +59,8 @@ abstract class EntityValueBase implements EntityValue {
     private Map<String, Object> internalPkMap = null
     /* Used to keep old field values such as before an update or other sync with DB; mostly useful for EECA rules */
     private Map<String, Object> oldDbValueMap = null
+
+    private Map<String, Map<String, String>> localizedByLocaleByField = null
 
     protected boolean modified = false
     protected boolean pkModified = false
@@ -125,7 +130,7 @@ abstract class EntityValueBase implements EntityValue {
             // if this is not a valid field name but is a valid relationship name, do a getRelated or getRelatedOne to return an EntityList or an EntityValue
             Node relationship = ed.getRelationshipNode(name)
             if (relationship != null) {
-                if (relationship."@type" == "many") {
+                if ('many'.equals(relationship.attributes().get('type'))) {
                     return this.findRelated(name, null, null, null, null)
                 } else {
                     return this.findRelatedOne(name, null, null)
@@ -136,36 +141,81 @@ abstract class EntityValueBase implements EntityValue {
         }
 
         // if enabled use moqui.basic.LocalizedEntityField for any localized fields
-        if (fieldNode."@enable-localization" == "true") {
+        if ('true'.equals(fieldNode.attributes().get('enable-localization'))) {
             String localeStr = getEntityFacadeImpl().ecfi.getExecutionContext().getUser().getLocale()?.toString()
             if (localeStr) {
-                List<String> pks = ed.getPkFieldNames()
-                if (pks.size() == 1) {
-                    String pkValue = get(pks.get(0))
-                    if (pkValue) {
-                        EntityFind lefFind = getEntityFacadeImpl().find("moqui.basic.LocalizedEntityField")
-                        lefFind.condition([entityName:ed.getFullEntityName(), fieldName:name, pkValue:pkValue, locale:localeStr])
-                        EntityValue lefValue = lefFind.useCache(true).one()
-                        if (lefValue) return lefValue.localized
-                        // no result found, try with shortened locale
-                        if (localeStr.contains("_")) {
-                            lefFind.condition("locale", localeStr.substring(0, localeStr.indexOf("_")))
-                            lefValue = lefFind.useCache(true).one()
-                            if (lefValue) return lefValue.localized
+                Object internalValue = valueMap.get(name)
+
+                boolean knownNoLocalized = false
+                if (localizedByLocaleByField == null) {
+                    localizedByLocaleByField = new HashMap<String, Map<String, String>>()
+                } else {
+                    Map<String, String> localizedByLocale = localizedByLocaleByField.get(name)
+                    if (localizedByLocale != null) {
+                        if (localizedByLocale.containsKey(localeStr)) {
+                            String cachedLocalized = localizedByLocale.get(localeStr)
+                            if (cachedLocalized) {
+                                // logger.warn("======== field ${name}:${internalValue} found cached localized ${cachedLocalized}")
+                                return cachedLocalized
+                            } else {
+                                // logger.warn("======== field ${name}:${internalValue} known no localized")
+                                knownNoLocalized = true
+                            }
                         }
                     }
                 }
-                // no luck? try getting a localized value from moqui.basic.LocalizedMessage
-                EntityFind lmFind = getEntityFacadeImpl().find("moqui.basic.LocalizedMessage")
-                lmFind.condition([original:valueMap.get(name), locale:localeStr])
-                EntityValue lmValue = lmFind.useCache(true).one()
-                if (lmValue) return lmValue.localized
+
+                if (!knownNoLocalized) {
+                    List<String> pks = ed.getPkFieldNames()
+                    if (pks.size() == 1) {
+                        String pkValue = get(pks.get(0))
+                        if (pkValue) {
+                            // logger.warn("======== field ${name}:${internalValue} finding LocalizedEntityField, localizedByLocaleByField=${localizedByLocaleByField}")
+                            EntityFind lefFind = getEntityFacadeImpl().find("moqui.basic.LocalizedEntityField")
+                            lefFind.condition([entityName:ed.getFullEntityName(), fieldName:name, pkValue:pkValue, locale:localeStr] as Map<String, Object>)
+                            EntityValue lefValue = lefFind.useCache(true).one()
+                            if (lefValue) {
+                                String localized = (String) lefValue.localized
+                                StupidUtilities.addToMapInMap(name, localeStr, localized, localizedByLocaleByField)
+                                return localized
+                            }
+                            // no result found, try with shortened locale
+                            if (localeStr.contains("_")) {
+                                lefFind.condition("locale", localeStr.substring(0, localeStr.indexOf("_")))
+                                lefValue = lefFind.useCache(true).one()
+                                if (lefValue) {
+                                    String localized = (String) lefValue.localized
+                                    StupidUtilities.addToMapInMap(name, localeStr, localized, localizedByLocaleByField)
+                                    return localized
+                                }
+                            }
+                        }
+                    }
+                    // no luck? try getting a localized value from moqui.basic.LocalizedMessage
+                    // logger.warn("======== field ${name}:${internalValue} finding LocalizedMessage")
+                    EntityFind lmFind = getEntityFacadeImpl().find("moqui.basic.LocalizedMessage")
+                    lmFind.condition([original:internalValue, locale:localeStr])
+                    EntityValue lmValue = lmFind.useCache(true).one()
+                    if (lmValue) {
+                        String localized = lmValue.localized
+                        StupidUtilities.addToMapInMap(name, localeStr, localized, localizedByLocaleByField)
+                        return localized
+                    }
+
+                    // we didn't find a localized value, remember that so we don't do the queries again (common case)
+                    StupidUtilities.addToMapInMap(name, localeStr, null, localizedByLocaleByField)
+                    // logger.warn("======== field ${name}:${internalValue} remembering no localized, localizedByLocaleByField=${localizedByLocaleByField}")
+                }
+
+                return internalValue
             }
         }
 
-        if (fieldNode."@is-user-field" == "true") {
+        if ('true'.equals(fieldNode.attributes().get('is-user-field'))) {
             // get if from the UserFieldValue entity instead
-            Map<String, Object> parms = [entityName: ed.getFullEntityName(), fieldName: name]
+            Map<String, Object> parms = new HashMap<>()
+            parms.put('entityName', ed.getFullEntityName())
+            parms.put('fieldName', name)
             addThreeFieldPkValues(parms)
 
             boolean alreadyDisabled = efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz()
@@ -176,7 +226,7 @@ abstract class EntityValueBase implements EntityValue {
                         .condition(parms).list()
                 if (userFieldValueList) {
                     // do type conversion according to field type
-                    return ed.convertFieldString(name, (String) userFieldValueList[0].valueText)
+                    return ed.convertFieldString(name, (String) userFieldValueList.get(0).valueText)
                 }
             } finally {
                 if (!alreadyDisabled) efi.getEcfi().getExecutionContext().getArtifactExecution().enableAuthz()
@@ -201,37 +251,28 @@ abstract class EntityValueBase implements EntityValue {
 
     @Override
     Map<String, Object> getPrimaryKeys() {
-        if (internalPkMap != null) return (Map<String, Object>) internalPkMap.clone()
+        if (internalPkMap != null) return new HashMap<String, Object>(internalPkMap)
         Map<String, Object> pks = new HashMap()
-        for (String fieldName in this.getEntityDefinition().getPkFieldNames()) {
+        ArrayList<String> fieldNameList = this.getEntityDefinition().getPkFieldNames()
+        int size = fieldNameList.size()
+        for (int i = 0; i < size; i++) {
+            String fieldName = fieldNameList.get(i)
             // only include PK fields which has a non-empty value, leave others out of the Map
             Object value = valueMap.get(fieldName)
             if (value) pks.put(fieldName, value)
         }
         internalPkMap = pks
-        return (Map<String, Object>) internalPkMap.clone()
+        return new HashMap<String, Object>(internalPkMap)
     }
 
     @Override
     EntityValue set(String name, Object value) {
-        if (!mutable) throw new EntityException("Cannot set field [${name}], this entity value is not mutable (it is read-only)")
-        if (!getEntityDefinition().isField(name)) {
-            throw new EntityException("The name [${name}] is not a valid field name for entity [${entityName}]")
-        }
-        if (valueMap.get(name) != value) {
-            modified = true
-            if (entityDefinition.isPkField(name)) pkModified = true
-            if (valueMap.containsKey(name)) {
-                if (dbValueMap == null) dbValueMap = [:]
-                dbValueMap.put(name, valueMap.get(name))
-            }
-        }
-        valueMap.put(name, value)
+        put(name, value)
         return this
     }
 
     @Override
-    EntityValue setAll(Map<String, ?> fields) {
+    EntityValue setAll(Map<String, Object> fields) {
         entityDefinition.setFields(fields, this, true, null, null)
         return this
     }
@@ -249,7 +290,7 @@ abstract class EntityValueBase implements EntityValue {
     }
 
     @Override
-    Timestamp getTimestamp(String name) { return (Timestamp) this.get(name)?.asType(Timestamp.class) }
+    Timestamp getTimestamp(String name) { return this.get(name) as Timestamp }
 
     @Override
     Time getTime(String name) { return this.get(name) as Time }
@@ -273,7 +314,7 @@ abstract class EntityValueBase implements EntityValue {
             if (((SerialBlob) o).length() == 0) return new byte[0]
             return ((SerialBlob) o).getBytes(1, (int) o.length())
         }
-        if (o instanceof byte[]) return o
+        if (o instanceof byte[]) return (byte[]) o
         // try groovy...
         return o as byte[]
     }
@@ -285,14 +326,14 @@ abstract class EntityValueBase implements EntityValue {
     SerialBlob getSerialBlob(String name) {
         Object o = this.get(name)
         if (o == null) return null
-        if (o instanceof SerialBlob) return o
+        if (o instanceof SerialBlob) return (SerialBlob) o
         if (o instanceof byte[]) return new SerialBlob((byte[]) o)
         // try groovy...
         return o as SerialBlob
     }
 
     @Override
-    EntityValue setFields(Map<String, ?> fields, boolean setIfEmpty, String namePrefix, Boolean pks) {
+    EntityValue setFields(Map<String, Object> fields, boolean setIfEmpty, String namePrefix, Boolean pks) {
         entityDefinition.setFields(fields, this, setIfEmpty, namePrefix, pks)
         return this
     }
@@ -301,12 +342,12 @@ abstract class EntityValueBase implements EntityValue {
     EntityValue setSequencedIdPrimary() {
         List<String> pkFields = getEntityDefinition().getPkFieldNames()
         Node entityNode = getEntityDefinition().getEntityNode()
-        Long staggerMax = (entityNode."@sequence-primary-stagger" as Long) ?: 1
-        Long bankSize = (entityNode."@sequence-bank-size" as Long) ?: 50
+        Long staggerMax = (entityNode.attributes().get('sequence-primary-stagger') as Long) ?: 1
+        Long bankSize = (entityNode.attributes().get('sequence-bank-size') as Long) ?: 50
 
         // get the entity-specific prefix, support string expansion for it too
         String entityPrefix = ""
-        String rawPrefix = getEntityDefinition().getEntityNode()?."@sequence-primary-prefix"
+        String rawPrefix = getEntityDefinition().getEntityNode()?.attributes()?.get('sequence-primary-prefix')
         if (rawPrefix) entityPrefix = efi.getEcfi().getResourceFacade().evaluateStringExpand(rawPrefix, null, valueMap)
 
         set(pkFields.get(0), entityPrefix + getEntityFacadeImpl().sequencedIdPrimary(getEntityName(), staggerMax, bankSize))
@@ -319,7 +360,7 @@ abstract class EntityValueBase implements EntityValue {
         if (pkFields.size() < 2) throw new EntityException("Cannot call setSequencedIdSecondary() on entity [${getEntityName()}], there are not at least 2 primary key fields.")
         // sequenced field will be the last pk
         String seqFieldName = pkFields.get(pkFields.size()-1)
-        int paddedLength  = (getEntityDefinition().entityNode."@sequence-secondary-padded-length" as Integer) ?: 2
+        int paddedLength  = (getEntityDefinition().entityNode.attributes().get('sequence-secondary-padded-length') as Integer) ?: 2
 
         this.remove(seqFieldName)
         EntityValue lookupValue = getEntityFacadeImpl().makeValue(getEntityName())
@@ -422,7 +463,7 @@ abstract class EntityValueBase implements EntityValue {
         EntityDefinition ed = getEntityDefinition()
         if (!ed.needsAuditLog()) return
 
-        ExecutionContext ec = getEntityFacadeImpl().getEcfi().getExecutionContext()
+        ExecutionContextImpl ec = getEntityFacadeImpl().getEcfi().getEci()
         Timestamp nowTimestamp = ec.getUser().getNowTimestamp()
 
         Map<String, Object> pksValueMap = new HashMap<String, Object>()
@@ -430,7 +471,7 @@ abstract class EntityValueBase implements EntityValue {
 
         for (Node fieldNode in ed.getFieldNodes(true, true, true)) {
             if (ed.getFieldAuditLog(fieldNode) == "true" || (isUpdate && ed.getFieldAuditLog(fieldNode) == "update")) {
-                String fieldName = fieldNode."@name"
+                String fieldName = fieldNode.attributes().get('name')
 
                 // is there a new value? if not continue
                 if (!this.valueMap.containsKey(fieldName)) continue
@@ -445,12 +486,12 @@ abstract class EntityValueBase implements EntityValue {
 
                 // don't skip for this, if a field was reset then we want to record that: if (!value) continue
 
-                String stackNameString = ec.artifactExecution.getStackNameString()
+                String stackNameString = ec.getArtifactExecutionImpl().getStackNameString()
                 if (stackNameString.length() > 4000) stackNameString = stackNameString.substring(0, 4000)
-                Map<String, Object> parms = [changedEntityName:getEntityName(),
+                Map<String, Object> parms = new HashMap<String, Object>([changedEntityName:getEntityName(),
                         changedFieldName:fieldName, newValueText:(value as String), changedDate:nowTimestamp,
                         changedByUserId:ec.getUser().getUserId(), changedInVisitId:ec.getUser().getVisitId(),
-                        artifactStack:stackNameString]
+                        artifactStack:stackNameString])
                 parms.oldValueText = oldValue
                 parms.putAll(pksValueMap)
 
@@ -466,7 +507,7 @@ abstract class EntityValueBase implements EntityValue {
         EntityDefinition ed = getEntityDefinition()
 
         // get pkPrimaryValue, pkSecondaryValue, pkRestCombinedValue (just like the AuditLog stuff)
-        ListOrderedSet pkFieldList = ed.getFieldNames(true, false, false)
+        List<String> pkFieldList = new ArrayList(ed.getPkFieldNames())
         String firstPkField = pkFieldList.size() > 0 ? pkFieldList.remove(0) : null
         String secondPkField = pkFieldList.size() > 0 ? pkFieldList.remove(0) : null
         StringBuffer pkTextSb = new StringBuffer()
@@ -483,17 +524,17 @@ abstract class EntityValueBase implements EntityValue {
     }
 
     @Override
-    EntityList findRelated(String relationshipName, Map<String, ?> byAndFields, List<String> orderBy, Boolean useCache, Boolean forUpdate) {
+    EntityList findRelated(String relationshipName, Map<String, Object> byAndFields, List<String> orderBy, Boolean useCache, Boolean forUpdate) {
         Node relationship = getEntityDefinition().getRelationshipNode(relationshipName)
         if (!relationship) throw new EntityException("Relationship [${relationshipName}] not found in entity [${entityName}]")
 
-        String relatedEntityName = relationship."@related-entity-name"
-        Map keyMap = EntityDefinition.getRelationshipExpandedKeyMap(relationship, efi.getEntityDefinition(relatedEntityName))
+        String relatedEntityName = relationship.attributes().get('related-entity-name')
+        Map<String, String> keyMap = EntityDefinition.getRelationshipExpandedKeyMap(relationship, efi.getEntityDefinition(relatedEntityName))
         if (!keyMap) throw new EntityException("Relationship [${relationshipName}] in entity [${entityName}] has no key-map sub-elements and no default values")
 
         // make a Map where the key is the related entity's field name, and the value is the value from this entity
-        Map condMap = new HashMap()
-        for (Map.Entry entry in keyMap.entrySet()) condMap.put(entry.getValue(), valueMap.get(entry.getKey()))
+        Map<String, Object> condMap = new HashMap<String, Object>()
+        for (Map.Entry<String, String> entry in keyMap.entrySet()) condMap.put(entry.getValue(), valueMap.get(entry.getKey()))
         if (byAndFields) condMap.putAll(byAndFields)
 
         EntityFind find = getEntityFacadeImpl().find(relatedEntityName)
@@ -508,9 +549,9 @@ abstract class EntityValueBase implements EntityValue {
     }
 
     protected EntityValue findRelatedOne(Node relationship, Boolean useCache, Boolean forUpdate) {
-        String relatedEntityName = relationship."@related-entity-name"
+        String relatedEntityName = relationship.attributes().get('related-entity-name')
         Map keyMap = EntityDefinition.getRelationshipExpandedKeyMap(relationship, efi.getEntityDefinition(relatedEntityName))
-        if (!keyMap) throw new EntityException("Relationship [${relationship."@title"}${relationship."@related-entity-name"}] in entity [${entityName}] has no key-map sub-elements and no default values")
+        if (!keyMap) throw new EntityException("Relationship [${relationship.attributes().get('title')}${relationship.attributes().get('related-entity-name')}] in entity [${entityName}] has no key-map sub-elements and no default values")
 
         // make a Map where the key is the related entity's field name, and the value is the value from this entity
         Map condMap = new HashMap()
@@ -529,14 +570,19 @@ abstract class EntityValueBase implements EntityValue {
 
     @Override
     boolean checkFks(boolean insertDummy) {
-        for (Node oneRel in (Collection<Node>) getEntityDefinition().entityNode."relationship".findAll({ it."@type" == "one" })) {
+        for (Object childObj in getEntityDefinition().getEntityNode().children()) {
+            Node oneRel = null
+            if (childObj instanceof Node) oneRel = (Node) childObj
+            if (oneRel == null) continue
+            if (!'relationship'.equals(oneRel.name()) || !'one'.equals(oneRel.attributes().get('type'))) continue
+
             EntityValue value = findRelatedOne(oneRel, true, false)
             if (!value) {
                 if (insertDummy) {
-                    String relatedEntityName = oneRel."@related-entity-name"
+                    String relatedEntityName = oneRel.attributes().get('related-entity-name')
                     EntityValue newValue = getEntityFacadeImpl().makeValue(relatedEntityName)
                     Map keyMap = EntityDefinition.getRelationshipExpandedKeyMap(oneRel, efi.getEntityDefinition(relatedEntityName))
-                    if (!keyMap) throw new EntityException("Relationship [${oneRel."@title"}#${oneRel."@related-entity-name"}] in entity [${entityName}] has no key-map sub-elements and no default values")
+                    if (!keyMap) throw new EntityException("Relationship [${oneRel.attributes().get('title')}#${oneRel.attributes().get('related-entity-name')}] in entity [${entityName}] has no key-map sub-elements and no default values")
 
                     // make a Map where the key is the related entity's field name, and the value is the value from this entity
                     for (Map.Entry entry in keyMap.entrySet())
@@ -569,8 +615,15 @@ abstract class EntityValueBase implements EntityValue {
                 Object dbFieldValue = dbValue.get(nonpkFieldName)
 
                 // use compareTo if available, generally more lenient (for BigDecimal ignores scale, etc)
-                if (checkFieldValue != null && (checkFieldValue instanceof Comparable && dbFieldValue != null ? checkFieldValue.compareTo(dbFieldValue) != 0 : checkFieldValue != dbFieldValue)) {
-                    messages.add("Field [${getEntityName()}.${nonpkFieldName}] did not match; check (file) value [${checkFieldValue}], db value [${dbFieldValue}] for primary key [${getPrimaryKeys()}]")
+                if (checkFieldValue != null) {
+                    boolean areSame = true
+                    if (checkFieldValue instanceof Comparable && dbFieldValue != null) {
+                        Comparable cfComp = (Comparable) checkFieldValue
+                        if (cfComp.compareTo(dbFieldValue) != 0) areSame = false
+                    } else {
+                        if (checkFieldValue != dbFieldValue) areSame = false
+                    }
+                    if (!areSame) messages.add("Field [${getEntityName()}.${nonpkFieldName}] did not match; check (file) value [${checkFieldValue}], db value [${dbFieldValue}] for primary key [${getPrimaryKeys()}]")
                 }
             }
         } catch (EntityException e) {
@@ -617,15 +670,15 @@ abstract class EntityValueBase implements EntityValue {
         // if a CDATA element is needed for a field it goes in this Map to be added at the end
         Map<String, String> cdataMap = [:]
         Map<String, Object> subPlainMap = [:]
-        String curEntity = objectName ?: plainMap.get('_entity')
+        String curEntity = objectName ?: (String) plainMap.get('_entity')
 
-        for (int i = 0; i < level; i++) pw.print(indentString)
+        for (int i = 0; i < level; i++) pw.append(indentString)
         // mostly for relationship names, see opposite code in the EntityDataLoaderImpl.startElement
         if (curEntity.contains('#')) curEntity = curEntity.replace('#', '-')
         pw.append('<').append(prefix ?: '').append(curEntity)
 
         int valueCount = 1
-        for (Map.Entry<String, Object> entry in plainMap) {
+        for (Map.Entry<String, Object> entry in plainMap.entrySet()) {
             String fieldName = entry.getKey()
             // leave this out, not needed for XML where the element name represents the entity or relationship
             if (fieldName == '_entity') continue
@@ -634,12 +687,10 @@ abstract class EntityValueBase implements EntityValue {
             if (fieldValue instanceof Map || fieldValue instanceof List) {
                 subPlainMap.put(fieldName, fieldValue)
                 continue
-            }
-            if (fieldValue instanceof byte[]) {
-                cdataMap.put(fieldName, new String(Base64.encodeBase64(fieldValue)))
+            } else if (fieldValue instanceof byte[]) {
+                cdataMap.put(fieldName, new String(Base64.encodeBase64((byte[]) fieldValue)))
                 continue
-            }
-            if (fieldValue instanceof SerialBlob) {
+            } else if (fieldValue instanceof SerialBlob) {
                 if (fieldValue.length() == 0) continue
                 byte[] objBytes = fieldValue.getBytes(1, (int) fieldValue.length())
                 cdataMap.put(fieldName, new String(Base64.encodeBase64(objBytes)))
@@ -672,24 +723,24 @@ abstract class EntityValueBase implements EntityValue {
             }
 
             // related/dependent sub-elements
-            for (Map.Entry<String, Object> entry in subPlainMap) {
+            for (Map.Entry<String, Object> entry in subPlainMap.entrySet()) {
                 String entryKey = entry.getKey()
                 Object entryVal = entry.getValue()
                 if (entryVal instanceof List) {
                     for (Object listEntry in entryVal) {
                         if (listEntry instanceof Map) {
-                            valueCount += plainMapXmlWriter(pw, prefix, entryKey, listEntry, level + 1)
+                            valueCount += plainMapXmlWriter(pw, prefix, entryKey, (Map) listEntry, level + 1)
                         } else {
                             logger.warn("In entity auto create for entity ${curEntity} found list for sub-object ${entryKey} with a non-Map entry: ${listEntry}")
                         }
                     }
                 } else if (entryVal instanceof Map) {
-                    valueCount += plainMapXmlWriter(pw, prefix, entryKey, entryVal, level + 1)
+                    valueCount += plainMapXmlWriter(pw, prefix, entryKey, (Map) entryVal, level + 1)
                 }
             }
 
             // close the entity element
-            for (int i = 0; i < level; i++) pw.print(indentString)
+            for (int i = 0; i < level; i++) pw.append(indentString)
             pw.append('</').append(curEntity).append('>\n')
         }
 
@@ -762,10 +813,24 @@ abstract class EntityValueBase implements EntityValue {
     }
 
     @Override
-    Object put(String k, Object v) {
-        Object original = this.get(k)
-        this.set(k, v)
-        return original
+    Object put(String name, Object value) {
+        EntityDefinition ed = getEntityDefinition()
+        Node fieldNode = ed.getFieldNode(name)
+        if (!mutable) throw new EntityException("Cannot set field [${name}], this entity value is not mutable (it is read-only)")
+        if (fieldNode == null) {
+            throw new EntityException("The name [${name}] is not a valid field name for entity [${entityName}]")
+        }
+        Object curValue = valueMap.get(name)
+        if (curValue != value) {
+            modified = true
+            if ('true'.equals(fieldNode.attributes().get('is-pk'))) pkModified = true
+            if (curValue != null) {
+                if (dbValueMap == null) dbValueMap = [:]
+                dbValueMap.put(name, curValue)
+            }
+        }
+        valueMap.put(name, value)
+        return curValue
     }
 
     @Override
@@ -850,19 +915,24 @@ abstract class EntityValueBase implements EntityValue {
     }
 
     void checkSetFieldDefaults(boolean isCreate, EntityDefinition ed, ExecutionContext ec) {
-        for (Node fieldNode in ed.getFieldNodes(isCreate, true, false)) {
-            String defaultStr = fieldNode."@default"
-            if (!defaultStr) continue
-            String fieldName = fieldNode."@name"
-            Object curVal = valueMap.get(fieldName)
-            if (StupidUtilities.isEmpty(curVal)) {
-                ec.getContext().push(valueMap)
-                try {
-                    Object newVal = ec.getResource().evaluateContextField(defaultStr, "")
-                    if (newVal != null) valueMap.put(fieldName, newVal)
-                } finally {
-                    ec.getContext().pop()
-                }
+        Map<String, String> nonPkDefaults = ed.getNonPkFieldDefaults()
+        if (nonPkDefaults.size() > 0) for (Map.Entry<String, String> entry in nonPkDefaults.entrySet())
+            checkSetDefault(entry.getKey(), entry.getValue(), ec)
+        if (isCreate) {
+            Map<String, String> pkDefaults = ed.getPkFieldDefaults()
+            if (pkDefaults.size() > 0) for (Map.Entry<String, String> entry in pkDefaults.entrySet())
+                checkSetDefault(entry.getKey(), entry.getValue(), ec)
+        }
+    }
+    protected void checkSetDefault(String fieldName, String defaultStr, ExecutionContext ec) {
+        Object curVal = valueMap.get(fieldName)
+        if (StupidUtilities.isEmpty(curVal)) {
+            ec.getContext().push(valueMap)
+            try {
+                Object newVal = ec.getResource().evaluateContextField(defaultStr, "")
+                if (newVal != null) valueMap.put(fieldName, newVal)
+            } finally {
+                ec.getContext().pop()
             }
         }
     }
@@ -874,9 +944,10 @@ abstract class EntityValueBase implements EntityValue {
         ExecutionContextFactoryImpl ecfi = getEntityFacadeImpl().getEcfi()
         ExecutionContext ec = ecfi.getExecutionContext()
 
+        String authorizeSkip = ed.entityNode.attributes().get('authorize-skip')
         ec.getArtifactExecution().push(
                 new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_CREATE").setParameters(valueMap),
-                (ed.entityNode."@authorize-skip" != "true" && !ed.entityNode."@authorize-skip"?.contains("create")))
+                (authorizeSkip != "true" && !authorizeSkip?.contains("create")))
 
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "create", true)
 
@@ -890,9 +961,13 @@ abstract class EntityValueBase implements EntityValue {
         // do this before the db change so modified flag isn't cleared
         if (doDataFeed()) getEntityFacadeImpl().getEntityDataFeed().dataFeedCheckAndRegister(this, false, valueMap, null)
 
-        ListOrderedSet fieldList = new ListOrderedSet()
-        for (String fieldName in ed.getFieldNames(true, true, false)) if (valueMap.containsKey(fieldName)) fieldList.add(fieldName)
-
+        ArrayList<String> fieldList = new ArrayList<String>()
+        ArrayList<String> fieldNameList = ed.getFieldNames(true, true, false)
+        int size = fieldNameList.size()
+        for (int i = 0; i < size; i++) {
+            String fieldName = fieldNameList.get(i)
+            if (valueMap.containsKey(fieldName)) fieldList.add(fieldName)
+        }
 
         // if there is not a txCache or the txCache doesn't handle the create, call the abstract method to create the main record
         if (getTxCache() == null || !getTxCache().create(this)) this.basicCreate(fieldList, null)
@@ -907,7 +982,7 @@ abstract class EntityValueBase implements EntityValue {
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "create", false)
         // count the artifact hit
         ecfi.countArtifactHit("entity", "create", ed.getFullEntityName(), this.getPrimaryKeys(), startTime,
-                System.currentTimeMillis(), 1)
+                System.currentTimeMillis(), 1L)
         // pop the ArtifactExecutionInfo to clean it up
         ec.getArtifactExecution().pop()
 
@@ -915,12 +990,17 @@ abstract class EntityValueBase implements EntityValue {
     }
     void basicCreate(Connection con) {
         EntityDefinition ed = getEntityDefinition()
-        ListOrderedSet fieldList = new ListOrderedSet()
-        for (String fieldName in ed.getFieldNames(true, true, false)) if (valueMap.containsKey(fieldName)) fieldList.add(fieldName)
+        ArrayList<String> fieldList = new ArrayList<String>()
+        ArrayList<String> fieldNameList = ed.getFieldNames(true, true, false)
+        int size = fieldNameList.size()
+        for (int i = 0; i < size; i++) {
+            String fieldName = fieldNameList.get(i)
+            if (valueMap.containsKey(fieldName)) fieldList.add(fieldName)
+        }
 
         basicCreate(fieldList, con)
     }
-    void basicCreate(ListOrderedSet fieldList, Connection con) {
+    void basicCreate(ArrayList<String> fieldList, Connection con) {
         EntityDefinition ed = getEntityDefinition()
         ExecutionContextFactoryImpl ecfi = getEntityFacadeImpl().getEcfi()
         ExecutionContext ec = ecfi.getExecutionContext()
@@ -928,7 +1008,7 @@ abstract class EntityValueBase implements EntityValue {
         this.createExtended(fieldList, con)
 
         // create records for the UserFields
-        ListOrderedSet userFieldNameList = ed.getFieldNames(false, false, true)
+        ListOrderedSet userFieldNameList = ed.getUserFieldNames()
         if (userFieldNameList) {
             boolean alreadyDisabled = ec.getArtifactExecution().disableAuthz()
             try {
@@ -938,7 +1018,7 @@ abstract class EntityValueBase implements EntityValue {
                     if (valueObj == null) continue
 
                     Map<String, Object> parms = [entityName: ed.getFullEntityName(), fieldName: userFieldName,
-                            userGroupId: userFieldNode."@user-group-id", valueText: valueObj as String]
+                            userGroupId: userFieldNode.attributes().get('user-group-id'), valueText: valueObj as String]
                     addThreeFieldPkValues(parms)
                     EntityValue newUserFieldValue = efi.makeValue("moqui.entity.UserFieldValue").setAll(parms)
                     newUserFieldValue.setSequencedIdPrimary().create()
@@ -949,7 +1029,7 @@ abstract class EntityValueBase implements EntityValue {
         }
     }
     /** This method should create a corresponding record in the datasource. */
-    abstract void createExtended(ListOrderedSet fieldList, Connection con)
+    abstract void createExtended(ArrayList<String> fieldList, Connection con)
 
     @Override
     EntityValue update() {
@@ -960,9 +1040,10 @@ abstract class EntityValueBase implements EntityValue {
 
         if (ed.createOnly()) throw new EntityException("Entity [${getEntityName()}] is create-only (immutable), cannot be updated.")
 
+        String authorizeSkip = ed.entityNode.attributes().get('authorize-skip')
         ec.getArtifactExecution().push(
                 new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_UPDATE").setParameters(valueMap),
-                ed.entityNode."@authorize-skip" != "true")
+                    authorizeSkip != "true")
 
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "update", true)
 
@@ -976,17 +1057,19 @@ abstract class EntityValueBase implements EntityValue {
         List entityInfoList = doDataFeed() ? getEntityFacadeImpl().getEntityDataFeed().getDataFeedEntityInfoList(ed.getFullEntityName()) : []
 
         EntityValueImpl refreshedValue = null
-        if (ed.needsAuditLog() || entityInfoList || ed.getEntityNode()."@optimistic-lock" == "true") {
+        if (ed.needsAuditLog() || entityInfoList || ed.getEntityNode().attributes().get('optimistic-lock') == "true") {
             refreshedValue = (EntityValueImpl) this.clone()
             refreshedValue.refresh()
         }
 
         Map oldValues = refreshedValue ? refreshedValue.getValueMap() : (dbValueMapFromDb ? dbValueMap : [:])
 
-        List<String> pkFieldList = ed.getPkFieldNames()
-        ListOrderedSet nonPkAllFieldList = ed.getFieldNames(false, true, false)
-        ListOrderedSet nonPkFieldList = new ListOrderedSet()
-        for (String fieldName in nonPkAllFieldList) {
+        ArrayList<String> pkFieldList = ed.getPkFieldNames()
+        ArrayList<String> nonPkFieldList = new ArrayList<String>()
+        ArrayList<String> fieldNameList = ed.getNonPkFieldNames()
+        int size = fieldNameList.size()
+        for (int i = 0; i < size; i++) {
+            String fieldName = fieldNameList.get(i)
             if (valueMap.containsKey(fieldName) &&
                     (!dbValueMapFromDb || valueMap.get(fieldName) != dbValueMap.get(fieldName))) {
                 nonPkFieldList.add(fieldName)
@@ -998,7 +1081,7 @@ abstract class EntityValueBase implements EntityValue {
             return this
         }
 
-        if (ed.getEntityNode()."@optimistic-lock" == "true") {
+        if (ed.getEntityNode().attributes().get('optimistic-lock') == "true") {
             if (getTimestamp("lastUpdatedStamp") != refreshedValue.getTimestamp("lastUpdatedStamp"))
                 throw new EntityException("This record was updated by someone else at [${getTimestamp("lastUpdatedStamp")}] which was after the version you loaded at [${refreshedValue.getTimestamp("lastUpdatedStamp")}]. Not updating to avoid overwriting data.")
         }
@@ -1023,7 +1106,7 @@ abstract class EntityValueBase implements EntityValue {
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "update", false)
         // count the artifact hit
         ecfi.countArtifactHit("entity", "update", ed.getFullEntityName(), this.getPrimaryKeys(),
-                startTime, System.currentTimeMillis(), 1)
+                startTime, System.currentTimeMillis(), 1L)
         // pop the ArtifactExecutionInfo to clean it up
         ec.getArtifactExecution().pop()
 
@@ -1036,10 +1119,12 @@ abstract class EntityValueBase implements EntityValue {
         // it may be that the oldValues map is full of null values because the EntityValue didn't come from the db
         if (dbValueMap) for (Object val in dbValueMap.values()) if (val != null) { dbValueMapFromDb = true; break }
 
-        List<String> pkFieldList = ed.getPkFieldNames()
-        ListOrderedSet nonPkAllFieldList = ed.getFieldNames(false, true, false)
-        ListOrderedSet nonPkFieldList = new ListOrderedSet()
-        for (String fieldName in nonPkAllFieldList) {
+        ArrayList<String> pkFieldList = ed.getPkFieldNames()
+        ArrayList<String> nonPkFieldList = new ArrayList<String>()
+        ArrayList<String> fieldNameList = ed.getNonPkFieldNames()
+        int size = fieldNameList.size()
+        for (int i = 0; i < size; i++) {
+            String fieldName = fieldNameList.get(i)
             if (valueMap.containsKey(fieldName) &&
                     (!dbValueMapFromDb || valueMap.get(fieldName) != dbValueMap.get(fieldName))) {
                 nonPkFieldList.add(fieldName)
@@ -1048,7 +1133,7 @@ abstract class EntityValueBase implements EntityValue {
 
         basicUpdate(dbValueMapFromDb, pkFieldList, nonPkFieldList, con)
     }
-    void basicUpdate(boolean dbValueMapFromDb, List<String> pkFieldList, ListOrderedSet nonPkFieldList, Connection con) {
+    void basicUpdate(boolean dbValueMapFromDb, ArrayList<String> pkFieldList, ArrayList<String> nonPkFieldList, Connection con) {
         EntityDefinition ed = getEntityDefinition()
         ExecutionContextFactoryImpl ecfi = getEntityFacadeImpl().getEcfi()
         ExecutionContext ec = ecfi.getExecutionContext()
@@ -1057,12 +1142,13 @@ abstract class EntityValueBase implements EntityValue {
         this.updateExtended(pkFieldList, nonPkFieldList, con)
 
         // create or update records for the UserFields
-        ListOrderedSet userFieldNameList = ed.getFieldNames(false, false, true)
+        ListOrderedSet userFieldNameList = ed.getUserFieldNames()
         if (userFieldNameList) {
             boolean alreadyDisabled = ec.getArtifactExecution().disableAuthz()
             try {
                 // get values for all fields in one query, for all groups the user is in
-                Map<String, Object> findParms = [entityName: ed.getFullEntityName()]
+                Map<String, Object> findParms = [:]
+                findParms.entityName = ed.getFullEntityName()
                 addThreeFieldPkValues(findParms)
                 Set<String> userGroupIdSet = efi.getEcfi().getExecutionContext().getUser().getUserGroupIdSet()
                 EntityList userFieldValueList = efi.find("moqui.entity.UserFieldValue")
@@ -1076,7 +1162,9 @@ abstract class EntityValueBase implements EntityValue {
                         continue
                     }
 
-                    EntityList fieldOnlyUserFieldValueList = userFieldValueList.filterByAnd([fieldName: userFieldName])
+                    List<EntityValue> fieldOnlyUserFieldValueList = []
+                    for (EntityValue efVal in userFieldValueList)
+                        if (efVal.fieldName == userFieldName) fieldOnlyUserFieldValueList.add(efVal)
                     if (fieldOnlyUserFieldValueList) {
                         for (EntityValue userFieldValue in fieldOnlyUserFieldValueList) {
                             userFieldValue.valueText = this.getValueMap().get(userFieldName) as String
@@ -1086,7 +1174,7 @@ abstract class EntityValueBase implements EntityValue {
                         Node userFieldNode = ed.getFieldNode(userFieldName)
 
                         Map<String, Object> parms = [entityName: ed.getFullEntityName(), fieldName: userFieldName,
-                                userGroupId: userFieldNode."@user-group-id", valueText: this.getValueMap().get(userFieldName) as String]
+                                userGroupId: userFieldNode.attributes().get('user-group-id'), valueText: this.getValueMap().get(userFieldName) as String]
                         addThreeFieldPkValues(parms)
                         EntityValue newUserFieldValue = efi.makeValue("moqui.entity.UserFieldValue").setAll(parms)
                         newUserFieldValue.setSequencedIdPrimary().create()
@@ -1097,7 +1185,7 @@ abstract class EntityValueBase implements EntityValue {
             }
         }
     }
-    abstract void updateExtended(List<String> pkFieldList, ListOrderedSet nonPkFieldList, Connection con)
+    abstract void updateExtended(ArrayList<String> pkFieldList, ArrayList<String> nonPkFieldList, Connection con)
 
     @Override
     EntityValue delete() {
@@ -1108,9 +1196,10 @@ abstract class EntityValueBase implements EntityValue {
 
         if (ed.createOnly()) throw new EntityException("Entity [${getEntityName()}] is create-only (immutable), cannot be deleted.")
 
+        String authorizeSkip = ed.entityNode.attributes().get('authorize-skip')
         ec.getArtifactExecution().push(
                 new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_DELETE").setParameters(valueMap),
-                ed.entityNode."@authorize-skip" != "true")
+                    authorizeSkip != "true")
 
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "delete", true)
         // this needs to be called before the actual update so we know which fields are modified
@@ -1129,7 +1218,7 @@ abstract class EntityValueBase implements EntityValue {
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "delete", false)
         // count the artifact hit
         ecfi.countArtifactHit("entity", "delete", ed.getFullEntityName(), this.getPrimaryKeys(),
-                startTime, System.currentTimeMillis(), 1)
+                startTime, System.currentTimeMillis(), 1L)
         // pop the ArtifactExecutionInfo to clean it up
         ec.getArtifactExecution().pop()
 
@@ -1143,12 +1232,13 @@ abstract class EntityValueBase implements EntityValue {
         this.deleteExtended(con)
 
         // delete records for the UserFields
-        ListOrderedSet userFieldNameList = ed.getFieldNames(false, false, true)
+        ListOrderedSet userFieldNameList = ed.getUserFieldNames()
         if (userFieldNameList) {
             boolean alreadyDisabled = ec.getArtifactExecution().disableAuthz()
             try {
                 // get values for all fields in one query, for all groups the user is in
-                Map<String, Object> findParms = [entityName: ed.getFullEntityName()]
+                Map<String, Object> findParms = [:]
+                findParms.entityName = ed.getFullEntityName()
                 addThreeFieldPkValues(findParms)
                 Set<String> userGroupIdSet = ec.getUser().getUserGroupIdSet()
                 efi.find("moqui.entity.UserFieldValue")
@@ -1168,10 +1258,11 @@ abstract class EntityValueBase implements EntityValue {
         ExecutionContextFactoryImpl ecfi = getEntityFacadeImpl().getEcfi()
         ExecutionContext ec = ecfi.getExecutionContext()
 
+        String authorizeSkip = ed.entityNode.attributes().get('authorize-skip')
         ec.getArtifactExecution().push(
                 new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW")
                         .setActionDetail("refresh").setParameters(valueMap),
-                ed.entityNode."@authorize-skip" != "true")
+                authorizeSkip != "true")
 
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "find-one", true)
 
@@ -1192,7 +1283,7 @@ abstract class EntityValueBase implements EntityValue {
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "find-one", false)
         // count the artifact hit
         ecfi.countArtifactHit("entity", "refresh", ed.getFullEntityName(), this.getPrimaryKeys(),
-                startTime, System.currentTimeMillis(), retVal ? 1 : 0)
+                startTime, System.currentTimeMillis(), retVal ? 1L : 0L)
         // pop the ArtifactExecutionInfo to clean it up
         ec.getArtifactExecution().pop()
 

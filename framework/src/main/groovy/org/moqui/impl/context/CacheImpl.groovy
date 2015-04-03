@@ -11,6 +11,8 @@
  */
 package org.moqui.impl.context
 
+import groovy.transform.CompileStatic
+
 import java.sql.Timestamp
 
 import org.moqui.context.Cache
@@ -20,6 +22,7 @@ import net.sf.ehcache.Ehcache
 import net.sf.ehcache.store.MemoryStoreEvictionPolicy
 import net.sf.ehcache.Element
 
+@CompileStatic
 class CacheImpl implements Cache {
 
     protected final Ehcache ehcache
@@ -103,6 +106,7 @@ class CacheImpl implements Cache {
 
     @Override
     Object put(Serializable key, Object value) {
+        if (key == null) throw new IllegalArgumentException("Cannot put value in cache [${getName()}] with null key")
         // use quiet get to not update stats as this isn't an explicit user get
         Element originalElement = this.ehcache.getQuiet(key)
         this.ehcache.put(new Element(key, value))
@@ -137,10 +141,11 @@ class CacheImpl implements Cache {
 
     List<Map> makeElementInfoList(String orderByField) {
         List<Map> elementInfoList = new LinkedList()
-        for (Serializable key in ehcache.getKeysWithExpiryCheck()) {
+        for (Object key in ehcache.getKeysWithExpiryCheck()) {
             Element e = ehcache.get(key)
-            Map im = [key:key as String, value:e.getObjectValue() as String, hitCount:e.getHitCount(),
-                    creationTime:new Timestamp(e.getCreationTime()), version:e.getVersion()]
+            Map<String, Object> im = new HashMap<String, Object>([key:key as String,
+                    value:e.getObjectValue() as String, hitCount:e.getHitCount(),
+                    creationTime:new Timestamp(e.getCreationTime()), version:e.getVersion()])
             if (e.getLastUpdateTime()) im.lastUpdateTime = new Timestamp(e.getLastUpdateTime())
             if (e.getLastAccessTime()) im.lastAccessTime = new Timestamp(e.getLastAccessTime())
             elementInfoList.add(im)

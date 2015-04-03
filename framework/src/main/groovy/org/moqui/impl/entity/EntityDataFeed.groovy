@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.entity
 
+import groovy.transform.CompileStatic
 import org.moqui.context.Cache
 import org.moqui.entity.EntityCondition
 import org.moqui.entity.EntityException
@@ -28,6 +29,7 @@ import java.sql.Timestamp
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+@CompileStatic
 class EntityDataFeed {
     protected final static Logger logger = LoggerFactory.getLogger(EntityDataFeed.class)
 
@@ -167,6 +169,10 @@ class EntityDataFeed {
 
     List<DocumentEntityInfo> getDataFeedEntityInfoList(String fullEntityName) {
         List<DocumentEntityInfo> entityInfoList = (List<DocumentEntityInfo>) dataFeedEntityInfo.get(fullEntityName)
+        if (entityInfoList != null) return entityInfoList
+        // after this point entityInfoList is null
+        if (dataFeedEntityInfo.containsKey(fullEntityName)) return null
+
         // logger.warn("=============== getting DocumentEntityInfo for [${fullEntityName}], from cache: ${entityInfoList}")
         // only rebuild if the cache is empty, most entities won't have any entry in it and don't want a rebuild for each one
         if (entityInfoList == null) dataFeedEntityInfo.clearExpired()
@@ -177,6 +183,8 @@ class EntityDataFeed {
             entityInfoList = (List<DocumentEntityInfo>) dataFeedEntityInfo.get(fullEntityName)
             //logger.warn("============ got DocumentEntityInfo entityInfoList for [${fullEntityName}]: ${entityInfoList}")
         }
+        // remember that we don't have any info
+        if (entityInfoList == null) dataFeedEntityInfo.put(fullEntityName, [])
         return entityInfoList
     }
 
@@ -242,7 +250,7 @@ class EntityDataFeed {
         // have to go through entire fieldTree instead of entity names directly from fieldPath because may not have hash (#) separator
         Map<String, Object> fieldTree = [:]
         for (EntityValue dataDocumentField in dataDocumentFieldList) {
-            String fieldPath = dataDocumentField.fieldPath
+            String fieldPath = (String) dataDocumentField.fieldPath
             Iterator<String> fieldPathElementIter = fieldPath.split(":").iterator()
             Map currentTree = fieldTree
             DocumentEntityInfo currentEntityInfo = entityInfoMap.get(primaryEntityName)
@@ -261,7 +269,7 @@ class EntityDataFeed {
                     // make sure we have an entityInfo Map
                     Node relNode = currentEd.getRelationshipNode(fieldPathElement)
                     if (relNode == null) throw new EntityException("Could not find relationship [${fieldPathElement}] from entity [${currentEd.getFullEntityName()}] as part of DataDocumentField.fieldPath [${fieldPath}]")
-                    String relEntityName = relNode."@related-entity-name"
+                    String relEntityName = relNode.attributes().get('related-entity-name')
                     EntityDefinition relEd = efi.getEntityDefinition(relEntityName)
 
                     // add entry for the related entity
@@ -328,6 +336,7 @@ class EntityDataFeed {
         }
     }
 
+    @CompileStatic
     static class DataFeedSynchronization implements Synchronization {
         protected final static Logger logger = LoggerFactory.getLogger(DataFeedSynchronization.class)
 
@@ -480,6 +489,7 @@ class EntityDataFeed {
         void feedInThreadAndTx() {
             Thread thread = new Thread() {
                 @Override
+                @CompileStatic
                 public void run() {
                     boolean beganTransaction = ecfi.transactionFacade.begin(null)
                     try {
@@ -536,7 +546,7 @@ class EntityDataFeed {
                                         } else {
                                             // more complex, need to follow relationships backwards (reverse
                                             //     relationships) to get the primary entity's value
-                                            List<String> relationshipList = currentEntityInfo.relationshipPath.split(":")
+                                            List<String> relationshipList = Arrays.asList(currentEntityInfo.relationshipPath.split(":"))
                                             List<String> backwardRelList = []
                                             // add the relationships backwards
                                             for (String relElement in relationshipList) backwardRelList.add(0, relElement)
@@ -566,9 +576,9 @@ class EntityDataFeed {
 
                                                 if (backwardRelNode == null) throw new EntityException("For DataFeed could not find backward relationship for DataDocument [${dataDocumentId}] from entity [${prevRelValueEd.getFullEntityName()}] to entity [${currentRelEntityName}], previous relationship is [${prevRelName}], current relationship is [${currentRelName}]")
 
-                                                String backwardRelName = backwardRelNode."@title" ?
-                                                    backwardRelNode."@title" + "#" + backwardRelNode."@related-entity-name" :
-                                                    backwardRelNode."@related-entity-name"
+                                                String backTitle = (String) backwardRelNode.attributes().get('title')
+                                                String backRen = (String) backwardRelNode.attributes().get('related-entity-name')
+                                                String backwardRelName = backTitle ? backTitle + "#" + backRen : backRen
 
                                                 List<EntityValueBase> currentRelValueList = []
                                                 alreadyDisabled = efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz()

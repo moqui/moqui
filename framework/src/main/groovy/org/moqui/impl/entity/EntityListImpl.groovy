@@ -11,6 +11,8 @@
  */
 package org.moqui.impl.entity
 
+import groovy.transform.CompileStatic
+
 import java.sql.Timestamp
 
 import org.moqui.entity.EntityList
@@ -22,6 +24,7 @@ import org.moqui.entity.EntityException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+@CompileStatic
 class EntityListImpl implements EntityList {
     protected final static Logger logger = LoggerFactory.getLogger(EntityConditionFactoryImpl.class)
     public static final EntityList EMPTY = new EmptyEntityList()
@@ -57,12 +60,12 @@ class EntityListImpl implements EntityList {
             Long fromDateLong
             Long thruDateLong
 
-            if (fromDateObj instanceof Date) fromDateLong = fromDateObj.getTime()
-            else if (fromDateObj instanceof Long) fromDateLong = fromDateObj
+            if (fromDateObj instanceof Date) fromDateLong = ((Date) fromDateObj).getTime()
+            else if (fromDateObj instanceof Long) fromDateLong = (Long) fromDateObj
             else fromDateLong = null
 
-            if (thruDateObj instanceof Date) thruDateLong = thruDateObj.getTime()
-            else if (thruDateObj instanceof Long) thruDateLong = thruDateObj
+            if (thruDateObj instanceof Date) thruDateLong = ((Date) thruDateObj).getTime()
+            else if (thruDateObj instanceof Long) thruDateLong = (Long) thruDateObj
             else thruDateLong = null
 
             if (fromDateObj instanceof java.sql.Date || thruDateObj instanceof java.sql.Date) {
@@ -81,18 +84,18 @@ class EntityListImpl implements EntityList {
         return this
     }
     EntityList filterByDate(String fromDateName, String thruDateName, Timestamp moment, boolean ignoreIfEmpty) {
-        if (ignoreIfEmpty && moment == null) return this
+        if (ignoreIfEmpty && (Object) moment == null) return this
         return filterByDate(fromDateName, thruDateName, moment)
     }
 
     @Override
-    EntityList filterByAnd(Map<String, ?> fields) {
+    EntityList filterByAnd(Map<String, Object> fields) {
         if (fromCache) return this.cloneList().filterByAnd(fields)
         return filterByCondition(this.efi.getConditionFactory().makeCondition(fields), true)
     }
 
     @Override
-    EntityList removeByAnd(Map<String, ?> fields) {
+    EntityList removeByAnd(Map<String, Object> fields) {
         if (fromCache) return this.cloneList().removeByAnd(fields)
         return filterByCondition(this.efi.getConditionFactory().makeCondition(fields), false)
     }
@@ -153,7 +156,7 @@ class EntityListImpl implements EntityList {
     @Override
     Integer getLimit() { return this.limit }
     @Override
-    int getPageIndex() { return offset == null ? 0 : offset/getPageSize() }
+    int getPageIndex() { return offset == null ? 0 : (offset/getPageSize()).intValue() }
     @Override
     int getPageSize() { return limit ?: 20 }
 
@@ -334,6 +337,7 @@ class EntityListImpl implements EntityList {
     @Override
     String toString() { this.valueList.toString() }
 
+    @CompileStatic
     static class EmptyEntityList implements EntityList {
         static final ListIterator emptyIterator = new LinkedList().listIterator()
 
@@ -344,28 +348,18 @@ class EntityListImpl implements EntityList {
 
         EntityValue getFirst() { return null }
         EntityList filterByDate(String fromDateName, String thruDateName, Timestamp moment) { return this }
-        EntityList filterByAnd(Map<String, ?> fields) { return this }
-        EntityList removeByAnd(Map<String, ?> fields) { return this }
+        EntityList filterByAnd(Map<String, Object> fields) { return this }
+        EntityList removeByAnd(Map<String, Object> fields) { return this }
         EntityList filterByCondition(EntityCondition condition, Boolean include) { return this }
         EntityList filterByLimit(Integer offset, Integer limit) {
             this.offset = offset
             this.limit = limit
             return this
         }
-        EntityList filterByLimit(String inputFieldsMapName, boolean alwaysPaginate) {
-            Map inf = inputFieldsMapName ? (Map) efi.ecfi.executionContext.context[inputFieldsMapName] : efi.ecfi.executionContext.context
-            if (alwaysPaginate || inf.get("pageIndex")) {
-                int pageIndex = (inf.get("pageIndex") ?: 0) as int
-                int pageSize = (inf.get("pageSize") ?: (this.limit ?: 20)) as int
-                int offset = pageIndex * pageSize
-                return filterByLimit(offset, pageSize)
-            } else {
-                return this
-            }
-        }
+        EntityList filterByLimit(String inputFieldsMapName, boolean alwaysPaginate) { return this }
         Integer getOffset() { return this.offset }
         Integer getLimit() { return this.limit }
-        int getPageIndex() { return offset == null ? 0 : offset/getPageSize() }
+        int getPageIndex() { return offset == null ? 0 : (offset/getPageSize()).intValue() }
         int getPageSize() { return limit ?: 20 }
         EntityList orderByFields(List<String> fieldNames) { return this }
         int indexMatching(Map valueMap) { return -1 }

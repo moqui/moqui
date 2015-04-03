@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.service.runner
 
+import groovy.transform.CompileStatic
 import org.moqui.impl.service.ServiceDefinition
 import org.moqui.impl.service.ServiceFacadeImpl
 import org.moqui.impl.service.ServiceRunner
@@ -18,8 +19,12 @@ import org.moqui.context.ExecutionContext
 import org.moqui.context.ContextStack
 import org.moqui.impl.actions.XmlAction
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
+@CompileStatic
 public class InlineServiceRunner implements ServiceRunner {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(InlineServiceRunner.class)
+    protected final static Logger logger = LoggerFactory.getLogger(InlineServiceRunner.class)
 
     protected ServiceFacadeImpl sfi = null
 

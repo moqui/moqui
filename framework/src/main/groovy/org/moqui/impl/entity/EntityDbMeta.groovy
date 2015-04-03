@@ -11,6 +11,8 @@
  */
 package org.moqui.impl.entity
 
+import groovy.transform.CompileStatic
+
 import java.sql.SQLException
 import java.sql.Connection
 import java.sql.Statement
@@ -19,7 +21,6 @@ import java.sql.ResultSet
 import java.sql.Timestamp
 
 import org.apache.commons.collections.set.ListOrderedSet
-import org.moqui.context.Cache
 import org.moqui.entity.EntityException
 
 import org.slf4j.Logger
@@ -43,13 +44,15 @@ class EntityDbMeta {
         // entityTablesChecked = efi.ecfi.cacheFacade.getCache("entity.${efi.tenantId}.tables.checked")
     }
 
+    @CompileStatic
     void checkTableRuntime(EntityDefinition ed) {
-        Node datasourceNode = efi.getDatasourceNode(efi.getEntityGroupName(ed))
-        if (datasourceNode?."@runtime-add-missing" == "false") return
+        Node datasourceNode = efi.getDatasourceNode(ed.getEntityGroupName())
+        if (datasourceNode?.attributes()?.get('runtime-add-missing') == "false") return
 
         if (ed.isViewEntity()) {
-            for (Node memberEntityNode in ed.entityNode."member-entity") {
-                EntityDefinition med = efi.getEntityDefinition((String) memberEntityNode."@entity-name")
+            for (Object memberEntityObj in (NodeList) ed.entityNode.get("member-entity")) {
+                Node memberEntityNode = (Node) memberEntityObj
+                EntityDefinition med = efi.getEntityDefinition((String) memberEntityNode.attributes().get('entity-name'))
                 checkTableRuntime(med)
             }
         } else {
@@ -69,13 +72,14 @@ class EntityDbMeta {
             internalCheckTable(ed, true)
         }
     }
+    @CompileStatic
     synchronized void internalCheckTable(EntityDefinition ed, boolean startup) {
         // if it's in this table we've already checked it
         if (entityTablesChecked.containsKey(ed.getFullEntityName())) return
 
-        Node datasourceNode = efi.getDatasourceNode(efi.getEntityGroupName(ed))
+        Node datasourceNode = efi.getDatasourceNode(ed.getEntityGroupName())
         // if there is no @database-conf-name skip this, it's probably not a SQL/JDBC datasource
-        if (!datasourceNode."@database-conf-name") return
+        if (!datasourceNode.attributes().get('database-conf-name')) return
 
         long startTime = System.currentTimeMillis()
         if (!tableExists(ed)) {
@@ -105,7 +109,7 @@ class EntityDbMeta {
                 }
             }
             // create foreign keys after checking each to see if it already exists
-            if (startup || datasourceNode?."@runtime-add-fks" == "true") createForeignKeys(ed, true)
+            if (startup || datasourceNode?.attributes()?.get('@runtime-add-fks') == "true") createForeignKeys(ed, true)
         }
         entityTablesChecked.put(ed.getFullEntityName(), new Timestamp(System.currentTimeMillis()))
         entityTablesExist.put(ed.getFullEntityName(), true)
@@ -113,6 +117,7 @@ class EntityDbMeta {
         if (logger.isTraceEnabled()) logger.trace("Checked table for entity [${ed.getFullEntityName()}] in ${(System.currentTimeMillis()-startTime)/1000} seconds")
     }
 
+    @CompileStatic
     boolean tableExists(EntityDefinition ed) {
         Boolean exists = entityTablesExist.get(ed.getFullEntityName())
         if (exists != null) return exists
@@ -136,7 +141,7 @@ class EntityDbMeta {
                 }
                 dbResult = anyExist
             } else {
-                String groupName = efi.getEntityGroupName(ed)
+                String groupName = ed.getEntityGroupName()
                 Connection con = null
                 ResultSet tableSet = null
                 boolean beganTx = useTxForMetaData ? efi.ecfi.transactionFacade.begin(5) : false
@@ -195,7 +200,7 @@ class EntityDbMeta {
         if (ed == null) throw new IllegalArgumentException("No EntityDefinition specified, cannot create table")
         if (ed.isViewEntity()) throw new IllegalArgumentException("Cannot create table for a view entity")
 
-        String groupName = efi.getEntityGroupName(ed)
+        String groupName = ed.getEntityGroupName()
         Node databaseNode = efi.getDatabaseNode(groupName)
 
         StringBuilder sql = new StringBuilder("CREATE TABLE ").append(ed.getFullTableName()).append(" (")
@@ -249,14 +254,14 @@ class EntityDbMeta {
     ListOrderedSet getMissingColumns(EntityDefinition ed) {
         if (ed.isViewEntity()) return new ListOrderedSet()
 
-        String groupName = efi.getEntityGroupName(ed)
+        String groupName = ed.getEntityGroupName()
         Connection con = null
         ResultSet colSet = null
         try {
             con = efi.getConnection(groupName)
             DatabaseMetaData dbData = con.getMetaData()
 
-            ListOrderedSet fnSet = ed.getFieldNames(true, true, false)
+            List<String> fnSet = new ArrayList(ed.getFieldNames(true, true, false))
             int fieldCount = fnSet.size()
             colSet = dbData.getColumns(null, ed.getSchemaName(), ed.getTableName(), "%")
             while (colSet.next()) {
@@ -303,7 +308,7 @@ class EntityDbMeta {
         if (ed == null) throw new IllegalArgumentException("No EntityDefinition specified, cannot add column")
         if (ed.isViewEntity()) throw new IllegalArgumentException("Cannot add column for a view entity")
 
-        String groupName = efi.getEntityGroupName(ed)
+        String groupName = ed.getEntityGroupName()
         Node databaseNode = efi.getDatabaseNode(groupName)
 
         Node fieldNode = ed.getFieldNode(fieldName)
@@ -330,7 +335,7 @@ class EntityDbMeta {
         if (ed == null) throw new IllegalArgumentException("No EntityDefinition specified, cannot create indexes")
         if (ed.isViewEntity()) throw new IllegalArgumentException("Cannot create indexes for a view entity")
 
-        String groupName = efi.getEntityGroupName(ed)
+        String groupName = ed.getEntityGroupName()
         Node databaseNode = efi.getDatabaseNode(groupName)
 
         if (databaseNode."@use-indexes" == "false") return
@@ -432,7 +437,7 @@ class EntityDbMeta {
     }
 
     Boolean foreignKeyExists(EntityDefinition ed, EntityDefinition relEd, Node relNode) {
-        String groupName = efi.getEntityGroupName(ed)
+        String groupName = ed.getEntityGroupName()
         Connection con = null
         ResultSet ikSet = null
         try {
@@ -502,7 +507,7 @@ class EntityDbMeta {
         // NOTE2: with the createForeignKeysForExistingTables() method this isn't strictly necessary, that can be run
         //     after the system is run for a bit and/or all tables desired have been created and it will take care of it
 
-        String groupName = efi.getEntityGroupName(ed)
+        String groupName = ed.getEntityGroupName()
         Node databaseNode = efi.getDatabaseNode(groupName)
 
         if (databaseNode."@use-foreign-keys" == "false") return

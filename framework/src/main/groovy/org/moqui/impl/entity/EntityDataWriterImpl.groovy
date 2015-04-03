@@ -242,7 +242,7 @@ class EntityDataWriterImpl implements EntityDataWriter {
 
             /* leaving commented as might be useful for future con pool debugging:
             try {
-                def dataSource = efi.getDatasourceFactory(efi.getEntityGroupName(ed)).getDataSource()
+                def dataSource = efi.getDatasourceFactory(ed.getEntityGroupName()).getDataSource()
                 logger.warn("=========== edwi pool available size: ${dataSource.poolAvailableSize()}/${dataSource.poolTotalSize()}; ${dataSource.getMinPoolSize()}-${dataSource.getMaxPoolSize()}")
             } catch (Throwable t) {
                 logger.warn("========= pool size error ${t.toString()}")

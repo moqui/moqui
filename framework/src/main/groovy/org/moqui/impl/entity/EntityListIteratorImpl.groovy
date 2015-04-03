@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.entity
 
+import groovy.transform.CompileStatic
 import org.moqui.entity.EntityCondition
 import org.moqui.impl.context.TransactionCache
 
@@ -22,11 +23,11 @@ import org.moqui.entity.EntityListIterator
 import org.moqui.entity.EntityValue
 import org.moqui.entity.EntityList
 import org.moqui.entity.EntityException
-import org.apache.commons.collections.set.ListOrderedSet
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+@CompileStatic
 class EntityListIteratorImpl implements EntityListIterator {
     protected final static Logger logger = LoggerFactory.getLogger(EntityListIteratorImpl.class)
 
@@ -37,7 +38,7 @@ class EntityListIteratorImpl implements EntityListIterator {
     protected final ResultSet rs
 
     protected final EntityDefinition entityDefinition
-    protected final ListOrderedSet fieldsSelected
+    protected final ArrayList<String> fieldsSelected
     protected EntityCondition queryCondition = null
     protected List<String> orderByFields = null
 
@@ -46,7 +47,8 @@ class EntityListIteratorImpl implements EntityListIterator {
 
     protected boolean closed = false
 
-    EntityListIteratorImpl(Connection con, ResultSet rs, EntityDefinition entityDefinition, ListOrderedSet fieldsSelected, EntityFacadeImpl efi) {
+    EntityListIteratorImpl(Connection con, ResultSet rs, EntityDefinition entityDefinition,
+                           ArrayList<String> fieldsSelected, EntityFacadeImpl efi) {
         this.efi = efi
         this.con = con
         this.rs = rs
@@ -76,7 +78,7 @@ class EntityListIteratorImpl implements EntityListIterator {
 
                     /* leaving commented as might be useful for future con pool debugging:
                     try {
-                        def dataSource = efi.getDatasourceFactory(efi.getEntityGroupName(entityDefinition)).getDataSource()
+                        def dataSource = efi.getDatasourceFactory(entityDefinition.getEntityGroupName()).getDataSource()
                         logger.warn("=========== elii after close pool available size: ${dataSource.poolAvailableSize()}/${dataSource.poolTotalSize()}; ${dataSource.getMinPoolSize()}-${dataSource.getMaxPoolSize()}")
                     } catch (Throwable t) {
                         logger.warn("========= pool size error ${t.toString()}")

@@ -154,7 +154,7 @@ class MoquiShiroRealm implements Realm {
                 // no more auth failures? record the various account state updates, hasLoggedOut=N
                 if (newUserAccount.successiveFailedLogins != 0 || newUserAccount.disabled != "N" ||
                         newUserAccount.disabledDateTime != null || newUserAccount.hasLoggedOut != "N") {
-                    Map<String, Object> uaParameters = (Map<String, Object>) [userId:userId, successiveFailedLogins:0,
+                    Map<String, Object> uaParameters = [userId:userId, successiveFailedLogins:0,
                             disabled:"N", disabledDateTime:null, hasLoggedOut:"N"]
                     ecfi.serviceFacade.sync().name("update", "moqui.security.UserAccount").parameters(uaParameters).call()
                 }
@@ -170,11 +170,10 @@ class MoquiShiroRealm implements Realm {
             }
         } finally {
             // track the UserLoginHistory, whether the above succeeded or failed (ie even if an exception was thrown)
-            Node loginNode = ecfi.confXmlRoot."user-facade"[0]."login"[0]
+            Node loginNode = (Node) ecfi.confXmlRoot."user-facade"[0]."login"[0]
             if (userId != null && loginNode."@history-store" != "false") {
                 Map<String, Object> ulhContext =
-                        (Map<String, Object>) [userId:userId, visitId:ecfi.executionContext.user.visitId,
-                                successfulLogin:(successful?"Y":"N")]
+                        [userId:userId, visitId:ecfi.executionContext.user.visitId, successfulLogin:(successful?"Y":"N")]
                 if (!successful && loginNode."@history-incorrect-password" != "false") ulhContext.passwordUsed = token.credentials
                 try {
                     ecfi.serviceFacade.sync().name("create", "moqui.security.UserLoginHistory").parameters(ulhContext)

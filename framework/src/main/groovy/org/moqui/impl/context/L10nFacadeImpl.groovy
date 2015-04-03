@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.context
 
+import groovy.transform.CompileStatic
 import org.moqui.context.Cache
 import org.moqui.context.L10nFacade
 import org.moqui.entity.EntityValue
@@ -28,6 +29,7 @@ import org.apache.commons.validator.routines.CalendarValidator
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+@CompileStatic
 public class L10nFacadeImpl implements L10nFacade {
     protected final static Logger logger = LoggerFactory.getLogger(L10nFacadeImpl.class)
 
@@ -59,7 +61,7 @@ public class L10nFacadeImpl implements L10nFacade {
         if (lmsg != null) return lmsg
 
         EntityFind find = ecfi.getEntityFacade().find("moqui.basic.LocalizedMessage")
-        find.condition(["original":original, "locale":localeString]).useCache(true)
+        find.condition(["original":original, "locale":localeString] as Map<String, Object>).useCache(true)
         EntityValue localizedMessage = find.one()
         if (!localizedMessage && localeString.contains('_')) {
             localizedMessage = find.condition("locale", localeString.substring(0, localeString.indexOf('_'))).one()

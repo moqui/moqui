@@ -11,6 +11,7 @@
  */
 package org.moqui.impl
 
+import groovy.transform.CompileStatic
 import org.apache.http.HttpEntity
 import org.apache.http.NameValuePair
 import org.apache.http.client.entity.UrlEncodedFormEntity
@@ -35,6 +36,7 @@ import org.owasp.esapi.reference.DefaultValidator
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+@CompileStatic
 class StupidWebUtilities {
     protected final static Logger logger = LoggerFactory.getLogger(StupidUtilities.class)
 
@@ -49,7 +51,7 @@ class StupidWebUtilities {
             while ((current = pathInfoStr.indexOf('/', last + 1)) != -1) {
                 String element = pathInfoStr.substring(last + 1, current)
                 last = current
-                if (element.length() > 0 && element.charAt(0) == '~' && element.contains('=')) {
+                if (element.length() > 0 && element.charAt(0) == ((char) '~') && element.contains('=')) {
                     String name = element.substring(1, element.indexOf('='))
                     String value = element.substring(element.indexOf('=') + 1)
                     // NOTE: currently ignoring existing values, likely won't be any: Object curValue = paramMap.get(name)
@@ -148,7 +150,7 @@ class StupidWebUtilities {
     static class ServletContextAttributeMap implements Map<String, Object> {
         protected static final Set<String> keysToIgnore =
                 ["javax.servlet.context.tempdir", "org.apache.catalina.jsp_classpath",
-                "org.apache.commons.fileupload.servlet.FileCleanerCleanup.FileCleaningTracker"]
+                "org.apache.commons.fileupload.servlet.FileCleanerCleanup.FileCleaningTracker"] as Set<String>
         protected ServletContext sc
         ServletContextAttributeMap(ServletContext servletContext) { sc = servletContext }
         int size() { return sc.getAttributeNames().toList().size() }
@@ -241,24 +243,26 @@ class StupidWebUtilities {
     }
 
     static Object canonicalizeValue(Object orig) {
+        Object canVal = orig
         if (orig instanceof List || orig instanceof String[] || orig instanceof Object[]) {
             List lst = orig as List
             if (lst.size() == 1) {
-                orig = lst.get(0)
+                canVal = lst.get(0)
             } else if (lst.size() > 1) {
-                orig = new ArrayList(lst.size())
+                List newList = new ArrayList(lst.size())
+                canVal = newList
                 for (Object obj in lst) {
                     if (obj instanceof CharSequence) {
-                        orig.add(defaultWebEncoder.canonicalize(obj.toString(), false))
+                        newList.add(defaultWebEncoder.canonicalize(obj.toString(), false))
                     } else {
-                        orig.add(obj)
+                        newList.add(obj)
                     }
                 }
             }
         }
         // catch strings or lists with a single string in them unwrapped above
-        if (orig instanceof CharSequence) orig = defaultWebEncoder.canonicalize(orig.toString(), false)
-        return orig
+        if (canVal instanceof CharSequence) canVal = defaultWebEncoder.canonicalize(canVal.toString(), false)
+        return canVal
     }
 
     static String simpleHttpStringRequest(String location, String requestBody, String contentType) {

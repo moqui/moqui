@@ -11,20 +11,21 @@
  */
 package org.moqui.impl.screen
 
+import groovy.transform.CompileStatic
+import groovy.util.slurpersupport.GPathResult
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.moqui.context.ExecutionContext
-import org.moqui.context.ScreenFacade
 import org.moqui.entity.EntityList
 import org.moqui.entity.EntityValue
-import groovy.util.slurpersupport.GPathResult
 import org.moqui.impl.actions.XmlAction
 import org.moqui.context.ResourceReference
 import org.moqui.impl.context.ArtifactExecutionInfoImpl
 import org.moqui.impl.StupidUtilities
 import org.moqui.entity.EntityFind
-import org.moqui.entity.EntityCondition
 import org.moqui.impl.context.ContextBinding
-import org.moqui.service.ServiceFacade
+import org.moqui.impl.context.UserFacadeImpl
+import org.moqui.impl.context.WebFacadeImpl
+
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -33,7 +34,9 @@ class ScreenDefinition {
 
     protected final ScreenFacadeImpl sfi
     protected final Node screenNode
+    protected final Node subscreensNode
     protected final String location
+    protected final String screenName
     Long sourceLastModified = null
 
     protected Map<String, ParameterItem> parameterByName = new HashMap()
@@ -55,9 +58,13 @@ class ScreenDefinition {
     ScreenDefinition(ScreenFacadeImpl sfi, Node screenNode, String location) {
         this.sfi = sfi
         this.screenNode = screenNode
+        this.subscreensNode = (Node) screenNode."subscreens"[0]
         this.location = location
 
         long startTime = System.currentTimeMillis()
+
+        String filename = location.contains("/") ? location.substring(location.lastIndexOf("/")+1) : location
+        screenName = filename.contains(".") ? filename.substring(0, filename.indexOf(".")) : filename
 
         // parameter
         for (Node parameterNode in screenNode."parameter")
@@ -210,15 +217,18 @@ class ScreenDefinition {
         }
     }
 
+    @CompileStatic
     Node getScreenNode() { return screenNode }
-    Node getWebSettingsNode() { return screenNode."web-settings"[0] }
+    @CompileStatic
+    Node getSubscreensNode() { return subscreensNode }
+    Node getWebSettingsNode() { return (Node) screenNode."web-settings"[0] }
+    @CompileStatic
     String getLocation() { return location }
+    @CompileStatic
     Set<String> getTenantsAllowed() { return tenantsAllowed }
 
-    String getScreenName() {
-        String filename = location.contains("/") ? location.substring(location.lastIndexOf("/")+1) : location
-        return filename.contains(".") ? filename.substring(0, filename.indexOf(".")) : filename
-    }
+    @CompileStatic
+    String getScreenName() { return screenName }
 
     String getDefaultMenuName() {
         if (screenNode."@default-menu-title") return screenNode."@default-menu-title"
@@ -233,13 +243,22 @@ class ScreenDefinition {
         return prettyName.toString()
     }
 
+    @CompileStatic
     Map<String, ParameterItem> getParameterMap() { return parameterByName }
+    @CompileStatic
     boolean hasRequiredParameters() {
         boolean hasRequired = false
         for (ParameterItem pi in parameterByName.values()) if (pi.required) { hasRequired = true; break }
         return hasRequired
     }
 
+    @CompileStatic
+    boolean hasTransition(String name) {
+        for (TransitionItem curTi in transitionByName.values()) if (curTi.name == name) return true
+        return false
+    }
+
+    @CompileStatic
     TransitionItem getTransitionItem(String name, String method) {
         method = method ? method.toLowerCase() : ""
         TransitionItem ti = (TransitionItem) transitionByName.get(name + "#" + method)
@@ -256,9 +275,11 @@ class ScreenDefinition {
         return ti
     }
 
+    @CompileStatic
     SubscreensItem getSubscreensItem(String name) { return (SubscreensItem) subscreensByName.get(name) }
 
-    List<String> findSubscreenPath(List<String> remainingPathNameList, String requestMethod) {
+    @CompileStatic
+    List<String> findSubscreenPath(List<String> remainingPathNameList) {
         if (!remainingPathNameList) return null
         String curName = remainingPathNameList.get(0)
         SubscreensItem curSsi = getSubscreensItem(curName)
@@ -267,7 +288,7 @@ class ScreenDefinition {
                 List<String> subPathNameList = new ArrayList<>(remainingPathNameList)
                 subPathNameList.remove(0)
                 ScreenDefinition subSd = sfi.getScreenDefinition(curSsi.getLocation())
-                List<String> subPath = subSd.findSubscreenPath(subPathNameList, requestMethod)
+                List<String> subPath = subSd.findSubscreenPath(subPathNameList)
                 if (!subPath) return null
                 subPath.add(0, curName)
                 return subPath
@@ -277,8 +298,7 @@ class ScreenDefinition {
         }
 
         // if this is a transition right under this screen use it before searching subscreens
-        TransitionItem ti = getTransitionItem(curName, requestMethod)
-        if (ti != null) return remainingPathNameList
+        if (hasTransition(curName)) return remainingPathNameList
 
         // breadth first by looking at subscreens of each subscreen on a first pass
         for (Map.Entry<String, SubscreensItem> entry in subscreensByName.entrySet()) {
@@ -294,7 +314,7 @@ class ScreenDefinition {
                     List<String> subPathNameList = new ArrayList<>(remainingPathNameList)
                     subPathNameList.remove(0)
                     ScreenDefinition subSubSd = sfi.getScreenDefinition(subSsi.getLocation())
-                    List<String> subPath = subSubSd.findSubscreenPath(subPathNameList, requestMethod)
+                    List<String> subPath = subSubSd.findSubscreenPath(subPathNameList)
                     // found a partial match, not the full thing, no match so give up
                     if (!subPath) return null
                     // we've found it two deep, add both names, sub name first
@@ -313,7 +333,7 @@ class ScreenDefinition {
                 if (logger.isTraceEnabled()) logger.trace("Screen [${entry.getKey()}] at location [${entry.getValue().getLocation()}] not found, subscreen of [${this.getLocation()}]")
                 continue
             }
-            List<String> subPath = subSd.findSubscreenPath(remainingPathNameList, requestMethod)
+            List<String> subPath = subSd.findSubscreenPath(remainingPathNameList)
             if (subPath) {
                 subPath.add(0, entry.getKey())
                 return subPath
@@ -340,6 +360,7 @@ class ScreenDefinition {
         return null
     }
 
+    @CompileStatic
     List<SubscreensItem> getSubscreensItemsSorted() {
         if (subscreensItemsSorted != null) return subscreensItemsSorted
         List<SubscreensItem> newList = new ArrayList(subscreensByName.size())
@@ -349,6 +370,7 @@ class ScreenDefinition {
         return subscreensItemsSorted = newList
     }
 
+    @CompileStatic
     List<SubscreensItem> getMenuSubscreensItems() {
         List<SubscreensItem> allItems = getSubscreensItemsSorted()
         List<SubscreensItem> filteredList = new ArrayList(allItems.size())
@@ -365,17 +387,20 @@ class ScreenDefinition {
         return filteredList
     }
 
+    @CompileStatic
     ScreenSection getRootSection() { return rootSection }
+    @CompileStatic
     void render(ScreenRenderImpl sri, boolean isTargetScreen) {
         // NOTE: don't require authz if the screen doesn't require auth
+        String requireAuthentication = (String) screenNode.attributes().get('require-authentication')
         sri.ec.artifactExecution.push(new ArtifactExecutionInfoImpl(location, "AT_XML_SCREEN", "AUTHZA_VIEW"),
-                isTargetScreen ? (!screenNode."@require-authentication" || screenNode."@require-authentication" == "true") : false)
+                isTargetScreen ? (!requireAuthentication || requireAuthentication == "true") : false)
 
         boolean loggedInAnonymous = false
-        if (screenNode."@require-authentication" == "anonymous-all") {
+        if (requireAuthentication == "anonymous-all") {
             sri.ec.artifactExecution.setAnonymousAuthorizedAll()
             loggedInAnonymous = sri.ec.getUser().loginAnonymousIfNoUser()
-        } else if (screenNode."@require-authentication" == "anonymous-view") {
+        } else if (requireAuthentication == "anonymous-view") {
             sri.ec.artifactExecution.setAnonymousAuthorizedView()
             loggedInAnonymous = sri.ec.getUser().loginAnonymousIfNoUser()
         }
@@ -384,25 +409,29 @@ class ScreenDefinition {
 
         // all done so pop the artifact info; don't bother making sure this is done on errors/etc like in a finally clause because if there is an error this will help us know how we got there
         sri.ec.artifactExecution.pop()
-        if (loggedInAnonymous) sri.ec.getUser().logoutAnonymousOnly()
+        if (loggedInAnonymous) ((UserFacadeImpl) sri.ec.getUser()).logoutAnonymousOnly()
     }
 
+    @CompileStatic
     ScreenSection getSection(String sectionName) {
         ScreenSection ss = sectionByName.get(sectionName)
         if (ss == null) throw new IllegalArgumentException("Could not find form [${sectionName}] in screen: ${getLocation()}")
         return ss
     }
+    @CompileStatic
     ScreenForm getForm(String formName) {
         ScreenForm sf = formByName.get(formName)
         if (sf == null) throw new IllegalArgumentException("Could not find form [${formName}] in screen: ${getLocation()}")
         return sf
     }
+    @CompileStatic
     ScreenTree getTree(String treeName) {
         ScreenTree st = treeByName.get(treeName)
         if (st == null) throw new IllegalArgumentException("Could not find tree [${treeName}] in screen: ${getLocation()}")
         return st
     }
 
+    @CompileStatic
     ResourceReference getSubContentRef(List<String> pathNameList) {
         StringBuilder pathNameBldr = new StringBuilder()
         // add the path elements that remain
@@ -425,6 +454,7 @@ class ScreenDefinition {
     }
 
     @Override
+    @CompileStatic
     String toString() { return location }
 
     static class ParameterItem {
@@ -442,7 +472,9 @@ class ScreenDefinition {
             if (parameterNode."@value" != null) valueGroovy = new GroovyClassLoader().parseClass(
                     ('"""' + (String) parameterNode."@value" + '"""'), StupidUtilities.cleanStringForJavaName("${location}.parameter_${name}.value"))
         }
+        @CompileStatic
         String getName() { return name }
+        @CompileStatic
         Object getValue(ExecutionContext ec) {
             Object value = null
             if (fromFieldGroovy != null) {
@@ -523,25 +555,35 @@ class ScreenDefinition {
                 errorResponse = new ResponseItem((Node) transitionNode."error-response"[0], this, parentScreen)
         }
 
+        @CompileStatic
         String getName() { return name }
+        @CompileStatic
         String getMethod() { return method }
+        @CompileStatic
         String getSingleServiceName() { return singleServiceName }
+        @CompileStatic
         List<String> getPathParameterList() { return pathParameterList }
+        @CompileStatic
         Map<String, ParameterItem> getParameterMap() { return parameterByName }
+        @CompileStatic
         boolean hasActionsOrSingleService() { return actions != null }
+        @CompileStatic
         boolean getBeginTransaction() { return beginTransaction }
+        @CompileStatic
         boolean isReadOnly() { return readOnly }
 
+        @CompileStatic
         boolean checkCondition(ExecutionContext ec) { return condition ? condition.checkCondition(ec) : true }
 
-        void setAllParameters(ScreenUrlInfo screenUrlInfo, ExecutionContext ec) {
+        @CompileStatic
+        void setAllParameters(List<String> extraPathNameList, ExecutionContext ec) {
             // get the path parameters
-            if (screenUrlInfo.getExtraPathNameList() && getPathParameterList()) {
+            if (extraPathNameList && getPathParameterList()) {
                 List<String> pathParameterList = getPathParameterList()
                 int i = 0
-                for (String extraPathName in screenUrlInfo.getExtraPathNameList()) {
+                for (String extraPathName in extraPathNameList) {
                     if (pathParameterList.size() > i) {
-                        if (ec.getWeb()) ec.getWeb().addDeclaredPathParameter(pathParameterList.get(i), extraPathName)
+                        if (ec.getWeb()) ((WebFacadeImpl) ec.getWeb()).addDeclaredPathParameter(pathParameterList.get(i), extraPathName)
                         ec.getContext().put(pathParameterList.get(i), extraPathName)
                         i++
                     } else {
@@ -565,28 +607,32 @@ class ScreenDefinition {
             }
         }
 
+        @CompileStatic
         ResponseItem run(ScreenRenderImpl sri) {
             ExecutionContext ec = sri.getEc()
 
             // NOTE: if parent screen of transition does not require auth, don't require authz
             // NOTE: use the View authz action to leave it open, ie require minimal authz; restrictions are often more
             //    in the services/etc if/when needed, or specific transitions can have authz settings
+            String requireAuthentication = (String) parentScreen.screenNode.attributes().get('require-authentication')
             ec.getArtifactExecution().push(new ArtifactExecutionInfoImpl("${parentScreen.location}/${name}",
-                    "AT_XML_SCREEN_TRANS", "AUTHZA_VIEW"),
-                    (!parentScreen.screenNode."@require-authentication" ||
-                     parentScreen.screenNode."@require-authentication" == "true"))
+                    "AT_XML_SCREEN_TRANS", "AUTHZA_VIEW"), (!requireAuthentication || requireAuthentication == "true"))
 
             boolean loggedInAnonymous = false
-            if (parentScreen.screenNode."@require-authentication" == "anonymous-all") {
+            if (requireAuthentication == "anonymous-all") {
                 ec.artifactExecution.setAnonymousAuthorizedAll()
                 loggedInAnonymous = ec.getUser().loginAnonymousIfNoUser()
-            } else if (parentScreen.screenNode."@require-authentication" == "anonymous-view") {
+            } else if (requireAuthentication == "anonymous-view") {
                 ec.artifactExecution.setAnonymousAuthorizedView()
                 loggedInAnonymous = ec.getUser().loginAnonymousIfNoUser()
             }
 
             ScreenUrlInfo screenUrlInfo = sri.getScreenUrlInfo()
-            setAllParameters(screenUrlInfo, ec)
+            ScreenUrlInfo.UrlInstance screenUrlInstance = sri.getScreenUrlInstance()
+            setAllParameters(screenUrlInfo.getExtraPathNameList(), ec)
+            // for alias transitions rendered in-request put the parameters in the context
+            if (screenUrlInstance.getTransitionAliasParameters()) ec.getContext().putAll(screenUrlInstance.getTransitionAliasParameters())
+
 
             if (!checkCondition(ec)) {
                 sri.ec.message.addError("Condition failed for transition [${location}], not running actions or redirecting")
@@ -615,7 +661,7 @@ class ScreenDefinition {
             // all done so pop the artifact info; don't bother making sure this is done on errors/etc like in a finally
             // clause because if there is an error this will help us know how we got there
             ec.getArtifactExecution().pop()
-            if (loggedInAnonymous) ec.getUser().logoutAnonymousOnly()
+            if (loggedInAnonymous) ((UserFacadeImpl) ec.getUser()).logoutAnonymousOnly()
 
             return ri
         }
@@ -658,17 +704,24 @@ class ScreenDefinition {
                 parameterMap.put((String) parameterNode."@name", new ParameterItem(parameterNode, location))
         }
 
+        @CompileStatic
         boolean checkCondition(ExecutionContext ec) { return condition ? condition.checkCondition(ec) : true }
 
+        @CompileStatic
         String getType() { return type }
+        @CompileStatic
         String getUrl() { return parentScreen.sfi.ecfi.resourceFacade.evaluateStringExpand(url, "") }
+        @CompileStatic
         String getUrlType() { return urlType }
         // deferred for future version: boolean getSaveLastScreen() { return saveLastScreen }
+        @CompileStatic
         boolean getSaveCurrentScreen() { return saveCurrentScreen }
+        @CompileStatic
         boolean getSaveParameters() { return saveParameters }
 
-        Map expandParameters(ScreenUrlInfo screenUrlInfo, ExecutionContext ec) {
-            transitionItem.setAllParameters(screenUrlInfo, ec)
+        @CompileStatic
+        Map expandParameters(List<String> extraPathNameList, ExecutionContext ec) {
+            transitionItem.setAllParameters(extraPathNameList, ec)
 
             Map ep = new HashMap()
             for (ParameterItem pi in parameterMap.values()) ep.put(pi.getName(), pi.getValue(ec))
@@ -722,6 +775,7 @@ class ScreenDefinition {
             userGroupId = subscreensItem.userGroupId
         }
 
+        @CompileStatic
         String getDefaultTitle() {
             ScreenDefinition sd = parentScreen.sfi.getScreenDefinition(location)
             if (sd != null) {
@@ -731,21 +785,29 @@ class ScreenDefinition {
             }
         }
 
+        @CompileStatic
         String getName() { return name }
+        @CompileStatic
         String getLocation() { return location }
+        @CompileStatic
         String getMenuTitle() { return menuTitle }
+        @CompileStatic
         Integer getMenuIndex() { return menuIndex }
+        @CompileStatic
         boolean getMenuInclude() { return menuInclude }
+        @CompileStatic
         boolean getDisable(ExecutionContext ec) {
             if (!disableWhenGroovy) return false
             return InvokerHelper.createScript(disableWhenGroovy, new ContextBinding(ec.context)).run() as boolean
         }
+        @CompileStatic
         String getUserGroupId() { return userGroupId }
     }
 
     static class SubscreensItemComparator implements Comparator<SubscreensItem> {
         public SubscreensItemComparator() { }
         @Override
+        @CompileStatic
         public int compare(SubscreensItem ssi1, SubscreensItem ssi2) {
             // order by index, null index first
             if (ssi1.menuIndex == null && ssi2.menuIndex != null) return -1

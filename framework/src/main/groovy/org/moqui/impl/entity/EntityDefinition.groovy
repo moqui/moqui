@@ -11,14 +11,15 @@
  */
 package org.moqui.impl.entity
 
+import groovy.transform.CompileStatic
 import org.apache.commons.codec.binary.Base64
 import org.moqui.impl.StupidUtilities
 
 import javax.sql.rowset.serial.SerialBlob
+import java.sql.Date
 import java.sql.Timestamp
 
 import org.apache.commons.collections.set.ListOrderedSet
-import org.apache.commons.collections.map.ListOrderedMap
 
 import org.moqui.entity.EntityCondition
 import org.moqui.entity.EntityCondition.JoinOperator
@@ -41,14 +42,17 @@ public class EntityDefinition {
     protected String internalEntityName
     protected String fullEntityName
     protected String shortAlias
+    protected String groupName = null
     protected Node internalEntityNode
     protected final Map<String, Boolean> fieldSimpleMap = new HashMap<String, Boolean>()
     protected final Map<String, Node> fieldNodeMap = new HashMap<String, Node>()
     // TODO: get rid of this, refactor code to use getRelationshipMap()
     protected final Map<String, Node> relationshipNodeMap = new HashMap<String, Node>()
     protected final Map<String, String> columnNameMap = new HashMap<String, String>()
-    protected List<String> pkFieldNameList = null
-    protected List<String> allFieldNameList = null
+    // small lists, but very frequently accessed
+    protected ArrayList<String> pkFieldNameList = null
+    protected ArrayList<String> nonPkFieldNameList = null
+    protected ArrayList<String> allFieldNameList = null
     protected Boolean hasUserFields = null
     protected Boolean allowUserField = null
     protected Map<String, Map> mePkFieldToAliasNameMapMap = null
@@ -57,6 +61,7 @@ public class EntityDefinition {
     protected Boolean needsAuditLogVal = null
     protected Boolean needsEncryptVal = null
     protected Boolean createOnlyVal = null
+    protected String useCache = null
 
     protected List<Node> expandedRelationshipList = null
     // this is kept separately for quick access to relationships by name or short-alias
@@ -113,20 +118,38 @@ public class EntityDefinition {
         }
     }
 
+    @CompileStatic
     String getEntityName() { return this.internalEntityName }
+    @CompileStatic
     String getFullEntityName() { return this.fullEntityName }
+    @CompileStatic
     String getShortAlias() { return this.shortAlias }
 
+    @CompileStatic
     Node getEntityNode() { return this.internalEntityNode }
 
+    @CompileStatic
     boolean isViewEntity() {
         if (isView == null) isView = (this.internalEntityNode.name() == "view-entity")
         return isView
     }
     boolean hasFunctionAlias() { return isViewEntity() && this.internalEntityNode."alias".find({ it."@function" }) }
 
+    String getEntityGroupName() {
+        if (groupName == null) {
+            if (internalEntityNode."@is-dynamic-view" == "true") {
+                // use the name of the first member-entity
+                String memberEntityName = internalEntityNode."member-entity".find({ !it."@join-from-alias" })?."@entity-name"
+                groupName = efi.getEntityGroupName(memberEntityName)
+            } else {
+                groupName = internalEntityNode."@group-name" ?: efi.getDefaultGroupName()
+            }
+        }
+        return groupName
+    }
+
     String getDefaultDescriptionField() {
-        ListOrderedSet nonPkFields = getFieldNames(false, true, false)
+        List<String> nonPkFields = getFieldNames(false, true, false)
         // find the first *Name
         for (String fn in nonPkFields)
             if (fn.endsWith("Name")) return fn
@@ -139,12 +162,14 @@ public class EntityDefinition {
         return ""
     }
 
+    @CompileStatic
     boolean createOnly() {
         if (createOnlyVal != null) return createOnlyVal
-        createOnlyVal = internalEntityNode."@create-only" == "true"
+        createOnlyVal = internalEntityNode.attributes().get('create-only') == "true"
         return createOnlyVal
     }
 
+    @CompileStatic
     boolean needsAuditLog() {
         if (needsAuditLogVal != null) return needsAuditLogVal
         needsAuditLogVal = false
@@ -156,27 +181,36 @@ public class EntityDefinition {
             if (getFieldAuditLog(fieldNode) == "true" || getFieldAuditLog(fieldNode) == "update") needsAuditLogVal = true
         return needsAuditLogVal
     }
+    @CompileStatic
     String getFieldAuditLog(Node fieldNode) {
-        String fieldAuditLog = fieldNode."@enable-audit-log"
+        String fieldAuditLog = fieldNode.attributes().get('enable-audit-log')
         if (fieldAuditLog) return fieldAuditLog
-        return internalEntityNode."@enable-audit-log"
+        return internalEntityNode.attributes().get('enable-audit-log')
     }
 
+    @CompileStatic
     boolean needsEncrypt() {
         if (needsEncryptVal != null) return needsEncryptVal
         needsEncryptVal = false
         for (Node fieldNode in getFieldNodes(true, true, false)) {
-            if (fieldNode."@encrypt" == "true") needsEncryptVal = true
+            if (fieldNode.attributes().get('encrypt') == "true") needsEncryptVal = true
         }
         if (needsEncryptVal) return true
 
         for (Node fieldNode in getFieldNodes(false, false, true)) {
-            if (fieldNode."@encrypt" == "true") needsEncryptVal = true
+            if (fieldNode.attributes().get('encrypt') == "true") needsEncryptVal = true
         }
 
         return needsEncryptVal
     }
 
+    @CompileStatic
+    String getUseCache() {
+        if (useCache == null) useCache = internalEntityNode.attributes().get('cache') ?: 'false'
+        return useCache
+    }
+
+    @CompileStatic
     Node getFieldNode(String fieldName) {
         Node fn = fieldNodeMap.get(fieldName)
         if (fn != null) return fn
@@ -205,6 +239,7 @@ public class EntityDefinition {
         return fn
     }
 
+    @CompileStatic
     protected Node makeUserFieldNode(EntityValue userField) {
         String fieldType = userField.fieldType ?: "text-long"
         if (fieldType == "text-very-long" || fieldType == "binary-very-long")
@@ -290,30 +325,39 @@ public class EntityDefinition {
         return relNode
     }
 
-    static Map getRelationshipExpandedKeyMap(Node relationship, EntityDefinition relEd) {
-        ListOrderedMap eKeyMap = new ListOrderedMap()
-        if (!relationship."key-map" && ((String) relationship."@type").startsWith("one")) {
+    @CompileStatic
+    static Map<String, String> getRelationshipExpandedKeyMap(Node relationship, EntityDefinition relEd) {
+        Map<String, String> eKeyMap = [:]
+        if (!relationship.get("key-map") && ((String) relationship.attributes().get('type')).startsWith('one')) {
             // go through pks of related entity, assume field names match
             for (String pkFieldName in relEd.getPkFieldNames()) eKeyMap.put(pkFieldName, pkFieldName)
         } else {
-            for (Node keyMap in relationship."key-map") {
-                String relFn = keyMap."@related-field-name" ?: keyMap."@field-name"
-                if (!relEd.isField(relFn) && ((String) relationship."@type").startsWith("one")) {
+            for (Object childObj in relationship.children()) {
+                Node keyMap = null
+                if (childObj instanceof Node) keyMap = (Node) childObj
+                if (keyMap == null) continue
+                if (!'key-map'.equals(keyMap.name())) continue
+
+                String fieldName = keyMap.attributes().get('field-name')
+                String relFn = keyMap.attributes().get('related-field-name') ?: fieldName
+                if (!relEd.isField(relFn) && ((String) relationship.attributes().get('type')).startsWith("one")) {
                     List<String> pks = relEd.getPkFieldNames()
                     if (pks.size() == 1) relFn = pks.get(0)
                     // if we don't match these constraints and get this default we'll get an error later...
                 }
-                eKeyMap.put(keyMap."@field-name", relFn)
+                eKeyMap.put(fieldName, relFn)
             }
         }
         return eKeyMap
     }
 
+    @CompileStatic
     RelationshipInfo getRelationshipInfo(String relationshipName) {
         if (!relationshipName) return null
         return getRelationshipInfoMap().get(relationshipName)
     }
 
+    @CompileStatic
     Map<String, RelationshipInfo> getRelationshipInfoMap() {
         if (relationshipInfoMap != null) return relationshipInfoMap
         relationshipInfoMap = new HashMap<String, RelationshipInfo>()
@@ -325,6 +369,7 @@ public class EntityDefinition {
         return relationshipInfoMap
     }
 
+    @CompileStatic
     List<RelationshipInfo> getRelationshipsInfo(boolean dependentsOnly) {
         if (relationshipInfoList == null) makeRelInfoList()
 
@@ -387,10 +432,11 @@ public class EntityDefinition {
             return reverseRelNode != null
         }
 
+        @CompileStatic
         Map getTargetParameterMap(Map valueSource) {
             if (!valueSource) return [:]
             Map targetParameterMap = new HashMap()
-            for (Map.Entry keyEntry in keyMap) {
+            for (Map.Entry keyEntry in keyMap.entrySet()) {
                 Object value = valueSource.get(keyEntry.key)
                 if (!StupidUtilities.isEmpty(value)) targetParameterMap.put(keyEntry.value, value)
             }
@@ -469,6 +515,7 @@ public class EntityDefinition {
         return prettyName.toString()
     }
 
+    @CompileStatic
     String getColumnName(String fieldName, boolean includeFunctionAndComplex) {
         String cn = columnNameMap.get(fieldName)
         if (cn != null) return cn
@@ -488,23 +535,24 @@ public class EntityDefinition {
             }
             // else {
 
-            if (fieldNode."complex-alias") {
-                String function = fieldNode."@function"
+            if (fieldNode.attributes().get('complex-alias')) {
+                String function = fieldNode.attributes().get('function')
                 if (function) {
                     colNameBuilder.append(getFunctionPrefix(function))
                 }
                 buildComplexAliasName(fieldNode, "+", colNameBuilder)
                 if (function) colNameBuilder.append(')')
             } else {
-                String function = fieldNode."@function"
+                String function = fieldNode.attributes().get('function')
                 if (function) {
                     colNameBuilder.append(getFunctionPrefix(function))
                 }
                 // column name for view-entity (prefix with "${entity-alias}.")
-                colNameBuilder.append(fieldNode."@entity-alias").append('.')
+                colNameBuilder.append(fieldNode.attributes().get('entity-alias')).append('.')
 
-                String memberFieldName = fieldNode."@field" ?: fieldNode."@name"
-                colNameBuilder.append(getBasicFieldColName(internalEntityNode, (String) fieldNode."@entity-alias", memberFieldName))
+                String memberFieldName = fieldNode.attributes().get('field') ?: fieldNode.attributes().get('name')
+                colNameBuilder.append(getBasicFieldColName(internalEntityNode,
+                        (String) fieldNode.attributes().get('entity-alias'), memberFieldName))
 
                 if (function) colNameBuilder.append(')')
             }
@@ -512,10 +560,10 @@ public class EntityDefinition {
             // }
             cn = colNameBuilder.toString()
         } else {
-            if (fieldNode."@column-name") {
-                cn = fieldNode."@column-name"
+            if (fieldNode.attributes().get('column-name')) {
+                cn = fieldNode.attributes().get('column-name')
             } else {
-                cn = camelCaseToUnderscored((String) fieldNode."@name")
+                cn = camelCaseToUnderscored((String) fieldNode.attributes().get('name'))
             }
         }
 
@@ -572,7 +620,7 @@ public class EntityDefinition {
     }
 
     String getFullTableName() {
-        if (efi.getDatabaseNode(efi.getEntityGroupName(this))?."@use-schemas" != "false") {
+        if (efi.getDatabaseNode(getEntityGroupName())?."@use-schemas" != "false") {
             String schemaName = getSchemaName()
             return schemaName ? schemaName + "." + getTableName() : getTableName()
         } else {
@@ -581,111 +629,188 @@ public class EntityDefinition {
     }
 
     String getSchemaName() {
-        String schemaName = efi.getDatasourceNode(efi.getEntityGroupName(this))?."@schema-name"
+        String schemaName = efi.getDatasourceNode(getEntityGroupName())?."@schema-name"
         return schemaName ?: null
     }
 
+    @CompileStatic
     boolean isField(String fieldName) { return getFieldNode(fieldName) != null }
+    @CompileStatic
     boolean isPkField(String fieldName) {
         Node fieldNode = getFieldNode(fieldName)
         if (fieldNode == null) return false
-        return fieldNode."@is-pk" == "true"
+        return 'true'.equals(fieldNode.attributes().get('is-pk'))
     }
+    @CompileStatic
     boolean isSimpleField(String fieldName) {
         Boolean isSimpleVal = fieldSimpleMap.get(fieldName)
         if (isSimpleVal != null) return isSimpleVal
 
         Node fieldNode = getFieldNode(fieldName)
-        boolean isSimple = fieldNode != null && !(fieldNode."@enable-localization" == "true") && !(fieldNode."@is-user-field" == "true")
+        boolean isSimple = fieldNode != null && !(fieldNode.attributes().get('enable-localization') == "true") && !(fieldNode.attributes().get('is-user-field') == "true")
         fieldSimpleMap.put(fieldName, isSimple)
         return isSimple
     }
 
+    @CompileStatic
     boolean containsPrimaryKey(Map fields) {
         if (!fields) return false
-        if (!getPkFieldNames()) return false
-        for (String fieldName in getPkFieldNames()) if (!fields[fieldName]) return false
+        ArrayList<String> fieldNameList = this.getPkFieldNames()
+        if (!fieldNameList) return false
+        int size = fieldNameList.size()
+        for (int i = 0; i < size; i++) {
+            String fieldName = fieldNameList.get(i)
+            if (!fields.get(fieldName)) return false
+        }
         return true
     }
 
+    @CompileStatic
     Map<String, Object> getPrimaryKeys(Map fields) {
         Map<String, Object> pks = new HashMap()
-        for (String fieldName in this.getPkFieldNames()) pks.put(fieldName, fields[fieldName])
+        ArrayList<String> fieldNameList = this.getPkFieldNames()
+        int size = fieldNameList.size()
+        for (int i = 0; i < size; i++) {
+            String fieldName = fieldNameList.get(i)
+            pks.put(fieldName, fields.get(fieldName))
+        }
         return pks
     }
 
-    ListOrderedSet getFieldNames(boolean includePk, boolean includeNonPk, boolean includeUserFields) {
-        ListOrderedSet nameSet = new ListOrderedSet()
-        String nodeName = this.isViewEntity() ? "alias" : "field"
-        for (Node node in (Collection<Node>) this.internalEntityNode[nodeName]) {
-            if ((includePk && node."@is-pk" == "true") || (includeNonPk && node."@is-pk" != "true")) {
-                nameSet.add(node."@name")
+    @CompileStatic
+    ArrayList<String> getFieldNames(boolean includePk, boolean includeNonPk, boolean includeUserFields) {
+        ArrayList<String> baseList
+        // common case, do it fast
+        if (includePk) {
+            if (includeNonPk) {
+                baseList = getAllFieldNames(false)
+            } else {
+                baseList = getPkFieldNames()
+            }
+        } else {
+            if (includeNonPk) {
+                baseList = getNonPkFieldNames()
+            } else {
+                // all false is weird, but okay
+                baseList = new ArrayList<String>()
             }
         }
+        if (!includeUserFields) return baseList
 
-        if (includeUserFields && allowUserField && !this.isViewEntity()) {
+        ListOrderedSet userFieldNames = getUserFieldNames()
+        if (userFieldNames) {
+            List<String> returnList = new ArrayList<String>()
+            returnList.addAll(baseList)
+            returnList.addAll(userFieldNames.asList())
+            return returnList
+        } else {
+            return baseList
+        }
+    }
+    @CompileStatic
+    protected ListOrderedSet getFieldNamesInternal(boolean includePk, boolean includeNonPk) {
+        ListOrderedSet nameSet = new ListOrderedSet()
+        String nodeName = this.isViewEntity() ? "alias" : "field"
+        for (Object nodeObj in (NodeList) this.internalEntityNode.get(nodeName)) {
+            Node node = (Node) nodeObj
+            if ((includePk && 'true'.equals(node.attributes().get('is-pk'))) || (includeNonPk && !'true'.equals(node.attributes().get('is-pk')))) {
+                nameSet.add(node.attributes().get('name'))
+            }
+        }
+        return nameSet
+    }
+    @CompileStatic
+    protected ListOrderedSet getUserFieldNames() {
+        ListOrderedSet userFieldNames = null
+        if (allowUserField && !this.isViewEntity() && (hasUserFields == null || hasUserFields)) {
             boolean alreadyDisabled = efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz()
             try {
                 EntityList userFieldList = efi.find("moqui.entity.UserField").condition("entityName", getFullEntityName()).useCache(true).list()
                 if (userFieldList) {
+                    hasUserFields = true
+                    userFieldNames = new ListOrderedSet()
+
                     Set<String> userGroupIdSet = efi.getEcfi().getExecutionContext().getUser().getUserGroupIdSet()
                     for (EntityValue userField in userFieldList) {
-                        if (userGroupIdSet.contains(userField.userGroupId)) nameSet.add((String) userField.fieldName)
+                        if (userGroupIdSet.contains(userField.get('userGroupId'))) userFieldNames.add((String) userField.get('fieldName'))
                     }
+                } else {
+                    hasUserFields = false
                 }
             } finally {
                 if (!alreadyDisabled) efi.getEcfi().getExecutionContext().getArtifactExecution().enableAuthz()
             }
         }
-
-        return nameSet
+        return userFieldNames
     }
-    List<String> getPkFieldNames() {
-        if (pkFieldNameList == null) {
-            pkFieldNameList = Collections.unmodifiableList(new ArrayList(getFieldNames(true, false, false).asList()))
-        }
+
+    @CompileStatic
+    ArrayList<String> getPkFieldNames() {
+        if (pkFieldNameList == null)
+            pkFieldNameList = new ArrayList(getFieldNamesInternal(true, false))
         return pkFieldNameList
     }
-    List<String> getAllFieldNames() {
-        if (allFieldNameList == null) {
-            allFieldNameList = Collections.unmodifiableList(new ArrayList(getFieldNames(true, true, false).asList()))
+    @CompileStatic
+    ArrayList<String> getNonPkFieldNames() {
+        if (nonPkFieldNameList == null)
+            nonPkFieldNameList = new ArrayList(getFieldNamesInternal(false, true))
+        return nonPkFieldNameList
+    }
+    @CompileStatic
+    ArrayList<String> getAllFieldNames() { return getAllFieldNames(true) }
+    @CompileStatic
+    ArrayList<String> getAllFieldNames(boolean includeUserFields) {
+        if (allFieldNameList == null)
+            allFieldNameList = new ArrayList(getFieldNamesInternal(true, true))
+
+        if (!includeUserFields) return allFieldNameList
+
+        ListOrderedSet userFieldNames = getUserFieldNames()
+        if (userFieldNames) {
+            List<String> returnList = new ArrayList<>(allFieldNameList.size() + userFieldNames.size())
+            returnList.addAll(allFieldNameList)
+            returnList.addAll(userFieldNames.asList())
+            return returnList
+        } else {
+            return allFieldNameList
         }
+    }
 
-        if (!allowUserField || (hasUserFields != null && !hasUserFields)) return allFieldNameList
-
-        List<String> returnList = null
-
-        // add UserFields to it if needed
-        boolean alreadyDisabled = efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz()
-        try {
-            EntityList userFieldList = efi.find("moqui.entity.UserField").condition("entityName", getFullEntityName()).useCache(true).list()
-            if (userFieldList) {
-                hasUserFields = true
-
-                Set<String> userGroupIdSet = efi.getEcfi().getExecutionContext().getUser().getUserGroupIdSet()
-                Set<String> userFieldNames = new HashSet<String>()
-                for (EntityValue userField in userFieldList) {
-                    if (userGroupIdSet.contains(userField.userGroupId)) userFieldNames.add((String) userField.fieldName)
-                }
-                if (userFieldNames) {
-                    returnList = new ArrayList<String>(allFieldNameList)
-                    returnList.addAll(userFieldNames)
-                }
-            } else {
-                hasUserFields = false
+    Map<String, String> pkFieldDefaults = null
+    Map<String, String> nonPkFieldDefaults = null
+    @CompileStatic
+    Map<String, String> getPkFieldDefaults() {
+        if (pkFieldDefaults == null) {
+            Map<String, String> newDefaults = [:]
+            for (Node fieldNode in getFieldNodes(true, false, false)) {
+                String defaultStr = fieldNode.attributes().get('default')
+                if (!defaultStr) continue
+                newDefaults.put((String) fieldNode.attributes().get('name'), defaultStr)
             }
-        } finally {
-            if (!alreadyDisabled) efi.getEcfi().getExecutionContext().getArtifactExecution().enableAuthz()
+            pkFieldDefaults = newDefaults
         }
-
-        return returnList ? Collections.unmodifiableList(returnList) : allFieldNameList
+        return pkFieldDefaults
+    }
+    @CompileStatic
+    Map<String, String> getNonPkFieldDefaults() {
+        if (nonPkFieldDefaults == null) {
+            Map<String, String> newDefaults = [:]
+            for (Node fieldNode in getFieldNodes(false, true, false)) {
+                String defaultStr = fieldNode.attributes().get('default')
+                if (!defaultStr) continue
+                newDefaults.put((String) fieldNode.attributes().get('name'), defaultStr)
+            }
+            nonPkFieldDefaults = newDefaults
+        }
+        return nonPkFieldDefaults
     }
 
     List<Node> getFieldNodes(boolean includePk, boolean includeNonPk, boolean includeUserFields) {
         // NOTE: this is not necessarily the fastest way to do this, if it becomes a performance problem replace it with a local List of field Nodes
         List<Node> nodeList = new ArrayList<Node>()
         String nodeName = this.isViewEntity() ? "alias" : "field"
-        for (Node node in (Collection<Node>) this.internalEntityNode[nodeName]) {
+        for (Object nodeObj in (NodeList) this.internalEntityNode.get(nodeName)) {
+            Node node = (Node) nodeObj
             if ((includePk && node."@is-pk" == "true") || (includeNonPk && node."@is-pk" != "true")) {
                 nodeList.add(node)
             }
@@ -790,32 +915,55 @@ public class EntityDefinition {
         return mePkFieldToAliasNameMap
     }
 
+    @CompileStatic
     Map cloneMapRemoveFields(Map theMap, Boolean pks) {
         Map newMap = new HashMap(theMap)
-        for (String fieldName in (pks != null ? this.getFieldNames(pks, !pks, !pks) : this.getAllFieldNames())) {
+        ArrayList<String> fieldNameList = (pks != null ? this.getFieldNames(pks, !pks, !pks) : this.getAllFieldNames())
+        int size = fieldNameList.size()
+        for (int i = 0; i < size; i++) {
+            String fieldName = fieldNameList.get(i)
             if (newMap.containsKey(fieldName)) newMap.remove(fieldName)
         }
         return newMap
     }
 
-    void setFields(Map<String, ?> src, Map<String, Object> dest, boolean setIfEmpty, String namePrefix, Boolean pks) {
+    @CompileStatic
+    void setFields(Map<String, Object> src, Map<String, Object> dest, boolean setIfEmpty, String namePrefix, Boolean pks) {
         if (src == null) return
 
-        EntityValue ev = src instanceof EntityValue ? (EntityValue) src : null
-        for (String fieldName in (pks != null ? this.getFieldNames(pks, !pks, !pks) : this.getAllFieldNames())) {
+        boolean hasNamePrefix = namePrefix as boolean
+        EntityValueBase evb = src instanceof EntityValueBase ? (EntityValueBase) src : null
+        ArrayList<String> fieldNameList = pks != null ? this.getFieldNames(pks, !pks, !pks) : this.getAllFieldNames()
+        // use integer iterator, saves quite a bit of time, improves time for this method by about 20% with this alone
+        int size = fieldNameList.size()
+        for (int i = 0; i < size; i++) {
+            String fieldName = fieldNameList.get(i)
             String sourceFieldName
-            if (namePrefix) {
+            if (hasNamePrefix) {
                 sourceFieldName = namePrefix + Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1)
             } else {
                 sourceFieldName = fieldName
             }
 
-            if (ev != null ? ev.isFieldSet(sourceFieldName) : src.containsKey(sourceFieldName)) {
-                Object value = src.get(sourceFieldName)
-                if (!StupidUtilities.isEmpty(value)) {
-                    if (value instanceof CharSequence) {
+            Object value = src.get(sourceFieldName)
+            if (value != null || (evb != null ? evb.isFieldSet(sourceFieldName) : src.containsKey(sourceFieldName))) {
+                boolean isCharSequence = false
+                boolean isEmpty = false
+                if (value == null) {
+                    isEmpty = true
+                } else if (value instanceof CharSequence) {
+                    isCharSequence = true
+                    if (value.length() == 0) isEmpty = true
+                }
+
+                if (!isEmpty) {
+                    if (isCharSequence) {
                         try {
-                            this.setString(fieldName, value.toString(), dest)
+                            if (value instanceof String) {
+                                this.setString(fieldName, value, dest)
+                            } else {
+                                this.setString(fieldName, value.toString(), dest)
+                            }
                         } catch (BaseException be) {
                             this.efi.ecfi.executionContext.message.addValidationError(null, fieldName, null, be.getMessage(), be)
                         }
@@ -834,6 +982,7 @@ public class EntityDefinition {
         }
     }
 
+    @CompileStatic
     void setString(String name, String value, Map<String, Object> dest) {
         if (value == null || value == "null") {
             dest.put(name, null)
@@ -844,14 +993,15 @@ public class EntityDefinition {
         dest.put(name, convertFieldString(name, value))
     }
 
+    @CompileStatic
     Object convertFieldString(String name, String value) {
-        if (value == "null") value = null
+        if (value == 'null') value = null
 
         Object outValue
         Node fieldNode = this.getFieldNode(name)
 
-        String fieldType = fieldNode."@type"
-        String javaType = fieldType ? (EntityFacadeImpl.fieldTypeJavaMap.get(fieldType) ?: efi.getFieldJavaType(fieldType, this)) : "String"
+        String fieldType = fieldNode.attributes().get('type')
+        String javaType = fieldType ? (EntityFacadeImpl.fieldTypeJavaMap.get(fieldType) ?: efi.getFieldJavaType(fieldType, this)) : 'String'
         Integer typeValue = (fieldType ? EntityFacadeImpl.fieldTypeIntMap.get(fieldType) : null) ?: EntityFacadeImpl.getJavaTypeInt(javaType)
 
         boolean isEmpty = value.length() == 0
@@ -862,7 +1012,7 @@ public class EntityDefinition {
                 case 2: // outValue = java.sql.Timestamp.valueOf(value);
                     if (isEmpty) { outValue = null; break }
                     outValue = efi.getEcfi().getL10nFacade().parseTimestamp(value, null)
-                    if (outValue == null) throw new BaseException("The value [${value}] is not a valid date/time")
+                    if (((Object) outValue) == null) throw new BaseException("The value [${value}] is not a valid date/time")
                     break
                 case 3: // outValue = java.sql.Time.valueOf(value);
                     if (isEmpty) { outValue = null; break }
@@ -895,7 +1045,7 @@ public class EntityDefinition {
                 case 13: outValue = value; break
                 case 14:
                     if (isEmpty) { outValue = null; break }
-                    outValue = value.asType(Date.class); break
+                    outValue = value as Date; break
             // better way for Collection (15)? maybe parse comma separated, but probably doesn't make sense in the first place
                 case 15: outValue = value; break
                 default: outValue = value; break
@@ -907,13 +1057,14 @@ public class EntityDefinition {
         return outValue
     }
 
+    @CompileStatic
     String getFieldString(String name, Object value) {
         if (value == null) return null
 
         String outValue
         Node fieldNode = this.getFieldNode(name)
 
-        String fieldType = fieldNode."@type"
+        String fieldType = fieldNode.attributes().get('type')
         String javaType = fieldType ? (EntityFacadeImpl.fieldTypeJavaMap.get(fieldType) ?: efi.getFieldJavaType(fieldType, this)) : "String"
         Integer typeValue = (fieldType ? EntityFacadeImpl.fieldTypeIntMap.get(fieldType) : null) ?: EntityFacadeImpl.getJavaTypeInt(javaType)
 
@@ -954,15 +1105,16 @@ public class EntityDefinition {
         return outValue
     }
 
+    @CompileStatic
     String getFieldStringForFile(String name, Object value) {
         if (value == null) return null
 
         String outValue
         if (value instanceof Timestamp) {
             // use a Long number, no TZ issues
-            outValue = ((Timestamp) value).getTime().toString()
+            outValue = value.getTime() as String
         } else if (value instanceof BigDecimal) {
-            outValue = ((BigDecimal) value).toPlainString()
+            outValue = value.toPlainString()
         } else {
             outValue = getFieldString(name, value)
         }
@@ -1132,6 +1284,7 @@ public class EntityDefinition {
     }
 
     protected static Map<String, String> camelToUnderscoreMap = new HashMap()
+    @CompileStatic
     static String camelCaseToUnderscored(String camelCase) {
         if (!camelCase) return ""
         String usv = camelToUnderscoreMap.get(camelCase)

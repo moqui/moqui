@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.context
 
+import groovy.transform.CompileStatic
 import org.apache.commons.mail.ByteArrayDataSource
 import org.apache.jackrabbit.jcr2dav.Jcr2davRepositoryFactory
 import org.apache.jackrabbit.rmi.repository.URLRemoteRepository
@@ -148,7 +149,9 @@ public class ResourceFacadeImpl implements ResourceFacade {
         contentSessions.remove()
     }
 
+    @CompileStatic
     ExecutionContextFactoryImpl getEcfi() { return ecfi }
+    @CompileStatic
     Map<String, TemplateRenderer> getTemplateRenderers() { return templateRenderers }
 
     Repository getContentRepository(String name) { return contentRepositories.get(name) }
@@ -186,6 +189,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
     }
 
     @Override
+    @CompileStatic
     ResourceReference getLocationReference(String location) {
         if (location == null) return null
 
@@ -211,6 +215,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
     }
 
     @Override
+    @CompileStatic
     InputStream getLocationStream(String location) {
         ResourceReference rr = getLocationReference(location)
         if (rr == null) return null
@@ -218,6 +223,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
     }
 
     @Override
+    @CompileStatic
     String getLocationText(String location, boolean cache) {
         if (cache && textLocationCache.containsKey(location)) return (String) textLocationCache.get(location)
         InputStream locStream = getLocationStream(location)
@@ -227,6 +233,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
         return text
     }
 
+    @CompileStatic
     DataSource getLocationDataSource(String location) {
         ResourceReference fileResourceRef = getLocationReference(location)
 
@@ -255,6 +262,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
     }
 
     @Override
+    @CompileStatic
     void renderTemplateInCurrentContext(String location, Writer writer) {
         TemplateRenderer tr = getTemplateRendererByLocation(location)
         if (tr != null) {
@@ -266,6 +274,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
         }
     }
 
+    @CompileStatic
     TemplateRenderer getTemplateRendererByLocation(String location) {
         // match against extension for template renderer, with as many dots that match as possible (most specific match)
         int mostDots = 0
@@ -284,6 +293,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
     }
 
     @Override
+    @CompileStatic
     Object runScriptInCurrentContext(String location, String method) {
         ExecutionContext ec = ecfi.getExecutionContext()
         String extension = location.substring(location.lastIndexOf("."))
@@ -302,6 +312,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
     }
 
     @Override
+    @CompileStatic
     Object runScriptInCurrentContext(String location, String method, Map additionalContext) {
         ExecutionContext ec = ecfi.getExecutionContext()
         ContextStack cs = (ContextStack) ec.context
@@ -318,6 +329,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
         }
     }
 
+    @CompileStatic
     Object setInContext(String field, String from, String value, String defaultValue, String type, String setIfEmpty) {
         def tempValue = getValueFromContext(from, value, defaultValue, type)
         ecfi.getExecutionContext().getContext().put("_tempValue", tempValue)
@@ -325,6 +337,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
         return tempValue
     }
+    @CompileStatic
     Object getValueFromContext(String from, String value, String defaultValue, String type) {
         def tempValue = from ? evaluateContextField(from, "") : evaluateStringExpand(value, "")
         if (!tempValue && defaultValue) tempValue = evaluateStringExpand(defaultValue, "")
@@ -333,6 +346,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
     }
 
     @Override
+    @CompileStatic
     boolean evaluateCondition(String expression, String debugLocation) {
         if (!expression) return false
         try {
@@ -345,6 +359,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
     }
 
     @Override
+    @CompileStatic
     Object evaluateContextField(String expression, String debugLocation) {
         if (!expression) return null
         try {
@@ -356,6 +371,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
         }
     }
     @Override
+    @CompileStatic
     Object evaluateContextField(String expression, String debugLocation, Map additionalContext) {
         ExecutionContext ec = ecfi.getExecutionContext()
         ContextStack cs = (ContextStack) ec.context
@@ -374,6 +390,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
 
     @Override
+    @CompileStatic
     String evaluateStringExpand(String inputString, String debugLocation) {
         if (!inputString) return ""
 
@@ -391,6 +408,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
         }
     }
     @Override
+    @CompileStatic
     String evaluateStringExpand(String inputString, String debugLocation, Map additionalContext) {
         ExecutionContext ec = ecfi.getExecutionContext()
         ContextStack cs = (ContextStack) ec.context
@@ -407,6 +425,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
         }
     }
 
+    @CompileStatic
     Script getGroovyScript(String expression) {
         Class groovyClass = (Class) this.scriptGroovyExpressionCache.get(expression)
         if (groovyClass == null) {
@@ -418,6 +437,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
         return script
     }
 
+    @CompileStatic
     static String stripLocationPrefix(String location) {
         if (!location) return ""
 
@@ -436,6 +456,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
         return strippedLocation.toString()
     }
 
+    @CompileStatic
     static String getLocationPrefix(String location) {
         if (!location) return ""
 
@@ -448,6 +469,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
         }
     }
 
+    @CompileStatic
     String getContentType(String filename) {
         if (!filename || !filename.contains(".")) return null
         String type = mimetypesFileTypeMap.getContentType(filename)
@@ -456,6 +478,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
         return type
     }
 
+    @CompileStatic
     static boolean isBinaryContentType(String contentType) {
         if (!contentType) return false
         if (contentType.startsWith("text/")) return false

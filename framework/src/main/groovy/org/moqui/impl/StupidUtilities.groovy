@@ -11,6 +11,10 @@
  */
 package org.moqui.impl
 
+import groovy.transform.CompileStatic
+import groovy.transform.TypeChecked
+import groovy.transform.TypeCheckingMode
+
 import java.nio.charset.Charset
 import java.sql.Time
 import java.sql.Timestamp
@@ -24,9 +28,12 @@ import org.slf4j.LoggerFactory
 /** These are utilities that should exist elsewhere, but I can't find a good simple library for them, and they are
  * stupid but necessary for certain things. 
  */
+@CompileStatic
 class StupidUtilities {
     protected final static Logger logger = LoggerFactory.getLogger(StupidUtilities.class)
 
+    /** Use StupidJavaUtilities.isInstanceOf() */
+    @Deprecated
     static boolean isInstanceOf(Object theObjectInQuestion, String javaType) {
         Class theClass = StupidClassLoader.commonJavaClassesMap.get(javaType)
         if (theClass == null) theClass = StupidUtilities.class.getClassLoader().loadClass(javaType)
@@ -35,6 +42,8 @@ class StupidUtilities {
         return theClass.isInstance(theObjectInQuestion)
     }
 
+    // NOTE: TypeCheckingMode.SKIP here because Groovy does weird things with asType with CompileStatic
+    @TypeChecked(TypeCheckingMode.SKIP)
     static Object basicConvert(Object value, String javaType) {
         if (value == null) return null
 
@@ -47,7 +56,8 @@ class StupidUtilities {
                 return Boolean.valueOf((String) value)
             } else {
                 // let groovy do the work
-                return value.asType(theClass)
+                Object newVal = value.asType(theClass)
+                return newVal
             }
         } catch (Throwable t) {
             logger.warn("Error doing type conversion to [${javaType}] for value [${value}]", t)
@@ -60,9 +70,9 @@ class StupidUtilities {
         // BigDecimal toString() uses scientific notation, annoying, so use toPlainString()
         if (obj instanceof BigDecimal) return ((BigDecimal) obj).toPlainString()
         // handle the special case of timestamps used for primary keys, make sure we avoid TZ, etc problems
-        if (obj instanceof Timestamp) return ((Timestamp) obj).getTime().toString()
-        if (obj instanceof java.sql.Date) return ((java.sql.Date) obj).getTime().toString()
-        if (obj instanceof Time) return ((Time) obj).getTime().toString()
+        if (obj instanceof Timestamp) return ((Timestamp) obj).getTime() as String
+        if (obj instanceof java.sql.Date) return ((java.sql.Date) obj).getTime() as String
+        if (obj instanceof Time) return ((Time) obj).getTime() as String
 
         // no special case? do a simple toString()
         return obj.toString()
@@ -89,7 +99,7 @@ class StupidUtilities {
             StringBuilder sb = new StringBuilder(length2 * 2)
             for (int i = 0; i < length2; i++) {
                 char c = value2.charAt(i)
-                if ("[](){}.*+?\$^|#\\".indexOf(c) != -1) {
+                if ("[](){}.*+?\$^|#\\".indexOf((int) c.charValue()) != -1) {
                     sb.append("\\")
                 }
                 sb.append(c)
@@ -128,10 +138,10 @@ class StupidUtilities {
 
         boolean result = (field == toField)
         switch (operator) {
-            case "less": result = (field < toField); break;
-            case "greater": result = (field > toField); break;
-            case "less-equals": result = (field <= toField); break;
-            case "greater-equals": result = (field >= toField); break;
+            case "less": result = (makeComparable(field) < makeComparable(toField)); break;
+            case "greater": result = (makeComparable(field) > makeComparable(toField)); break;
+            case "less-equals": result = (makeComparable(field) <= makeComparable(toField)); break;
+            case "greater-equals": result = (makeComparable(field) >= makeComparable(toField)); break;
             case "contains": result = (field as String).contains(toField as String); break;
             case "not-contains": result = !(field as String).contains(toField as String); break;
             case "empty": result = (field ? false : true); break;
@@ -146,6 +156,10 @@ class StupidUtilities {
 
         if (logger.traceEnabled) logger.trace("Compare result [${result}] for field [${field}] operator [${operator}] value [${value}] toField [${toField}] type [${type}]")
         return result
+    }
+    static Comparable makeComparable(Object obj) {
+        if (obj instanceof Comparable) return (Comparable) obj
+        else throw new IllegalArgumentException("Object of type [${obj.getClass().getName()}] is not Comparable, cannot compare")
     }
 
     static void filterMapList(List<Map> theList, Map<String, Object> fieldValues) {
@@ -176,7 +190,7 @@ class StupidUtilities {
         }
     }
     static void filterMapListByDate(List<Map> theList, String fromDateName, String thruDateName, Timestamp compareStamp, boolean ignoreIfEmpty) {
-        if (ignoreIfEmpty && compareStamp == null) return
+        if (ignoreIfEmpty && (Object) compareStamp == null) return
         filterMapListByDate(theList, fromDateName, thruDateName, compareStamp)
     }
 
@@ -193,10 +207,10 @@ class StupidUtilities {
         public int compare(Map map1, Map map2) {
             for (String fieldName in this.fieldNameList) {
                 boolean ascending = true
-                if (fieldName.charAt(0) == '-') {
+                if (fieldName.charAt(0) == (char) '-') {
                     ascending = false
                     fieldName = fieldName.substring(1)
-                } else if (fieldName.charAt(0) == '+') {
+                } else if (fieldName.charAt(0) == (char) '+') {
                     fieldName = fieldName.substring(1)
                 }
                 Comparable value1 = (Comparable) map1.get(fieldName)
@@ -238,7 +252,7 @@ class StupidUtilities {
         // this seems like it should be part of some standard Java API, but I haven't found it
         // (can use Pattern/Matcher, but that is even uglier and probably a lot slower)
         int count = 0
-        for (char c in s) {
+        for (char c in s.getChars()) {
             if (Character.isDigit(c)) {
                 if (countDigits) count++
             } else if (Character.isLetter(c)) {
@@ -250,7 +264,7 @@ class StupidUtilities {
         return count
     }
 
-    static int countChars(String s, char cMatch) { int count = 0; for (char c in s) if (c == cMatch) count++; return count; }
+    static int countChars(String s, char cMatch) { int count = 0; for (char c in s.getChars()) if (c == cMatch) count++; return count; }
 
     static String getStreamText(InputStream is) {
         if (!is) return null
@@ -361,9 +375,7 @@ class StupidUtilities {
                 outMap.putAll(flattenNestedMap(value))
             } else if (value instanceof Collection) {
                 for (Object colValue in value) {
-                    if (colValue instanceof Map) {
-                        outMap.putAll(flattenNestedMap(colValue))
-                    }
+                    if (colValue instanceof Map) outMap.putAll(flattenNestedMap((Map) colValue))
                 }
             } else {
                 outMap.put(entry.getKey(), entry.getValue())
@@ -468,7 +480,7 @@ class StupidUtilities {
                         newValue.deleteCharAt(i)
                     } else if (curChar > 0x7F) {
                         // Replace each char which is out of the ASCII range with a XML entity
-                        newValue.replace(i, i+1, "&#" + (int) curChar + ";")
+                        newValue.replace(i, i+1, "&#" + (((int) curChar.charValue()) as String) + ";")
                     } else if (addZeroWidthSpaces) {
                         newValue.insert(i, "&#8203;")
                         i += 7
@@ -521,9 +533,9 @@ class StupidUtilities {
         StringBuilder sb = new StringBuilder()
         while (sb.length() <= length) {
             int r = (int) Math.round(Math.random() * 93)
-            char c = (char) r + 33
+            char c = (char) (r + 33).intValue()
             // avoid certain characters
-            if ("\"'&<>?0\\".indexOf((int) c) >= 0) continue
+            if ("\"'&<>?0\\".indexOf((int) c.charValue()) >= 0) continue
             sb.append(c)
         }
         return sb.toString()
@@ -560,7 +572,7 @@ class StupidUtilities {
         int count = theList.size()
 
         // calculate the pagination values
-        int maxIndex = (new BigDecimal(count-1)).divide(pageSize, 0, BigDecimal.ROUND_DOWN) as int
+        int maxIndex = (new BigDecimal(count-1)).divide(new BigDecimal(pageSize), 0, BigDecimal.ROUND_DOWN).intValue()
         int pageRangeLow = (pageIndex * pageSize) + 1
         int pageRangeHigh = (pageIndex * pageSize) + pageSize
         if (pageRangeHigh > count) pageRangeHigh = count

@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.context
 
+import groovy.transform.CompileStatic
 import org.moqui.context.ArtifactExecutionInfo
 import org.moqui.entity.EntityValue
 import org.moqui.impl.StupidUtilities
@@ -41,23 +42,34 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
         this.startTime = System.currentTimeMillis()
     }
 
+    @CompileStatic
     ArtifactExecutionInfoImpl setActionDetail(String detail) { this.actionDetail = detail; return this }
+    @CompileStatic
     ArtifactExecutionInfoImpl setParameters(Map<String, Object> parameters) { this.parameters = parameters; return this }
 
     @Override
     String getName() { return this.name }
+
     @Override
+    @CompileStatic
     String getTypeEnumId() { return this.typeEnumId }
+
     @Override
+    @CompileStatic
     String getActionEnumId() { return this.actionEnumId }
 
     @Override
+    @CompileStatic
     String getAuthorizedUserId() { return this.authorizedUserId }
     void setAuthorizedUserId(String authorizedUserId) { this.authorizedUserId = authorizedUserId }
+
     @Override
+    @CompileStatic
     String getAuthorizedAuthzTypeId() { return this.authorizedAuthzTypeId }
     void setAuthorizedAuthzTypeId(String authorizedAuthzTypeId) { this.authorizedAuthzTypeId = authorizedAuthzTypeId }
+
     @Override
+    @CompileStatic
     String getAuthorizedActionEnumId() { return this.authorizedActionEnumId }
     void setAuthorizedActionEnumId(String authorizedActionEnumId) { this.authorizedActionEnumId = authorizedActionEnumId }
 
@@ -65,18 +77,20 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
     boolean isAuthorizationInheritable() { return this.authorizationInheritable }
     void setAuthorizationInheritable(boolean isAuthorizationInheritable) { this.authorizationInheritable = isAuthorizationInheritable}
 
+    @CompileStatic
     void copyAacvInfo(EntityValue aacv, String userId) {
-        setAuthorizedUserId((String) userId)
-        setAuthorizedAuthzTypeId((String) aacv.authzTypeEnumId)
-        setAuthorizedActionEnumId((String) aacv.authzActionEnumId)
-        setAuthorizationInheritable(aacv.inheritAuthz == "Y")
+        this.authorizedUserId = userId
+        this.authorizedAuthzTypeId = (String) aacv.get('authzTypeEnumId')
+        this.authorizedActionEnumId = (String) aacv.get('authzActionEnumId')
+        this.authorizationInheritable = aacv.get('inheritAuthz') == "Y"
     }
 
+    @CompileStatic
     void copyAuthorizedInfo(ArtifactExecutionInfoImpl aeii) {
-        setAuthorizedUserId(aeii.authorizedUserId)
-        setAuthorizedAuthzTypeId(aeii.authorizedAuthzTypeId)
-        setAuthorizedActionEnumId(aeii.authorizedActionEnumId)
-        setAuthorizationInheritable(aeii.authorizationInheritable)
+        this.authorizedUserId = aeii.authorizedUserId
+        this.authorizedAuthzTypeId = aeii.authorizedAuthzTypeId
+        this.authorizedActionEnumId = aeii.authorizedActionEnumId
+        this.authorizationInheritable = aeii.authorizationInheritable
     }
 
     void setEndTime() { this.endTime = System.currentTimeMillis() }
@@ -97,15 +111,19 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
         return childrenRunningTime ?: 0
     }
 
+    @CompileStatic
     void setParent(ArtifactExecutionInfoImpl parentAeii) { this.parentAeii = parentAeii }
     @Override
+    @CompileStatic
     ArtifactExecutionInfo getParent() { return parentAeii }
     @Override
     BigDecimal getPercentOfParentTime() { parentAeii && endTime ?
         (((getRunningTime() / parentAeii.getRunningTime()) * 100) as BigDecimal).setScale(2, BigDecimal.ROUND_HALF_UP) : 0 }
 
 
+    @CompileStatic
     void addChild(ArtifactExecutionInfoImpl aeii) { childList.add(aeii) }
+    @CompileStatic
     List<ArtifactExecutionInfo> getChildList() { return childList }
 
     void print(Writer writer, int level, boolean children) {
@@ -122,6 +140,7 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
         if (children) for (ArtifactExecutionInfoImpl aeii in childList) aeii.print(writer, level + 1, true)
     }
 
+    @CompileStatic
     String getKeyString() { return name + ":" + typeEnumId + ":" + actionEnumId + ":" + actionDetail }
 
     static List<Map> hotSpotByTime(List<ArtifactExecutionInfoImpl> aeiiList, boolean ownTime, String orderBy) {

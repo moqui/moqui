@@ -11,6 +11,8 @@
  */
 package org.moqui.impl.context
 
+import groovy.transform.CompileStatic
+
 import static org.moqui.context.Cache.EvictionStrategy.*
 
 import org.moqui.context.CacheFacade
@@ -60,8 +62,10 @@ public class CacheFacadeImpl implements CacheFacade {
     void clearCachesByPrefix(String prefix) { cacheManager.clearAllStartingWith(prefix) }
 
     @Override
+    @CompileStatic
     Cache getCache(String cacheName) { return getCacheImpl(cacheName) }
 
+    @CompileStatic
     CacheImpl getCacheImpl(String cacheName) {
         CacheImpl theCache = localCacheImplMap.get(cacheName)
         if (theCache == null) {
@@ -75,6 +79,7 @@ public class CacheFacadeImpl implements CacheFacade {
         return theCache
     }
 
+    @CompileStatic
     boolean cacheExists(String cacheName) { return cacheManager.cacheExists(cacheName) }
     String[] getCacheNames() { return cacheManager.getCacheNames() }
 
@@ -82,14 +87,14 @@ public class CacheFacadeImpl implements CacheFacade {
         List<Map<String, Object>> ci = new LinkedList()
         for (String cn in cacheManager.getCacheNames()) {
             Cache co = getCache(cn)
-            ci.add((Map<String, Object>) [name:co.getName(), expireTimeIdle:co.getExpireTimeIdle(),
+            ci.add([name:co.getName(), expireTimeIdle:co.getExpireTimeIdle(),
                     expireTimeLive:co.getExpireTimeLive(), maxElements:co.getMaxElements(),
                     evictionStrategy:getEvictionStrategyString(co.evictionStrategy), size:co.size(),
                     hitCount:co.getHitCount(), missCountNotFound:co.getMissCountNotFound(),
                     missCountExpired:co.getMissCountExpired(), missCountTotal:co.getMissCountTotal(),
                     removeCount:co.getRemoveCount()])
         }
-        if (orderByField) StupidUtilities.orderMapList((List<Map>) ci, [orderByField])
+        if (orderByField) StupidUtilities.orderMapList(ci, [orderByField])
         return ci
     }
 

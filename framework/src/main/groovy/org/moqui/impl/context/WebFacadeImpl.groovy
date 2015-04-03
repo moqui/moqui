@@ -13,6 +13,7 @@ package org.moqui.impl.context
 
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
+import groovy.transform.CompileStatic
 import org.moqui.context.ArtifactAuthorizationException
 import org.moqui.context.ArtifactTarpitException
 import org.moqui.context.ContextStack
@@ -184,6 +185,8 @@ class WebFacadeImpl implements WebFacade {
         if (wi.beforeLogoutActions) wi.beforeLogoutActions.run(eci)
     }
 
+    @Override
+    @CompileStatic
     String getRequestUrl() {
         StringBuilder requestUrl = new StringBuilder()
         requestUrl.append(request.getScheme())
@@ -194,6 +197,7 @@ class WebFacadeImpl implements WebFacade {
         return requestUrl.toString()
     }
 
+    @CompileStatic
     void addDeclaredPathParameter(String name, String value) {
         if (declaredPathParameters == null) declaredPathParameters = new HashMap()
         declaredPathParameters.put(name, value)
@@ -204,6 +208,7 @@ class WebFacadeImpl implements WebFacade {
     List<ValidationError> getSavedValidationErrors() { return savedValidationErrors }
 
     @Override
+    @CompileStatic
     Map<String, Object> getParameters() {
         // NOTE: no blocking in these methods because the WebFacadeImpl is created for each thread
 
@@ -225,14 +230,17 @@ class WebFacadeImpl implements WebFacade {
     }
 
     @Override
+    @CompileStatic
     HttpServletRequest getRequest() { return request }
     @Override
+    @CompileStatic
     Map<String, Object> getRequestAttributes() {
         if (requestAttributes != null) return requestAttributes
         requestAttributes = new StupidWebUtilities.RequestAttributeMap(request)
         return requestAttributes
     }
     @Override
+    @CompileStatic
     Map<String, Object> getRequestParameters() {
         if (requestParameters != null) return requestParameters
 
@@ -255,6 +263,7 @@ class WebFacadeImpl implements WebFacade {
     @Override
     HttpSession getSession() { return request.getSession(true) }
     @Override
+    @CompileStatic
     Map<String, Object> getSessionAttributes() {
         if (sessionAttributes) return sessionAttributes
         sessionAttributes = new StupidWebUtilities.SessionAttributeMap(getSession())
@@ -264,26 +273,36 @@ class WebFacadeImpl implements WebFacade {
     @Override
     ServletContext getServletContext() { return getSession().getServletContext() }
     @Override
+    @CompileStatic
     Map<String, Object> getApplicationAttributes() {
         if (applicationAttributes) return applicationAttributes
         applicationAttributes = new StupidWebUtilities.ServletContextAttributeMap(getSession().getServletContext())
         return applicationAttributes
     }
     @Override
+    @CompileStatic
     String getWebappRootUrl(boolean requireFullUrl, Boolean useEncryption) {
         return getWebappRootUrl(this.webappMoquiName, null, requireFullUrl, useEncryption, eci)
     }
 
+    @CompileStatic
     static String getWebappRootUrl(String webappName, String servletContextPath, boolean requireFullUrl, Boolean useEncryption, ExecutionContextImpl eci) {
         WebFacade webFacade = eci.getWeb()
-        boolean requireEncryption = useEncryption == null && webFacade != null ? webFacade.getRequest().isSecure() : useEncryption
-        boolean needFullUrl = requireFullUrl ||
-                (requireEncryption && webFacade != null && !webFacade.getRequest().isSecure()) ||
-                (!requireEncryption && webFacade != null && webFacade.getRequest().isSecure())
+        HttpServletRequest request = webFacade?.getRequest()
+        boolean requireEncryption = useEncryption == null && request != null ? request.isSecure() : useEncryption
+        boolean needFullUrl = requireFullUrl || request == null ||
+                (requireEncryption && !request.isSecure()) || (!requireEncryption && request.isSecure())
 
-        String cacheKey = webappName + servletContextPath + needFullUrl + requireEncryption
+        String cacheKey = webappName + servletContextPath + needFullUrl.toString() + requireEncryption.toString()
         String cachedRootUrl = webappRootUrlByParms.get(cacheKey)
         if (cachedRootUrl != null) return cachedRootUrl
+
+        String urlValue = makeWebappRootUrl(webappName, servletContextPath, eci, webFacade, requireEncryption, needFullUrl)
+        webappRootUrlByParms.put(cacheKey, urlValue)
+        return urlValue
+    }
+    static String makeWebappRootUrl(String webappName, String servletContextPath, ExecutionContextImpl eci, WebFacade webFacade,
+                                    boolean requireEncryption, boolean needFullUrl) {
 
         Node webappNode = (Node) eci.ecfi.confXmlRoot."webapp-list"[0]."webapp".find({ it.@name == webappName })
         StringBuilder urlBuilder = new StringBuilder()
@@ -345,10 +364,9 @@ class WebFacadeImpl implements WebFacade {
         }
 
         // make sure we don't have a trailing slash
-        if (urlBuilder.charAt(urlBuilder.length()-1) == '/') urlBuilder.deleteCharAt(urlBuilder.length()-1)
+        if (urlBuilder.charAt(urlBuilder.length()-1) == (char) '/') urlBuilder.deleteCharAt(urlBuilder.length()-1)
 
         String urlValue = urlBuilder.toString()
-        webappRootUrlByParms.put(cacheKey, urlValue)
         return urlValue
     }
 
@@ -357,6 +375,7 @@ class WebFacadeImpl implements WebFacade {
     Map<String, Object> getErrorParameters() { return errorParameters }
 
     @Override
+    @CompileStatic
     void sendJsonResponse(Object responseObj) {
         String jsonStr
         if (responseObj instanceof CharSequence) {
@@ -364,10 +383,10 @@ class WebFacadeImpl implements WebFacade {
         } else {
             if (eci.message.messages) {
                 if (responseObj == null) {
-                    responseObj = [messages:eci.message.getMessagesString()]
+                    responseObj = [messages:eci.message.getMessagesString()] as Map<String, Object>
                 } else if (responseObj instanceof Map && !responseObj.containsKey("messages")) {
                     Map responseMap = new HashMap()
-                    responseMap.putAll((Map) responseObj)
+                    responseMap.putAll(responseObj)
                     responseMap.put("messages", eci.message.getMessagesString())
                     responseObj = responseMap
                 }
@@ -421,6 +440,7 @@ class WebFacadeImpl implements WebFacade {
     }
 
     @Override
+    @CompileStatic
     void sendTextResponse(String text) {
         String responseText
         if (eci.getMessage().hasError()) {
@@ -446,7 +466,9 @@ class WebFacadeImpl implements WebFacade {
     }
 
     @Override
+    @CompileStatic
     void sendResourceResponse(String location) { sendResourceResponse(location, false) }
+    @CompileStatic
     void sendResourceResponse(String location, boolean inline) {
         ResourceReference rr = eci.resource.getLocationReference(location)
         if (rr == null) throw new IllegalArgumentException("Resource not found at: ${location}")
@@ -468,12 +490,15 @@ class WebFacadeImpl implements WebFacade {
     }
 
     @Override
+    @CompileStatic
     void handleXmlRpcServiceCall() { new ServiceXmlRpcDispatcher(eci).dispatch(request, response) }
 
     @Override
+    @CompileStatic
     void handleJsonRpcServiceCall() { new ServiceJsonRpcDispatcher(eci).dispatch(request, response) }
 
     @Override
+    @CompileStatic
     void handleEntityRestCall(List<String> extraPathNameList) {
         ContextStack parmStack = (ContextStack) getParameters()
 

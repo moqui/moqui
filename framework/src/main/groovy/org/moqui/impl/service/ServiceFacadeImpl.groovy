@@ -12,8 +12,10 @@
 package org.moqui.impl.service
 
 import groovy.json.JsonBuilder
+import groovy.transform.CompileStatic
 import org.moqui.context.Cache
 import org.moqui.context.ResourceReference
+import org.moqui.impl.StupidJavaUtilities
 import org.moqui.impl.StupidUtilities
 import org.moqui.impl.service.runner.RemoteJsonRpcServiceRunner
 import org.moqui.service.ServiceFacade
@@ -109,10 +111,13 @@ class ServiceFacadeImpl implements ServiceFacade {
         scheduler.shutdown(true)
     }
 
+    @CompileStatic
     ExecutionContextFactoryImpl getEcfi() { return ecfi }
 
+    @CompileStatic
     ServiceRunner getServiceRunner(String type) { return serviceRunners.get(type) }
 
+    @CompileStatic
     boolean isServiceDefined(String serviceName) {
         ServiceDefinition sd = getServiceDefinition(serviceName)
         if (sd != null) return true
@@ -123,34 +128,44 @@ class ServiceFacadeImpl implements ServiceFacade {
         return isEntityAutoPattern(path, verb, noun)
     }
 
+    @CompileStatic
     boolean isEntityAutoPattern(String serviceName) {
         return isEntityAutoPattern(ServiceDefinition.getPathFromName(serviceName), ServiceDefinition.getVerbFromName(serviceName),
                 ServiceDefinition.getNounFromName(serviceName))
     }
 
+    @CompileStatic
     boolean isEntityAutoPattern(String path, String verb, String noun) {
         // if no path, verb is create|update|delete and noun is a valid entity name, do an implicit entity-auto
         return !path && ("create".equals(verb) || "update".equals(verb) || "delete".equals(verb) || "store".equals(verb)) &&
-                getEcfi().getEntityFacade().getEntityDefinition(noun) != null
+                getEcfi().getEntityFacade().isEntityDefined(noun)
     }
 
 
+    @CompileStatic
     ServiceDefinition getServiceDefinition(String serviceName) {
+        ServiceDefinition sd = (ServiceDefinition) serviceLocationCache.get(serviceName)
+        if (sd != null) return sd
+
+        // at this point sd is null, so if contains key we know the service doesn't exist
+        if (serviceLocationCache.containsKey(serviceName)) return null
+
+        // now try some acrobatics to find the service, these take longer to run hence trying to avoid
         String path = ServiceDefinition.getPathFromName(serviceName)
         String verb = ServiceDefinition.getVerbFromName(serviceName)
         String noun = ServiceDefinition.getNounFromName(serviceName)
         // logger.warn("Getting service definition for [${serviceName}], path=[${path}] verb=[${verb}] noun=[${noun}]")
 
         String cacheKey = makeCacheKey(path, verb, noun)
-        if (serviceLocationCache.containsKey(cacheKey)) {
-            // NOTE: this could be null if it's a known non-existing service
-            return (ServiceDefinition) serviceLocationCache.get(cacheKey)
-        }
+        sd = (ServiceDefinition) serviceLocationCache.get(cacheKey)
+        if (sd != null) return sd
+        if (serviceLocationCache.containsKey(cacheKey)) return null
 
-        return makeServiceDefinition(path, verb, noun)
+        return makeServiceDefinition(serviceName, path, verb, noun)
     }
 
-    protected ServiceDefinition makeServiceDefinition(String path, String verb, String noun) {
+    @CompileStatic
+    protected ServiceDefinition makeServiceDefinition(String origServiceName, String path, String verb, String noun) {
         String cacheKey = makeCacheKey(path, verb, noun)
         if (serviceLocationCache.containsKey(cacheKey)) {
             // NOTE: this could be null if it's a known non-existing service
@@ -162,26 +177,29 @@ class ServiceFacadeImpl implements ServiceFacade {
             // NOTE: don't throw an exception for service not found (this is where we know there is no def), let service caller handle that
             // Put null in the cache to remember the non-existing service
             serviceLocationCache.put(cacheKey, null)
+            if (origServiceName != cacheKey) serviceLocationCache.put(origServiceName, null)
             return null
         }
 
         ServiceDefinition sd = new ServiceDefinition(this, path, serviceNode)
         serviceLocationCache.put(cacheKey, sd)
+        if (origServiceName != cacheKey) serviceLocationCache.put(origServiceName, sd)
         return sd
     }
 
+    @CompileStatic
     protected static String makeCacheKey(String path, String verb, String noun) {
         // use a consistent format as the key in the cache, keeping in mind that the verb and noun may be merged in the serviceName passed in
         // no # here so that it doesn't matter if the caller used one or not
-        return (path ? path + "." : "") + verb + (noun ? noun : "")
+        return (path ? path + '.' : '') + verb + (noun ? noun : '')
     }
 
     protected Node findServiceNode(String path, String verb, String noun) {
         if (!path) return null
 
         // make a file location from the path
-        String partialLocation = path.replace('.', '/') + ".xml"
-        String servicePathLocation = "service/" + partialLocation
+        String partialLocation = path.replace('.', '/') + '.xml'
+        String servicePathLocation = 'service/' + partialLocation
 
         Node serviceNode = null
 
@@ -334,7 +352,7 @@ class ServiceFacadeImpl implements ServiceFacade {
                 ServiceEcaRule ser = new ServiceEcaRule(ecfi, secaNode, rr.location)
                 String serviceName = ser.serviceName
                 // remove the hash if there is one to more consistently match the service name
-                if (serviceName.contains("#")) serviceName = serviceName.replace("#", "")
+                serviceName = StupidJavaUtilities.removeChar(serviceName, (char) '#')
                 List<ServiceEcaRule> lst = secaRulesByServiceName.get(serviceName)
                 if (!lst) {
                     lst = new LinkedList()
@@ -352,23 +370,26 @@ class ServiceFacadeImpl implements ServiceFacade {
         }
     }
 
+    @CompileStatic
     void runSecaRules(String serviceName, Map<String, Object> parameters, Map<String, Object> results, String when) {
+        // NOTE: no need to remove the hash, ServiceCallSyncImpl now passes a service name with no hash
         // remove the hash if there is one to more consistently match the service name
-        if (serviceName.contains("#")) serviceName = serviceName.replace("#", "")
+        // serviceName = StupidJavaUtilities.removeChar(serviceName, (char) '#')
         List<ServiceEcaRule> lst = secaRulesByServiceName.get(serviceName)
-        ExecutionContext ec = ecfi.executionContext
-        for (ServiceEcaRule ser in lst) ser.runIfMatches(serviceName, parameters, results, when, ec)
+        if (lst) {
+            ExecutionContext ec = ecfi.getExecutionContext()
+            for (ServiceEcaRule ser in lst) ser.runIfMatches(serviceName, parameters, results, when, ec)
+        }
     }
 
+    @CompileStatic
     void registerTxSecaRules(String serviceName, Map<String, Object> parameters, Map<String, Object> results) {
+        // NOTE: no need to remove the hash, ServiceCallSyncImpl now passes a service name with no hash
         // remove the hash if there is one to more consistently match the service name
-        if (serviceName.contains("#")) serviceName = serviceName.replace("#", "")
+        // serviceName = StupidJavaUtilities.removeChar(serviceName, (char) '#')
         List<ServiceEcaRule> lst = secaRulesByServiceName.get(serviceName)
-        for (ServiceEcaRule ser in lst) {
-            if (ser.when.startsWith("tx-")) {
-                ser.registerTx(serviceName, parameters, results, ecfi)
-            }
-        }
+        if (lst) for (ServiceEcaRule ser in lst)
+            if (ser.when.startsWith("tx-")) ser.registerTx(serviceName, parameters, results, ecfi)
     }
 
     int getSecaRuleCount() {
@@ -416,29 +437,36 @@ class ServiceFacadeImpl implements ServiceFacade {
         }
     }
 
+    @CompileStatic
     void runEmecaRules(MimeMessage message) {
         ExecutionContext ec = ecfi.executionContext
         for (EmailEcaRule eer in emecaRuleList) eer.runIfMatches(message, ec)
     }
 
     @Override
+    @CompileStatic
     ServiceCallSync sync() { return new ServiceCallSyncImpl(this) }
 
     @Override
+    @CompileStatic
     ServiceCallAsync async() { return new ServiceCallAsyncImpl(this) }
 
     @Override
+    @CompileStatic
     ServiceCallSchedule schedule() { return new ServiceCallScheduleImpl(this) }
 
     @Override
+    @CompileStatic
     ServiceCallSpecial special() { return new ServiceCallSpecialImpl(this) }
 
     @Override
+    @CompileStatic
     Map<String, Object> callJsonRpc(String location, String method, Map<String, Object> parameters) {
         return RemoteJsonRpcServiceRunner.runJsonService(null, location, method, parameters, ecfi.getExecutionContext())
     }
 
     @Override
+    @CompileStatic
     synchronized void registerCallback(String serviceName, ServiceCallback serviceCallback) {
         List<ServiceCallback> callbackList = callbackRegistry.get(serviceName)
         if (callbackList == null) {
@@ -449,17 +477,18 @@ class ServiceFacadeImpl implements ServiceFacade {
     }
 
     @Override
+    @CompileStatic
     Scheduler getScheduler() { return scheduler }
 
     // ========== Quartz Listeners ==========
 
-    boolean shouldSkipScheduleHistory(TriggerKey triggerKey) {
+    @CompileStatic
+    static boolean shouldSkipScheduleHistory(TriggerKey triggerKey) {
         // filter out high-frequency, temporary jobs (these are mostly async service calls)
         return triggerKey.getGroup() == "NowTrigger"
     }
 
     protected class HistorySchedulerListener implements SchedulerListener {
-
         @Override
         void jobScheduled(Trigger trigger) {
             if (shouldSkipScheduleHistory(trigger.getKey())) return
