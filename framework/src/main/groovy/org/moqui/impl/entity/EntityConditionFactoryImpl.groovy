@@ -71,7 +71,7 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
             else throw new IllegalArgumentException("EntityCondition of type [${curCond.getClass().getName()}] not supported")
         }
         if (conditionList.size() == 1) {
-            return conditionList.first()
+            return conditionList.get(0)
         } else {
             return new ListCondition(this, newList, operator)
         }
@@ -164,18 +164,19 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
     }
 
     EntityCondition makeActionCondition(Node node) {
-        return makeActionCondition((String) node["@field-name"],
-                (String) node["@operator"] ?: "equals", (String) (node["@from"] ?: node["@field-name"]),
-                (String) node["@value"], (String) node["@to-field-name"], (node["@ignore-case"] ?: "false") == "true",
-                (node["@ignore-if-empty"] ?: "false") == "true", (node["@or-null"] ?: "false") == "true",
-                ((String) node["@ignore"] ?: "false"))
+        Map attrs = node.attributes()
+        return makeActionCondition((String) attrs.get("field-name"),
+                (String) attrs.get("operator") ?: "equals", (String) (attrs.get("from") ?: attrs.get("field-name")),
+                (String) attrs.get("value"), (String) attrs.get("to-field-name"), (attrs.get("ignore-case") ?: "false") == "true",
+                (attrs.get("ignore-if-empty") ?: "false") == "true", (attrs.get("or-null") ?: "false") == "true",
+                ((String) attrs.get("ignore") ?: "false"))
     }
 
     EntityCondition makeActionConditions(Node node) {
         List<EntityCondition> condList = new ArrayList()
         List<Node> nodeChildren = (List<Node>) node.children()
         for (Node subCond in nodeChildren) condList.add(makeActionCondition(subCond))
-        return makeCondition(condList, getJoinOperator((String) node["@combine"]))
+        return makeCondition(condList, getJoinOperator((String) node.attributes().get("combine")))
     }
 
     protected static final Map<ComparisonOperator, String> comparisonOperatorStringMap = new HashMap()

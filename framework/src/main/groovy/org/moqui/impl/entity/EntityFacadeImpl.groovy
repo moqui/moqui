@@ -1051,8 +1051,7 @@ class EntityFacadeImpl implements EntityFacade {
             ResultSet rs = ps.executeQuery()
             if (logger.traceEnabled) logger.trace("Executed query with SQL [${sql}] and parameters [${sqlParameterList}] in [${(System.currentTimeMillis()-timeBefore)/1000}] seconds")
             // make and return the eli
-            ListOrderedSet fieldLos = new ListOrderedSet()
-            fieldLos.addAll(fieldList)
+            ArrayList<String> fieldLos = new ArrayList<String>(fieldList)
             EntityListIterator eli = new EntityListIteratorImpl(con, rs, ed, fieldLos, this)
             return eli
         } catch (SQLException e) {
@@ -1322,7 +1321,7 @@ class EntityFacadeImpl implements EntityFacade {
             "java.util.ArrayList":15, "java.util.HashSet":15, "java.util.LinkedHashSet":15, "java.util.LinkedList":15]
     @CompileStatic
     public static int getJavaTypeInt(String javaType) {
-        Integer typeInt = javaIntTypeMap[javaType]
+        Integer typeInt = javaIntTypeMap.get(javaType)
         if (!typeInt) throw new EntityException("Java type " + javaType + " not supported for entity fields")
         return typeInt
     }

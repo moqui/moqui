@@ -23,7 +23,6 @@ import org.moqui.entity.EntityListIterator
 import org.moqui.entity.EntityValue
 import org.moqui.entity.EntityList
 import org.moqui.entity.EntityException
-import org.apache.commons.collections.set.ListOrderedSet
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -39,7 +38,7 @@ class EntityListIteratorImpl implements EntityListIterator {
     protected final ResultSet rs
 
     protected final EntityDefinition entityDefinition
-    protected final ListOrderedSet fieldsSelected
+    protected final ArrayList<String> fieldsSelected
     protected EntityCondition queryCondition = null
     protected List<String> orderByFields = null
 
@@ -48,7 +47,8 @@ class EntityListIteratorImpl implements EntityListIterator {
 
     protected boolean closed = false
 
-    EntityListIteratorImpl(Connection con, ResultSet rs, EntityDefinition entityDefinition, ListOrderedSet fieldsSelected, EntityFacadeImpl efi) {
+    EntityListIteratorImpl(Connection con, ResultSet rs, EntityDefinition entityDefinition,
+                           ArrayList<String> fieldsSelected, EntityFacadeImpl efi) {
         this.efi = efi
         this.con = con
         this.rs = rs

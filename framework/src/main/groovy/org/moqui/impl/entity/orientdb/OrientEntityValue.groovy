@@ -47,7 +47,11 @@ class OrientEntityValue extends EntityValueBase {
         super(ed, efip)
         this.odf = odf
         this.recordId = document.getIdentity()
-        for (String fieldName in ed.getAllFieldNames()) {
+
+        ArrayList<String> fieldNameList = ed.getAllFieldNames()
+        int size = fieldNameList.size()
+        for (int i = 0; i < size; i++) {
+            String fieldName = fieldNameList.get(i)
             Object fieldValue = document.field(ed.getColumnName(fieldName, false))
             if (fieldValue == null) { getValueMap().put(fieldName, null); continue }
 
@@ -94,14 +98,18 @@ class OrientEntityValue extends EntityValueBase {
     EntityValue cloneDbValue(boolean getOld) {
         OrientEntityValue newObj = new OrientEntityValue(getEntityDefinition(), getEntityFacadeImpl(), odf)
         newObj.getValueMap().putAll(getValueMap())
-        for (String fieldName in getEntityDefinition().getAllFieldNames())
+        ArrayList<String> fieldNameList = getEntityDefinition().getAllFieldNames()
+        int size = fieldNameList.size()
+        for (int i = 0; i < size; i++) {
+            String fieldName = fieldNameList.get(i)
             newObj.put(fieldName, getOld ? getOldDbValue(fieldName) : getOriginalDbValue(fieldName))
+        }
         newObj.setSyncedWithDb()
         return newObj
     }
 
     @Override
-    void createExtended(ListOrderedSet fieldList, Connection con) {
+    void createExtended(ArrayList<String> fieldList, Connection con) {
         EntityDefinition ed = getEntityDefinition()
         if (ed.isViewEntity()) throw new EntityException("Create not yet implemented for view-entity")
 
@@ -125,7 +133,7 @@ class OrientEntityValue extends EntityValueBase {
     }
 
     @Override
-    void updateExtended(List<String> pkFieldList, ListOrderedSet nonPkFieldList, Connection con) {
+    void updateExtended(ArrayList<String> pkFieldList, ArrayList<String> nonPkFieldList, Connection con) {
         EntityDefinition ed = getEntityDefinition()
         if (ed.isViewEntity()) throw new EntityException("Update not yet implemented for view-entity")
 
@@ -153,7 +161,9 @@ class OrientEntityValue extends EntityValueBase {
             sql.append(" SET ")
 
             boolean isFirstField = true
-            for (String fieldName in nonPkFieldList) {
+            int size = nonPkFieldList.size()
+            for (int i = 0; i < size; i++) {
+                String fieldName = nonPkFieldList.get(i)
                 if (isFirstField) isFirstField = false else sql.append(", ")
                 sql.append(ed.getColumnName(fieldName, false)).append("=?")
                 paramValues.add(getValueMap().get(fieldName))
@@ -161,7 +171,9 @@ class OrientEntityValue extends EntityValueBase {
             if (recordId == null) {
                 sql.append(" WHERE ")
                 boolean isFirstPk = true
-                for (String fieldName in pkFieldList) {
+                int sizePk = pkFieldList.size()
+                for (int i = 0; i < sizePk; i++) {
+                    String fieldName = pkFieldList.get(i)
                     if (isFirstPk) isFirstPk = false else sql.append(" AND ")
                     sql.append(ed.getColumnName(fieldName, false)).append("=?")
                     paramValues.add(getValueMap().get(fieldName))
@@ -219,7 +231,10 @@ class OrientEntityValue extends EntityValueBase {
             if (recordId == null) {
                 sql.append(ed.getTableName()).append(" WHERE ")
                 boolean isFirstPk = true
-                for (String fieldName in ed.getPkFieldNames()) {
+                ArrayList<String> pkFieldList = ed.getPkFieldNames()
+                int sizePk = pkFieldList.size()
+                for (int i = 0; i < sizePk; i++) {
+                    String fieldName = pkFieldList.get(i)
                     if (isFirstPk) isFirstPk = false else sql.append(" AND ")
                     sql.append(ed.getColumnName(fieldName, false)).append(" = ?")
                     paramValues.add(getValueMap().get(fieldName))
@@ -263,7 +278,10 @@ class OrientEntityValue extends EntityValueBase {
             if (recordId == null) {
                 sql.append(ed.getTableName()).append(" WHERE ")
                 boolean isFirstPk = true
-                for (String fieldName in ed.getPkFieldNames()) {
+                ArrayList<String> pkFieldList = ed.getPkFieldNames()
+                int sizePk = pkFieldList.size()
+                for (int i = 0; i < sizePk; i++) {
+                    String fieldName = pkFieldList.get(i)
                     if (isFirstPk) isFirstPk = false else sql.append(" AND ")
                     sql.append(ed.getColumnName(fieldName, false)).append(" = ?")
                     paramValues.add(getValueMap().get(fieldName))

@@ -48,7 +48,7 @@ class EntityQueryBuilder {
     protected EntityFacadeImpl efi
     EntityDefinition mainEntityDefinition
     protected StringBuilder sqlTopLevel = new StringBuilder()
-    protected List<EntityConditionParameter> parameters = new ArrayList()
+    protected ArrayList<EntityConditionParameter> parameters = new ArrayList()
 
     protected PreparedStatement ps
     protected ResultSet rs
@@ -66,7 +66,7 @@ class EntityQueryBuilder {
     StringBuilder getSqlTopLevel() { return this.sqlTopLevel }
 
     /** returns List of EntityConditionParameter meant to be added to */
-    List<EntityConditionParameter> getParameters() { return this.parameters }
+    ArrayList<EntityConditionParameter> getParameters() { return this.parameters }
 
     Connection makeConnection() {
         this.connection = this.efi.getConnection(mainEntityDefinition.getEntityGroupName())
@@ -159,10 +159,11 @@ class EntityQueryBuilder {
 
     void setPreparedStatementValues() {
         // set all of the values from the SQL building in efb
-        int paramIndex = 1
-        for (EntityConditionParameter entityConditionParam: getParameters()) {
-            entityConditionParam.setPreparedStatementValue(paramIndex)
-            paramIndex++
+        ArrayList<EntityConditionParameter> parms = parameters
+        int size = parms.size()
+        for (int i = 0; i < size; i++) {
+            EntityConditionParameter entityConditionParam = parms.get(i)
+            entityConditionParam.setPreparedStatementValue(i + 1)
         }
     }
 

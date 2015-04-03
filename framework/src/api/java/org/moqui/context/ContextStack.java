@@ -111,7 +111,9 @@ public class ContextStack implements Map<String, Object> {
     }
 
     public boolean containsKey(Object key) {
-        for (Map curMap: stackList) {
+        int size = stackList.size();
+        for (int i = 0; i < size; i++) {
+            Map<String, Object> curMap = stackList.get(i);
             if (key == null && curMap instanceof Hashtable) continue;
             if (curMap.containsKey(key)) return true;
         }
@@ -122,7 +124,9 @@ public class ContextStack implements Map<String, Object> {
         // this keeps track of keys looked at for values at each level of the stack so that the same key is not
         // considered more than once (the earlier Maps overriding later ones)
         Set<Object> keysObserved = new HashSet<Object>();
-        for (Map<String, Object> curMap: stackList) {
+        int size = stackList.size();
+        for (int i = 0; i < size; i++) {
+            Map<String, Object> curMap = stackList.get(i);
             for (Map.Entry curEntry: curMap.entrySet()) {
                 if (!keysObserved.contains(curEntry.getKey())) {
                     keysObserved.add(curEntry.getKey());
@@ -160,8 +164,8 @@ public class ContextStack implements Map<String, Object> {
         } else {
             int size = stackList.size();
             // start with 1 to skip the first Map
-            for (int i = 1; i < size; i++ ) {
-                Map curMap = stackList.get(i);
+            for (int i = 1; i < size; i++) {
+                Map<String, Object> curMap = stackList.get(i);
                 try {
                     if (key == null && curMap instanceof Hashtable) continue;
                     // optimize for non-null get, avoid double lookup with containsKey/get
@@ -196,7 +200,9 @@ public class ContextStack implements Map<String, Object> {
     public Set<String> keySet() {
         Set<String> resultSet = new HashSet<String>();
         resultSet.add("context");
-        for (Map<String, Object> curMap: stackList) {
+        int size = stackList.size();
+        for (int i = 0; i < size; i++) {
+            Map<String, Object> curMap = stackList.get(i);
             resultSet.addAll(curMap.keySet());
         }
         return Collections.unmodifiableSet(resultSet);
@@ -205,7 +211,9 @@ public class ContextStack implements Map<String, Object> {
     public Collection<Object> values() {
         Set<Object> keysObserved = new HashSet<Object>();
         List<Object> resultValues = new LinkedList<Object>();
-        for (Map<String, Object> curMap: stackList) {
+        int size = stackList.size();
+        for (int i = 0; i < size; i++) {
+            Map<String, Object> curMap = stackList.get(i);
             for (Map.Entry curEntry: curMap.entrySet()) {
                 if (!keysObserved.contains(curEntry.getKey())) {
                     keysObserved.add(curEntry.getKey());
@@ -220,7 +228,9 @@ public class ContextStack implements Map<String, Object> {
     public Set<Map.Entry<String, Object>> entrySet() {
         Set<Object> keysObserved = new HashSet<Object>();
         Set<Map.Entry<String, Object>> resultEntrySet = new HashSet<Map.Entry<String, Object>>();
-        for (Map<String, Object> curMap: stackList) {
+        int size = stackList.size();
+        for (int i = 0; i < size; i++) {
+            Map<String, Object> curMap = stackList.get(i);
             for (Map.Entry<String, Object> curEntry: curMap.entrySet()) {
                 if (!keysObserved.contains(curEntry.getKey())) {
                     keysObserved.add(curEntry.getKey());

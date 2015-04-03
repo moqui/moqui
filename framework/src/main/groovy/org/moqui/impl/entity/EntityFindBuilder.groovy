@@ -61,7 +61,7 @@ class EntityFindBuilder extends EntityQueryBuilder {
 
     void makeCountFunction() {
         NodeList entityConditionList = (NodeList) this.mainEntityDefinition.getEntityNode().get("entity-condition")
-        Node entityConditionNode = entityConditionList ? (Node) entityConditionList.first() : null
+        Node entityConditionNode = entityConditionList ? (Node) entityConditionList.get(0) : null
         boolean isDistinct = this.entityFindBase.getDistinct() || (this.mainEntityDefinition.isViewEntity() &&
                 "true" == entityConditionNode?.attributes()?.get('distinct'))
         boolean isGroupBy = this.mainEntityDefinition.hasFunctionAlias()
@@ -104,10 +104,12 @@ class EntityFindBuilder extends EntityQueryBuilder {
         }
     }
 
-    void makeSqlSelectFields(ListOrderedSet fieldsToSelect) {
+    void makeSqlSelectFields(ArrayList<String> fieldsToSelect) {
         if (fieldsToSelect.size() > 0) {
             boolean isFirst = true
-            for (String fieldName in fieldsToSelect) {
+            int size = fieldsToSelect.size()
+            for (int i = 0; i < size; i++) {
+                String fieldName = fieldsToSelect.get(i)
                 if (isFirst) isFirst = false else this.sqlTopLevel.append(", ")
                 this.sqlTopLevel.append(this.mainEntityDefinition.getColumnName(fieldName, true))
             }
@@ -162,7 +164,7 @@ class EntityFindBuilder extends EntityQueryBuilder {
                 ((EntityConditionImplBase) entityFindBase.whereEntityCondition).getAllAliases(entityAliasUsedSet, fieldUsedSet)
             if (entityFindBase.havingEntityCondition != null)
                 ((EntityConditionImplBase) entityFindBase.havingEntityCondition).getAllAliases(entityAliasUsedSet, fieldUsedSet)
-            fieldUsedSet.addAll(entityFindBase.fieldsToSelect.asList())
+            fieldUsedSet.addAll(entityFindBase.fieldsToSelect)
             if (entityFindBase.orderByFields) for (String orderByField in entityFindBase.orderByFields) {
                 FieldOrderOptions foo = new FieldOrderOptions(orderByField)
                 fieldUsedSet.add(foo.fieldName)
@@ -234,7 +236,7 @@ class EntityFindBuilder extends EntityQueryBuilder {
                     // make sure the left entity alias is already in the join...
                     if (!joinedAliasSet.contains(relatedMemberEntity.attributes().get('join-from-alias'))) {
                         logger.error("For view-entity [${localEntityDefinition.getFullEntityName()}] found member-entity with @join-from-alias [${relatedMemberEntity.attributes().get('join-from-alias')}] that isn't in the joinedAliasSet: ${joinedAliasSet}; view-entity Node: ${entityNode}")
-                        throw new IllegalArgumentException("Tried to link the " + relatedMemberEntity.attributes().get('entity-alias') +
+                        throw new IllegalArgumentException((String) "Tried to link the " + relatedMemberEntity.attributes().get('entity-alias') +
                                 " alias to the " + relatedMemberEntity.attributes().get('join-from-alias') + " alias of the " +
                                 localEntityDefinition.getFullEntityName() + " view-entity, but it is not the first member-entity and has not been joined to a previous member-entity. In other words, the left/main alias isn't connected to the rest of the member-entities yet.")
                     }
@@ -255,7 +257,7 @@ class EntityFindBuilder extends EntityQueryBuilder {
 
                 NodeList keyMaps = (NodeList) relatedMemberEntity.get("key-map")
                 if (!keyMaps) {
-                    throw new IllegalArgumentException("No member-entity/join key-maps found for the " +
+                    throw new IllegalArgumentException((String) "No member-entity/join key-maps found for the " +
                             relatedMemberEntity.attributes().get('join-from-alias') + " and the " + relatedMemberEntity.attributes().get('entity-alias') +
                             " member-entities of the " + localEntityDefinition.getFullEntityName() + " view-entity.")
                 }
@@ -276,7 +278,7 @@ class EntityFindBuilder extends EntityQueryBuilder {
                     String relatedFieldName = keyMap.attributes().get('related-field-name') ?: keyMap.attributes().get('field-name')
                     if (!relatedLinkEntityDefinition.isField(relatedFieldName) &&
                             relatedLinkEntityDefinition.pkFieldNames.size() == 1 && keyMaps.size() == 1) {
-                        relatedFieldName = relatedLinkEntityDefinition.pkFieldNames[0]
+                        relatedFieldName = relatedLinkEntityDefinition.pkFieldNames.get(0)
                         // if we don't match these constraints and get this default we'll get an error later...
                     }
                     localBuilder.append(relatedMemberEntity.attributes().get('entity-alias'))
@@ -373,7 +375,7 @@ class EntityFindBuilder extends EntityQueryBuilder {
         this.sqlTopLevel.append(" WHERE ")
     }
 
-    void makeGroupByClause(Set<String> fieldsToSelect) {
+    void makeGroupByClause(ArrayList<String> fieldsToSelect) {
         if (this.mainEntityDefinition.isViewEntity()) {
             StringBuilder gbClause = new StringBuilder()
             if (this.mainEntityDefinition.hasFunctionAlias()) {

@@ -11,7 +11,6 @@
  */
 package org.moqui.impl.entity
 
-import org.apache.commons.collections.set.ListOrderedSet
 import org.moqui.entity.EntityCondition
 import org.moqui.entity.EntityList
 import org.moqui.entity.EntityListIterator
@@ -31,7 +30,7 @@ class EntityListIteratorWrapper implements EntityListIterator {
     protected int internalIndex = -1
 
     protected EntityDefinition entityDefinition
-    protected ListOrderedSet fieldsSelected
+    protected ArrayList<String> fieldsSelected
     protected EntityCondition queryCondition = null
     protected List<String> orderByFields = null
 
@@ -41,7 +40,7 @@ class EntityListIteratorWrapper implements EntityListIterator {
     protected boolean closed = false
 
     EntityListIteratorWrapper(List<EntityValue> valueList, EntityDefinition entityDefinition,
-                              ListOrderedSet fieldsSelected, EntityFacadeImpl efi) {
+                              ArrayList<String> fieldsSelected, EntityFacadeImpl efi) {
         this.efi = efi
         this.valueList = valueList
         this.entityDefinition = entityDefinition

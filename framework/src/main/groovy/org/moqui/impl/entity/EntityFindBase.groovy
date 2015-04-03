@@ -53,7 +53,7 @@ abstract class EntityFindBase implements EntityFind {
     protected EntityConditionImplBase havingEntityCondition = null
 
     /** This is always a ListOrderedSet so that we can get the results in a consistent order */
-    protected ListOrderedSet fieldsToSelect = null
+    protected ArrayList<String> fieldsToSelect = null
     protected List<String> orderByFields = null
 
     protected Boolean useCache = null
@@ -181,7 +181,7 @@ abstract class EntityFindBase implements EntityFind {
     @Override
     EntityFind searchFormInputs(String inputFieldsMapName, String defaultOrderBy, boolean alwaysPaginate) {
         ExecutionContext ec = efi.getEcfi().getExecutionContext()
-        Map inf = inputFieldsMapName ? (Map) ec.context[inputFieldsMapName] : efi.ecfi.executionContext.context
+        Map inf = inputFieldsMapName ? (Map) ec.context.get(inputFieldsMapName) : efi.ecfi.executionContext.context
         return searchFormMap(inf, defaultOrderBy, alwaysPaginate)
     }
 
@@ -258,9 +258,9 @@ abstract class EntityFindBase implements EntityFind {
             } else if (inf.get(fn + "_period")) {
                 List<Timestamp> range = ec.user.getPeriodRange((String) inf.get(fn + "_period"), (String) inf.get(fn + "_poffset"))
                 this.condition(efi.conditionFactory.makeCondition(fn,
-                        EntityCondition.GREATER_THAN_EQUAL_TO, range[0]))
+                        EntityCondition.GREATER_THAN_EQUAL_TO, range.get(0)))
                 this.condition(efi.conditionFactory.makeCondition(fn,
-                        EntityCondition.LESS_THAN, range[1]))
+                        EntityCondition.LESS_THAN, range.get(1)))
             } else {
                 // these will handle range-find and date-find
                 Object fromValue = inf.get(fn + "_from")
@@ -350,20 +350,20 @@ abstract class EntityFindBase implements EntityFind {
 
     @Override
     EntityFind selectField(String fieldToSelect) {
-        if (!this.fieldsToSelect) this.fieldsToSelect = new ListOrderedSet()
+        if (!this.fieldsToSelect) this.fieldsToSelect = new ArrayList<String>()
         if (fieldToSelect) this.fieldsToSelect.add(fieldToSelect)
         return this
     }
 
     @Override
     EntityFind selectFields(Collection<String> fieldsToSelect) {
-        if (!this.fieldsToSelect) this.fieldsToSelect = new ListOrderedSet()
+        if (!this.fieldsToSelect) this.fieldsToSelect = new ArrayList<String>()
         if (fieldsToSelect) this.fieldsToSelect.addAll(fieldsToSelect)
         return this
     }
 
     @Override
-    List<String> getSelectFields() { return this.fieldsToSelect ? this.fieldsToSelect.asList() : null }
+    List<String> getSelectFields() { return this.fieldsToSelect ? this.fieldsToSelect : null }
 
     @Override
     EntityFind orderBy(String orderByFieldName) {
@@ -643,7 +643,7 @@ abstract class EntityFindBase implements EntityFind {
         if (this.getOrderBy()) orderByExpanded.addAll(this.getOrderBy())
 
         NodeList entityConditionList = (NodeList) entityNode.get("entity-condition")
-        Node entityConditionNode = entityConditionList ? (Node) entityConditionList.first() : null
+        Node entityConditionNode = entityConditionList ? (Node) entityConditionList.get(0) : null
         NodeList ecObList = (NodeList) entityConditionNode?.get("order-by")
         if (ecObList) for (Object orderBy in ecObList)
             orderByExpanded.add((String) ((Node) orderBy).attributes().get('field-name'))
@@ -757,7 +757,7 @@ abstract class EntityFindBase implements EntityFind {
         if (this.getOrderBy()) orderByExpanded.addAll(this.getOrderBy())
 
         NodeList entityConditionList = (NodeList) entityNode.get("entity-condition")
-        Node entityConditionNode = entityConditionList ? (Node) entityConditionList.first() : null
+        Node entityConditionNode = entityConditionList ? (Node) entityConditionList.get(0) : null
         NodeList ecObList = (NodeList) entityConditionNode?.get("order-by")
         if (ecObList) for (Object orderBy in ecObList)
             orderByExpanded.add((String) ((Node) orderBy).attributes().get('field-name'))
@@ -858,7 +858,7 @@ abstract class EntityFindBase implements EntityFind {
             // TODO: this will not handle query conditions on UserFields, it will blow up in fact
 
             NodeList entityConditionList = (NodeList) entityNode.get("entity-condition")
-            Node entityConditionNode = entityConditionList ? (Node) entityConditionList.first() : null
+            Node entityConditionNode = entityConditionList ? (Node) entityConditionList.get(0) : null
             if (ed.isViewEntity() && entityConditionNode?.attributes()?.get('distinct') == "true") this.distinct(true)
 
             EntityConditionImplBase viewWhere = ed.makeViewWhereCondition()

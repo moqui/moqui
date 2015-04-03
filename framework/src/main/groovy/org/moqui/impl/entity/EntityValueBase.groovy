@@ -226,7 +226,7 @@ abstract class EntityValueBase implements EntityValue {
                         .condition(parms).list()
                 if (userFieldValueList) {
                     // do type conversion according to field type
-                    return ed.convertFieldString(name, (String) userFieldValueList[0].valueText)
+                    return ed.convertFieldString(name, (String) userFieldValueList.get(0).valueText)
                 }
             } finally {
                 if (!alreadyDisabled) efi.getEcfi().getExecutionContext().getArtifactExecution().enableAuthz()
@@ -253,7 +253,10 @@ abstract class EntityValueBase implements EntityValue {
     Map<String, Object> getPrimaryKeys() {
         if (internalPkMap != null) return new HashMap<String, Object>(internalPkMap)
         Map<String, Object> pks = new HashMap()
-        for (String fieldName in this.getEntityDefinition().getPkFieldNames()) {
+        ArrayList<String> fieldNameList = this.getEntityDefinition().getPkFieldNames()
+        int size = fieldNameList.size()
+        for (int i = 0; i < size; i++) {
+            String fieldName = fieldNameList.get(i)
             // only include PK fields which has a non-empty value, leave others out of the Map
             Object value = valueMap.get(fieldName)
             if (value) pks.put(fieldName, value)
@@ -287,7 +290,7 @@ abstract class EntityValueBase implements EntityValue {
     }
 
     @Override
-    Timestamp getTimestamp(String name) { return (Timestamp) this.get(name)?.asType(Timestamp.class) }
+    Timestamp getTimestamp(String name) { return this.get(name) as Timestamp }
 
     @Override
     Time getTime(String name) { return this.get(name) as Time }
@@ -669,7 +672,7 @@ abstract class EntityValueBase implements EntityValue {
         Map<String, Object> subPlainMap = [:]
         String curEntity = objectName ?: (String) plainMap.get('_entity')
 
-        for (int i = 0; i < level; i++) pw.print(indentString)
+        for (int i = 0; i < level; i++) pw.append(indentString)
         // mostly for relationship names, see opposite code in the EntityDataLoaderImpl.startElement
         if (curEntity.contains('#')) curEntity = curEntity.replace('#', '-')
         pw.append('<').append(prefix ?: '').append(curEntity)
@@ -737,7 +740,7 @@ abstract class EntityValueBase implements EntityValue {
             }
 
             // close the entity element
-            for (int i = 0; i < level; i++) pw.print(indentString)
+            for (int i = 0; i < level; i++) pw.append(indentString)
             pw.append('</').append(curEntity).append('>\n')
         }
 
@@ -958,9 +961,13 @@ abstract class EntityValueBase implements EntityValue {
         // do this before the db change so modified flag isn't cleared
         if (doDataFeed()) getEntityFacadeImpl().getEntityDataFeed().dataFeedCheckAndRegister(this, false, valueMap, null)
 
-        ListOrderedSet fieldList = new ListOrderedSet()
-        for (String fieldName in ed.getFieldNames(true, true, false)) if (valueMap.containsKey(fieldName)) fieldList.add(fieldName)
-
+        ArrayList<String> fieldList = new ArrayList<String>()
+        ArrayList<String> fieldNameList = ed.getFieldNames(true, true, false)
+        int size = fieldNameList.size()
+        for (int i = 0; i < size; i++) {
+            String fieldName = fieldNameList.get(i)
+            if (valueMap.containsKey(fieldName)) fieldList.add(fieldName)
+        }
 
         // if there is not a txCache or the txCache doesn't handle the create, call the abstract method to create the main record
         if (getTxCache() == null || !getTxCache().create(this)) this.basicCreate(fieldList, null)
@@ -983,12 +990,17 @@ abstract class EntityValueBase implements EntityValue {
     }
     void basicCreate(Connection con) {
         EntityDefinition ed = getEntityDefinition()
-        ListOrderedSet fieldList = new ListOrderedSet()
-        for (String fieldName in ed.getFieldNames(true, true, false)) if (valueMap.containsKey(fieldName)) fieldList.add(fieldName)
+        ArrayList<String> fieldList = new ArrayList<String>()
+        ArrayList<String> fieldNameList = ed.getFieldNames(true, true, false)
+        int size = fieldNameList.size()
+        for (int i = 0; i < size; i++) {
+            String fieldName = fieldNameList.get(i)
+            if (valueMap.containsKey(fieldName)) fieldList.add(fieldName)
+        }
 
         basicCreate(fieldList, con)
     }
-    void basicCreate(ListOrderedSet fieldList, Connection con) {
+    void basicCreate(ArrayList<String> fieldList, Connection con) {
         EntityDefinition ed = getEntityDefinition()
         ExecutionContextFactoryImpl ecfi = getEntityFacadeImpl().getEcfi()
         ExecutionContext ec = ecfi.getExecutionContext()
@@ -1017,7 +1029,7 @@ abstract class EntityValueBase implements EntityValue {
         }
     }
     /** This method should create a corresponding record in the datasource. */
-    abstract void createExtended(ListOrderedSet fieldList, Connection con)
+    abstract void createExtended(ArrayList<String> fieldList, Connection con)
 
     @Override
     EntityValue update() {
@@ -1052,9 +1064,12 @@ abstract class EntityValueBase implements EntityValue {
 
         Map oldValues = refreshedValue ? refreshedValue.getValueMap() : (dbValueMapFromDb ? dbValueMap : [:])
 
-        List<String> pkFieldList = ed.getPkFieldNames()
-        ListOrderedSet nonPkFieldList = new ListOrderedSet()
-        for (String fieldName in ed.getNonPkFieldNames()) {
+        ArrayList<String> pkFieldList = ed.getPkFieldNames()
+        ArrayList<String> nonPkFieldList = new ArrayList<String>()
+        ArrayList<String> fieldNameList = ed.getNonPkFieldNames()
+        int size = fieldNameList.size()
+        for (int i = 0; i < size; i++) {
+            String fieldName = fieldNameList.get(i)
             if (valueMap.containsKey(fieldName) &&
                     (!dbValueMapFromDb || valueMap.get(fieldName) != dbValueMap.get(fieldName))) {
                 nonPkFieldList.add(fieldName)
@@ -1104,9 +1119,12 @@ abstract class EntityValueBase implements EntityValue {
         // it may be that the oldValues map is full of null values because the EntityValue didn't come from the db
         if (dbValueMap) for (Object val in dbValueMap.values()) if (val != null) { dbValueMapFromDb = true; break }
 
-        List<String> pkFieldList = ed.getPkFieldNames()
-        ListOrderedSet nonPkFieldList = new ListOrderedSet()
-        for (String fieldName in ed.getNonPkFieldNames()) {
+        ArrayList<String> pkFieldList = ed.getPkFieldNames()
+        ArrayList<String> nonPkFieldList = new ArrayList<String>()
+        ArrayList<String> fieldNameList = ed.getNonPkFieldNames()
+        int size = fieldNameList.size()
+        for (int i = 0; i < size; i++) {
+            String fieldName = fieldNameList.get(i)
             if (valueMap.containsKey(fieldName) &&
                     (!dbValueMapFromDb || valueMap.get(fieldName) != dbValueMap.get(fieldName))) {
                 nonPkFieldList.add(fieldName)
@@ -1115,7 +1133,7 @@ abstract class EntityValueBase implements EntityValue {
 
         basicUpdate(dbValueMapFromDb, pkFieldList, nonPkFieldList, con)
     }
-    void basicUpdate(boolean dbValueMapFromDb, List<String> pkFieldList, ListOrderedSet nonPkFieldList, Connection con) {
+    void basicUpdate(boolean dbValueMapFromDb, ArrayList<String> pkFieldList, ArrayList<String> nonPkFieldList, Connection con) {
         EntityDefinition ed = getEntityDefinition()
         ExecutionContextFactoryImpl ecfi = getEntityFacadeImpl().getEcfi()
         ExecutionContext ec = ecfi.getExecutionContext()
@@ -1167,7 +1185,7 @@ abstract class EntityValueBase implements EntityValue {
             }
         }
     }
-    abstract void updateExtended(List<String> pkFieldList, ListOrderedSet nonPkFieldList, Connection con)
+    abstract void updateExtended(ArrayList<String> pkFieldList, ArrayList<String> nonPkFieldList, Connection con)
 
     @Override
     EntityValue delete() {

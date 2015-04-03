@@ -104,11 +104,15 @@ public class EntityAutoServiceRunner implements ServiceRunner {
 
     protected static boolean checkAllPkFields(EntityDefinition ed, Map<String, Object> parameters, Map<String, Object> tempResult,
                                     EntityValue newEntityValue, Set<String> outParamNames) {
-        List<String> pkFieldNames = ed.getPkFieldNames()
+        ArrayList<String> pkFieldNames = ed.getPkFieldNames()
 
         // see if all PK fields were passed in
         boolean allPksIn = true
-        for (String pkFieldName in pkFieldNames) if (!parameters.get(pkFieldName)) { allPksIn = false; break }
+        int size = pkFieldNames.size()
+        for (int i = 0; i < size; i++) {
+            String pkFieldName = pkFieldNames.get(i)
+            if (!parameters.get(pkFieldName)) { allPksIn = false; break }
+        }
         boolean isSinglePk = pkFieldNames.size() == 1
         boolean isDoublePk = pkFieldNames.size() == 2
 
@@ -187,10 +191,14 @@ public class EntityAutoServiceRunner implements ServiceRunner {
         if (parentPks) pkMap.putAll(parentPks)
 
         // if a PK field has a @default get it and return it
-        List<Node> pkNodes = ed.getFieldNodes(true, false, false)
-        for (Node pkNode in pkNodes) if (pkNode.attributes().get('default')) {
-            String pkName = (String) pkNode.attributes().get('name')
-            tempResult.put(pkName, newEntityValue.get(pkName))
+        ArrayList<String> pkFieldNames = ed.getPkFieldNames()
+        int size = pkFieldNames.size()
+        for (int i = 0; i < size; i++) {
+            String pkName = pkFieldNames.get(i)
+            Node pkNode = ed.getFieldNode(pkName)
+            if (pkNode.attributes().get('default')) {
+                tempResult.put(pkName, newEntityValue.get(pkName))
+            }
         }
 
         // check parameters Map for relationships

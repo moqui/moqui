@@ -50,9 +50,9 @@ public class EntityDefinition {
     protected final Map<String, Node> relationshipNodeMap = new HashMap<String, Node>()
     protected final Map<String, String> columnNameMap = new HashMap<String, String>()
     // small lists, but very frequently accessed
-    protected List<String> pkFieldNameList = null
-    protected List<String> nonPkFieldNameList = null
-    protected List<String> allFieldNameList = null
+    protected ArrayList<String> pkFieldNameList = null
+    protected ArrayList<String> nonPkFieldNameList = null
+    protected ArrayList<String> allFieldNameList = null
     protected Boolean hasUserFields = null
     protected Boolean allowUserField = null
     protected Map<String, Map> mePkFieldToAliasNameMapMap = null
@@ -655,21 +655,31 @@ public class EntityDefinition {
     @CompileStatic
     boolean containsPrimaryKey(Map fields) {
         if (!fields) return false
-        if (!getPkFieldNames()) return false
-        for (String fieldName in getPkFieldNames()) if (!fields[fieldName]) return false
+        ArrayList<String> fieldNameList = this.getPkFieldNames()
+        if (!fieldNameList) return false
+        int size = fieldNameList.size()
+        for (int i = 0; i < size; i++) {
+            String fieldName = fieldNameList.get(i)
+            if (!fields.get(fieldName)) return false
+        }
         return true
     }
 
     @CompileStatic
     Map<String, Object> getPrimaryKeys(Map fields) {
         Map<String, Object> pks = new HashMap()
-        for (String fieldName in this.getPkFieldNames()) pks.put(fieldName, fields[fieldName])
+        ArrayList<String> fieldNameList = this.getPkFieldNames()
+        int size = fieldNameList.size()
+        for (int i = 0; i < size; i++) {
+            String fieldName = fieldNameList.get(i)
+            pks.put(fieldName, fields.get(fieldName))
+        }
         return pks
     }
 
     @CompileStatic
-    List<String> getFieldNames(boolean includePk, boolean includeNonPk, boolean includeUserFields) {
-        List<String> baseList
+    ArrayList<String> getFieldNames(boolean includePk, boolean includeNonPk, boolean includeUserFields) {
+        ArrayList<String> baseList
         // common case, do it fast
         if (includePk) {
             if (includeNonPk) {
@@ -682,14 +692,14 @@ public class EntityDefinition {
                 baseList = getNonPkFieldNames()
             } else {
                 // all false is weird, but okay
-                baseList = []
+                baseList = new ArrayList<String>()
             }
         }
         if (!includeUserFields) return baseList
 
         ListOrderedSet userFieldNames = getUserFieldNames()
         if (userFieldNames) {
-            List<String> returnList = []
+            List<String> returnList = new ArrayList<String>()
             returnList.addAll(baseList)
             returnList.addAll(userFieldNames.asList())
             return returnList
@@ -701,7 +711,8 @@ public class EntityDefinition {
     protected ListOrderedSet getFieldNamesInternal(boolean includePk, boolean includeNonPk) {
         ListOrderedSet nameSet = new ListOrderedSet()
         String nodeName = this.isViewEntity() ? "alias" : "field"
-        for (Node node in (Collection<Node>) this.internalEntityNode[nodeName]) {
+        for (Object nodeObj in (NodeList) this.internalEntityNode.get(nodeName)) {
+            Node node = (Node) nodeObj
             if ((includePk && 'true'.equals(node.attributes().get('is-pk'))) || (includeNonPk && !'true'.equals(node.attributes().get('is-pk')))) {
                 nameSet.add(node.attributes().get('name'))
             }
@@ -734,29 +745,29 @@ public class EntityDefinition {
     }
 
     @CompileStatic
-    List<String> getPkFieldNames() {
+    ArrayList<String> getPkFieldNames() {
         if (pkFieldNameList == null)
-            pkFieldNameList = Collections.unmodifiableList(new ArrayList(getFieldNamesInternal(true, false).asList()))
+            pkFieldNameList = new ArrayList(getFieldNamesInternal(true, false))
         return pkFieldNameList
     }
     @CompileStatic
-    List<String> getNonPkFieldNames() {
+    ArrayList<String> getNonPkFieldNames() {
         if (nonPkFieldNameList == null)
-            nonPkFieldNameList = Collections.unmodifiableList(new ArrayList(getFieldNamesInternal(false, true).asList()))
+            nonPkFieldNameList = new ArrayList(getFieldNamesInternal(false, true))
         return nonPkFieldNameList
     }
     @CompileStatic
-    List<String> getAllFieldNames() { return getAllFieldNames(true) }
+    ArrayList<String> getAllFieldNames() { return getAllFieldNames(true) }
     @CompileStatic
-    List<String> getAllFieldNames(boolean includeUserFields) {
+    ArrayList<String> getAllFieldNames(boolean includeUserFields) {
         if (allFieldNameList == null)
-            allFieldNameList = Collections.unmodifiableList(new ArrayList(getFieldNamesInternal(true, true).asList()))
+            allFieldNameList = new ArrayList(getFieldNamesInternal(true, true))
 
         if (!includeUserFields) return allFieldNameList
 
         ListOrderedSet userFieldNames = getUserFieldNames()
         if (userFieldNames) {
-            List<String> returnList = []
+            List<String> returnList = new ArrayList<>(allFieldNameList.size() + userFieldNames.size())
             returnList.addAll(allFieldNameList)
             returnList.addAll(userFieldNames.asList())
             return returnList
@@ -798,7 +809,8 @@ public class EntityDefinition {
         // NOTE: this is not necessarily the fastest way to do this, if it becomes a performance problem replace it with a local List of field Nodes
         List<Node> nodeList = new ArrayList<Node>()
         String nodeName = this.isViewEntity() ? "alias" : "field"
-        for (Node node in (Collection<Node>) this.internalEntityNode[nodeName]) {
+        for (Object nodeObj in (NodeList) this.internalEntityNode.get(nodeName)) {
+            Node node = (Node) nodeObj
             if ((includePk && node."@is-pk" == "true") || (includeNonPk && node."@is-pk" != "true")) {
                 nodeList.add(node)
             }
@@ -906,7 +918,10 @@ public class EntityDefinition {
     @CompileStatic
     Map cloneMapRemoveFields(Map theMap, Boolean pks) {
         Map newMap = new HashMap(theMap)
-        for (String fieldName in (pks != null ? this.getFieldNames(pks, !pks, !pks) : this.getAllFieldNames())) {
+        ArrayList<String> fieldNameList = (pks != null ? this.getFieldNames(pks, !pks, !pks) : this.getAllFieldNames())
+        int size = fieldNameList.size()
+        for (int i = 0; i < size; i++) {
+            String fieldName = fieldNameList.get(i)
             if (newMap.containsKey(fieldName)) newMap.remove(fieldName)
         }
         return newMap
@@ -918,8 +933,11 @@ public class EntityDefinition {
 
         boolean hasNamePrefix = namePrefix as boolean
         EntityValueBase evb = src instanceof EntityValueBase ? (EntityValueBase) src : null
-        List<String> fieldNameList = pks != null ? this.getFieldNames(pks, !pks, !pks) : this.getAllFieldNames()
-        for (String fieldName in fieldNameList) {
+        ArrayList<String> fieldNameList = pks != null ? this.getFieldNames(pks, !pks, !pks) : this.getAllFieldNames()
+        // use integer iterator, saves quite a bit of time, improves time for this method by about 20% with this alone
+        int size = fieldNameList.size()
+        for (int i = 0; i < size; i++) {
+            String fieldName = fieldNameList.get(i)
             String sourceFieldName
             if (hasNamePrefix) {
                 sourceFieldName = namePrefix + Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1)
@@ -1027,7 +1045,7 @@ public class EntityDefinition {
                 case 13: outValue = value; break
                 case 14:
                     if (isEmpty) { outValue = null; break }
-                    outValue = value.asType(Date.class); break
+                    outValue = value as Date; break
             // better way for Collection (15)? maybe parse comma separated, but probably doesn't make sense in the first place
                 case 15: outValue = value; break
                 default: outValue = value; break
