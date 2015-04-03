@@ -40,7 +40,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
 
             // direct cache writes and reads with EC
-            calls = baseCalls * 10
+            calls = baseCalls
             Cache testCache = ec.cache.getCache("test.cache")
             EntityValue testEnumValue =
                     ef.find("moqui.basic.Enumeration").condition([enumId:"_NA_"]).useCache(true).one()
