@@ -29,6 +29,7 @@ class FieldValueCondition extends EntityConditionImplBase {
     protected Object value
     protected Boolean ignoreCase = false
     protected int curHashCode
+    protected static final Class thisClass = FieldValueCondition.class
 
     FieldValueCondition(EntityConditionFactoryImpl ecFactoryImpl,
             ConditionField field, EntityCondition.ComparisonOperator operator, Object value) {
@@ -135,11 +136,9 @@ class FieldValueCondition extends EntityConditionImplBase {
 
     @Override
     boolean equals(Object o) {
-        if (o == null || !(o instanceof FieldValueCondition)) return false
+        if (o == null || o.getClass() != thisClass) return false
         FieldValueCondition that = (FieldValueCondition) o
         if (!field.equalsConditionField(that.field)) return false
-        // NOTE: for Java Enums the != is WAY faster than the .equals
-        if (operator != that.operator) return false
         if (value == null && that.value != null) return false
         if (value != null) {
             if (that.value == null) {
@@ -148,6 +147,7 @@ class FieldValueCondition extends EntityConditionImplBase {
                 if (!value.equals(that.value)) return false
             }
         }
+        if (operator != that.operator) return false
         if (ignoreCase != that.ignoreCase) return false
         return true
     }
