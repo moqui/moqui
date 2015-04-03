@@ -127,13 +127,14 @@ class ScreenUrlInfo {
         return newSui
     }
 
+    final static char slashChar = (char) '/'
     static String makeCacheKey(ScreenDefinition rootSd, List<String> fpnl, String subscreenPath, Boolean lastStandalone) {
         StringBuilder sb = new StringBuilder()
         // shouldn't be too many root screens, so the screen name (filename) should be sufficiently unique and much shorter
         sb.append(rootSd.getScreenName()).append(":")
         // if (fromScreenDef != null) sb.append(fromScreenDef.getScreenName()).append(":")
         boolean hasSsp = subscreenPath != null && subscreenPath.length() > 0
-        boolean skipFpnl = hasSsp && subscreenPath.charAt(0) == (char) '/'
+        boolean skipFpnl = hasSsp && subscreenPath.charAt(0) == slashChar
         // NOTE: we will get more cache hits (less cache redundancy) if we combine with fpnl and use cleanupPathNameList,
         //     but is it worth it? no, let there be redundant cache entries for the same screen path, will be faster
         if (!skipFpnl && fpnl) for (String fpn in fpnl) sb.append('/').append(fpn)
