@@ -19,9 +19,9 @@ New Features:
   - overall the overhead of advanced features of the framework such as
     artifact authorization and hit counting are significantly reduced
   - entity, service, and screen operations are dramatically faster
-  - observed common entity and service operations over 10x faster, and
-    screen rendering over 3x faster; with these updates some performance
-    improvement is always possible but this gets pretty close to that limit
+  - observed common entity and service operations 3-8x faster, and
+    screen rendering around 3x faster; with these updates some performance
+    improvement is always possible but this gets pretty close to the limit
   - this effort involves over 3000 lines of code changes, nearly 10% of the
     roughly 35k lines of Java & Groovy code in the framework implementation
 
