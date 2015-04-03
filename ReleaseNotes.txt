@@ -9,11 +9,21 @@ Moqui Framework 1.5.2 is a minor new feature and bug fix release.
 
 New Features:
 
-- Various performance improvements based on profiling, this time focusing
-  on entity and service level operations but also some screen/etc related
-  ones; a big part of this is using the Groovy @CompileStatic annotation
-  for strict typing and direct method calls for improved performance in
-  various frequently called parts of the framework
+- Significant performance improvements based on profiling
+  - a big part of this is using the Groovy @CompileStatic annotation for
+    strict typing and direct method calls for improved performance in many
+    frequently called parts of the framework
+  - other approaches used in various places include better caching and
+    local tracking of frequently used data and integer for loop iteration
+    instead of using Iterator (or for in, for :)
+  - overall the overhead of advanced features of the framework such as
+    artifact authorization and hit counting are significantly reduced
+  - entity, service, and screen operations are dramatically faster
+  - observed common entity and service operations over 10x faster, and
+    screen rendering over 3x faster; with these updates some performance
+    improvement is always possible but this gets pretty close to that limit
+  - this effort involves over 3000 lines of code changes, nearly 10% of the
+    roughly 35k lines of Java & Groovy code in the framework implementation
 
 Bug Fixes:
 
