@@ -16,8 +16,9 @@ import java.util.*;
 public class ContextStack implements Map<String, Object> {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ContextStack.class);
 
-    protected final Deque<Deque<Map<String, Object>>> contextStack = new LinkedList<Deque<Map<String, Object>>>();
-    protected Deque<Map<String, Object>> stackList = new LinkedList<Map<String, Object>>();
+    // Using ArrayList for more efficient iterating, this alone eliminate about 40% of the run time in get()
+    protected final ArrayList<ArrayList<Map<String, Object>>> contextStack = new ArrayList<ArrayList<Map<String, Object>>>();
+    protected ArrayList<Map<String, Object>> stackList = new ArrayList<Map<String, Object>>();
     protected Map<String, Object> firstMap = null;
 
     public ContextStack() {
@@ -27,8 +28,8 @@ public class ContextStack implements Map<String, Object> {
 
     /** Push (save) the entire context, ie the whole Map stack, to create an isolated empty context. */
     public ContextStack pushContext() {
-        contextStack.addFirst(stackList);
-        stackList = new LinkedList<Map<String, Object>>();
+        contextStack.add(0, stackList);
+        stackList = new ArrayList<Map<String, Object>>();
         firstMap = null;
         push();
         return this;
@@ -36,8 +37,8 @@ public class ContextStack implements Map<String, Object> {
 
     /** Pop (restore) the entire context, ie the whole Map stack, undo isolated empty context and get the original one. */
     public ContextStack popContext() {
-        stackList = contextStack.removeFirst();
-        firstMap = stackList.getFirst();
+        stackList = contextStack.remove(0);
+        firstMap = stackList.get(0);
         return this;
     }
 
@@ -46,7 +47,7 @@ public class ContextStack implements Map<String, Object> {
      */
     public ContextStack push() {
         Map<String, Object> newMap = new HashMap<String, Object>();
-        stackList.addFirst(newMap);
+        stackList.add(0, newMap);
         firstMap = newMap;
         return this;
     }
@@ -57,7 +58,7 @@ public class ContextStack implements Map<String, Object> {
      */
     public ContextStack push(Map<String, Object> existingMap) {
         if (existingMap == null) throw new IllegalArgumentException("Cannot push null as an existing Map");
-        stackList.addFirst(existingMap);
+        stackList.add(0, existingMap);
         firstMap = existingMap;
         return this;
     }
@@ -68,8 +69,8 @@ public class ContextStack implements Map<String, Object> {
      * @return The first/top Map
      */
     public Map pop() {
-        Map<String, Object> popped = stackList.size() > 0 ? stackList.removeFirst() : null;
-        firstMap = stackList.size() > 0 ? stackList.peekFirst() : null;
+        Map<String, Object> popped = stackList.size() > 0 ? stackList.remove(0) : null;
+        firstMap = stackList.size() > 0 ? stackList.get(0) : null;
         return popped;
     }
 
@@ -78,10 +79,10 @@ public class ContextStack implements Map<String, Object> {
      */
     public void addRootMap(Map<String, Object> existingMap) {
         if (existingMap == null) throw new IllegalArgumentException("Cannot add null as an existing Map");
-        stackList.addLast(existingMap);
+        stackList.add(existingMap);
     }
 
-    public Map getRootMap() { return stackList.peekLast(); }
+    public Map getRootMap() { return stackList.get(stackList.size() - 1); }
 
     /**
      * Creates a ContextStack object that has the same Map objects on its stack (a shallow clone).
@@ -157,7 +158,10 @@ public class ContextStack implements Map<String, Object> {
             // we already got it and it's null by this point
             return null;
         } else {
-            for (Map curMap: stackList) {
+            int size = stackList.size();
+            // start with 1 to skip the first Map
+            for (int i = 1; i < size; i++ ) {
+                Map curMap = stackList.get(i);
                 try {
                     if (key == null && curMap instanceof Hashtable) continue;
                     // optimize for non-null get, avoid double lookup with containsKey/get
