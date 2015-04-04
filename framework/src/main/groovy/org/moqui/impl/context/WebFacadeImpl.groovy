@@ -405,15 +405,23 @@ class WebFacadeImpl implements WebFacade {
                     }
                     jb.call(responseObj)
                 } else if (responseObj != null) {
+                    logger.error("Error found when sending JSON string but JSON object is not a Map so not sending: ${eci.message.errorsString}")
                     jb.call(responseObj)
                 }
 
                 jsonStr = jb.toString()
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
             } else if (responseObj != null) {
+                // logger.warn("========== Sending JSON for object: ${responseObj}")
                 JsonBuilder jb = new JsonBuilder()
-                jb.call(responseObj)
-                jsonStr = jb.toPrettyString()
+                if (responseObj instanceof Map) {
+                    jb.call((Map) responseObj)
+                } else if (responseObj instanceof List) {
+                    jb.call((List) responseObj)
+                } else {
+                    jb.call((Object) responseObj)
+                }
+                jsonStr = jb.toString()
                 response.setStatus(HttpServletResponse.SC_OK)
             } else {
                 jsonStr = ""
@@ -423,6 +431,7 @@ class WebFacadeImpl implements WebFacade {
 
         if (!jsonStr) return
 
+        // logger.warn("========== Sending JSON string: ${jsonStr}")
         response.setContentType("application/json")
         // NOTE: String.length not correct for byte length
         String charset = response.getCharacterEncoding() ?: "UTF-8"
@@ -566,7 +575,7 @@ class WebFacadeImpl implements WebFacade {
             // NOTE: there is no constant on HttpServletResponse for 429; see RFC 6585 for details
             response.sendError(429, e.message)
         } catch (EntityNotFoundException e) {
-            logger.warn("REST Entity Not Found: " + e.getMessage(), e)
+            logger.warn((String) "REST Entity Not Found: " + e.getMessage(), e)
             // send bad request (400), reserve 404 Not Found for records that don't exist
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.message)
         } catch (EntityValueNotFoundException e) {
@@ -580,7 +589,7 @@ class WebFacadeImpl implements WebFacade {
                 logger.error(errorsString, t)
                 errorMessage = errorMessage + ' ' + errorsString
             }
-            logger.warn("General error in entity REST: " + t.toString(), t)
+            logger.warn((String) "General error in entity REST: " + t.toString(), t)
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, errorMessage)
         }
     }
