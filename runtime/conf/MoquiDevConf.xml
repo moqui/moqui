@@ -18,7 +18,8 @@
 
         <cache name="kie.component.releaseId" expire-time-idle="5"/>
 
-        <cache name="screen.location" expire-time-idle="5"/>
+        <cache name="screen.location" expire-time-idle="10"/>
+        <cache name="screen.url" expire-time-idle="10"/>
         <cache name="screen.template.mode" expire-time-idle="10"/>
         <cache name="screen.template.location" expire-time-idle="10"/>
         <cache name="screen.find.path" expire-time-idle="30"/>
