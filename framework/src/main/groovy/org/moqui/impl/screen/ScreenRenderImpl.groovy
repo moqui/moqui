@@ -733,7 +733,7 @@ class ScreenRenderImpl implements ScreenRender {
         }
 
         screenPathIndex++
-        ScreenDefinition screenDef = screenUrlInfo.screenRenderDefList[screenPathIndex]
+        ScreenDefinition screenDef = screenUrlInfo.screenRenderDefList.get(screenPathIndex)
         try {
             if (!stopRenderScreenLocations.contains(screenDef.getLocation())) {
                 writer.flush()
