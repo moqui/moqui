@@ -478,9 +478,12 @@ class StupidUtilities {
                     if (curChar < 0x20 && curChar != 0x9 && curChar != 0xA && curChar != 0xD) {
                         // the only valid values < 0x20 are 0x9 (tab), 0xA (newline), 0xD (carriage return)
                         newValue.deleteCharAt(i)
+                        i--
                     } else if (curChar > 0x7F) {
                         // Replace each char which is out of the ASCII range with a XML entity
-                        newValue.replace(i, i+1, "&#" + (((int) curChar.charValue()) as String) + ";")
+                        String s = "&#" + (((int) curChar.charValue()) as String) + ";"
+                        newValue.replace(i, i+1, s)
+                        i += s.length() - 1
                     } else if (addZeroWidthSpaces) {
                         newValue.insert(i, "&#8203;")
                         i += 7
