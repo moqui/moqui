@@ -563,6 +563,8 @@ class ScreenUrlInfo {
             ec = sri.getEc()
 
             if (expandAliasTransition != null ? expandAliasTransition : true) expandTransitionAliasUrl()
+
+            // logger.warn("======= Creating UrlInstance ${sui.getFullPathNameList()} - ${sui.targetScreen.getLocation()} - ${sui.getTargetTransitionActualName()}")
         }
 
         String getRequestMethod() { return ec.web ? ec.web.request.method : "" }
