@@ -11,30 +11,30 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
     <#assign dynamic = false>
     <#assign dynamicActive = 0>
-    <#assign baseUrlInfo = sri.buildUrl("AutoEditDetail").addParameters(masterPrimaryKeyMap)>
+    <#assign baseUrlInfo = sri.buildUrlInfo("AutoEditDetail")>
     <div id="auto-menu">
         <ul id="auto-edit-tabs" class="nav nav-tabs" role="tablist">
-            <#assign urlInfo = sri.buildUrl("AutoEditMaster").addParameter("aen", aen).addParameters(masterPrimaryKeyMap)>
+            <#assign urlInstance = sri.buildUrlInfo("AutoEditMaster").getInstance(sri, false).addParameter("aen", aen).addParameters(masterPrimaryKeyMap)>
             <#if dynamic>
-                <#assign urlInfo = urlInfo.addParameter("lastStandalone", "true")>
-                <#if urlInfo.inCurrentScreenPath>
+                <#assign urlInstance = urlInstance.addParameter("lastStandalone", "true")>
+                <#if urlInstance.inCurrentScreenPath>
                     <#assign dynamicActive = 0>
-                    <#assign urlInfo = urlInfo.addParameters(ec.web.requestParameters)>
+                    <#assign urlInstance = urlInstance.addParameters(ec.web.requestParameters)>
                 </#if>
             </#if>
-            <li class="<#if urlInfo.inCurrentScreenPath>active</#if>"><a href="${urlInfo.minimalPathUrlWithParams}">${ec.entity.getEntityDefinition(aen).getPrettyName(null, null)}</a></li>
+            <li class="<#if urlInstance.inCurrentScreenPath>active</#if>"><a href="${urlInstance.minimalPathUrlWithParams}">${ec.entity.getEntityDefinition(aen).getPrettyName(null, null)}</a></li>
         <#list relationshipInfoList as relationshipInfo>
             <#assign curKeyMap = relationshipInfo.getTargetParameterMap(context)>
             <#if curKeyMap?has_content>
-                <#assign urlInfo = baseUrlInfo.cloneUrlInfo().addParameter("den", relationshipInfo.relatedEntityName).addParameter("aen", aen).addParameters(curKeyMap)>
+                <#assign urlInstance = baseUrlInfo.getInstance(sri, false).addParameters(masterPrimaryKeyMap).addParameter("den", relationshipInfo.relatedEntityName).addParameter("aen", aen).addParameters(curKeyMap)>
                 <#if dynamic>
-                    <#assign urlInfo = urlInfo.addParameter("lastStandalone", "true")>
-                    <#if urlInfo.inCurrentScreenPath && relationshipInfo.relatedEntityName == den?if_exists>
+                    <#assign urlInstance = urlInstance.addParameter("lastStandalone", "true")>
+                    <#if urlInstance.inCurrentScreenPath && relationshipInfo.relatedEntityName == den!>
                         <#assign dynamicActive = relationshipInfo_index + 1>
-                        <#assign urlInfo = urlInfo.addParameters(ec.web.requestParameters)>
+                        <#assign urlInstance = urlInstance.addParameters(ec.web.requestParameters)>
                     </#if>
                 </#if>
-                <li class="<#if urlInfo.inCurrentScreenPath && relationshipInfo.relatedEntityName == den?if_exists>active</#if>"><a href="${urlInfo.minimalPathUrlWithParams}">${relationshipInfo.prettyName}</a></li>
+                <li class="<#if urlInstance.inCurrentScreenPath && relationshipInfo.relatedEntityName == den!>active</#if>"><a href="${urlInstance.minimalPathUrlWithParams}">${relationshipInfo.prettyName}</a></li>
             </#if>
         </#list>
         </ul>
