@@ -535,7 +535,7 @@ public class EntityDefinition {
             }
             // else {
 
-            if (fieldNode.attributes().get('complex-alias')) {
+            if (fieldNode.get('complex-alias')) {
                 String function = fieldNode.attributes().get('function')
                 if (function) {
                     colNameBuilder.append(getFunctionPrefix(function))
@@ -573,6 +573,7 @@ public class EntityDefinition {
 
     protected String getBasicFieldColName(Node entityNode, String entityAlias, String fieldName) {
         Node memberEntity = (Node) entityNode."member-entity".find({ it."@entity-alias" == entityAlias })
+        if (memberEntity == null) throw new EntityException("Could not find member-entity with entity-alias [${entityAlias}] in view-entity [${getFullEntityName()}]")
         EntityDefinition memberEd = this.efi.getEntityDefinition((String) memberEntity."@entity-name")
         return memberEd.getColumnName(fieldName, false)
     }

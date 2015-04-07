@@ -175,7 +175,8 @@ class EntityFindBuilder extends EntityQueryBuilder {
                 String entityAlias = aliasNode?.attributes()?.get('entity-alias')
                 if (entityAlias) entityAliasUsedSet.add(entityAlias)
                 if (aliasNode?.get("complex-alias")) {
-                    for (Object cafObj in ((Node) aliasNode.get("complex-alias")).get("complex-alias-field")) {
+                    Node complexAliasNode = (Node) ((NodeList) aliasNode.get("complex-alias")).get(0)
+                    for (Object cafObj in (NodeList) complexAliasNode.get("complex-alias-field")) {
                         if (cafObj instanceof Node) {
                             Node cafNode = (Node) cafObj
                             String cafEntityAlias = cafNode.attributes().get('entity-alias')
