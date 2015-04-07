@@ -31,6 +31,9 @@ Bug Fixes:
 - Fixed issue with XML Form display-entity where an EntityValue was pushed
   onto the context (bad in the first place, changed to push Map clone of
   EV) and if there was an error in the string expand it stayed
+- No longer create auto reverse relationships for relationships going to
+  the same entity, results in multiple relationships with the same name and
+  the reverse one can get picked up and isn't the one desired
 
 ===========================================================================
 Release 1.5.1 - 29 Mar 2015

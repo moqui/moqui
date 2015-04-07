@@ -308,10 +308,10 @@ class EntityDataDocument {
                 String relationshipName = fieldTreeEntry.getKey()
                 Map fieldTreeChild = (Map) fieldTreeEntry.getValue()
 
-                Node relationshipNode = parentEd.getRelationshipNode(relationshipName)
-                String relDocumentAlias = relationshipAliasMap.get(relationshipName) ?: relationshipNode.'@short-alias' ?: relationshipName
-                EntityDefinition relatedEd = efi.getEntityDefinition((String) relationshipNode."@related-entity-name")
-                boolean isOneRelationship = ((String) relationshipNode."@type").startsWith("one")
+                EntityDefinition.RelationshipInfo relationshipInfo = parentEd.getRelationshipInfo(relationshipName)
+                String relDocumentAlias = relationshipAliasMap.get(relationshipName) ?: relationshipInfo.shortAlias ?: relationshipName
+                EntityDefinition relatedEd = relationshipInfo.relatedEd
+                boolean isOneRelationship = relationshipInfo.isTypeOne
 
                 Map relatedEntityDocMap = null
                 boolean recurseSetFields = true
@@ -488,10 +488,10 @@ class EntityDataDocument {
             while (fieldPathElementIter.hasNext()) {
                 String fieldPathElement = fieldPathElementIter.next()
                 if (fieldPathElementIter.hasNext()) {
-                    Node relNode = currentEd.getRelationshipNode(fieldPathElement)
-                    if (relNode == null) throw new EntityException("Could not find relationship [${fieldPathElement}] for entity [${currentEd.getFullEntityName()}] in DataDocument [${dataDocumentId}]")
-                    currentEd = efi.getEntityDefinition((String) relNode."@related-entity-name")
-                    if (currentEd == null) throw new EntityException("Could not find entity [${relNode."@related-entity-name"}] in DataDocument [${dataDocumentId}]")
+                    EntityDefinition.RelationshipInfo relInfo = currentEd.getRelationshipInfo(fieldPathElement)
+                    if (relInfo == null) throw new EntityException("Could not find relationship [${fieldPathElement}] for entity [${currentEd.getFullEntityName()}] in DataDocument [${dataDocumentId}]")
+                    currentEd = relInfo.relatedEd
+                    if (currentEd == null) throw new EntityException("Could not find entity [${relInfo.relatedEntityName}] in DataDocument [${dataDocumentId}]")
 
                     String objectName = relationshipAliasMap.get(fieldPathElement) ?: fieldPathElement
                     Map subObject = (Map) currentProperties.get(objectName)

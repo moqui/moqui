@@ -27,6 +27,7 @@ import org.moqui.impl.context.ArtifactExecutionInfoImpl
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.impl.context.ExecutionContextImpl
 import org.moqui.impl.context.TransactionCache
+import org.moqui.impl.entity.EntityDefinition.RelationshipInfo
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 
@@ -128,12 +129,12 @@ abstract class EntityValueBase implements EntityValue {
 
         if (fieldNode == null) {
             // if this is not a valid field name but is a valid relationship name, do a getRelated or getRelatedOne to return an EntityList or an EntityValue
-            Node relationship = ed.getRelationshipNode(name)
-            if (relationship != null) {
-                if ('many'.equals(relationship.attributes().get('type'))) {
-                    return this.findRelated(name, null, null, null, null)
-                } else {
+            EntityDefinition.RelationshipInfo relInfo = ed.getRelationshipInfo(name)
+            if (relInfo!= null) {
+                if (relInfo.isTypeOne) {
                     return this.findRelatedOne(name, null, null)
+                } else {
+                    return this.findRelated(name, null, null, null, null)
                 }
             } else {
                 throw new EntityException("The name [${name}] is not a valid field name or relationship name for entity [${entityName}]")
@@ -525,11 +526,11 @@ abstract class EntityValueBase implements EntityValue {
 
     @Override
     EntityList findRelated(String relationshipName, Map<String, Object> byAndFields, List<String> orderBy, Boolean useCache, Boolean forUpdate) {
-        Node relationship = getEntityDefinition().getRelationshipNode(relationshipName)
-        if (!relationship) throw new EntityException("Relationship [${relationshipName}] not found in entity [${entityName}]")
+        RelationshipInfo relInfo = getEntityDefinition().getRelationshipInfo(relationshipName)
+        if (relInfo == null) throw new EntityException("Relationship [${relationshipName}] not found in entity [${entityName}]")
 
-        String relatedEntityName = relationship.attributes().get('related-entity-name')
-        Map<String, String> keyMap = EntityDefinition.getRelationshipExpandedKeyMap(relationship, efi.getEntityDefinition(relatedEntityName))
+        String relatedEntityName = relInfo.relatedEntityName
+        Map<String, String> keyMap = relInfo.keyMap
         if (!keyMap) throw new EntityException("Relationship [${relationshipName}] in entity [${entityName}] has no key-map sub-elements and no default values")
 
         // make a Map where the key is the related entity's field name, and the value is the value from this entity
@@ -543,19 +544,21 @@ abstract class EntityValueBase implements EntityValue {
 
     @Override
     EntityValue findRelatedOne(String relationshipName, Boolean useCache, Boolean forUpdate) {
-        Node relationship = getEntityDefinition().getRelationshipNode(relationshipName)
-        if (!relationship) throw new EntityException("Relationship [${relationshipName}] not found in entity [${entityName}]")
-        return findRelatedOne(relationship, useCache, forUpdate)
+        RelationshipInfo relInfo = getEntityDefinition().getRelationshipInfo(relationshipName)
+        if (relInfo == null) throw new EntityException("Relationship [${relationshipName}] not found in entity [${entityName}]")
+        return findRelatedOne(relInfo, useCache, forUpdate)
     }
 
-    protected EntityValue findRelatedOne(Node relationship, Boolean useCache, Boolean forUpdate) {
-        String relatedEntityName = relationship.attributes().get('related-entity-name')
-        Map keyMap = EntityDefinition.getRelationshipExpandedKeyMap(relationship, efi.getEntityDefinition(relatedEntityName))
-        if (!keyMap) throw new EntityException("Relationship [${relationship.attributes().get('title')}${relationship.attributes().get('related-entity-name')}] in entity [${entityName}] has no key-map sub-elements and no default values")
+    protected EntityValue findRelatedOne(RelationshipInfo relInfo, Boolean useCache, Boolean forUpdate) {
+        String relatedEntityName = relInfo.relatedEntityName
+        Map keyMap = relInfo.keyMap
+        if (!keyMap) throw new EntityException("Relationship [${relInfo.title}${relInfo.relatedEntityName}] in entity [${entityName}] has no key-map sub-elements and no default values")
 
         // make a Map where the key is the related entity's field name, and the value is the value from this entity
         Map condMap = new HashMap()
         for (Map.Entry entry in keyMap.entrySet()) condMap.put(entry.getValue(), valueMap.get(entry.getKey()))
+
+        // logger.warn("========== findRelatedOne ${relInfo.relationshipName} keyMap=${keyMap}, condMap=${condMap}")
 
         EntityFind find = getEntityFacadeImpl().find(relatedEntityName)
         return find.condition(condMap).useCache(useCache).forUpdate(forUpdate as boolean).one()
@@ -570,19 +573,16 @@ abstract class EntityValueBase implements EntityValue {
 
     @Override
     boolean checkFks(boolean insertDummy) {
-        for (Object childObj in getEntityDefinition().getEntityNode().children()) {
-            Node oneRel = null
-            if (childObj instanceof Node) oneRel = (Node) childObj
-            if (oneRel == null) continue
-            if (!'relationship'.equals(oneRel.name()) || !'one'.equals(oneRel.attributes().get('type'))) continue
+        for (RelationshipInfo relInfo in getEntityDefinition().getRelationshipsInfo(false)) {
+            if (!'one'.equals(relInfo.type)) continue
 
-            EntityValue value = findRelatedOne(oneRel, true, false)
+            EntityValue value = findRelatedOne(relInfo, true, false)
             if (!value) {
                 if (insertDummy) {
-                    String relatedEntityName = oneRel.attributes().get('related-entity-name')
+                    String relatedEntityName = relInfo.relatedEntityName
                     EntityValue newValue = getEntityFacadeImpl().makeValue(relatedEntityName)
-                    Map keyMap = EntityDefinition.getRelationshipExpandedKeyMap(oneRel, efi.getEntityDefinition(relatedEntityName))
-                    if (!keyMap) throw new EntityException("Relationship [${oneRel.attributes().get('title')}#${oneRel.attributes().get('related-entity-name')}] in entity [${entityName}] has no key-map sub-elements and no default values")
+                    Map keyMap = relInfo.keyMap
+                    if (!keyMap) throw new EntityException("Relationship [${relInfo.relationshipName}}] in entity [${entityName}] has no key-map sub-elements and no default values")
 
                     // make a Map where the key is the related entity's field name, and the value is the value from this entity
                     for (Map.Entry entry in keyMap.entrySet())

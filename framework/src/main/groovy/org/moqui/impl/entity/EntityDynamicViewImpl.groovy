@@ -55,14 +55,11 @@ class EntityDynamicViewImpl implements EntityDynamicView {
         Node joinFromMemberEntityNode = (Node) this.entityNode."member-entity".find({ it."@entity-alias" == joinFromAlias })
         String entityName = joinFromMemberEntityNode."@entity-name"
         EntityDefinition joinFromEd = entityFind.getEfi().getEntityDefinition(entityName)
-        Node relationshipNode = joinFromEd.getRelationshipNode(relationshipName)
-        if (relationshipNode == null) throw new EntityException("Relationship not found with name [${relationshipName}] on entity [${entityName}]")
+        EntityDefinition.RelationshipInfo relInfo = joinFromEd.getRelationshipInfo(relationshipName)
+        if (relInfo == null) throw new EntityException("Relationship not found with name [${relationshipName}] on entity [${entityName}]")
 
-        String relatedEntityName = relationshipNode."@related-entity-name"
-        Map relationshipKeyMap = EntityDefinition.getRelationshipExpandedKeyMap(relationshipNode,
-                entityFind.getEfi().getEntityDefinition(relatedEntityName))
-
-        Node memberEntity = this.entityNode.appendNode("member-entity", ["entity-alias":entityAlias, "entity-name":relatedEntityName])
+        Map relationshipKeyMap = relInfo.keyMap
+        Node memberEntity = this.entityNode.appendNode("member-entity", ["entity-alias":entityAlias, "entity-name":relInfo.relatedEntityName])
         memberEntity.attributes().put("join-from-alias", joinFromAlias)
         memberEntity.attributes().put("join-optional", (joinOptional ? "true" : "false"))
         for (Map.Entry keyMapEntry in relationshipKeyMap.entrySet()) {

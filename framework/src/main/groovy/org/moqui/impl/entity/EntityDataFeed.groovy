@@ -267,10 +267,10 @@ class EntityDataFeed {
                     currentTree = subTree
 
                     // make sure we have an entityInfo Map
-                    Node relNode = currentEd.getRelationshipNode(fieldPathElement)
-                    if (relNode == null) throw new EntityException("Could not find relationship [${fieldPathElement}] from entity [${currentEd.getFullEntityName()}] as part of DataDocumentField.fieldPath [${fieldPath}]")
-                    String relEntityName = relNode.attributes().get('related-entity-name')
-                    EntityDefinition relEd = efi.getEntityDefinition(relEntityName)
+                    EntityDefinition.RelationshipInfo relInfo = currentEd.getRelationshipInfo(fieldPathElement)
+                    if (relInfo == null) throw new EntityException("Could not find relationship [${fieldPathElement}] from entity [${currentEd.getFullEntityName()}] as part of DataDocumentField.fieldPath [${fieldPath}]")
+                    String relEntityName = relInfo.relatedEntityName
+                    EntityDefinition relEd = relInfo.relatedEd
 
                     // add entry for the related entity
                     if (!entityInfoMap.containsKey(relEntityName)) entityInfoMap.put(relEntityName,
@@ -278,7 +278,7 @@ class EntityDataFeed {
                                     currentRelationshipPath.toString()))
 
                     // add PK fields of the related entity as fields for the current entity so changes on them will also trigger a data feed
-                    Map relKeyMap = EntityDefinition.getRelationshipExpandedKeyMap(relNode, relEd)
+                    Map relKeyMap = relInfo.keyMap
                     for (String fkFieldName in relKeyMap.keySet()) {
                         currentTree.put(fkFieldName, fkFieldName)
                         // save the current field name (not the alias)
@@ -565,21 +565,21 @@ class EntityDataFeed {
                                                     currentRelName.substring(0, currentRelName.indexOf("#")) :
                                                     currentRelName
                                                 // all values should be for the same entity, so just use the first
-                                                EntityDefinition prevRelValueEd = prevRelValueList[0].getEntityDefinition()
-                                                Node backwardRelNode = null
+                                                EntityDefinition prevRelValueEd = prevRelValueList.get(0).getEntityDefinition()
+
+
+                                                EntityDefinition.RelationshipInfo backwardRelInfo = null
+                                                // Node backwardRelNode = null
                                                 if (prevRelName.contains("#")) {
                                                     String title = prevRelName.substring(0, prevRelName.indexOf("#"))
-                                                    backwardRelNode = prevRelValueEd.getRelationshipNode(title + "#" + currentRelEntityName)
+                                                    backwardRelInfo = prevRelValueEd.getRelationshipInfo((String) title + "#" + currentRelEntityName)
                                                 }
-                                                if (backwardRelNode == null)
-                                                    backwardRelNode = prevRelValueEd.getRelationshipNode(currentRelEntityName)
+                                                if (backwardRelInfo == null)
+                                                    backwardRelInfo = prevRelValueEd.getRelationshipInfo(currentRelEntityName)
 
-                                                if (backwardRelNode == null) throw new EntityException("For DataFeed could not find backward relationship for DataDocument [${dataDocumentId}] from entity [${prevRelValueEd.getFullEntityName()}] to entity [${currentRelEntityName}], previous relationship is [${prevRelName}], current relationship is [${currentRelName}]")
+                                                if (backwardRelInfo == null) throw new EntityException("For DataFeed could not find backward relationship for DataDocument [${dataDocumentId}] from entity [${prevRelValueEd.getFullEntityName()}] to entity [${currentRelEntityName}], previous relationship is [${prevRelName}], current relationship is [${currentRelName}]")
 
-                                                String backTitle = (String) backwardRelNode.attributes().get('title')
-                                                String backRen = (String) backwardRelNode.attributes().get('related-entity-name')
-                                                String backwardRelName = backTitle ? backTitle + "#" + backRen : backRen
-
+                                                String backwardRelName = backwardRelInfo.relationshipName
                                                 List<EntityValueBase> currentRelValueList = []
                                                 alreadyDisabled = efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz()
                                                 try {

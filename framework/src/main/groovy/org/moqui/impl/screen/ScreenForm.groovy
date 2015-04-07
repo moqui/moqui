@@ -17,6 +17,7 @@ import org.apache.commons.collections.set.ListOrderedSet
 import org.moqui.impl.actions.XmlAction
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.impl.entity.EntityDefinition
+import org.moqui.impl.entity.EntityDefinition.RelationshipInfo
 import org.moqui.impl.entity.EntityFindImpl
 import org.moqui.impl.service.ServiceDefinition
 import org.moqui.impl.FtlNodeWrapper
@@ -632,12 +633,12 @@ class ScreenForm {
         Map oneRelKeyMap = null
         String relatedEntityName = null
         EntityDefinition relatedEd = null
-        for (Node rn in ed.entityNode."relationship") {
-            String relEntityName = rn."@related-entity-name"
-            EntityDefinition relEd = ecfi.entityFacade.getEntityDefinition(relEntityName)
-            Map km = EntityDefinition.getRelationshipExpandedKeyMap(rn, relEd)
-            if (km.size() == 1 && km.containsKey(fieldName) && rn."@type" == "one" && rn."@is-auto-reverse" != "true") {
-                oneRelNode = rn
+        for (RelationshipInfo relInfo in ed.getRelationshipsInfo(false)) {
+            String relEntityName = relInfo.relatedEntityName
+            EntityDefinition relEd = relInfo.relatedEd
+            Map km = relInfo.keyMap
+            if (km.size() == 1 && km.containsKey(fieldName) && relInfo.type == "one" && relInfo.relNode."@is-auto-reverse" != "true") {
+                oneRelNode = relInfo.relNode
                 oneRelKeyMap = km
                 relatedEntityName = relEntityName
                 relatedEd = relEd

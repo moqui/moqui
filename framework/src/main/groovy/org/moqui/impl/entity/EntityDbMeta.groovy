@@ -12,6 +12,7 @@
 package org.moqui.impl.entity
 
 import groovy.transform.CompileStatic
+import org.moqui.impl.entity.EntityDefinition.RelationshipInfo
 
 import java.sql.SQLException
 import java.sql.Connection
@@ -366,14 +367,14 @@ class EntityDbMeta {
 
         // do fk auto indexes
         if (databaseNode."@use-foreign-key-indexes" == "false") return
-        for (Node relNode in ed.entityNode."relationship") {
-            if (relNode."@type" != "one") continue
-            String relatedEntityName = relNode."@related-entity-name"
+        for (RelationshipInfo relInfo in ed.getRelationshipsInfo(false)) {
+            if (relInfo.type != "one") continue
+            String relatedEntityName = relInfo.relatedEntityName
 
             StringBuilder indexName = new StringBuilder()
-            if (relNode."@fk-name") indexName.append(relNode."@fk-name")
+            if (relInfo.relNode."@fk-name") indexName.append(relInfo.relNode."@fk-name")
             if (!indexName) {
-                String title = relNode."@title"?:""
+                String title = relInfo.title
                 String entityName = ed.getEntityName()
 
                 int commonChars = 0
@@ -414,7 +415,7 @@ class EntityDbMeta {
             sql.append(indexName.toString()).append(" ON ").append(ed.getFullTableName())
 
             sql.append(" (")
-            Map keyMap = EntityDefinition.getRelationshipExpandedKeyMap(relNode, efi.getEntityDefinition(relatedEntityName))
+            Map keyMap = relInfo.keyMap
             boolean isFirst = true
             for (String fieldName in keyMap.keySet()) {
                 if (isFirst) isFirst = false else sql.append(", ")
@@ -436,8 +437,9 @@ class EntityDbMeta {
         }
     }
 
-    Boolean foreignKeyExists(EntityDefinition ed, EntityDefinition relEd, Node relNode) {
+    Boolean foreignKeyExists(EntityDefinition ed, RelationshipInfo relInfo) {
         String groupName = ed.getEntityGroupName()
+        EntityDefinition relEd = relInfo.relatedEd
         Connection con = null
         ResultSet ikSet = null
         try {
@@ -447,7 +449,7 @@ class EntityDbMeta {
             // don't rely on constraint name, look at related table name, keys
 
             // get set of fields on main entity to match against (more unique than fields on related entity)
-            Map keyMap = EntityDefinition.getRelationshipExpandedKeyMap(relNode, relEd)
+            Map keyMap = relInfo.keyMap
             Set<String> fieldNames = new HashSet(keyMap.keySet())
             Set<String> fkColsFound = new HashSet()
 
@@ -514,17 +516,17 @@ class EntityDbMeta {
 
         int constraintNameClipLength = (databaseNode."@constraint-name-clip-length"?:"30") as int
 
-        for (Node relNode in ed.entityNode."relationship") {
-            if (relNode."@type" != "one") continue
+        for (RelationshipInfo relInfo in ed.getRelationshipsInfo(false)) {
+            if (relInfo.type != "one") continue
 
-            EntityDefinition relEd = efi.getEntityDefinition((String) relNode."@related-entity-name")
+            EntityDefinition relEd = relInfo.relatedEd
             if (relEd == null) throw new IllegalArgumentException("Entity [${relNode."@related-entity-name"}] does not exist, was in relationship.@related-entity-name of entity [${ed.fullEntityName}]")
             if (!tableExists(relEd)) {
                 if (logger.traceEnabled) logger.trace("Not creating foreign key from entity [${ed.getFullEntityName()}] to related entity [${relEd.getFullEntityName()}] because related entity does not yet have a table for it")
                 continue
             }
             if (checkFkExists) {
-                Boolean fkExists = foreignKeyExists(ed, relEd, relNode)
+                Boolean fkExists = foreignKeyExists(ed, relInfo)
                 if (fkExists != null && fkExists) {
                     if (logger.traceEnabled) logger.trace("Not creating foreign key from entity [${ed.getFullEntityName()}] to related entity [${relEd.getFullEntityName()}] with title [${relNode."@title"}] because it already exists (matched by key mappings)")
                     continue
@@ -533,14 +535,14 @@ class EntityDbMeta {
             }
 
             StringBuilder constraintName = new StringBuilder()
-            if (relNode."@fk-name") constraintName.append(relNode."@fk-name")
+            if (relInfo.relNode."@fk-name") constraintName.append(relInfo.relNode."@fk-name")
             if (!constraintName) {
-                String title = relNode."@title"?:""
+                String title = relInfo.title
                 int commonChars = 0
                 while (title.length() > commonChars && ed.entityName.length() > commonChars &&
                         title.charAt(commonChars) == ed.entityName.charAt(commonChars)) commonChars++
                 // related-entity-name may have the entity's package-name in it; if so, remove it
-                String relatedEntityName = relNode."@related-entity-name"
+                String relatedEntityName = relInfo.relatedEntityName
                 if (relatedEntityName.contains("."))
                     relatedEntityName = relatedEntityName.substring(relatedEntityName.lastIndexOf(".")+1)
                 if (commonChars > 0) {
@@ -554,7 +556,7 @@ class EntityDbMeta {
             }
             shrinkName(constraintName, constraintNameClipLength)
 
-            Map keyMap = EntityDefinition.getRelationshipExpandedKeyMap(relNode, relEd)
+            Map keyMap = relInfo.keyMap
             List<String> keyMapKeys = new ArrayList(keyMap.keySet())
             StringBuilder sql = new StringBuilder("ALTER TABLE ").append(ed.getFullTableName()).append(" ADD ")
             if (databaseNode."@fk-style" == "name_fk") {

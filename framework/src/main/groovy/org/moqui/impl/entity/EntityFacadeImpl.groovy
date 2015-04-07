@@ -472,11 +472,6 @@ class EntityFacadeImpl implements EntityFacade {
         return ed
     }
 
-    /** This method is called only when the tools need all automatic reverse-many relationships.
-     *
-     * During normal operation reverse-many relationships are only needed when explicitly referenced, and these are
-     * handled in the EntityDefinition.getRelationshipNode() method one at a time (only those used are loaded).
-     */
     synchronized void createAllAutoReverseManyRelationships() {
         int relationshipsCreated = 0
         Set<String> entityNameSet = getAllEntityNames()
@@ -486,16 +481,20 @@ class EntityFacadeImpl implements EntityFacade {
             for (Node relNode in ed.entityNode."relationship") {
                 // don't create reverse for auto reference relationships
                 if (relNode."@is-auto-reverse" == "true") continue
+                String relatedEntityName = (String) relNode."@related-entity-name"
+                // don't create reverse relationships coming back to the same entity, since it will have the same title
+                //     it would create multiple relationships with the same name
+                if (entityName == relatedEntityName) continue
 
                 EntityDefinition reverseEd
                 try {
-                    reverseEd = getEntityDefinition((String) relNode."@related-entity-name")
+                    reverseEd = getEntityDefinition(relatedEntityName)
                 } catch (EntityException e) {
-                    logger.warn("Error getting definition for entity [${relNode."@related-entity-name"}] referred to in a relationship of entity [${entityName}]: ${e.toString()}")
+                    logger.warn("Error getting definition for entity [${relatedEntityName}] referred to in a relationship of entity [${entityName}]: ${e.toString()}")
                     continue
                 }
                 if (reverseEd == null) {
-                    logger.warn("Could not find definition for entity [${relNode."@related-entity-name"}] referred to in a relationship of entity [${entityName}]")
+                    logger.warn("Could not find definition for entity [${relatedEntityName}] referred to in a relationship of entity [${entityName}]")
                     continue
                 }
 
@@ -518,7 +517,7 @@ class EntityFacadeImpl implements EntityFacade {
                 if (!ed.isViewEntity() && relNode."@type" != "many") reverseEd.entityNode.attributes().put("has-dependents", "true")
 
                 // create a new reverse-many relationship
-                Map keyMap = EntityDefinition.getRelationshipExpandedKeyMap(relNode, reverseEd)
+                Map keyMap = EntityDefinition.getRelationshipExpandedKeyMapInternal(relNode, reverseEd)
 
                 Node newRelNode = reverseEd.entityNode.appendNode("relationship",
                         ["related-entity-name":ed.fullEntityName, "type":relType, "is-auto-reverse":"true"])

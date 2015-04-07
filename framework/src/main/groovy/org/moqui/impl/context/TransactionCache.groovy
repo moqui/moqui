@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.context
 
+import groovy.transform.CompileStatic
 import org.apache.commons.collections.map.ListOrderedMap
 import org.moqui.context.TransactionException
 import org.moqui.entity.EntityCondition
@@ -30,8 +31,6 @@ import javax.transaction.Synchronization
 import javax.transaction.Transaction
 import javax.transaction.TransactionManager
 import javax.transaction.xa.XAException
-import javax.transaction.xa.XAResource
-import javax.transaction.xa.Xid
 import java.sql.Connection
 
 /** This is a per-transaction cache that basically pretends to be the database for the scope of the transaction.
@@ -45,6 +44,7 @@ import java.sql.Connection
  * - view-entities won't work, they don't incorporate results from TX Cache
  * - if a value is created or update, then a record with FK is created, then the value is updated again commit writes may fail with FK violation (see update() method for other notes)
  */
+@CompileStatic
 class TransactionCache implements Synchronization {
     protected final static Logger logger = LoggerFactory.getLogger(TransactionCache.class)
     public enum WriteMode { CREATE, UPDATE, DELETE }
@@ -282,17 +282,17 @@ class TransactionCache implements Synchronization {
             Map condMap = [:]
             if (whereCondition != null && whereCondition.populateMap(condMap)) {
                 boolean foundCreatedDependent = false
-                for (Node relNode in ed.getEntityNode()."relationship") {
-                    if (relNode."@type" != "one") continue
-                    String relEntityName = relNode."@related-entity-name"
+
+                for (EntityDefinition.RelationshipInfo relInfo in ed.getRelationshipsInfo(false)) {
+                    if (relInfo.type != "one") continue
                     // would be nice to skip this, but related-entity-name may not be full entity name
-                    EntityDefinition relEd = ecfi.getEntityFacade().getEntityDefinition(relEntityName)
-                    relEntityName = relEd.getFullEntityName()
+                    EntityDefinition relEd = relInfo.relatedEd
+                    String relEntityName = relEd.getFullEntityName()
                     // first see if there is a create Map for this, then do the more expensive operation of getting the
                     //     expanded key Map and the related entity's PK Map
                     Map relCreateMap = getCreateByEntityMap(relEntityName)
                     if (relCreateMap) {
-                        Map relKeyMap = EntityDefinition.getRelationshipExpandedKeyMap(relNode, relEd)
+                        Map relKeyMap = relInfo.keyMap
                         Map relPk = [:]
                         boolean foundAllPks = true
                         for (Map.Entry<String, String> entry in relKeyMap.entrySet()) {

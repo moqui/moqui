@@ -307,7 +307,7 @@ public class EntityDefinition {
                         { ((it."@related-entity-name" == this.internalEntityName || it."@related-entity-name" == this.fullEntityName)
                             && (it."@type" == "one" || it."@type" == "one-nofk") && ((!title && !it."@title") || it."@title" == title)) })
                 if (reverseRelNode != null) {
-                    Map keyMap = getRelationshipExpandedKeyMap(reverseRelNode, this)
+                    Map keyMap = getRelationshipExpandedKeyMapInternal(reverseRelNode, this)
                     String relType = (this.getPkFieldNames() == relEd.getPkFieldNames()) ? "one-nofk" : "many"
                     Node newRelNode = this.internalEntityNode.appendNode("relationship",
                             ["related-entity-name":relatedEntityName, "type":relType])
@@ -326,17 +326,15 @@ public class EntityDefinition {
     }
 
     @CompileStatic
-    static Map<String, String> getRelationshipExpandedKeyMap(Node relationship, EntityDefinition relEd) {
+    static Map<String, String> getRelationshipExpandedKeyMapInternal(Node relationship, EntityDefinition relEd) {
         Map<String, String> eKeyMap = [:]
-        if (!relationship.get("key-map") && ((String) relationship.attributes().get('type')).startsWith('one')) {
+        NodeList keyMapList = (NodeList) relationship.get("key-map")
+        if (!keyMapList && ((String) relationship.attributes().get('type')).startsWith('one')) {
             // go through pks of related entity, assume field names match
             for (String pkFieldName in relEd.getPkFieldNames()) eKeyMap.put(pkFieldName, pkFieldName)
         } else {
-            for (Object childObj in relationship.children()) {
-                Node keyMap = null
-                if (childObj instanceof Node) keyMap = (Node) childObj
-                if (keyMap == null) continue
-                if (!'key-map'.equals(keyMap.name())) continue
+            for (Object childObj in keyMapList) {
+                Node keyMap = (Node) childObj
 
                 String fieldName = keyMap.attributes().get('field-name')
                 String relFn = keyMap.attributes().get('related-field-name') ?: fieldName
@@ -396,6 +394,7 @@ public class EntityDefinition {
 
     static class RelationshipInfo {
         String type
+        boolean isTypeOne
         String title
         String relatedEntityName
         EntityDefinition fromEd
@@ -411,6 +410,7 @@ public class EntityDefinition {
         RelationshipInfo(Node relNode, EntityDefinition fromEd, EntityFacadeImpl efi) {
             this.relNode = relNode
             type = relNode.'@type'
+            isTypeOne = type.startsWith("one")
             title = relNode.'@title' ?: ''
             relatedEntityName = relNode.'@related-entity-name'
             this.fromEd = fromEd
@@ -420,7 +420,7 @@ public class EntityDefinition {
             relationshipName = (title ? title + '#' : '') + relatedEntityName
             shortAlias = relNode.'@short-alias' ?: ''
             prettyName = relatedEd.getPrettyName(title, fromEd.internalEntityName)
-            keyMap = getRelationshipExpandedKeyMap(relNode, relatedEd)
+            keyMap = getRelationshipExpandedKeyMapInternal(relNode, relatedEd)
             dependent = hasReverse()
         }
 
