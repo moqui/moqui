@@ -321,7 +321,7 @@ class StupidUtilities {
         if (value == null || theMap == null) return
         BigDecimal curVal = (BigDecimal) theMap.get(key)
         if (curVal == null) { theMap.put(key, value) }
-        else { theMap.put(key, curVal + value) }
+        else { theMap.put(key, curVal.add(value)) }
     }
 
     /** Find a field value in a nested Map containing fields, Maps, and Collections of Maps (Lists, etc) */
@@ -427,7 +427,7 @@ class StupidUtilities {
         List<String> textList = theNode.localText()
         if (textList) {
             if (textList.size() == 1) {
-                return textList.first()
+                return textList.get(0)
             } else {
                 StringBuilder sb = new StringBuilder()
                 for (String txt in textList) sb.append(txt).append("\n")
