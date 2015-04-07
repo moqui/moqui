@@ -46,8 +46,8 @@ public class EntityDefinition {
     protected Node internalEntityNode
     protected final Map<String, Boolean> fieldSimpleMap = new HashMap<String, Boolean>()
     protected final Map<String, Node> fieldNodeMap = new HashMap<String, Node>()
-    // TODO: get rid of this, refactor code to use getRelationshipMap()
-    protected final Map<String, Node> relationshipNodeMap = new HashMap<String, Node>()
+    // get rid of this, refactor code to use getRelationshipMap()
+    // protected final Map<String, Node> relationshipNodeMap = new HashMap<String, Node>()
     protected final Map<String, String> columnNameMap = new HashMap<String, String>()
     // small lists, but very frequently accessed
     protected ArrayList<String> pkFieldNameList = null
@@ -255,7 +255,7 @@ public class EntityDefinition {
 
         return fieldNode
     }
-
+    /*
     Node getRelationshipNode(String relationshipName) {
         Node relNode = relationshipNodeMap.get(relationshipName)
         if (relNode != null) return relNode
@@ -324,6 +324,7 @@ public class EntityDefinition {
         relationshipNodeMap.put(relationshipName, relNode)
         return relNode
     }
+    */
 
     @CompileStatic
     static Map<String, String> getRelationshipExpandedKeyMapInternal(Node relationship, EntityDefinition relEd) {
@@ -930,7 +931,9 @@ public class EntityDefinition {
 
     @CompileStatic
     void setFields(Map<String, Object> src, Map<String, Object> dest, boolean setIfEmpty, String namePrefix, Boolean pks) {
-        if (src == null) return
+        if (src == null || dest == null) return
+        boolean destIsEntityValueBase = dest instanceof EntityValueBase
+        EntityValueBase destEvb = destIsEntityValueBase ? (EntityValueBase) dest : null
 
         boolean hasNamePrefix = namePrefix as boolean
         EntityValueBase evb = src instanceof EntityValueBase ? (EntityValueBase) src : null
@@ -961,22 +964,24 @@ public class EntityDefinition {
                     if (isCharSequence) {
                         try {
                             if (value instanceof String) {
-                                this.setString(fieldName, value, dest)
+                                Object converted = convertFieldString(fieldName, value)
+                                if (destIsEntityValueBase) destEvb.putNoCheck(fieldName, converted) else dest.put(fieldName, converted)
                             } else {
-                                this.setString(fieldName, value.toString(), dest)
+                                Object converted = convertFieldString(fieldName, value.toString())
+                                if (destIsEntityValueBase) destEvb.putNoCheck(fieldName, converted) else dest.put(fieldName, converted)
                             }
                         } catch (BaseException be) {
                             this.efi.ecfi.executionContext.message.addValidationError(null, fieldName, null, be.getMessage(), be)
                         }
                     } else {
-                        dest.put(fieldName, value)
+                        if (destIsEntityValueBase) destEvb.putNoCheck(fieldName, value) else dest.put(fieldName, value)
                     }
                 } else if (setIfEmpty && src.containsKey(sourceFieldName)) {
                     // treat empty String as null, otherwise set as whatever null or empty type it is
                     if (value != null && value instanceof CharSequence) {
-                        dest.put(fieldName, null)
+                        if (destIsEntityValueBase) destEvb.putNoCheck(fieldName, null) else dest.put(fieldName, null)
                     } else {
-                        dest.put(fieldName, value)
+                        if (destIsEntityValueBase) destEvb.putNoCheck(fieldName, value) else dest.put(fieldName, value)
                     }
                 }
             }
@@ -984,22 +989,13 @@ public class EntityDefinition {
     }
 
     @CompileStatic
-    void setString(String name, String value, Map<String, Object> dest) {
-        if (value == null || value == "null") {
-            dest.put(name, null)
-            return
-        }
-        Node fieldNode = this.getFieldNode(name)
-        if (fieldNode == null) dest.put(name, value) // cause an error on purpose
-        dest.put(name, convertFieldString(name, value))
-    }
-
-    @CompileStatic
     Object convertFieldString(String name, String value) {
-        if (value == 'null') value = null
+        if ('null'.equals(value)) value = null
+        if (value == null) return null
 
         Object outValue
         Node fieldNode = this.getFieldNode(name)
+        if (fieldNode == null) throw new EntityException("The name [${name}] is not a valid field name for entity [${entityName}]")
 
         String fieldType = fieldNode.attributes().get('type')
         String javaType = fieldType ? (EntityFacadeImpl.fieldTypeJavaMap.get(fieldType) ?: efi.getFieldJavaType(fieldType, this)) : 'String'

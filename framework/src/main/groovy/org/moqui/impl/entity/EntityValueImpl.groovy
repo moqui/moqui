@@ -97,7 +97,7 @@ class EntityValueImpl extends EntityValueBase {
     }
 
     @Override
-    void updateExtended(ArrayList<String>  pkFieldList, ArrayList<String> nonPkFieldList, Connection con) {
+    void updateExtended(ArrayList<String> pkFieldList, ArrayList<String> nonPkFieldList, Connection con) {
         EntityDefinition ed = getEntityDefinition()
 
         if (ed.isViewEntity()) {
