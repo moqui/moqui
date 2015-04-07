@@ -34,6 +34,7 @@ build/
 /runtime/component/
 /runtime/component-lib/
 /runtime/mantle/
+/runtime/base-component/example/lib/example-*.jar
 
 # IntelliJ IDEA files
 .idea/
