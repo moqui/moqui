@@ -38,6 +38,14 @@ dependencies {
 // by default the Java plugin runs test on build, change to not do that (only run test if explicit task)
 check.dependsOn.remove(test)
 
+jar {
+    destinationDir = file(projectDir.absolutePath + '/lib')
+    // this is required to change from the default that includes the path to this module (ie 'runtime/base-componet/example')
+    baseName = 'example'
+}
+task cleanLib(type: Delete) { delete file(jar.archivePath) }
+clean.dependsOn cleanLib
+
 test {
     systemProperty 'moqui.runtime', moquiDir.absolutePath + '/runtime'
     systemProperty 'moqui.conf', 'conf/MoquiDevTestConf.xml'

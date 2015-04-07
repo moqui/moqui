@@ -88,24 +88,24 @@ class ScreenUrlInfo {
 
     /** Stub mode for ScreenUrlInfo, represent a plain URL and not a screen URL */
     static ScreenUrlInfo getScreenUrlInfo(ScreenRenderImpl sri, String url) {
-        Cache screenUrlPermCache = sri.getSfi().screenUrlPermCache
-        ScreenUrlInfo cached = (ScreenUrlInfo) screenUrlPermCache.get(url)
+        Cache screenUrlCache = sri.getSfi().screenUrlCache
+        ScreenUrlInfo cached = (ScreenUrlInfo) screenUrlCache.get(url)
         if (cached != null) return cached
 
         ScreenUrlInfo newSui = new ScreenUrlInfo(sri, url)
-        screenUrlPermCache.put(url, newSui)
+        screenUrlCache.put(url, newSui)
         return newSui
     }
 
     static ScreenUrlInfo getScreenUrlInfo(ScreenFacadeImpl sfi, ScreenDefinition rootSd, ScreenDefinition fromScreenDef,
                                           List<String> fpnl, String subscreenPath, Boolean lastStandalone) {
-        Cache screenUrlPermCache = sfi.screenUrlPermCache
+        Cache screenUrlCache = sfi.screenUrlCache
         String cacheKey = makeCacheKey(rootSd, fpnl, subscreenPath, lastStandalone)
-        ScreenUrlInfo cached = (ScreenUrlInfo) screenUrlPermCache.get(cacheKey)
+        ScreenUrlInfo cached = (ScreenUrlInfo) screenUrlCache.get(cacheKey)
         if (cached != null) return cached
 
         ScreenUrlInfo newSui = new ScreenUrlInfo(sfi, rootSd, fromScreenDef, fpnl, subscreenPath, lastStandalone)
-        screenUrlPermCache.put(cacheKey, newSui)
+        screenUrlCache.put(cacheKey, newSui)
         return newSui
     }
 
@@ -117,13 +117,13 @@ class ScreenUrlInfo {
         if (fromSd == null) fromSd = sri.getActiveScreenDef()
         if (fromPathList == null) fromPathList = sri.getActiveScreenPath()
 
-        Cache screenUrlPermCache = sri.getSfi().screenUrlPermCache
+        Cache screenUrlCache = sri.getSfi().screenUrlCache
         String cacheKey = makeCacheKey(rootSd, fromPathList, subscreenPath, lastStandalone)
-        ScreenUrlInfo cached = (ScreenUrlInfo) screenUrlPermCache.get(cacheKey)
+        ScreenUrlInfo cached = (ScreenUrlInfo) screenUrlCache.get(cacheKey)
         if (cached != null) return cached
 
         ScreenUrlInfo newSui = new ScreenUrlInfo(sri.getSfi(), rootSd, fromSd, fromPathList, subscreenPath, lastStandalone)
-        screenUrlPermCache.put(cacheKey, newSui)
+        screenUrlCache.put(cacheKey, newSui)
         return newSui
     }
 
@@ -563,6 +563,8 @@ class ScreenUrlInfo {
             ec = sri.getEc()
 
             if (expandAliasTransition != null ? expandAliasTransition : true) expandTransitionAliasUrl()
+
+            // logger.warn("======= Creating UrlInstance ${sui.getFullPathNameList()} - ${sui.targetScreen.getLocation()} - ${sui.getTargetTransitionActualName()}")
         }
 
         String getRequestMethod() { return ec.web ? ec.web.request.method : "" }

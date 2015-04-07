@@ -14,9 +14,7 @@ This Work includes contributions authored by David E. Jones, not as a
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd"
         default-menu-title="Auto Screen Entity List" default-menu-index="1">
 
-    <transition name="find">
-        <default-response url="../AutoFind"/>
-    </transition>
+    <transition name="find"><default-response url="../AutoFind"/></transition>
 
     <actions>
         <set field="allEntityList" from="ec.entity.getAllEntitiesInfo(orderByField?:'fullEntityName', null, false, false)"/>
@@ -40,8 +38,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="aen">
                 <header-field title="Master Entity" show-order-by="true"/>
                 <default-field><link url="find" text="${ec.entity.getEntityDefinition(entityName).getPrettyName(null, null)}" link-type="anchor">
-                    <parameter name="aen" from="fullEntityName"/>
-                </link></default-field>
+                    <parameter name="aen" from="fullEntityName"/></link></default-field>
             </field>
         </form-list>
     </widgets>

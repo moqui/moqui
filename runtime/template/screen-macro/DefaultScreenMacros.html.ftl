@@ -1094,7 +1094,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
             <a href="${ascOrderByUrlInfo.getUrlWithParams()}" class="form-order-by<#if ascActive> active</#if>">+</a><a href="${descOrderByUrlInfo.getUrlWithParams()}" class="form-order-by<#if descActive> active</#if>">-</a>
             <#-- the old way, show + or -:
             <#if !orderByField?has_content || orderByField?starts_with("-") || !orderByField?contains(fieldNode["@name"])><#assign orderByField = ("+" + fieldNode["@name"])><#else><#assign orderByField = ("-" + fieldNode["@name"])></#if>
-            <#assign orderByUrlInfo = sri.getCurrentScreenUrl().cloneUrlInfo().addParameter("orderByField", orderByField)>
+            <#assign orderByUrlInfo = sri.getCurrentScreenUrl().getInstance().addParameter("orderByField", orderByField)>
             <a href="${orderByUrlInfo.getUrlWithParams()}" class="form-order-by">${orderByField?substring(0,1)}</a>
             -->
         </#if>

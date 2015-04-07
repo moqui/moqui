@@ -235,7 +235,7 @@ class ScreenRenderImpl implements ScreenRender {
 
         screenUrlInfo = ScreenUrlInfo.getScreenUrlInfo(this, rootScreenDef, originalScreenPathNameList, null,
                 (ec.getWeb() != null && ec.getWeb().requestParameters.lastStandalone == "true"))
-        screenUrlInstance = screenUrlInfo.getInstance(this, null)
+        screenUrlInstance = screenUrlInfo.getInstance(this, false)
         if (ec.getWeb()) {
             // clear out the parameters used for special screen URL config
             if (ec.getWeb().requestParameters.lastStandalone) ec.getWeb().requestParameters.lastStandalone = ""
@@ -271,11 +271,13 @@ class ScreenRenderImpl implements ScreenRender {
         if (this.response != null) response.setCharacterEncoding(this.characterEncoding)
 
         // if there is a transition run that INSTEAD of the screen to render
-        if (screenUrlInstance.getTargetTransition()) {
+        ScreenDefinition.TransitionItem targetTransition = screenUrlInstance.getTargetTransition()
+        // logger.warn("============ Rendering screen ${screenUrlInfo.getTargetScreen().getLocation()} transition ${screenUrlInfo.getTargetTransitionActualName()} has transition ${targetTransition != null}")
+        if (targetTransition != null) {
             // if this transition has actions and request was not secure or any parameters were not in the body
             // return an error, helps prevent XSRF attacks
-            if (request != null && screenUrlInstance.getTargetTransition().hasActionsOrSingleService() &&
-                    !screenUrlInstance.getTargetTransition().isReadOnly()) {
+            if (request != null && targetTransition.hasActionsOrSingleService() &&
+                    !targetTransition.isReadOnly()) {
                 if ((!request.isSecure() && getWebappNode().attributes().get('https-enabled') != "false") ||
                         request.getQueryString() ||
                         StupidWebUtilities.getPathInfoParameterMap(request.getPathInfo())) {
@@ -289,7 +291,7 @@ class ScreenRenderImpl implements ScreenRender {
 
             long transitionStartTime = System.currentTimeMillis()
 
-            boolean beginTransaction = screenUrlInstance.getTargetTransition().getBeginTransaction()
+            boolean beginTransaction = targetTransition.getBeginTransaction()
             boolean beganTransaction = beginTransaction ? sfi.getEcfi().getTransactionFacade().begin(null) : false
             ResponseItem ri = null
             try {
@@ -312,7 +314,7 @@ class ScreenRenderImpl implements ScreenRender {
 
                 if (screenUrlInfo.targetScreen.screenNode.attributes().get('track-artifact-hit') != "false") {
                     sfi.ecfi.countArtifactHit("transition", ri?.type ?: "",
-                            screenUrlInstance.getTargetTransition().parentScreen.getLocation() + "#" + screenUrlInstance.getTargetTransition().name,
+                            targetTransition.parentScreen.getLocation() + "#" + targetTransition.name,
                             (ec.getWeb() ? ec.getWeb().requestParameters : null), transitionStartTime,
                             System.currentTimeMillis(), null)
                 }
@@ -595,7 +597,7 @@ class ScreenRenderImpl implements ScreenRender {
             }
 
             // start rendering at the root section of the root screen
-            ScreenDefinition renderStartDef = screenUrlInfo.screenRenderDefList[0]
+            ScreenDefinition renderStartDef = screenUrlInfo.screenRenderDefList.get(0)
             // if screenRenderDefList.size == 1 then it is the target screen, otherwise it's not
             renderStartDef.render(this, screenUrlInfo.screenRenderDefList.size() == 1)
 
@@ -733,7 +735,7 @@ class ScreenRenderImpl implements ScreenRender {
         }
 
         screenPathIndex++
-        ScreenDefinition screenDef = screenUrlInfo.screenRenderDefList[screenPathIndex]
+        ScreenDefinition screenDef = screenUrlInfo.screenRenderDefList.get(screenPathIndex)
         try {
             if (!stopRenderScreenLocations.contains(screenDef.getLocation())) {
                 writer.flush()

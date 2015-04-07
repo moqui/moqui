@@ -1,0 +1,4 @@
+JAR files go in this directory and are picked up automatically by Moqui Framework based on the convention of the directory name 'lib'.
+
+The build.gradle file uses this directory as the target for the built jar file, and deletes the built jar file as part of the clean task.
+
