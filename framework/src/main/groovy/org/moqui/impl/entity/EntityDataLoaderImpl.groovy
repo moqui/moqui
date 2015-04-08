@@ -565,8 +565,8 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                 if (currentFieldValue) {
                     if (currentEntityDef != null) {
                         if (currentEntityDef.isField(currentFieldName)) {
-                            Node fieldNode = currentEntityDef.getFieldNode(currentFieldName)
-                            String type = fieldNode."@type"
+                            EntityDefinition.FieldInfo fieldInfo = currentEntityDef.getFieldInfo(currentFieldName)
+                            String type = fieldInfo.type
                             if (type == "binary-very-long") {
                                 byte[] binData = Base64.decodeBase64(currentFieldValue.toString())
                                 rootValueMap.put(currentFieldName, new SerialBlob(binData))

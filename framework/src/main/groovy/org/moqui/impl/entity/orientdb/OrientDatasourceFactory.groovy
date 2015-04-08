@@ -198,11 +198,9 @@ class OrientDatasourceFactory implements EntityDatasourceFactory {
         }
     }
 
-    OType getFieldType(String fieldName, EntityDefinition ed) {
-        Node fieldNode = ed.getFieldNode(fieldName)
-        String javaType = efi.getFieldJavaType((String) fieldNode."@type", ed)
-        if (javaType == null) throw new IllegalArgumentException("Could not find Java type for field [${fieldName}] on entity [${ed.getFullEntityName()}]")
-        int javaTypeInt = efi.getJavaTypeInt(javaType)
+    static OType getFieldType(String fieldName, EntityDefinition ed) {
+        EntityDefinition.FieldInfo fieldInfo = ed.getFieldInfo(fieldName)
+        int javaTypeInt = fieldInfo.typeValue
 
         OType fieldType = null
         switch (javaTypeInt) {

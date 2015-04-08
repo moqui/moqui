@@ -412,10 +412,9 @@ class EntityFindBuilder extends EntityQueryBuilder {
             fieldName = foo.fieldName
 
             int typeValue = 1
-            Node fieldNode = getMainEd().getFieldNode(fieldName)
-            if (fieldNode != null) {
-                String javaType = efi.getFieldJavaType((String) fieldNode.attributes().get('type'), getMainEd())
-                typeValue = EntityFacadeImpl.getJavaTypeInt(javaType)
+            EntityDefinition.FieldInfo fieldInfo = getMainEd().getFieldInfo(fieldName)
+            if (fieldInfo != null) {
+                typeValue = fieldInfo.typeValue
             } else {
                 logger.warn("Making ORDER BY clause, could not find field [${fieldName}] in entity [${getMainEd().getFullEntityName()}]")
             }

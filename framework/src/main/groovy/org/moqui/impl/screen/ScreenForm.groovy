@@ -512,7 +512,7 @@ class ScreenForm {
 
         // otherwise use the old approach and do what we can with the service def
         String spType = parameterNode."@type" ?: "String"
-        String efType = fieldEd != null ? fieldEd.getFieldNode((String) parameterNode."@name")?."@type" : null
+        String efType = fieldEd != null ? fieldEd.getFieldInfo((String) parameterNode."@name")?.type : null
 
         switch (fieldType) {
             case "edit":
@@ -606,7 +606,7 @@ class ScreenForm {
 
     void addEntityFields(EntityDefinition ed, String include, String fieldType, String serviceVerb, Node baseFormNode) {
         for (String fieldName in ed.getFieldNames(include == "all" || include == "pk", include == "all" || include == "nonpk", include == "all" || include == "nonpk")) {
-            String efType = ed.getFieldNode(fieldName)."@type" ?: "text-long"
+            String efType = ed.getFieldInfo(fieldName).type ?: "text-long"
             if (baseFormNode.name() == "form-list" && efType in ['text-long', 'text-very-long', 'binary-very-long']) continue
 
             Node newFieldNode = new Node(null, "field", [name:fieldName, "validate-entity":ed.getFullEntityName(),
@@ -625,7 +625,7 @@ class ScreenForm {
                             Node newFieldNode, Node subFieldNode, Node baseFormNode) {
         List<String> pkFieldNameSet = ed.getPkFieldNames()
 
-        String efType = ed.getFieldNode(fieldName)."@type" ?: "text-long"
+        String efType = ed.getFieldInfo(fieldName).type ?: "text-long"
 
         // to see if this should be a drop-down with data from another entity,
         // find first relationship that has this field as the only key map and is not a many relationship

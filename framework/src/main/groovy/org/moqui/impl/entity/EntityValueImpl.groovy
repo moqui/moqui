@@ -84,7 +84,7 @@ class EntityValueImpl extends EntityValueBase {
                 eqb.makePreparedStatement()
                 for (int i = 0; i < size; i++) {
                     String fieldName = fieldList.get(i)
-                    eqb.setPreparedStatementValue(i+1, getValueMap().get(fieldName), getEntityDefinition().getFieldNode(fieldName))
+                    eqb.setPreparedStatementValue(i+1, getValueMap().get(fieldName), getEntityDefinition().getFieldInfo(fieldName))
                 }
                 eqb.executeUpdate()
                 setSyncedWithDb()
@@ -113,7 +113,7 @@ class EntityValueImpl extends EntityValueBase {
                 String fieldName = nonPkFieldList.get(i)
                 if (isFirstField) isFirstField = false else sql.append(", ")
                 sql.append(ed.getColumnName(fieldName, false)).append("=?")
-                eqb.getParameters().add(new EntityConditionParameter(ed.getFieldNode(fieldName),
+                eqb.getParameters().add(new EntityConditionParameter(ed.getFieldInfo(fieldName),
                         getValueMap().get(fieldName), eqb))
             }
             sql.append(" WHERE ")
@@ -123,7 +123,7 @@ class EntityValueImpl extends EntityValueBase {
                 String fieldName = pkFieldList.get(i)
                 if (isFirstPk) isFirstPk = false else sql.append(" AND ")
                 sql.append(ed.getColumnName(fieldName, false)).append("=?")
-                eqb.getParameters().add(new EntityConditionParameter(ed.getFieldNode(fieldName),
+                eqb.getParameters().add(new EntityConditionParameter(ed.getFieldInfo(fieldName),
                         getValueMap().get(fieldName), eqb))
             }
 
@@ -162,7 +162,7 @@ class EntityValueImpl extends EntityValueBase {
                 String fieldName = pkFieldList.get(i)
                 if (isFirstPk) isFirstPk = false else sql.append(" AND ")
                 sql.append(ed.getColumnName(fieldName, false)).append("=?")
-                eqb.getParameters().add(new EntityConditionParameter(ed.getFieldNode(fieldName),
+                eqb.getParameters().add(new EntityConditionParameter(ed.getFieldInfo(fieldName),
                         getValueMap().get(fieldName), eqb))
             }
 
@@ -217,7 +217,7 @@ class EntityValueImpl extends EntityValueBase {
             String fieldName = pkFieldList.get(i)
             if (isFirstPk) isFirstPk = false else sql.append(" AND ")
             sql.append(ed.getColumnName(fieldName, false)).append("=?")
-            eqb.getParameters().add(new EntityConditionParameter(ed.getFieldNode(fieldName),
+            eqb.getParameters().add(new EntityConditionParameter(ed.getFieldInfo(fieldName),
                     this.getValueMap().get(fieldName), eqb))
         }
 
@@ -236,7 +236,7 @@ class EntityValueImpl extends EntityValueBase {
             if (rs.next()) {
                 int j = 1
                 for (String fieldName in nonPkFieldList) {
-                    EntityQueryBuilder.getResultSetValue(rs, j, getEntityDefinition().getFieldNode(fieldName), this, getEntityFacadeImpl())
+                    EntityQueryBuilder.getResultSetValue(rs, j, getEntityDefinition().getFieldInfo(fieldName), this, getEntityFacadeImpl())
                     j++
                 }
                 retVal = true

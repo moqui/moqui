@@ -121,12 +121,11 @@ abstract class EntityValueBase implements EntityValue {
     Object get(String name) {
         EntityDefinition ed = getEntityDefinition()
 
+        EntityDefinition.FieldInfo fieldInfo = ed.getFieldInfo(name)
         // if this is a simple field (is field, no l10n, not user field) just get the value right away (vast majority of use)
-        if (ed.isSimpleField(name)) return valueMap.get(name)
+        if (fieldInfo != null && fieldInfo.isSimple) return valueMap.get(name)
 
-        Node fieldNode = ed.getFieldNode(name)
-
-        if (fieldNode == null) {
+        if (fieldInfo == null) {
             // if this is not a valid field name but is a valid relationship name, do a getRelated or getRelatedOne to return an EntityList or an EntityValue
             RelationshipInfo relInfo = ed.getRelationshipInfo(name)
             if (relInfo!= null) {
@@ -141,7 +140,7 @@ abstract class EntityValueBase implements EntityValue {
         }
 
         // if enabled use moqui.basic.LocalizedEntityField for any localized fields
-        if ('true'.equals(fieldNode.attributes().get('enable-localization'))) {
+        if (fieldInfo.enableLocalization) {
             String localeStr = getEntityFacadeImpl().ecfi.getExecutionContext().getUser().getLocale()?.toString()
             if (localeStr) {
                 Object internalValue = valueMap.get(name)
@@ -211,7 +210,7 @@ abstract class EntityValueBase implements EntityValue {
             }
         }
 
-        if ('true'.equals(fieldNode.attributes().get('is-user-field'))) {
+        if (fieldInfo.isUserField) {
             // get if from the UserFieldValue entity instead
             Map<String, Object> parms = new HashMap<>()
             parms.put('entityName', ed.getFullEntityName())
@@ -360,8 +359,8 @@ abstract class EntityValueBase implements EntityValue {
         int paddedLength  = (getEntityDefinition().entityNode.attributes().get('sequence-secondary-padded-length') as Integer) ?: 2
 
         this.remove(seqFieldName)
-        EntityValue lookupValue = getEntityFacadeImpl().makeValue(getEntityName())
-        lookupValue.setFields(this, false, null, true)
+        Map<String, Object> otherPkMap = [:]
+        getEntityDefinition().setFields(this, otherPkMap, false, null, true)
 
         // temporarily disable authz for this, just doing lookup to get next value and to allow for a
         //     authorize-skip="create" with authorize-skip of view too this is necessary
@@ -375,7 +374,7 @@ abstract class EntityValueBase implements EntityValue {
             //     after the line that calls put() in the EntityDefinition.setString() method; theory is that groovy
             //     is doing something that results in fields getting set to null, probably a call to a method on
             //     EntityValueBase or EntityValueImpl that is not expected to be called
-            EntityFind ef = getEntityFacadeImpl().find(getEntityName()).condition(lookupValue.getPrimaryKeys())
+            EntityFind ef = getEntityFacadeImpl().find(getEntityName()).condition(otherPkMap)
             // logger.warn("TOREMOVE in setSequencedIdSecondary ef WHERE=${ef.getWhereEntityCondition()}")
             allValues = ef.list()
         } finally {

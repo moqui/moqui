@@ -16,6 +16,7 @@ import groovy.transform.TypeChecked
 import groovy.transform.TypeCheckingMode
 import org.moqui.impl.StupidJavaUtilities
 import org.moqui.entity.EntityException
+import org.moqui.impl.entity.EntityDefinition.FieldInfo
 
 import java.nio.ByteBuffer
 import java.sql.Blob
@@ -149,12 +150,12 @@ class EntityQueryBuilder {
         return interim
     }
 
-    void getResultSetValue(int index, Node fieldNode, EntityValueImpl entityValueImpl) throws EntityException {
-        getResultSetValue(this.rs, index, fieldNode, entityValueImpl, this.efi)
+    void getResultSetValue(int index, FieldInfo fieldInfo, EntityValueImpl entityValueImpl) throws EntityException {
+        getResultSetValue(this.rs, index, fieldInfo, entityValueImpl, this.efi)
     }
 
-    void setPreparedStatementValue(int index, Object value, Node fieldNode) throws EntityException {
-        setPreparedStatementValue(this.ps, index, value, fieldNode, this.mainEntityDefinition, this.efi)
+    void setPreparedStatementValue(int index, Object value, FieldInfo fieldInfo) throws EntityException {
+        setPreparedStatementValue(this.ps, index, value, fieldInfo, this.mainEntityDefinition, this.efi)
     }
 
     void setPreparedStatementValues() {
@@ -171,42 +172,44 @@ class EntityQueryBuilder {
     static class EntityConditionParameter {
         protected final static Logger logger = LoggerFactory.getLogger(EntityConditionParameter.class)
 
-        protected Node fieldNode
+        protected FieldInfo fieldInfo
         protected Object value
         protected EntityQueryBuilder eqb
 
-        EntityConditionParameter(Node fieldNode, Object value, EntityQueryBuilder eqb) {
-            this.fieldNode = fieldNode
+        EntityConditionParameter(FieldInfo fieldInfo, Object value, EntityQueryBuilder eqb) {
+            this.fieldInfo = fieldInfo
             this.value = value
             this.eqb = eqb
         }
 
-        Node getFieldNode() { return this.fieldNode }
+        FieldInfo getFieldInfo() { return this.fieldInfo }
 
         Object getValue() { return this.value }
 
         void setPreparedStatementValue(int index) throws EntityException {
-            setPreparedStatementValue(this.eqb.ps, index, this.value, this.fieldNode,
+            setPreparedStatementValue(this.eqb.ps, index, this.value, this.fieldInfo,
                     this.eqb.mainEntityDefinition, this.eqb.efi)
         }
 
         @Override
-        String toString() { return ((String) fieldNode.attributes().get('name')) + ':' + value }
+        String toString() { return fieldInfo.name + ':' + value }
     }
 
-    static void getResultSetValue(ResultSet rs, int index, Node fieldNode, EntityValueImpl entityValueImpl,
+    static void getResultSetValue(ResultSet rs, int index, FieldInfo fieldInfo, EntityValueImpl entityValueImpl,
                                             EntityFacadeImpl efi) throws EntityException {
-        String fieldName = (String) fieldNode.attributes().get('name')
-        String fieldType = fieldNode.attributes().get('type')
+        String fieldName = fieldInfo.name
+        String fieldType = fieldInfo.type
+        int typeValue = fieldInfo.typeValue
+        /*
         // jump straight to the type int for common/OOTB field types for FAR better performance than hunting through conf elements
         Integer directTypeInt = EntityFacadeImpl.fieldTypeIntMap.get(fieldType)
-        Integer typeValue
         if (directTypeInt == null) {
             String javaType = fieldType ? efi.getFieldJavaType(fieldType, entityValueImpl.getEntityDefinition()) : "String"
             typeValue = EntityFacadeImpl.getJavaTypeInt(javaType)
         } else {
             typeValue = directTypeInt
         }
+        */
 
         Object value = null
         try {
@@ -318,7 +321,7 @@ class EntityQueryBuilder {
         }
 
         // if field is to be encrypted, do it now
-        if (value && fieldNode.attributes().get('encrypt') == 'true') {
+        if (value && fieldInfo.encrypt) {
             if (typeValue != 1) throw new IllegalArgumentException("The encrypt attribute was set to true on non-String field [${fieldName}] of entity [${entityValueImpl.getEntityName()}]")
             String original = value.toString()
             try {
@@ -364,12 +367,12 @@ class EntityQueryBuilder {
         return encrypt ? Hex.encodeHexString(outBytes) : new String(outBytes)
     }
 
-    static void setPreparedStatementValue(PreparedStatement ps, int index, Object value, Node fieldNode,
+    static void setPreparedStatementValue(PreparedStatement ps, int index, Object value, FieldInfo fieldInfo,
                                           EntityDefinition ed, EntityFacadeImpl efi) throws EntityException {
         String entityName = ed.getFullEntityName()
-        String fieldName = fieldNode.attributes().get('name')
-        String javaType = efi.getFieldJavaType((String) fieldNode.attributes().get('type'), ed)
-        int typeValue = EntityFacadeImpl.getJavaTypeInt(javaType)
+        String fieldName = fieldInfo.name
+        String javaType = fieldInfo.javaType
+        int typeValue = fieldInfo.typeValue
         if (value != null) {
             if (!StupidJavaUtilities.isInstanceOf(value, javaType)) {
                 // this is only an info level message because under normal operation for most JDBC
@@ -380,7 +383,7 @@ class EntityQueryBuilder {
                     fieldClassName = "byte[]"
                 }
 
-                if (logger.isTraceEnabled()) logger.trace("Type of field " + entityName + "." + fieldNode.attributes().get('name') +
+                if (logger.isTraceEnabled()) logger.trace((String) "Type of field " + entityName + "." + fieldName +
                         " is " + fieldClassName + ", was expecting " + javaType + " this may " +
                         "indicate an error in the configuration or in the class, and may result " +
                         "in an SQL-Java data conversion error. Will use the real field type: " +
@@ -390,7 +393,7 @@ class EntityQueryBuilder {
             }
 
             // if field is to be encrypted, do it now
-            if ('true'.equals(fieldNode.attributes().get('encrypt'))) {
+            if (fieldInfo.encrypt) {
                 if (typeValue != 1) throw new IllegalArgumentException("The encrypt attribute was set to true on non-String field [${fieldName}] of entity [${entityName}]")
                 String original = value.toString()
                 value = enDeCrypt(original, true, efi)

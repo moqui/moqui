@@ -116,22 +116,22 @@ public class EntityAutoServiceRunner implements ServiceRunner {
         boolean isSinglePk = pkFieldNames.size() == 1
         boolean isDoublePk = pkFieldNames.size() == 2
 
-        // logger.info("allPksIn=${allPksIn}, isSinglePk=${isSinglePk}, isDoublePk=${isDoublePk}")
+        // logger.info("======= checkAllPkFields for ${ed.getEntityName()} allPksIn=${allPksIn}, isSinglePk=${isSinglePk}, isDoublePk=${isDoublePk}; parameters: ${parameters}")
 
         if (isSinglePk) {
             /* **** primary sequenced primary key **** */
             /* **** primary sequenced key with optional override passed in **** */
             String singlePkParamName = pkFieldNames.get(0)
-            Node singlePkField = ed.getFieldNode(singlePkParamName)
+            EntityDefinition.FieldInfo singlePkField = ed.getFieldInfo(singlePkParamName)
 
-            Object pkValue = parameters.get(singlePkField.attributes().get('name'))
+            Object pkValue = parameters.get(singlePkField.name)
             if (pkValue) {
-                newEntityValue.set((String) singlePkField.attributes().get('name'), pkValue)
+                newEntityValue.set(singlePkField.name, pkValue)
             } else {
                 // if it has a default value don't sequence the PK
-                if (!singlePkField.attributes().get('default')) {
+                if (!singlePkField.defaultStr) {
                     newEntityValue.setSequencedIdPrimary()
-                    pkValue = newEntityValue.get(singlePkField.attributes().get('name'))
+                    pkValue = newEntityValue.get(singlePkField.name)
                 }
             }
             if (outParamNames == null || outParamNames.contains(singlePkParamName))
@@ -142,8 +142,8 @@ public class EntityAutoServiceRunner implements ServiceRunner {
             String doublePkSecondaryName = pkFieldNames.get(1)
             newEntityValue.setFields(parameters, true, null, true)
             // if it has a default value don't sequence the PK
-            Node doublePkSecondaryNode = ed.getFieldNode(doublePkSecondaryName)
-            if (!doublePkSecondaryNode.attributes().get('default')) {
+            EntityDefinition.FieldInfo doublePkSecondary = ed.getFieldInfo(doublePkSecondaryName)
+            if (!doublePkSecondary.defaultStr) {
                 newEntityValue.setSequencedIdSecondary()
                 if (outParamNames == null || outParamNames.contains(doublePkSecondaryName))
                     tempResult.put(doublePkSecondaryName, newEntityValue.get(doublePkSecondaryName))
@@ -195,8 +195,8 @@ public class EntityAutoServiceRunner implements ServiceRunner {
         int size = pkFieldNames.size()
         for (int i = 0; i < size; i++) {
             String pkName = pkFieldNames.get(i)
-            Node pkNode = ed.getFieldNode(pkName)
-            if (pkNode.attributes().get('default')) {
+            EntityDefinition.FieldInfo pkInfo = ed.getFieldInfo(pkName)
+            if (pkInfo.defaultStr) {
                 tempResult.put(pkName, newEntityValue.get(pkName))
             }
         }

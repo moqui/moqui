@@ -469,10 +469,10 @@ class EntityDataDocument {
             if (!fieldPath.contains(':')) {
                 // is a field on the primary entity, put it there
                 String fieldName = dataDocumentField.fieldNameAlias ?: dataDocumentField.fieldPath
-                Node fieldNode = primaryEd.getFieldNode((String) dataDocumentField.fieldPath)
-                if (fieldNode == null) throw new EntityException("Could not find field [${dataDocumentField.fieldPath}] for entity [${primaryEd.getFullEntityName()}] in DataDocument [${dataDocumentId}]")
+                EntityDefinition.FieldInfo fieldInfo = primaryEd.getFieldInfo((String) dataDocumentField.fieldPath)
+                if (fieldInfo == null) throw new EntityException("Could not find field [${dataDocumentField.fieldPath}] for entity [${primaryEd.getFullEntityName()}] in DataDocument [${dataDocumentId}]")
 
-                String fieldType = fieldNode."@type"
+                String fieldType = fieldInfo.type
                 String mappingType = esTypeMap.get(fieldType) ?: 'string'
                 Map propertyMap = [type:mappingType]
                 if (fieldType.startsWith("id")) propertyMap.index = 'not_analyzed'
@@ -506,9 +506,9 @@ class EntityDataDocument {
                     currentProperties = subProperties
                 } else {
                     String fieldName = dataDocumentField.fieldNameAlias ?: fieldPathElement
-                    Node fieldNode = currentEd.getFieldNode(fieldPathElement)
-                    if (fieldNode == null) throw new EntityException("Could not find field [${fieldPathElement}] for entity [${currentEd.getFullEntityName()}] in DataDocument [${dataDocumentId}]")
-                    String fieldType = fieldNode."@type"
+                    EntityDefinition.FieldInfo fieldInfo = currentEd.getFieldInfo(fieldPathElement)
+                    if (fieldInfo == null) throw new EntityException("Could not find field [${fieldPathElement}] for entity [${currentEd.getFullEntityName()}] in DataDocument [${dataDocumentId}]")
+                    String fieldType = fieldInfo.type
                     String mappingType = esTypeMap.get(fieldType) ?: 'string'
                     Map propertyMap = [type:mappingType]
                     if (fieldType.startsWith("id")) propertyMap.index = 'not_analyzed'
@@ -519,8 +519,8 @@ class EntityDataDocument {
 
         // now get all the PK fields not aliased explicitly
         for (String remainingPkName in remainingPkFields) {
-            Node fieldNode = primaryEd.getFieldNode(remainingPkName)
-            String fieldType = fieldNode."@type"
+            EntityDefinition.FieldInfo fieldInfo = primaryEd.getFieldInfo(remainingPkName)
+            String fieldType = fieldInfo.type
             String mappingType = esTypeMap.get(fieldType) ?: 'string'
             Map propertyMap = [type:mappingType]
             if (fieldType.startsWith("id")) propertyMap.index = 'not_analyzed'

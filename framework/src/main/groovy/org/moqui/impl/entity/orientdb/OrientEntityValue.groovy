@@ -55,11 +55,8 @@ class OrientEntityValue extends EntityValueBase {
             Object fieldValue = document.field(ed.getColumnName(fieldName, false))
             if (fieldValue == null) { getValueMap().put(fieldName, null); continue }
 
-            Node fieldNode = ed.getFieldNode(fieldName)
-            String javaType = efip.getFieldJavaType((String) fieldNode."@type", ed)
-            if (javaType == null) throw new IllegalArgumentException("Could not find Java type for field [${fieldName}] on entity [${ed.getFullEntityName()}]")
-            int javaTypeInt = efip.getJavaTypeInt(javaType)
-
+            EntityDefinition.FieldInfo fieldInfo = ed.getFieldInfo(fieldName)
+            int javaTypeInt = fieldInfo.typeValue
             switch (javaTypeInt) {
                 case 1: break // should be fine as String
                 case 2: fieldValue = new Timestamp(((Date) fieldValue).getTime()); break // DATETIME needs to be converted

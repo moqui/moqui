@@ -133,7 +133,7 @@ class EntityListIteratorImpl implements EntityListIterator {
         EntityValueImpl newEntityValue = new EntityValueImpl(entityDefinition, efi)
         int j = 1
         for (String fieldName in fieldsSelected) {
-            EntityQueryBuilder.getResultSetValue(rs, j, entityDefinition.getFieldNode(fieldName), newEntityValue, efi)
+            EntityQueryBuilder.getResultSetValue(rs, j, entityDefinition.getFieldInfo(fieldName), newEntityValue, efi)
             j++
         }
         this.haveMadeValue = true
