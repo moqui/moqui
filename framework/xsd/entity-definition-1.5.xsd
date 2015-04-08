@@ -36,6 +36,26 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:enumeration value="update"/>
         </xs:restriction>
     </xs:simpleType>
+    <xs:simpleType name="field-type-options">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="id"/>
+            <xs:enumeration value="id-long"/>
+            <xs:enumeration value="date"/>
+            <xs:enumeration value="time"/>
+            <xs:enumeration value="date-time"/>
+            <xs:enumeration value="number-integer"/>
+            <xs:enumeration value="number-decimal"/>
+            <xs:enumeration value="number-float"/>
+            <xs:enumeration value="currency-amount"/>
+            <xs:enumeration value="currency-precise"/>
+            <xs:enumeration value="text-indicator"/>
+            <xs:enumeration value="text-short"/>
+            <xs:enumeration value="text-medium"/>
+            <xs:enumeration value="text-long"/>
+            <xs:enumeration value="text-very-long"/>
+            <xs:enumeration value="binary-very-long"/>
+        </xs:restriction>
+    </xs:simpleType>
 
     <!-- ====================== Root Element ======================= -->
     <xs:element name="entities">
@@ -142,28 +162,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:sequence><xs:element minOccurs="0" ref="description"/></xs:sequence>
             <xs:attribute name="name" type="xs:string" use="required"/>
             <xs:attribute name="column-name" type="xs:string"/>
-            <xs:attribute name="type" use="required">
-                <xs:simpleType>
-                    <xs:restriction base="xs:token">
-                        <xs:enumeration value="id"/>
-                        <xs:enumeration value="id-long"/>
-                        <xs:enumeration value="date"/>
-                        <xs:enumeration value="time"/>
-                        <xs:enumeration value="date-time"/>
-                        <xs:enumeration value="number-integer"/>
-                        <xs:enumeration value="number-decimal"/>
-                        <xs:enumeration value="number-float"/>
-                        <xs:enumeration value="currency-amount"/>
-                        <xs:enumeration value="currency-precise"/>
-                        <xs:enumeration value="text-indicator"/>
-                        <xs:enumeration value="text-short"/>
-                        <xs:enumeration value="text-medium"/>
-                        <xs:enumeration value="text-long"/>
-                        <xs:enumeration value="text-very-long"/>
-                        <xs:enumeration value="binary-very-long"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:attribute>
+            <xs:attribute name="type" type="field-type-options" use="required"/>
             <xs:attribute name="is-pk" default="false" type="boolean"/>
             <xs:attribute name="encrypt" default="false" type="boolean"/>
             <xs:attribute name="enable-audit-log" default="false" type="audit-log-options">
@@ -353,6 +352,11 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="name" type="xs:string" use="required"/>
             <xs:attribute name="field" type="xs:string"/>
             <xs:attribute name="function" type="aggregate-function"/>
+            <xs:attribute name="type" type="field-type-options" use="optional">
+                <xs:annotation><xs:documentation>Normally determined automatically from the entity field it is based on
+                    but needs to be specified for complex-alias with a function if you want something other than
+                    number-decimal.</xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="complex-alias">

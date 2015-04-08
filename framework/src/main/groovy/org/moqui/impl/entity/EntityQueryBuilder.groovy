@@ -199,6 +199,7 @@ class EntityQueryBuilder {
                                             EntityFacadeImpl efi) throws EntityException {
         String fieldName = fieldInfo.name
         String fieldType = fieldInfo.type
+        if (fieldInfo.typeValue == null) throw new EntityException("No typeValue found for ${fieldInfo.ed.getFullEntityName()}.${fieldName}, type=${fieldType}")
         int typeValue = fieldInfo.typeValue
         /*
         // jump straight to the type int for common/OOTB field types for FAR better performance than hunting through conf elements

@@ -99,7 +99,7 @@ public class EntityDefinition {
                 String fieldName = aliasNode."@field" ?: aliasNode."@name"
                 Node fieldNode = memberEd.getFieldNode(fieldName)
                 if (fieldNode == null) throw new EntityException("In view-entity [${internalEntityName}] alias [${aliasNode."@name"}] referred to field [${fieldName}] that does not exist on entity [${memberEd.internalEntityName}].")
-                aliasNode.attributes().put("type", fieldNode.attributes().get("type"))
+                if (!aliasNode.attributes().get("type")) aliasNode.attributes().put("type", fieldNode.attributes().get("type"))
                 if (fieldNode."@is-pk" == "true") aliasNode."@is-pk" = "true"
             }
             for (Node aliasNode in internalEntityNode."alias") {
@@ -273,19 +273,25 @@ public class EntityDefinition {
         FieldInfo(EntityDefinition ed, Node fieldNode) {
             this.ed = ed
             this.fieldNode = fieldNode
-            name = (String) fieldNode.attributes().get('name')
-            type = (String) fieldNode.attributes().get('type')
-            // TODO: consider blowing up here if there is no type most field types (not complex-alias, any others?)
-            columnName = (String) fieldNode.attributes().get('column-name') ?: camelCaseToUnderscored(name)
-            defaultStr = (String) fieldNode.attributes().get('default')
+            Map fnAttrs = fieldNode.attributes()
+            name = (String) fnAttrs.get('name')
+            type = (String) fnAttrs.get('type')
+            columnName = (String) fnAttrs.get('column-name') ?: camelCaseToUnderscored(name)
+            defaultStr = (String) fnAttrs.get('default')
+            if (!type && fieldNode.get("complex-alias") && fnAttrs.get('function')) {
+                // this is probably a calculated value, just default to number-decimal
+                type = 'number-decimal'
+            }
             if (type) {
                 javaType = ed.efi.getFieldJavaType(type, ed) ?: 'String'
                 typeValue = EntityFacadeImpl.getJavaTypeInt(javaType)
+            } else {
+                throw new EntityException("No type specified or found for field ${name} on entity ${ed.getFullEntityName()}")
             }
-            isPk = 'true'.equals(fieldNode.attributes().get('is-pk'))
-            encrypt = 'true'.equals(fieldNode.attributes().get('encrypt'))
-            enableLocalization = 'true'.equals(fieldNode.attributes().get('enable-localization'))
-            isUserField = 'true'.equals(fieldNode.attributes().get('is-user-field'))
+            isPk = 'true'.equals(fnAttrs.get('is-pk'))
+            encrypt = 'true'.equals(fnAttrs.get('encrypt'))
+            enableLocalization = 'true'.equals(fnAttrs.get('enable-localization'))
+            isUserField = 'true'.equals(fnAttrs.get('is-user-field'))
             isSimple = !enableLocalization && !isUserField
         }
     }

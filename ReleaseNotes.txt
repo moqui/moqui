@@ -9,7 +9,7 @@ Moqui Framework 1.5.2 is a minor new feature and bug fix release.
 
 New Features:
 
-- Updated Groovy to 2.4.3
+- Updated Atomikos to 4.0.0M4, Groovy to 2.4.3
 - Significant performance improvements based on profiling
   - a big part of this is using the Groovy @CompileStatic annotation for
     strict typing and direct method calls for improved performance in many
@@ -1894,6 +1894,13 @@ Features considered, but may not to be included in 1.x series
     - Entity usage/reference section
     - Service usage/reference section on ServiceDetail screen
   - Screen to install a component (upload and register, load data from it; require special permission for this, not enabled on the demo server)
+
+- Atomikos
+  - http://www.atomikos.com/Main/InstallingTransactionsEssentials
+  - http://mvnrepository.com/artifact/com.atomikos
+- Bitronix
+  - https://github.com/bitronix/btm
+  - http://mvnrepository.com/artifact/org.codehaus.btm
 
 - Email verification by random code on registration and email change
 - Login through Google, Facebook, etc
