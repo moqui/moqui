@@ -25,6 +25,11 @@ New Features:
     improvement is always possible but this gets pretty close to that limit
   - this effort involves over 3000 lines of code changes, nearly 10% of the
     roughly 35k lines of Java & Groovy code in the framework implementation
+- ScreenUrlInfo has been cleaned up with single use parts split into the
+  UrlInstance class; these are currently internal implementation classes so
+  this isn't an API change, but this is a non-backward compatible change
+  and some code using the ScreenRenderImpl and ScreenUrlInfo may need to be
+  updated similar to the changes in DefaultScreenMacros.html.ftl
 
 Bug Fixes:
 
