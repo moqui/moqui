@@ -12,7 +12,7 @@
 
 allprojects { version = '1.5.2' }
 
-def tomcatHome = '../apache-tomcat-7.0.50'
+def tomcatHome = '../apache-tomcat-8.0.21'
 def warName = 'moqui-' + version + '.war'
 def execTempDir = 'execwartmp'
 
