@@ -9,7 +9,7 @@ Moqui Framework 1.5.2 is a minor new feature and bug fix release.
 
 New Features:
 
-- Updated Atomikos to 3.9.3, Groovy to 2.4.3
+- Updated Atomikos to 4.0.0M4, Groovy to 2.4.3
 - Significant performance improvements based on profiling
   - a big part of this is using the Groovy @CompileStatic annotation for
     strict typing and direct method calls for improved performance in many
