@@ -854,8 +854,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
         <div class="form-list-paginate">
             <!-- page ${context[listName + "PageIndex"]} of ${context[listName + "PageMaxIndex"]} -->
             <#if (context[listName + "PageIndex"] > 0)>
-                <#assign firstUrlInfo = sri.getScreenUrlInfo().getInstance(sri, false).addParameter("pageIndex", 0)>
-                <#assign previousUrlInfo = sri.getScreenUrlInfo().getInstance(sri, false).addParameter("pageIndex", (context[listName + "PageIndex"] - 1))>
+                <#assign firstUrlInfo = sri.getScreenUrlInstance().cloneUrlInstance().addParameter("pageIndex", 0)>
+                <#assign previousUrlInfo = sri.getScreenUrlInstance().cloneUrlInstance().addParameter("pageIndex", (context[listName + "PageIndex"] - 1))>
                 <a href="${firstUrlInfo.getUrlWithParams()}">|&lt;</a>
                 <a href="${previousUrlInfo.getUrlWithParams()}">&lt;</a>
             <#else>
@@ -864,8 +864,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
             </#if>
             <span>${context[listName + "PageRangeLow"]} - ${context[listName + "PageRangeHigh"]} / ${context[listName + "Count"]}</span>
             <#if (context[listName + "PageIndex"] < context[listName + "PageMaxIndex"])>
-                <#assign lastUrlInfo = sri.getScreenUrlInfo().getInstance(sri, false).addParameter("pageIndex", context[listName + "PageMaxIndex"])>
-                <#assign nextUrlInfo = sri.getScreenUrlInfo().getInstance(sri, false).addParameter("pageIndex", context[listName + "PageIndex"] + 1)>
+                <#assign lastUrlInfo = sri.getScreenUrlInstance().cloneUrlInstance().addParameter("pageIndex", context[listName + "PageMaxIndex"])>
+                <#assign nextUrlInfo = sri.getScreenUrlInstance().cloneUrlInstance().addParameter("pageIndex", context[listName + "PageIndex"] + 1)>
                 <a href="${nextUrlInfo.getUrlWithParams()}">&gt;</a>
                 <a href="${lastUrlInfo.getUrlWithParams()}">&gt;|</a>
             <#else>
