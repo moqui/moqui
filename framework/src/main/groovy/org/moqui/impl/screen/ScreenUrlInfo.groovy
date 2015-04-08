@@ -550,6 +550,7 @@ class ScreenUrlInfo {
         ScreenUrlInfo sui
         ScreenRenderImpl sri
         ExecutionContext ec
+        boolean expandAliasTransition
 
         /** If a transition is specified, the target transition within the targetScreen */
         TransitionItem curTargetTransition = null
@@ -562,7 +563,8 @@ class ScreenUrlInfo {
             this.sri = sri
             ec = sri.getEc()
 
-            if (expandAliasTransition != null ? expandAliasTransition : true) expandTransitionAliasUrl()
+            this.expandAliasTransition = expandAliasTransition != null ? expandAliasTransition : true
+            if (this.expandAliasTransition) expandTransitionAliasUrl()
 
             // logger.warn("======= Creating UrlInstance ${sui.getFullPathNameList()} - ${sui.targetScreen.getLocation()} - ${sui.getTargetTransitionActualName()}")
         }
@@ -721,6 +723,14 @@ class ScreenUrlInfo {
             if (fromMap.containsKey("pageNoLimit")) toMap.put("pageNoLimit", (String) fromMap.get("pageNoLimit"))
             if (fromMap.containsKey("lastStandalone")) toMap.put("lastStandalone", (String) fromMap.get("lastStandalone"))
             if (fromMap.containsKey("renderMode")) toMap.put("renderMode", (String) fromMap.get("renderMode"))
+        }
+
+        UrlInstance cloneUrlInstance() {
+            UrlInstance ui = new UrlInstance(sui, sri, expandAliasTransition)
+            ui.curTargetTransition = curTargetTransition
+            if (otherParameterMap) ui.otherParameterMap = new HashMap<String, String>(otherParameterMap)
+            if (transitionAliasParameters) ui.transitionAliasParameters = new HashMap(transitionAliasParameters)
+            return ui
         }
 
         @Override
