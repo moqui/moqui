@@ -560,7 +560,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     ${sri.setSingleFormMapInContext(formNode)}
     <#assign skipStart = (formNode["@skip-start"]! == "true")>
     <#assign skipEnd = (formNode["@skip-end"]! == "true")>
-    <#assign urlInstance = sri.makeUrlByType(formNode["@transition"], "transition", null, "false")>
+    <#assign urlInstance = sri.makeUrlByType(formNode["@transition"], "transition", null, "true")>
     <#assign formId>${ec.resource.evaluateStringExpand(formNode["@name"], "")}<#if sectionEntryIndex?has_content>_${sectionEntryIndex}</#if></#assign>
     <#assign inFieldRow = false>
     <#assign bigRow = false>
