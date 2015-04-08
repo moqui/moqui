@@ -33,8 +33,9 @@ class EntityDbMeta {
     // this keeps track of when tables are checked and found to exist or are created
     protected Map entityTablesChecked = new HashMap()
     // a separate Map for tables checked to exist only (used in finds) so repeated checks are needed for unused entities
-    protected Map<String, Boolean> entityTablesExist = new HashMap()
+    protected Map<String, Boolean> entityTablesExist = new HashMap<>()
 
+    protected Map<String, Boolean> runtimeAddMissingMap = new HashMap<>()
     protected boolean useTxForMetaData = false
 
     protected EntityFacadeImpl efi
@@ -47,8 +48,14 @@ class EntityDbMeta {
 
     @CompileStatic
     void checkTableRuntime(EntityDefinition ed) {
-        Node datasourceNode = efi.getDatasourceNode(ed.getEntityGroupName())
-        if (datasourceNode?.attributes()?.get('runtime-add-missing') == "false") return
+        String groupName = ed.getEntityGroupName()
+        Boolean runtimeAddMissing = runtimeAddMissingMap.get(groupName)
+        if (runtimeAddMissing == null) {
+            Node datasourceNode = efi.getDatasourceNode(groupName)
+            runtimeAddMissing = datasourceNode?.attributes()?.get('runtime-add-missing') != "false"
+            runtimeAddMissingMap.put(groupName, runtimeAddMissing)
+        }
+        if (!runtimeAddMissing) return
 
         if (ed.isViewEntity()) {
             for (Object memberEntityObj in (NodeList) ed.entityNode.get("member-entity")) {
@@ -255,30 +262,26 @@ class EntityDbMeta {
     ListOrderedSet getMissingColumns(EntityDefinition ed) {
         if (ed.isViewEntity()) return new ListOrderedSet()
 
-        String groupName = ed.getEntityGroupName()
-        Connection con = null
-        ResultSet colSet = null
+        boolean suspendedTransaction = false
         try {
-            con = efi.getConnection(groupName)
-            DatabaseMetaData dbData = con.getMetaData()
+            if (efi.ecfi.transactionFacade.isTransactionInPlace()) suspendedTransaction = efi.ecfi.transactionFacade.suspend()
 
-            List<String> fnSet = new ArrayList(ed.getFieldNames(true, true, false))
-            int fieldCount = fnSet.size()
-            colSet = dbData.getColumns(null, ed.getSchemaName(), ed.getTableName(), "%")
-            while (colSet.next()) {
-                String colName = colSet.getString("COLUMN_NAME")
-                for (String fn in fnSet) {
-                    String fieldColName = ed.getColumnName(fn, false)
-                    if (fieldColName == colName || fieldColName.toLowerCase() == colName) {
-                        fnSet.remove(fn)
-                        break
-                    }
+            String groupName = ed.getEntityGroupName()
+            Connection con = null
+            ResultSet colSet = null
+            boolean beganTx = useTxForMetaData ? efi.ecfi.transactionFacade.begin(5) : false
+            try {
+                con = efi.getConnection(groupName)
+                DatabaseMetaData dbData = con.getMetaData()
+                // con.setAutoCommit(false)
+
+                List<String> fnSet = new ArrayList(ed.getFieldNames(true, true, false))
+                int fieldCount = fnSet.size()
+                colSet = dbData.getColumns(null, ed.getSchemaName(), ed.getTableName(), "%")
+                if (colSet.isClosed()) {
+                    logger.error("Tried to get columns for entity ${ed.getFullEntityName()} but ResultSet was closed!")
+                    return new ListOrderedSet()
                 }
-            }
-
-            if (fnSet.size() == fieldCount) {
-                // try lower case table name
-                colSet = dbData.getColumns(null, ed.getSchemaName(), ed.getTableName().toLowerCase(), "%")
                 while (colSet.next()) {
                     String colName = colSet.getString("COLUMN_NAME")
                     for (String fn in fnSet) {
@@ -291,17 +294,39 @@ class EntityDbMeta {
                 }
 
                 if (fnSet.size() == fieldCount) {
-                    logger.warn("Could not find any columns to match fields for entity [${ed.getFullEntityName()}]")
-                    return null
+                    // try lower case table name
+                    colSet = dbData.getColumns(null, ed.getSchemaName(), ed.getTableName().toLowerCase(), "%")
+                    if (colSet.isClosed()) {
+                        logger.error("Tried to get columns for entity ${ed.getFullEntityName()} but ResultSet was closed!")
+                        return new ListOrderedSet()
+                    }
+                    while (colSet.next()) {
+                        String colName = colSet.getString("COLUMN_NAME")
+                        for (String fn in fnSet) {
+                            String fieldColName = ed.getColumnName(fn, false)
+                            if (fieldColName == colName || fieldColName.toLowerCase() == colName) {
+                                fnSet.remove(fn)
+                                break
+                            }
+                        }
+                    }
+
+                    if (fnSet.size() == fieldCount) {
+                        logger.warn("Could not find any columns to match fields for entity [${ed.getFullEntityName()}]")
+                        return null
+                    }
                 }
+                return fnSet
+            } catch (Exception e) {
+                logger.error("Exception checking for missing columns in table [${ed.getTableName()}]", e)
+                return new ListOrderedSet()
+            } finally {
+                if (colSet != null && !colSet.isClosed()) colSet.close()
+                if (con != null && !con.isClosed()) con.close()
+                if (beganTx) efi.ecfi.transactionFacade.commit()
             }
-            return fnSet
-        } catch (Exception e) {
-            logger.error("Exception checking for missing columns in table [${ed.getTableName()}]", e)
-            return null
         } finally {
-            if (colSet != null) colSet.close()
-            if (con != null) con.close()
+            if (suspendedTransaction) efi.ecfi.transactionFacade.resume()
         }
     }
 
