@@ -438,11 +438,15 @@ class WebFacadeImpl implements WebFacade {
         int length = jsonStr.getBytes(charset).length
         response.setContentLength(length)
 
-        if (logger.infoEnabled) logger.info("Sending JSON response of length [${length}] with [${charset}] encoding for ${request.getMethod()} request to ${request.getPathInfo()}")
-
         try {
             response.writer.write(jsonStr)
             response.writer.flush()
+            if (logger.infoEnabled) {
+                Long startTime = (Long) requestAttributes.get("moquiRequestStartTime")
+                String timeMsg = ""
+                if (startTime) timeMsg = "in [${(System.currentTimeMillis()-startTime)/1000}] seconds"
+                logger.info("Sent JSON response of length [${length}] with [${charset}] encoding ${timeMsg} for ${request.getMethod()} request to ${request.getPathInfo()}")
+            }
         } catch (IOException e) {
             logger.error("Error sending JSON string response", e)
         }
