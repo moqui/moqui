@@ -75,13 +75,13 @@ class FieldValueCondition extends EntityConditionImplBase {
                         if (isFirst) isFirst = false else sql.append(", ")
                         sql.append("?")
                         if (this.ignoreCase && (curValue instanceof CharSequence)) curValue = curValue.toString().toUpperCase()
-                        eqb.getParameters().add(new EntityConditionParameter(field.getFieldNode(eqb.mainEntityDefinition), curValue, eqb))
+                        eqb.getParameters().add(new EntityConditionParameter(field.getFieldInfo(eqb.mainEntityDefinition), curValue, eqb))
                     }
                     sql.append(')')
                 } else {
                     if (this.ignoreCase && (this.value instanceof CharSequence)) this.value = this.value.toString().toUpperCase()
                     sql.append(" (?)")
-                    eqb.getParameters().add(new EntityConditionParameter(field.getFieldNode(eqb.mainEntityDefinition), this.value, eqb))
+                    eqb.getParameters().add(new EntityConditionParameter(field.getFieldInfo(eqb.mainEntityDefinition), this.value, eqb))
                 }
             } else if ((this.operator == BETWEEN || this.operator == NOT_BETWEEN) && this.value instanceof Collection &&
                     ((Collection) this.value).size() == 2) {
@@ -91,12 +91,12 @@ class FieldValueCondition extends EntityConditionImplBase {
                 if (this.ignoreCase && (value1 instanceof CharSequence)) value1 = value1.toString().toUpperCase()
                 Object value2 = iterator.next()
                 if (this.ignoreCase && (value2 instanceof CharSequence)) value2 = value2.toString().toUpperCase()
-                eqb.getParameters().add(new EntityConditionParameter(field.getFieldNode(eqb.mainEntityDefinition), value1, eqb))
-                eqb.getParameters().add(new EntityConditionParameter(field.getFieldNode(eqb.mainEntityDefinition), value2, eqb))
+                eqb.getParameters().add(new EntityConditionParameter(field.getFieldInfo(eqb.mainEntityDefinition), value1, eqb))
+                eqb.getParameters().add(new EntityConditionParameter(field.getFieldInfo(eqb.mainEntityDefinition), value2, eqb))
             } else {
                 if (this.ignoreCase && (this.value instanceof CharSequence)) this.value = this.value.toString().toUpperCase()
                 sql.append(" ?")
-                eqb.getParameters().add(new EntityConditionParameter(field.getFieldNode(eqb.mainEntityDefinition), this.value, eqb))
+                eqb.getParameters().add(new EntityConditionParameter(field.getFieldInfo(eqb.mainEntityDefinition), this.value, eqb))
             }
         }
     }

@@ -17,6 +17,7 @@ import org.apache.commons.collections.set.ListOrderedSet
 import org.moqui.impl.actions.XmlAction
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.impl.entity.EntityDefinition
+import org.moqui.impl.entity.EntityDefinition.RelationshipInfo
 import org.moqui.impl.entity.EntityFindImpl
 import org.moqui.impl.service.ServiceDefinition
 import org.moqui.impl.FtlNodeWrapper
@@ -511,7 +512,7 @@ class ScreenForm {
 
         // otherwise use the old approach and do what we can with the service def
         String spType = parameterNode."@type" ?: "String"
-        String efType = fieldEd != null ? fieldEd.getFieldNode((String) parameterNode."@name")?."@type" : null
+        String efType = fieldEd != null ? fieldEd.getFieldInfo((String) parameterNode."@name")?.type : null
 
         switch (fieldType) {
             case "edit":
@@ -605,7 +606,7 @@ class ScreenForm {
 
     void addEntityFields(EntityDefinition ed, String include, String fieldType, String serviceVerb, Node baseFormNode) {
         for (String fieldName in ed.getFieldNames(include == "all" || include == "pk", include == "all" || include == "nonpk", include == "all" || include == "nonpk")) {
-            String efType = ed.getFieldNode(fieldName)."@type" ?: "text-long"
+            String efType = ed.getFieldInfo(fieldName).type ?: "text-long"
             if (baseFormNode.name() == "form-list" && efType in ['text-long', 'text-very-long', 'binary-very-long']) continue
 
             Node newFieldNode = new Node(null, "field", [name:fieldName, "validate-entity":ed.getFullEntityName(),
@@ -624,7 +625,7 @@ class ScreenForm {
                             Node newFieldNode, Node subFieldNode, Node baseFormNode) {
         List<String> pkFieldNameSet = ed.getPkFieldNames()
 
-        String efType = ed.getFieldNode(fieldName)."@type" ?: "text-long"
+        String efType = ed.getFieldInfo(fieldName).type ?: "text-long"
 
         // to see if this should be a drop-down with data from another entity,
         // find first relationship that has this field as the only key map and is not a many relationship
@@ -632,12 +633,12 @@ class ScreenForm {
         Map oneRelKeyMap = null
         String relatedEntityName = null
         EntityDefinition relatedEd = null
-        for (Node rn in ed.entityNode."relationship") {
-            String relEntityName = rn."@related-entity-name"
-            EntityDefinition relEd = ecfi.entityFacade.getEntityDefinition(relEntityName)
-            Map km = EntityDefinition.getRelationshipExpandedKeyMap(rn, relEd)
-            if (km.size() == 1 && km.containsKey(fieldName) && rn."@type" == "one" && rn."@is-auto-reverse" != "true") {
-                oneRelNode = rn
+        for (RelationshipInfo relInfo in ed.getRelationshipsInfo(false)) {
+            String relEntityName = relInfo.relatedEntityName
+            EntityDefinition relEd = relInfo.relatedEd
+            Map km = relInfo.keyMap
+            if (km.size() == 1 && km.containsKey(fieldName) && relInfo.type == "one" && relInfo.relNode."@is-auto-reverse" != "true") {
+                oneRelNode = relInfo.relNode
                 oneRelKeyMap = km
                 relatedEntityName = relEntityName
                 relatedEd = relEd

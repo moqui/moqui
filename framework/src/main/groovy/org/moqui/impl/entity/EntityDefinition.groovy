@@ -44,10 +44,10 @@ public class EntityDefinition {
     protected String shortAlias
     protected String groupName = null
     protected Node internalEntityNode
-    protected final Map<String, Boolean> fieldSimpleMap = new HashMap<String, Boolean>()
     protected final Map<String, Node> fieldNodeMap = new HashMap<String, Node>()
-    // TODO: get rid of this, refactor code to use getRelationshipMap()
-    protected final Map<String, Node> relationshipNodeMap = new HashMap<String, Node>()
+    protected final Map<String, FieldInfo> fieldInfoMap = new HashMap<String, FieldInfo>()
+    // get rid of this, refactor code to use getRelationshipMap()
+    // protected final Map<String, Node> relationshipNodeMap = new HashMap<String, Node>()
     protected final Map<String, String> columnNameMap = new HashMap<String, String>()
     // small lists, but very frequently accessed
     protected ArrayList<String> pkFieldNameList = null
@@ -103,7 +103,9 @@ public class EntityDefinition {
                 if (fieldNode."@is-pk" == "true") aliasNode."@is-pk" = "true"
             }
             for (Node aliasNode in internalEntityNode."alias") {
-                fieldNodeMap.put((String) aliasNode."@name", aliasNode)
+                String fieldName = (String) aliasNode."@name"
+                fieldNodeMap.put(fieldName, aliasNode)
+                fieldInfoMap.put(fieldName, new FieldInfo(this, aliasNode))
             }
         } else {
             if (internalEntityNode."@no-update-stamp" != "true") {
@@ -113,7 +115,9 @@ public class EntityDefinition {
             if (internalEntityNode."@allow-user-field" == "true") allowUserField = true
 
             for (Node fieldNode in this.internalEntityNode.field) {
-                fieldNodeMap.put((String) fieldNode."@name", fieldNode)
+                String fieldName = (String) fieldNode."@name"
+                fieldNodeMap.put(fieldName, fieldNode)
+                fieldInfoMap.put(fieldName, new FieldInfo(this, fieldNode))
             }
         }
     }
@@ -240,6 +244,53 @@ public class EntityDefinition {
     }
 
     @CompileStatic
+    FieldInfo getFieldInfo(String fieldName) {
+        FieldInfo fi = fieldInfoMap.get(fieldName)
+        if (fi != null) return fi
+        Node fieldNode = getFieldNode(fieldName)
+        if (fieldNode == null) return null
+        fi = new FieldInfo(this, fieldNode)
+        fieldInfoMap.put(fieldName, fi)
+        return fi
+    }
+
+    @CompileStatic
+    static class FieldInfo {
+        EntityDefinition ed
+        Node fieldNode
+        String name
+        String type
+        String columnName
+        String defaultStr
+        String javaType = null
+        Integer typeValue = null
+        boolean isPk
+        boolean encrypt
+        boolean isSimple
+        boolean enableLocalization
+        boolean isUserField
+
+        FieldInfo(EntityDefinition ed, Node fieldNode) {
+            this.ed = ed
+            this.fieldNode = fieldNode
+            name = (String) fieldNode.attributes().get('name')
+            type = (String) fieldNode.attributes().get('type')
+            // TODO: consider blowing up here if there is no type most field types (not complex-alias, any others?)
+            columnName = (String) fieldNode.attributes().get('column-name') ?: camelCaseToUnderscored(name)
+            defaultStr = (String) fieldNode.attributes().get('default')
+            if (type) {
+                javaType = ed.efi.getFieldJavaType(type, ed) ?: 'String'
+                typeValue = EntityFacadeImpl.getJavaTypeInt(javaType)
+            }
+            isPk = 'true'.equals(fieldNode.attributes().get('is-pk'))
+            encrypt = 'true'.equals(fieldNode.attributes().get('encrypt'))
+            enableLocalization = 'true'.equals(fieldNode.attributes().get('enable-localization'))
+            isUserField = 'true'.equals(fieldNode.attributes().get('is-user-field'))
+            isSimple = !enableLocalization && !isUserField
+        }
+    }
+
+    @CompileStatic
     protected Node makeUserFieldNode(EntityValue userField) {
         String fieldType = userField.fieldType ?: "text-long"
         if (fieldType == "text-very-long" || fieldType == "binary-very-long")
@@ -255,7 +306,7 @@ public class EntityDefinition {
 
         return fieldNode
     }
-
+    /*
     Node getRelationshipNode(String relationshipName) {
         Node relNode = relationshipNodeMap.get(relationshipName)
         if (relNode != null) return relNode
@@ -307,7 +358,7 @@ public class EntityDefinition {
                         { ((it."@related-entity-name" == this.internalEntityName || it."@related-entity-name" == this.fullEntityName)
                             && (it."@type" == "one" || it."@type" == "one-nofk") && ((!title && !it."@title") || it."@title" == title)) })
                 if (reverseRelNode != null) {
-                    Map keyMap = getRelationshipExpandedKeyMap(reverseRelNode, this)
+                    Map keyMap = getRelationshipExpandedKeyMapInternal(reverseRelNode, this)
                     String relType = (this.getPkFieldNames() == relEd.getPkFieldNames()) ? "one-nofk" : "many"
                     Node newRelNode = this.internalEntityNode.appendNode("relationship",
                             ["related-entity-name":relatedEntityName, "type":relType])
@@ -324,19 +375,18 @@ public class EntityDefinition {
         relationshipNodeMap.put(relationshipName, relNode)
         return relNode
     }
+    */
 
     @CompileStatic
-    static Map<String, String> getRelationshipExpandedKeyMap(Node relationship, EntityDefinition relEd) {
+    static Map<String, String> getRelationshipExpandedKeyMapInternal(Node relationship, EntityDefinition relEd) {
         Map<String, String> eKeyMap = [:]
-        if (!relationship.get("key-map") && ((String) relationship.attributes().get('type')).startsWith('one')) {
+        NodeList keyMapList = (NodeList) relationship.get("key-map")
+        if (!keyMapList && ((String) relationship.attributes().get('type')).startsWith('one')) {
             // go through pks of related entity, assume field names match
             for (String pkFieldName in relEd.getPkFieldNames()) eKeyMap.put(pkFieldName, pkFieldName)
         } else {
-            for (Object childObj in relationship.children()) {
-                Node keyMap = null
-                if (childObj instanceof Node) keyMap = (Node) childObj
-                if (keyMap == null) continue
-                if (!'key-map'.equals(keyMap.name())) continue
+            for (Object childObj in keyMapList) {
+                Node keyMap = (Node) childObj
 
                 String fieldName = keyMap.attributes().get('field-name')
                 String relFn = keyMap.attributes().get('related-field-name') ?: fieldName
@@ -396,6 +446,7 @@ public class EntityDefinition {
 
     static class RelationshipInfo {
         String type
+        boolean isTypeOne
         String title
         String relatedEntityName
         EntityDefinition fromEd
@@ -411,6 +462,7 @@ public class EntityDefinition {
         RelationshipInfo(Node relNode, EntityDefinition fromEd, EntityFacadeImpl efi) {
             this.relNode = relNode
             type = relNode.'@type'
+            isTypeOne = type.startsWith("one")
             title = relNode.'@title' ?: ''
             relatedEntityName = relNode.'@related-entity-name'
             this.fromEd = fromEd
@@ -420,7 +472,7 @@ public class EntityDefinition {
             relationshipName = (title ? title + '#' : '') + relatedEntityName
             shortAlias = relNode.'@short-alias' ?: ''
             prettyName = relatedEd.getPrettyName(title, fromEd.internalEntityName)
-            keyMap = getRelationshipExpandedKeyMap(relNode, relatedEd)
+            keyMap = getRelationshipExpandedKeyMapInternal(relNode, relatedEd)
             dependent = hasReverse()
         }
 
@@ -520,8 +572,8 @@ public class EntityDefinition {
         String cn = columnNameMap.get(fieldName)
         if (cn != null) return cn
 
-        Node fieldNode = this.getFieldNode(fieldName)
-        if (!fieldNode) {
+        FieldInfo fieldInfo = this.getFieldInfo(fieldName)
+        if (fieldInfo == null) {
             throw new EntityException("Invalid field-name [${fieldName}] for the [${this.getFullEntityName()}] entity")
         }
 
@@ -535,6 +587,7 @@ public class EntityDefinition {
             }
             // else {
 
+            Node fieldNode = fieldInfo.fieldNode
             if (fieldNode.get('complex-alias')) {
                 String function = fieldNode.attributes().get('function')
                 if (function) {
@@ -560,11 +613,7 @@ public class EntityDefinition {
             // }
             cn = colNameBuilder.toString()
         } else {
-            if (fieldNode.attributes().get('column-name')) {
-                cn = fieldNode.attributes().get('column-name')
-            } else {
-                cn = camelCaseToUnderscored((String) fieldNode.attributes().get('name'))
-            }
+            cn = fieldInfo.columnName
         }
 
         columnNameMap.put(fieldName, cn)
@@ -638,19 +687,15 @@ public class EntityDefinition {
     boolean isField(String fieldName) { return getFieldNode(fieldName) != null }
     @CompileStatic
     boolean isPkField(String fieldName) {
-        Node fieldNode = getFieldNode(fieldName)
-        if (fieldNode == null) return false
-        return 'true'.equals(fieldNode.attributes().get('is-pk'))
+        FieldInfo fieldInfo = getFieldInfo(fieldName)
+        if (fieldInfo == null) return false
+        return fieldInfo.isPk
     }
     @CompileStatic
     boolean isSimpleField(String fieldName) {
-        Boolean isSimpleVal = fieldSimpleMap.get(fieldName)
-        if (isSimpleVal != null) return isSimpleVal
-
-        Node fieldNode = getFieldNode(fieldName)
-        boolean isSimple = fieldNode != null && !(fieldNode.attributes().get('enable-localization') == "true") && !(fieldNode.attributes().get('is-user-field') == "true")
-        fieldSimpleMap.put(fieldName, isSimple)
-        return isSimple
+        FieldInfo fieldInfo = getFieldInfo(fieldName)
+        if (fieldInfo == null) return false
+        return fieldInfo.isSimple
     }
 
     @CompileStatic
@@ -930,7 +975,9 @@ public class EntityDefinition {
 
     @CompileStatic
     void setFields(Map<String, Object> src, Map<String, Object> dest, boolean setIfEmpty, String namePrefix, Boolean pks) {
-        if (src == null) return
+        if (src == null || dest == null) return
+        boolean destIsEntityValueBase = dest instanceof EntityValueBase
+        EntityValueBase destEvb = destIsEntityValueBase ? (EntityValueBase) dest : null
 
         boolean hasNamePrefix = namePrefix as boolean
         EntityValueBase evb = src instanceof EntityValueBase ? (EntityValueBase) src : null
@@ -961,22 +1008,24 @@ public class EntityDefinition {
                     if (isCharSequence) {
                         try {
                             if (value instanceof String) {
-                                this.setString(fieldName, value, dest)
+                                Object converted = convertFieldString(fieldName, value)
+                                if (destIsEntityValueBase) destEvb.putNoCheck(fieldName, converted) else dest.put(fieldName, converted)
                             } else {
-                                this.setString(fieldName, value.toString(), dest)
+                                Object converted = convertFieldString(fieldName, value.toString())
+                                if (destIsEntityValueBase) destEvb.putNoCheck(fieldName, converted) else dest.put(fieldName, converted)
                             }
                         } catch (BaseException be) {
                             this.efi.ecfi.executionContext.message.addValidationError(null, fieldName, null, be.getMessage(), be)
                         }
                     } else {
-                        dest.put(fieldName, value)
+                        if (destIsEntityValueBase) destEvb.putNoCheck(fieldName, value) else dest.put(fieldName, value)
                     }
                 } else if (setIfEmpty && src.containsKey(sourceFieldName)) {
                     // treat empty String as null, otherwise set as whatever null or empty type it is
                     if (value != null && value instanceof CharSequence) {
-                        dest.put(fieldName, null)
+                        if (destIsEntityValueBase) destEvb.putNoCheck(fieldName, null) else dest.put(fieldName, null)
                     } else {
-                        dest.put(fieldName, value)
+                        if (destIsEntityValueBase) destEvb.putNoCheck(fieldName, value) else dest.put(fieldName, value)
                     }
                 }
             }
@@ -984,26 +1033,19 @@ public class EntityDefinition {
     }
 
     @CompileStatic
-    void setString(String name, String value, Map<String, Object> dest) {
-        if (value == null || value == "null") {
-            dest.put(name, null)
-            return
-        }
-        Node fieldNode = this.getFieldNode(name)
-        if (fieldNode == null) dest.put(name, value) // cause an error on purpose
-        dest.put(name, convertFieldString(name, value))
-    }
-
-    @CompileStatic
     Object convertFieldString(String name, String value) {
-        if (value == 'null') value = null
+        if ('null'.equals(value)) value = null
+        if (value == null) return null
 
         Object outValue
-        Node fieldNode = this.getFieldNode(name)
+        FieldInfo fieldInfo = getFieldInfo(name)
+        if (fieldInfo == null) throw new EntityException("The name [${name}] is not a valid field name for entity [${entityName}]")
 
-        String fieldType = fieldNode.attributes().get('type')
-        String javaType = fieldType ? (EntityFacadeImpl.fieldTypeJavaMap.get(fieldType) ?: efi.getFieldJavaType(fieldType, this)) : 'String'
-        Integer typeValue = (fieldType ? EntityFacadeImpl.fieldTypeIntMap.get(fieldType) : null) ?: EntityFacadeImpl.getJavaTypeInt(javaType)
+        String javaType = fieldInfo.javaType
+        int typeValue = fieldInfo.typeValue
+
+        // String javaType = fieldType ? (EntityFacadeImpl.fieldTypeJavaMap.get(fieldType) ?: efi.getFieldJavaType(fieldType, this)) : 'String'
+        // Integer typeValue = (fieldType ? EntityFacadeImpl.fieldTypeIntMap.get(fieldType) : null) ?: EntityFacadeImpl.getJavaTypeInt(javaType)
 
         boolean isEmpty = value.length() == 0
 
@@ -1063,11 +1105,10 @@ public class EntityDefinition {
         if (value == null) return null
 
         String outValue
-        Node fieldNode = this.getFieldNode(name)
+        FieldInfo fieldInfo = getFieldInfo(name)
 
-        String fieldType = fieldNode.attributes().get('type')
-        String javaType = fieldType ? (EntityFacadeImpl.fieldTypeJavaMap.get(fieldType) ?: efi.getFieldJavaType(fieldType, this)) : "String"
-        Integer typeValue = (fieldType ? EntityFacadeImpl.fieldTypeIntMap.get(fieldType) : null) ?: EntityFacadeImpl.getJavaTypeInt(javaType)
+        String javaType = fieldInfo.javaType
+        int typeValue = fieldInfo.typeValue
 
         try {
             switch (typeValue) {

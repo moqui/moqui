@@ -85,7 +85,7 @@ class EntityFindImpl extends EntityFindBase {
                 int size = fieldsToSelect.size()
                 for (int i = 0; i < size; i++) {
                     String fieldName = fieldsToSelect.get(i)
-                    EntityQueryBuilder.getResultSetValue(rs, i+1, this.entityDef.getFieldNode(fieldName), newEntityValue, this.efi)
+                    EntityQueryBuilder.getResultSetValue(rs, i+1, this.entityDef.getFieldInfo(fieldName), newEntityValue, this.efi)
                 }
             } else {
                 if (logger.isTraceEnabled()) logger.trace("Result set was empty for find on entity [${this.entityName}] with condition [${condSql}]")

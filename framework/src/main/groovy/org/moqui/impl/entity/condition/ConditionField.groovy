@@ -52,11 +52,11 @@ class ConditionField {
         return colName.toString()
     }
 
-    Node getFieldNode(EntityDefinition ed) {
+    EntityDefinition.FieldInfo getFieldInfo(EntityDefinition ed) {
         if (this.aliasEntityDef) {
-            return this.aliasEntityDef.getFieldNode(fieldName)
+            return this.aliasEntityDef.getFieldInfo(fieldName)
         } else {
-            return ed.getFieldNode(fieldName)
+            return ed.getFieldInfo(fieldName)
         }
     }
 

@@ -69,9 +69,9 @@ This Work includes contributions authored by David E. Jones, not as a
                     String fieldName
 
                     String relationshipName = field.substring(0, field.lastIndexOf('.'))
-                    Node relNode = masterEd.getRelationshipNode(relationshipName)
-                    if (relNode != null) {
-                        entityName = relNode."@related-entity-name"
+                    EntityDefinition.RelationshipInfo relInfo = masterEd.getRelationshipInfo(relationshipName)
+                    if (relInfo != null) {
+                        entityName = relInfo.relatedEntityName
                         fieldName = field.substring(field.lastIndexOf('.') + 1)
                     } else if (relationshipName == masterEntityName) {
                         entityName = masterEntityName
@@ -96,8 +96,7 @@ This Work includes contributions authored by David E. Jones, not as a
                         members.put(entityName, memberValue)
 
                         // added a member, add KeyMap(s)
-                        Map relExpKeyMap = EntityDefinition.getRelationshipExpandedKeyMap(relNode,
-                                (EntityDefinition) ec.entity.getEntityDefinition(relNode."@related-entity-name"))
+                        Map relExpKeyMap = relInfo.keyMap
                         for (Map.Entry keyMapEntry in relExpKeyMap) {
                             def keyMapValue = ec.entity.makeValue("moqui.entity.view.DbViewEntityKeyMap")
                             keyMapValue.dbViewEntityName = dbViewEntityName

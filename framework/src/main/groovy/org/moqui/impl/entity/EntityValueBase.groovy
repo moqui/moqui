@@ -27,6 +27,7 @@ import org.moqui.impl.context.ArtifactExecutionInfoImpl
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.impl.context.ExecutionContextImpl
 import org.moqui.impl.context.TransactionCache
+import org.moqui.impl.entity.EntityDefinition.RelationshipInfo
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 
@@ -63,7 +64,6 @@ abstract class EntityValueBase implements EntityValue {
     private Map<String, Map<String, String>> localizedByLocaleByField = null
 
     protected boolean modified = false
-    protected boolean pkModified = false
     protected boolean mutable = true
     protected boolean isFromDb = false
 
@@ -121,19 +121,18 @@ abstract class EntityValueBase implements EntityValue {
     Object get(String name) {
         EntityDefinition ed = getEntityDefinition()
 
+        EntityDefinition.FieldInfo fieldInfo = ed.getFieldInfo(name)
         // if this is a simple field (is field, no l10n, not user field) just get the value right away (vast majority of use)
-        if (ed.isSimpleField(name)) return valueMap.get(name)
+        if (fieldInfo != null && fieldInfo.isSimple) return valueMap.get(name)
 
-        Node fieldNode = ed.getFieldNode(name)
-
-        if (fieldNode == null) {
+        if (fieldInfo == null) {
             // if this is not a valid field name but is a valid relationship name, do a getRelated or getRelatedOne to return an EntityList or an EntityValue
-            Node relationship = ed.getRelationshipNode(name)
-            if (relationship != null) {
-                if ('many'.equals(relationship.attributes().get('type'))) {
-                    return this.findRelated(name, null, null, null, null)
-                } else {
+            RelationshipInfo relInfo = ed.getRelationshipInfo(name)
+            if (relInfo!= null) {
+                if (relInfo.isTypeOne) {
                     return this.findRelatedOne(name, null, null)
+                } else {
+                    return this.findRelated(name, null, null, null, null)
                 }
             } else {
                 throw new EntityException("The name [${name}] is not a valid field name or relationship name for entity [${entityName}]")
@@ -141,7 +140,7 @@ abstract class EntityValueBase implements EntityValue {
         }
 
         // if enabled use moqui.basic.LocalizedEntityField for any localized fields
-        if ('true'.equals(fieldNode.attributes().get('enable-localization'))) {
+        if (fieldInfo.enableLocalization) {
             String localeStr = getEntityFacadeImpl().ecfi.getExecutionContext().getUser().getLocale()?.toString()
             if (localeStr) {
                 Object internalValue = valueMap.get(name)
@@ -211,7 +210,7 @@ abstract class EntityValueBase implements EntityValue {
             }
         }
 
-        if ('true'.equals(fieldNode.attributes().get('is-user-field'))) {
+        if (fieldInfo.isUserField) {
             // get if from the UserFieldValue entity instead
             Map<String, Object> parms = new HashMap<>()
             parms.put('entityName', ed.getFullEntityName())
@@ -252,16 +251,7 @@ abstract class EntityValueBase implements EntityValue {
     @Override
     Map<String, Object> getPrimaryKeys() {
         if (internalPkMap != null) return new HashMap<String, Object>(internalPkMap)
-        Map<String, Object> pks = new HashMap()
-        ArrayList<String> fieldNameList = this.getEntityDefinition().getPkFieldNames()
-        int size = fieldNameList.size()
-        for (int i = 0; i < size; i++) {
-            String fieldName = fieldNameList.get(i)
-            // only include PK fields which has a non-empty value, leave others out of the Map
-            Object value = valueMap.get(fieldName)
-            if (value) pks.put(fieldName, value)
-        }
-        internalPkMap = pks
+        internalPkMap = getEntityDefinition().getPrimaryKeys(this.valueMap)
         return new HashMap<String, Object>(internalPkMap)
     }
 
@@ -273,12 +263,18 @@ abstract class EntityValueBase implements EntityValue {
 
     @Override
     EntityValue setAll(Map<String, Object> fields) {
+        if (!mutable) throw new EntityException("Cannot set fields, this entity value is not mutable (it is read-only)")
         entityDefinition.setFields(fields, this, true, null, null)
         return this
     }
 
     @Override
-    EntityValue setString(String name, String value) { entityDefinition.setString(name, value, this); return this }
+    EntityValue setString(String name, String value) {
+        // this will do a field name check
+        Object converted = entityDefinition.convertFieldString(name, value)
+        putNoCheck(name, converted)
+        return this
+    }
 
     @Override
     Boolean getBoolean(String name) { return this.get(name) as Boolean }
@@ -363,8 +359,8 @@ abstract class EntityValueBase implements EntityValue {
         int paddedLength  = (getEntityDefinition().entityNode.attributes().get('sequence-secondary-padded-length') as Integer) ?: 2
 
         this.remove(seqFieldName)
-        EntityValue lookupValue = getEntityFacadeImpl().makeValue(getEntityName())
-        lookupValue.setFields(this, false, null, true)
+        Map<String, Object> otherPkMap = [:]
+        getEntityDefinition().setFields(this, otherPkMap, false, null, true)
 
         // temporarily disable authz for this, just doing lookup to get next value and to allow for a
         //     authorize-skip="create" with authorize-skip of view too this is necessary
@@ -378,7 +374,7 @@ abstract class EntityValueBase implements EntityValue {
             //     after the line that calls put() in the EntityDefinition.setString() method; theory is that groovy
             //     is doing something that results in fields getting set to null, probably a call to a method on
             //     EntityValueBase or EntityValueImpl that is not expected to be called
-            EntityFind ef = getEntityFacadeImpl().find(getEntityName()).condition(lookupValue.getPrimaryKeys())
+            EntityFind ef = getEntityFacadeImpl().find(getEntityName()).condition(otherPkMap)
             // logger.warn("TOREMOVE in setSequencedIdSecondary ef WHERE=${ef.getWhereEntityCondition()}")
             allValues = ef.list()
         } finally {
@@ -448,6 +444,10 @@ abstract class EntityValueBase implements EntityValue {
 
     @Override
     EntityValue createOrUpdate() {
+        boolean pkModified = false
+        if (isFromDb) {
+            pkModified = (getEntityDefinition().getPrimaryKeys(this.valueMap) == getEntityDefinition().getPrimaryKeys(this.dbValueMap))
+        }
         if ((isFromDb && !pkModified) || this.cloneValue().refresh()) {
             return update()
         } else {
@@ -525,11 +525,11 @@ abstract class EntityValueBase implements EntityValue {
 
     @Override
     EntityList findRelated(String relationshipName, Map<String, Object> byAndFields, List<String> orderBy, Boolean useCache, Boolean forUpdate) {
-        Node relationship = getEntityDefinition().getRelationshipNode(relationshipName)
-        if (!relationship) throw new EntityException("Relationship [${relationshipName}] not found in entity [${entityName}]")
+        RelationshipInfo relInfo = getEntityDefinition().getRelationshipInfo(relationshipName)
+        if (relInfo == null) throw new EntityException("Relationship [${relationshipName}] not found in entity [${entityName}]")
 
-        String relatedEntityName = relationship.attributes().get('related-entity-name')
-        Map<String, String> keyMap = EntityDefinition.getRelationshipExpandedKeyMap(relationship, efi.getEntityDefinition(relatedEntityName))
+        String relatedEntityName = relInfo.relatedEntityName
+        Map<String, String> keyMap = relInfo.keyMap
         if (!keyMap) throw new EntityException("Relationship [${relationshipName}] in entity [${entityName}] has no key-map sub-elements and no default values")
 
         // make a Map where the key is the related entity's field name, and the value is the value from this entity
@@ -543,19 +543,21 @@ abstract class EntityValueBase implements EntityValue {
 
     @Override
     EntityValue findRelatedOne(String relationshipName, Boolean useCache, Boolean forUpdate) {
-        Node relationship = getEntityDefinition().getRelationshipNode(relationshipName)
-        if (!relationship) throw new EntityException("Relationship [${relationshipName}] not found in entity [${entityName}]")
-        return findRelatedOne(relationship, useCache, forUpdate)
+        RelationshipInfo relInfo = getEntityDefinition().getRelationshipInfo(relationshipName)
+        if (relInfo == null) throw new EntityException("Relationship [${relationshipName}] not found in entity [${entityName}]")
+        return findRelatedOne(relInfo, useCache, forUpdate)
     }
 
-    protected EntityValue findRelatedOne(Node relationship, Boolean useCache, Boolean forUpdate) {
-        String relatedEntityName = relationship.attributes().get('related-entity-name')
-        Map keyMap = EntityDefinition.getRelationshipExpandedKeyMap(relationship, efi.getEntityDefinition(relatedEntityName))
-        if (!keyMap) throw new EntityException("Relationship [${relationship.attributes().get('title')}${relationship.attributes().get('related-entity-name')}] in entity [${entityName}] has no key-map sub-elements and no default values")
+    protected EntityValue findRelatedOne(RelationshipInfo relInfo, Boolean useCache, Boolean forUpdate) {
+        String relatedEntityName = relInfo.relatedEntityName
+        Map keyMap = relInfo.keyMap
+        if (!keyMap) throw new EntityException("Relationship [${relInfo.title}${relInfo.relatedEntityName}] in entity [${entityName}] has no key-map sub-elements and no default values")
 
         // make a Map where the key is the related entity's field name, and the value is the value from this entity
         Map condMap = new HashMap()
         for (Map.Entry entry in keyMap.entrySet()) condMap.put(entry.getValue(), valueMap.get(entry.getKey()))
+
+        // logger.warn("========== findRelatedOne ${relInfo.relationshipName} keyMap=${keyMap}, condMap=${condMap}")
 
         EntityFind find = getEntityFacadeImpl().find(relatedEntityName)
         return find.condition(condMap).useCache(useCache).forUpdate(forUpdate as boolean).one()
@@ -570,19 +572,16 @@ abstract class EntityValueBase implements EntityValue {
 
     @Override
     boolean checkFks(boolean insertDummy) {
-        for (Object childObj in getEntityDefinition().getEntityNode().children()) {
-            Node oneRel = null
-            if (childObj instanceof Node) oneRel = (Node) childObj
-            if (oneRel == null) continue
-            if (!'relationship'.equals(oneRel.name()) || !'one'.equals(oneRel.attributes().get('type'))) continue
+        for (RelationshipInfo relInfo in getEntityDefinition().getRelationshipsInfo(false)) {
+            if (!'one'.equals(relInfo.type)) continue
 
-            EntityValue value = findRelatedOne(oneRel, true, false)
+            EntityValue value = findRelatedOne(relInfo, true, false)
             if (!value) {
                 if (insertDummy) {
-                    String relatedEntityName = oneRel.attributes().get('related-entity-name')
+                    String relatedEntityName = relInfo.relatedEntityName
                     EntityValue newValue = getEntityFacadeImpl().makeValue(relatedEntityName)
-                    Map keyMap = EntityDefinition.getRelationshipExpandedKeyMap(oneRel, efi.getEntityDefinition(relatedEntityName))
-                    if (!keyMap) throw new EntityException("Relationship [${oneRel.attributes().get('title')}#${oneRel.attributes().get('related-entity-name')}] in entity [${entityName}] has no key-map sub-elements and no default values")
+                    Map keyMap = relInfo.keyMap
+                    if (!keyMap) throw new EntityException("Relationship [${relInfo.relationshipName}}] in entity [${entityName}] has no key-map sub-elements and no default values")
 
                     // make a Map where the key is the related entity's field name, and the value is the value from this entity
                     for (Map.Entry entry in keyMap.entrySet())
@@ -638,7 +637,7 @@ abstract class EntityValueBase implements EntityValue {
     @Override
     Element makeXmlElement(Document document, String prefix) {
         Element element = null
-        if (document != null) element = document.createElement((prefix ?: "") + entityName)
+        if (document != null) element = document.createElement((String) (prefix ?: "") + entityName)
         if (!element) return null
 
         for (String fieldName in getEntityDefinition().getAllFieldNames()) {
@@ -763,8 +762,8 @@ abstract class EntityValueBase implements EntityValue {
             // keep track of all parent PK field names, even not part of this entity's PK, they will be inherited when read
             if (parentPkFields != null) curPkFields.addAll(parentPkFields)
 
-            List<EntityDefinition.RelationshipInfo> relInfoList = getEntityDefinition().getRelationshipsInfo(true)
-            for (EntityDefinition.RelationshipInfo relInfo in relInfoList) {
+            List<RelationshipInfo> relInfoList = getEntityDefinition().getRelationshipsInfo(true)
+            for (RelationshipInfo relInfo in relInfoList) {
                 String relationshipName = relInfo.relationshipName
                 String entryName = relInfo.shortAlias ?: relationshipName
                 if (relInfo.type == "many") {
@@ -814,16 +813,16 @@ abstract class EntityValueBase implements EntityValue {
 
     @Override
     Object put(String name, Object value) {
-        EntityDefinition ed = getEntityDefinition()
-        Node fieldNode = ed.getFieldNode(name)
+        Node fieldNode = getEntityDefinition().getFieldNode(name)
         if (!mutable) throw new EntityException("Cannot set field [${name}], this entity value is not mutable (it is read-only)")
-        if (fieldNode == null) {
-            throw new EntityException("The name [${name}] is not a valid field name for entity [${entityName}]")
-        }
+        if (fieldNode == null) throw new EntityException("The name [${name}] is not a valid field name for entity [${entityName}]")
+        return putNoCheck(name, value)
+    }
+
+    Object putNoCheck(String name, Object value) {
         Object curValue = valueMap.get(name)
         if (curValue != value) {
             modified = true
-            if ('true'.equals(fieldNode.attributes().get('is-pk'))) pkModified = true
             if (curValue != null) {
                 if (dbValueMap == null) dbValueMap = [:]
                 dbValueMap.put(name, curValue)
@@ -842,7 +841,7 @@ abstract class EntityValueBase implements EntityValue {
     @Override
     void putAll(Map<? extends String, ? extends Object> map) {
         for (Map.Entry entry in map.entrySet()) {
-            this.set((String) entry.key, entry.value)
+            this.put((String) entry.key, entry.value)
         }
     }
 
@@ -1077,7 +1076,7 @@ abstract class EntityValueBase implements EntityValue {
         }
         // logger.warn("================ evb.update() ${getEntityName()} nonPkFieldList=${nonPkFieldList};\nvalueMap=${valueMap};\ndbValueMap=${dbValueMap}")
         if (!nonPkFieldList) {
-            if (logger.isTraceEnabled()) logger.trace("Not doing update on entity with no populated non-PK fields; entity=" + this.toString())
+            if (logger.isTraceEnabled()) logger.trace((String) "Not doing update on entity with no populated non-PK fields; entity=" + this.toString())
             return this
         }
 

@@ -29,18 +29,20 @@ This Work includes contributions authored by David E. Jones, not as a
 
             Logger logger = LoggerFactory.getLogger("SpeedTest")
 
-            Integer baseCalls = (baseCalls as Integer) ?: 100
-
             ExecutionContext ec = context.ec
             EntityFacade ef = ec.entity
             DecimalFormat decimalFormat = new DecimalFormat("#,##0.#######")
             Timestamp nowTs = new Timestamp(System.currentTimeMillis())
 
+            baseCalls = baseCalls ?: '1000'
+            baseCallsNum = ec.l10n.parseNumber(baseCalls, '') as int
+
+            beginTime = System.currentTimeMillis()
+
             def performanceList = []
 
-
             // direct cache writes and reads with EC
-            calls = baseCalls
+            calls = baseCallsNum * 10
             Cache testCache = ec.cache.getCache("test.cache")
             EntityValue testEnumValue =
                     ef.find("moqui.basic.Enumeration").condition([enumId:"_NA_"]).useCache(true).one()
@@ -75,7 +77,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     callsPerSecond:decimalFormat.format(calls / seconds)])
 
             // one PK cache
-            calls = baseCalls
+            calls = baseCallsNum
             startTime = System.currentTimeMillis()
             for (int i = 0; i < calls; i++) {
                 ef.find("moqui.basic.Enumeration").condition([enumId:"_NA_"]).useCache(true).one()
@@ -86,7 +88,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     callsPerSecond:decimalFormat.format(calls / seconds)])
 
             // one PK
-            calls = baseCalls
+            calls = baseCallsNum
             startTime = System.currentTimeMillis()
             for (int i = 0; i < calls; i++) {
                 ef.find("moqui.basic.Enumeration").condition([enumId:"_NA_"]).useCache(false).one()
@@ -97,7 +99,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     callsPerSecond:decimalFormat.format(calls / seconds)])
 
             // ========== direct CrUD tests ==========
-            calls = baseCalls/2
+            calls = baseCallsNum/2
 
             // create with sequenced ID test
             startTime = System.currentTimeMillis()
@@ -148,7 +150,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     callsPerSecond:decimalFormat.format(calls / seconds)])
 
             // ========== service CrUD tests ==========
-            calls = baseCalls/2
+            calls = baseCallsNum/2
 
             // create with sequenced ID test
             startTime = System.currentTimeMillis()
@@ -186,7 +188,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     callsPerSecond:decimalFormat.format(calls / seconds)])
 
             // ========== NoSQL direct CrUD tests ==========
-            calls = baseCalls/2
+            calls = baseCallsNum/2
 
             // create with sequenced ID test
             startTime = System.currentTimeMillis()
@@ -243,6 +245,11 @@ This Work includes contributions authored by David E. Jones, not as a
             ]]></script>
     </actions>
     <widgets>
+        <form-single name="SelectBaseCalls" transition=".">
+            <field name="baseCalls"><default-field><text-line size="10"/></default-field></field>
+            <field name="submitButton"><default-field title="Run"><submit/></default-field></field>
+            <field-layout><field-row-big><field-ref name="baseCalls"/><field-ref name="submitButton"/></field-row-big></field-layout>
+        </form-single>
         <form-list name="PerformanceResults" list="performanceList">
             <field name="operation"><default-field><display/></default-field></field>
             <field name="entity"><default-field><display/></default-field></field>
@@ -251,5 +258,6 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="secsPerCall"><default-field><display/></default-field></field>
             <field name="callsPerSecond"><default-field><display/></default-field></field>
         </form-list>
+        <label text="Total Time ${ec.l10n.format((System.currentTimeMillis() - beginTime)/1000, '0.00')}s" type="strong"/>
     </widgets>
 </screen>

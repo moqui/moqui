@@ -169,7 +169,7 @@ class ServiceDefinition {
                 includeStr == "all" || includeStr == "nonpk", includeStr == "all" || includeStr == "nonpk")) {
             if (fieldsToExclude.contains(fieldName)) continue
 
-            String javaType = sfi.ecfi.entityFacade.getFieldJavaType((String) ed.getFieldNode(fieldName)."@type", ed)
+            String javaType = sfi.ecfi.entityFacade.getFieldJavaType(ed.getFieldInfo(fieldName).type, ed)
             mergeParameter(parametersNode, fieldName,
                     [type:javaType, required:requiredStr, "allow-html":allowHtmlStr,
                             "entity-name":ed.getFullEntityName(), "field-name":fieldName])

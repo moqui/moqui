@@ -786,7 +786,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     @CompileStatic
     protected boolean artifactPersistHit(String artifactType, String artifactSubType) {
-        if ("entity".equals(artifactType)) return false
+        // now checked before calling this: if ("entity".equals(artifactType)) return false
         String cacheKey = artifactType + artifactSubType
         Boolean ph = artifactPersistHitByType.get(cacheKey)
         if (ph == null) {
@@ -826,9 +826,10 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     @CompileStatic
     void countArtifactHit(String artifactType, String artifactSubType, String artifactName, Map<String, Object> parameters,
                           long startTime, long endTime, Long outputSize) {
+        boolean isEntity = artifactType == "entity"
         // don't count the ones this calls
-        if (artifactType == "service" && artifactName.contains("moqui.server.ArtifactHit")) return
-        if (artifactType == "entity" && artifactName in entitiesToSkipHitCount) return
+        if (artifactName.contains("moqui.server.ArtifactHit")) return
+        if (isEntity && artifactName in entitiesToSkipHitCount) return
         if (["screen", "transition", "screen-content"].contains(artifactType) && getSkipStats()) return
 
         ExecutionContextImpl eci = this.getEci()
@@ -836,7 +837,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
         // NOTE: never save individual hits for entity artifact hits, way too heavy and also avoids self-reference
         //     (could also be done by checking for ArtifactHit/etc of course)
-        if (artifactPersistHit(artifactType, artifactSubType)) {
+        if (!isEntity && artifactPersistHit(artifactType, artifactSubType)) {
             Map<String, Object> ahp = [visitId:eci.user.visitId, userId:eci.user.userId,
                 artifactType:artifactType, artifactSubType:artifactSubType, artifactName:artifactName,
                 startDateTime:new Timestamp(startTime), runningTimeMillis:runningTimeMillis] as Map<String, Object>
