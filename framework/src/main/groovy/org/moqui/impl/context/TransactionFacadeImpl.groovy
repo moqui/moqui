@@ -309,8 +309,8 @@ class TransactionFacadeImpl implements TransactionFacade {
                 }
 
                 if (getRollbackOnlyInfoStack()) {
-                    logger.warn("Current transaction marked for rollback, not beginning a new transaction. The rollback-only was set here: ", getRollbackOnlyInfoStack().get(0).rollbackLocation)
-                    throw new TransactionException("Current transaction marked for rollback, so no transaction begun. The rollback was originally caused by: " + getRollbackOnlyInfoStack().get(0).causeMessage, getRollbackOnlyInfoStack().get(0).causeThrowable)
+                    logger.warn("Current transaction marked for rollback, not beginning a new transaction. The rollback-only was set here: ", getRollbackOnlyInfoStack()?.get(0)?.rollbackLocation)
+                    throw new TransactionException((String) "Current transaction marked for rollback, so no transaction begun. The rollback was originally caused by: " + getRollbackOnlyInfoStack()?.get(0)?.causeMessage, getRollbackOnlyInfoStack()?.get(0)?.causeThrowable)
                 } else {
                     return false
                 }
