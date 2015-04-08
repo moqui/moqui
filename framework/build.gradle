@@ -41,12 +41,12 @@ repositories {
 dependencies {
     compile name: 'antisamy', version: '1.4' // New BSD
 
-    compile module(name: 'atomikos-transactions', version: '3.8.0') { // Apache 2.0
-        dependencies module(name: 'atomikos-util', version: '3.8.0') } // Apache 2.0
-    compile name: 'atomikos-transactions-api', version: '3.8.0' // Apache 2.0
-    compile name: 'atomikos-transactions-jdbc', version: '3.8.0' // Apache 2.0
-    // may use in the future: runtime name: 'atomikos-transactions-jms', version: '3.8.0' // Apache 2.0
-    compile name: 'atomikos-transactions-jta', version: '3.8.0' // Apache 2.0
+    compile module(name: 'atomikos-transactions', version: '3.9.3') { // Apache 2.0
+        dependencies module(name: 'atomikos-util', version: '3.9.3') } // Apache 2.0
+    compile name: 'atomikos-transactions-api', version: '3.9.3' // Apache 2.0
+    compile name: 'atomikos-transactions-jdbc', version: '3.9.3' // Apache 2.0
+    // may use in the future: runtime name: 'atomikos-transactions-jms', version: '3.9.3' // Apache 2.0
+    compile name: 'atomikos-transactions-jta', version: '3.9.3' // Apache 2.0
 
     // this is an optional alternative to Atomikos
     compile name: 'btm', version: '2.1.4' // LGPL <== NOTE!
