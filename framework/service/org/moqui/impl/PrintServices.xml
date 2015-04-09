@@ -20,15 +20,26 @@ This Work includes contributions authored by David E. Jones, not as a
         </in-parameters>
         <out-parameters><parameter name="networkPrinterIdList" type="List"/></out-parameters>
         <actions>
-            <!-- TODO: lookup existing printers for this server, don't create them again but include them in the result -->
+            <set field="networkPrinterIdList" from="[]"/>
+
+            <!-- lookup existing printers for this server, don't create them again but include them in the result -->
+            <set field="printerNameSet" from="new HashSet()"/>
+            <entity-find entity-name="moqui.basic.print.NetworkPrinter" list="networkPrinterList">
+                <econdition field-name="serverHost"/><econdition field-name="serverPort"/></entity-find>
+            <iterate list="networkPrinterList" entry="networkPrinter">
+                <script>networkPrinterIdList.add(networkPrinter.networkPrinterId)</script>
+                <script>printerNameSet.add(networkPrinter.printerName)</script>
+            </iterate>
+
             <set field="cupsClient" from="new org.cups4j.CupsClient(serverHost, serverPort)"/>
             <set field="printerList" from="cupsClient.getPrinters()"/>
-            <set field="networkPrinterIdList" from="[]"/>
             <iterate list="printerList" entry="cupsPrinter">
-                <service-call name="create#moqui.basic.print.NetworkPrinter" out-map="npOut"
-                        in-map="[serverHost:serverHost, serverPort:serverPort, printerName:cupsPrinter.getName(),
+                <if condition="!printerNameSet.contains(cupsPrinter.getName())">
+                    <service-call name="create#moqui.basic.print.NetworkPrinter" out-map="npOut"
+                            in-map="[serverHost:serverHost, serverPort:serverPort, printerName:cupsPrinter.getName(),
                             description:cupsPrinter.getDescription(), location:cupsPrinter.getLocation()]"/>
-                <script>networkPrinterIdList.add(npOut.networkPrinterId)</script>
+                    <script>networkPrinterIdList.add(npOut.networkPrinterId)</script>
+                </if>
             </iterate>
         </actions>
     </service>
