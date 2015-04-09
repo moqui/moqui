@@ -20,7 +20,16 @@ This Work includes contributions authored by David E. Jones, not as a
         </in-parameters>
         <out-parameters><parameter name="networkPrinterIdList" type="List"/></out-parameters>
         <actions>
-            <!-- TODO! -->
+            <!-- TODO: lookup existing printers for this server, don't create them again but include them in the result -->
+            <set field="cupsClient" from="new org.cups4j.CupsClient(serverHost, serverPort)"/>
+            <set field="printerList" from="cupsClient.getPrinters()"/>
+            <set field="networkPrinterIdList" from="[]"/>
+            <iterate list="printerList" entry="cupsPrinter">
+                <service-call name="create#moqui.basic.print.NetworkPrinter" out-map="npOut"
+                        in-map="[serverHost:serverHost, serverPort:serverPort, printerName:cupsPrinter.getName(),
+                            description:cupsPrinter.getDescription(), location:cupsPrinter.getLocation()]"/>
+                <script>networkPrinterIdList.add(npOut.networkPrinterId)</script>
+            </iterate>
         </actions>
     </service>
     <service verb="print" noun="Document">
@@ -94,6 +103,18 @@ This Work includes contributions authored by David E. Jones, not as a
         <in-parameters><parameter name="printJobId"/></in-parameters>
         <actions>
             <!-- TODO! -->
+        </actions>
+    </service>
+
+    <service verb="make" noun="CupsClient">
+        <in-parameters><parameter name="networkPrinterId"/></in-parameters>
+        <out-parameters>
+            <parameter name="cupsClient" type="org.cups4j.CupsClient"/>
+            <parameter name="networkPrinter" type="EntityValue"/>
+        </out-parameters>
+        <actions>
+            <entity-find-one entity-name="moqui.basic.print.NetworkPrinter" value-field="networkPrinter"/>
+            <set field="cupsClient" from="new org.cups4j.CupsClient(networkPrinter.serverHost, networkPrinter.serverPort ?: 631)"/>
         </actions>
     </service>
 </services>
