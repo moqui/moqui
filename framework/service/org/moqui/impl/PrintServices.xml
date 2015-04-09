@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This Work is in the public domain and is provided on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+including, without limitation, any warranties or conditions of TITLE,
+NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+You are solely responsible for determining the appropriateness of using
+this Work and assume any risks associated with your use of this Work.
+
+This Work includes contributions authored by David E. Jones, not as a
+"work for hire", who hereby disclaims any copyright to the same.
+-->
+<services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-1.5.xsd">
+
+    <service verb="get" noun="ServerPrinters">
+        <description>Get printers from print server and create a moqui.basic.print.NetworkPrinter record for each.</description>
+        <in-parameters>
+            <parameter name="serverHost" required="true"/>
+            <parameter name="serverPort" type="Integer" default="631"/>
+        </in-parameters>
+        <out-parameters><parameter name="networkPrinterIdList" type="List"/></out-parameters>
+        <actions>
+            <!-- TODO! -->
+        </actions>
+    </service>
+    <service verb="print" noun="Document">
+        <description>Create a moqui.basic.print.PrintJob record and send it to the specified NetworkPrinter</description>
+        <in-parameters>
+            <parameter name="networkPrinterId" required="true"/>
+            <parameter name="username"/>
+            <parameter name="jobName"/>
+            <parameter name="copies" type="Integer" default="1"/>
+            <parameter name="duplex" type="Boolean" default="false"/>
+            <parameter name="pageRanges"/>
+
+            <parameter name="inputStream" type="java.io.InputStream"><description>The document may be passed in this
+                parameter as an InputStream or in the serialBlob field as a wrapped byte[].</description></parameter>
+            <parameter name="serialBlob" type="javax.sql.rowset.serial.SerialBlob">
+                <description>Use SerialBlob as a wrapper for byte[].</description></parameter>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="printJobId"/>
+            <parameter name="jobId" type="Integer"/>
+        </out-parameters>
+        <actions>
+            <!-- TODO! -->
+        </actions>
+    </service>
+    <service verb="send" noun="PrintJob">
+        <in-parameters><parameter name="printJobId"/></in-parameters>
+        <actions>
+            <!-- TODO! -->
+        </actions>
+    </service>
+    <service verb="update" noun="PrintJobStatusFromServer">
+        <in-parameters><parameter name="printJobId"/></in-parameters>
+        <out-parameters><parameter name="statusId"/></out-parameters>
+        <actions>
+            <!-- TODO! -->
+        </actions>
+    </service>
+    <service verb="get" noun="PrintJobDetails">
+        <description>Gets known local job details (from PrintJob record) job details/attributes from the print server,
+            updating PrintJob record for status and just returning the rest.</description>
+        <in-parameters><parameter name="printJobId"/></in-parameters>
+        <out-parameters>
+            <auto-parameters entity-name="moqui.basic.print.PrintJob" include="nonpk">
+                <exclude field-name="document"/></auto-parameters>
+
+            <parameter name="completeTime" type="Timestamp"/>
+            <parameter name="createTime" type="Timestamp"/>
+            <parameter name="jobUrl"/>
+            <parameter name="pagesPrinted" type="Integer"/>
+            <parameter name="printerUrl"/>
+            <parameter name="size" type="Integer"/>
+        </out-parameters>
+        <actions>
+            <!-- TODO! -->
+        </actions>
+    </service>
+    <service verb="hold" noun="PrintJob">
+        <in-parameters><parameter name="printJobId"/></in-parameters>
+        <actions>
+            <!-- TODO! -->
+        </actions>
+    </service>
+    <service verb="release" noun="PrintJob">
+        <in-parameters><parameter name="printJobId"/></in-parameters>
+        <actions>
+            <!-- TODO! -->
+        </actions>
+    </service>
+    <service verb="cancel" noun="PrintJob">
+        <in-parameters><parameter name="printJobId"/></in-parameters>
+        <actions>
+            <!-- TODO! -->
+        </actions>
+    </service>
+</services>
