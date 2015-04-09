@@ -440,6 +440,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <entity entity-name="PrintJob" package-name="moqui.basic.print">
         <field name="printJobId" type="id" is-pk="true"/>
         <field name="statusId" type="id" enable-audit-log="true"/>
+        <field name="errorMessage" type="text-long"/>
         <field name="networkPrinterId" type="id"/>
         <field name="username" type="text-short"/>
         <field name="jobId" type="number-integer"/>
@@ -464,6 +465,10 @@ This Work includes contributions authored by David E. Jones, not as a
             <moqui.basic.StatusItem description="Completed" sequenceNum="15" statusId="PtjCompleted" statusTypeId="PrintJob"/>
             <moqui.basic.StatusItem description="Aborted" sequenceNum="18" statusId="PtjAborted" statusTypeId="PrintJob"/>
             <moqui.basic.StatusItem description="Canceled" sequenceNum="19" statusId="PtjCanceled" statusTypeId="PrintJob"/>
+
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="PtjNotSent" toStatusId="PtjPending" transitionName="Send"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="PtjNotSent" toStatusId="PtjSendFailed" transitionName="Failed"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="PtjSendFailed" toStatusId="PtjPending" transitionName="Send"/>
 
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="PtjPending" toStatusId="PtjPendingHeld" transitionName="Hold"/>
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="PtjPendingHeld" toStatusId="PtjPending" transitionName="Release"/>
