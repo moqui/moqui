@@ -13,6 +13,7 @@ This Work includes contributions authored by David E. Jones, not as a
 <services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-1.5.xsd">
 
     <service verb="get" noun="ServerPrinters">
+        <!-- org.moqui.impl.PrintServices.get#ServerPrinters -->
         <description>Get printers from print server and create a moqui.basic.print.NetworkPrinter record for each.</description>
         <in-parameters>
             <parameter name="serverHost" required="true"/>
@@ -43,8 +44,7 @@ This Work includes contributions authored by David E. Jones, not as a
             </iterate>
         </actions>
     </service>
-    <service verb="print" noun="Document">
-        <description>Create a moqui.basic.print.PrintJob record and send it to the specified NetworkPrinter</description>
+    <service verb="print" noun="DocumentInterface">
         <in-parameters>
             <parameter name="networkPrinterId" required="true"/>
             <parameter name="username"/>
@@ -52,6 +52,27 @@ This Work includes contributions authored by David E. Jones, not as a
             <parameter name="copies" type="Integer" default="1"/>
             <parameter name="duplex" type="Boolean" default="false"/>
             <parameter name="pageRanges"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="printJobId"/>
+            <parameter name="jobId" type="Integer"/>
+        </out-parameters>
+    </service>
+    <service verb="print" noun="ResourceDocument">
+        <!-- org.moqui.impl.PrintServices.print#ResourceDocument-->
+        <implements service="org.moqui.impl.PrintServices.print#DocumentInterface"/>
+        <in-parameters>
+            <parameter name="resourceLocation" required="true"/>
+        </in-parameters>
+        <actions>
+            <service-call name="org.moqui.impl.PrintServices.print#Document" out-map="context"
+                    in-map="context + [inputStream:ec.resource.getLocationStream(resourceLocation),storeDocument:false]"/>
+        </actions>
+    </service>
+    <service verb="print" noun="Document">
+        <description>Create a moqui.basic.print.PrintJob record and send it to the specified NetworkPrinter</description>
+        <implements service="org.moqui.impl.PrintServices.print#DocumentInterface"/>
+        <in-parameters>
             <parameter name="storeDocument" type="Boolean" default="true"/>
 
             <parameter name="inputStream" type="java.io.InputStream"><description>The document may be passed in this
@@ -59,10 +80,6 @@ This Work includes contributions authored by David E. Jones, not as a
             <parameter name="serialBlob" type="javax.sql.rowset.serial.SerialBlob">
                 <description>Use SerialBlob as a wrapper for byte[].</description></parameter>
         </in-parameters>
-        <out-parameters>
-            <parameter name="printJobId"/>
-            <parameter name="jobId" type="Integer"/>
-        </out-parameters>
         <actions>
             <if condition="serialBlob == null &amp;&amp; inputStream == null">
                 <return error="true" message="Both inputStream and serialBlob are null, must specify one or the other"/></if>
