@@ -132,7 +132,34 @@ This Work includes contributions authored by David E. Jones, not as a
             <parameter name="size" type="Integer"/>
         </out-parameters>
         <actions>
-            <!-- TODO! -->
+            <service-call name="org.moqui.impl.PrintServices.make#CupsClient"
+                    in-map="[printJobId:printJobId]" out-map="context"/>
+            <script>
+                import org.cups4j.CupsClient
+                import org.cups4j.JobStateEnum
+                import org.cups4j.PrintJobAttributes
+
+                Map stateMap = ['aborted':'PtjAborted', 'canceled':'PtjCanceled', 'completed':'PtjCompleted',
+                                'pending':'PtjPending', 'pending-held':'PtjPendingHeld',
+                                'processing':'PtjProcessing', 'processing-stopped':'PtjProcessingStopped']
+
+                context.putAll(printJob)
+
+                CupsClient cupsClient = context.cupsClient
+                PrintJobAttributes pja = cupsClient.getJobAttributes(printJob.jobId)
+
+                statusId = stateMap.get(pja.getJobState().toString())
+                if (pja.getJobCompleteTime()) completeTime = new Timestamp(pja.getJobCompleteTime().getTime())
+                if (pja.getJobCreateTime()) createTime = new Timestamp(pja.getJobCreateTime().getTime())
+                jobUrl = pja.getJobURL()
+                pagesPrinted = pja.getPagesPrinted()
+                printerUrl = pja.getPrinterURL()
+                size = pja.getSize()
+            </script>
+            <if condition="statusId != printJob.statusId">
+                <service-call name="update#moqui.basic.print.PrintJob"
+                        in-map="[printJobId:printJob.printJobId, statusId:statusId]"/>
+            </if>
         </actions>
     </service>
     <service verb="hold" noun="PrintJob">
