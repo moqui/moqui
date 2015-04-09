@@ -116,14 +116,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     in-map="[printJobId:printJob.printJobId, statusId:'PtjPending']"/>
         </actions>
     </service>
-    <service verb="update" noun="PrintJobStatusFromServer">
-        <in-parameters><parameter name="printJobId"/></in-parameters>
-        <out-parameters><parameter name="statusId"/></out-parameters>
-        <actions>
-            <!-- TODO! -->
-        </actions>
-    </service>
-    <service verb="get" noun="PrintJobDetails">
+    <service verb="get" noun="PrintJobDetailsFromServer">
         <description>Gets known local job details (from PrintJob record) job details/attributes from the print server,
             updating PrintJob record for status and just returning the rest.</description>
         <in-parameters><parameter name="printJobId"/></in-parameters>
@@ -145,7 +138,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <service verb="hold" noun="PrintJob">
         <in-parameters><parameter name="printJobId"/></in-parameters>
         <actions>
-            <service-call name="org.moqui.impl.PrintServices.make#CupsPrinter"
+            <service-call name="org.moqui.impl.PrintServices.make#CupsClient"
                     in-map="[printJobId:printJobId]" out-map="context"/>
             <if condition="!cupsClient.holdJob(printJob.jobId)">
                 <message>Could not hold job [${printJob.jobId}] on print server at [${networkPrinter.serverHost}] for PrintJob [${printJobId}]</message></if>
@@ -154,7 +147,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <service verb="release" noun="PrintJob">
         <in-parameters><parameter name="printJobId"/></in-parameters>
         <actions>
-            <service-call name="org.moqui.impl.PrintServices.make#CupsPrinter"
+            <service-call name="org.moqui.impl.PrintServices.make#CupsClient"
                     in-map="[printJobId:printJobId]" out-map="context"/>
             <if condition="!cupsClient.releaseJob(printJob.jobId)">
                 <message>Could not release job [${printJob.jobId}] on print server at [${networkPrinter.serverHost}] for PrintJob [${printJobId}]</message></if>
@@ -163,7 +156,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <service verb="cancel" noun="PrintJob">
         <in-parameters><parameter name="printJobId"/></in-parameters>
         <actions>
-            <service-call name="org.moqui.impl.PrintServices.make#CupsPrinter"
+            <service-call name="org.moqui.impl.PrintServices.make#CupsClient"
                     in-map="[printJobId:printJobId]" out-map="context"/>
             <if condition="!cupsClient.cancelJob(printJob.jobId)">
                 <message>Could not cancel job [${printJob.jobId}] on print server at [${networkPrinter.serverHost}] for PrintJob [${printJobId}]</message></if>
