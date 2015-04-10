@@ -12,7 +12,11 @@
 package org.moqui.impl.context
 
 import groovy.transform.CompileStatic
-import org.apache.commons.mail.ByteArrayDataSource
+import org.apache.avalon.framework.configuration.DefaultConfigurationBuilder
+import javax.mail.util.ByteArrayDataSource
+import org.apache.fop.apps.FOUserAgent
+import org.apache.fop.apps.Fop
+import org.apache.fop.apps.FopFactory
 import org.apache.jackrabbit.jcr2dav.Jcr2davRepositoryFactory
 import org.apache.jackrabbit.rmi.repository.URLRemoteRepository
 
@@ -37,6 +41,13 @@ import org.moqui.context.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+import javax.xml.transform.Source
+import javax.xml.transform.Transformer
+import javax.xml.transform.TransformerFactory
+import javax.xml.transform.URIResolver
+import javax.xml.transform.sax.SAXResult
+import javax.xml.transform.stream.StreamSource
+
 public class ResourceFacadeImpl implements ResourceFacade {
     protected final static Logger logger = LoggerFactory.getLogger(ResourceFacadeImpl.class)
 
@@ -55,6 +66,8 @@ public class ResourceFacadeImpl implements ResourceFacade {
     protected final Map<String, TemplateRenderer> templateRenderers = new HashMap()
     protected final Map<String, ScriptRunner> scriptRunners = new HashMap()
     protected final ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
+    protected FopFactory internalFopFactory = null
+
 
     protected final Map<String, Repository> contentRepositories = new HashMap()
 
@@ -233,6 +246,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
         return text
     }
 
+    @Override
     @CompileStatic
     DataSource getLocationDataSource(String location) {
         ResourceReference fileResourceRef = getLocationReference(location)
@@ -488,5 +502,51 @@ public class ResourceFacadeImpl implements ResourceFacade {
         if (contentType == "application/xml") return false
         if (contentType == "application/xml-dtd") return false
         return true
+    }
+
+    @CompileStatic
+    void xslFoTransform(StreamSource xslFoSrc, StreamSource xsltSrc, OutputStream out, String contentType) {
+        FopFactory ff = getFopFactory()
+        FOUserAgent foUserAgent = ff.newFOUserAgent()
+        Fop fop = ff.newFop(contentType, foUserAgent, out)
+
+        TransformerFactory factory = TransformerFactory.newInstance()
+        Transformer transformer = xsltSrc == null ? factory.newTransformer() : factory.newTransformer(xsltSrc)
+        transformer.setURIResolver(new LocalResolver(ecfi, transformer.getURIResolver()))
+        transformer.transform(xslFoSrc, new SAXResult(fop.getDefaultHandler()))
+    }
+
+    @CompileStatic
+    FopFactory getFopFactory() {
+        if (internalFopFactory != null) return internalFopFactory
+
+        // setup FopFactory
+        internalFopFactory = FopFactory.newInstance()
+        // Limit the validation for backwards compatibility
+        internalFopFactory.setStrictValidation(false)
+        DefaultConfigurationBuilder cfgBuilder = new DefaultConfigurationBuilder()
+        internalFopFactory.setUserConfig(cfgBuilder.build(ecfi.resourceFacade.getLocationStream("classpath://fop.xconf")))
+        internalFopFactory.getFontManager().setFontBaseURL((String) ecfi.runtimePath + "/conf")
+
+        return internalFopFactory
+    }
+
+    @CompileStatic
+    static class LocalResolver implements URIResolver {
+        protected ExecutionContextFactoryImpl ecfi
+        protected URIResolver defaultResolver
+
+        protected LocalResolver() {}
+
+        public LocalResolver(ExecutionContextFactoryImpl ecfi, URIResolver defaultResolver) {
+            this.ecfi = ecfi
+            this.defaultResolver = defaultResolver
+        }
+
+        public Source resolve(String href, String base) {
+            InputStream is = ecfi.resourceFacade.getLocationStream(href)
+            if (is != null) return new StreamSource(is)
+            return defaultResolver.resolve(href, base)
+        }
     }
 }

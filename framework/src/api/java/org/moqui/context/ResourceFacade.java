@@ -11,7 +11,10 @@
  */
 package org.moqui.context;
 
+import javax.activation.DataSource;
+import javax.xml.transform.stream.StreamSource;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Writer;
 import java.util.Map;
 
@@ -34,6 +37,7 @@ public interface ResourceFacade {
 
     /** Get the text at the given location, optionally from the cache (resource.text.location). */
     String getLocationText(String location, boolean cache);
+    DataSource getLocationDataSource(String location);
 
     /** Render a template at the given location using the current context and write the output to the given writer. */
     void renderTemplateInCurrentContext(String location, Writer writer);
@@ -69,4 +73,6 @@ public interface ResourceFacade {
      */
     String evaluateStringExpand(String inputString, String debugLocation);
     String evaluateStringExpand(String inputString, String debugLocation, Map additionalContext);
+
+    void xslFoTransform(StreamSource xslFoSrc, StreamSource xsltSrc, OutputStream out, String contentType);
 }
