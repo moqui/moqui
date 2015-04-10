@@ -58,21 +58,6 @@ This Work includes contributions authored by David E. Jones, not as a
             <parameter name="jobId" type="Integer"/>
         </out-parameters>
     </service>
-    <service verb="print" noun="ResourceDocument">
-        <!-- org.moqui.impl.PrintServices.print#ResourceDocument -->
-        <implements service="org.moqui.impl.PrintServices.print#DocumentInterface"/>
-        <in-parameters>
-            <parameter name="resourceLocation" required="true"/>
-        </in-parameters>
-        <actions>
-            <set field="inputStream" from="ec.resource.getLocationStream(resourceLocation)"/>
-            <if condition="inputStream == null">
-                <return error="true" message="Could not find resource at [${resourceLocation}]"/>
-            </if>
-            <service-call name="org.moqui.impl.PrintServices.print#Document" out-map="context"
-                    in-map="context + [inputStream:inputStream, storeDocument:false]"/>
-        </actions>
-    </service>
     <service verb="print" noun="Document">
         <description>Create a moqui.basic.print.PrintJob record and send it to the specified NetworkPrinter</description>
         <implements service="org.moqui.impl.PrintServices.print#DocumentInterface"/>
@@ -105,6 +90,50 @@ This Work includes contributions authored by David E. Jones, not as a
                     in-map="[printJob:new HashMap(context)]" out-map="context"/>
         </actions>
     </service>
+    <service verb="print" noun="ResourceDocument">
+        <!-- org.moqui.impl.PrintServices.print#ResourceDocument -->
+        <implements service="org.moqui.impl.PrintServices.print#DocumentInterface"/>
+        <in-parameters>
+            <parameter name="resourceLocation" required="true"/>
+        </in-parameters>
+        <actions>
+            <set field="inputStream" from="ec.resource.getLocationStream(resourceLocation)"/>
+            <if condition="inputStream == null">
+                <return error="true" message="Could not find resource at [${resourceLocation}]"/>
+            </if>
+            <service-call name="org.moqui.impl.PrintServices.print#Document" out-map="context"
+                    in-map="context + [inputStream:inputStream, storeDocument:false]"/>
+        </actions>
+    </service>
+    <service verb="print" noun="ScreenDocument">
+        <!-- org.moqui.impl.PrintServices.print#ScreenDocument -->
+        <implements service="org.moqui.impl.PrintServices.print#DocumentInterface"/>
+        <in-parameters>
+            <parameter name="screenLocation" required="true"/>
+            <parameter name="screenParameters" type="Map"/>
+            <parameter name="screenParametersStr"/>
+            <parameter name="contentType" default-value="application/pdf"/>
+            <parameter name="webappName" default-value="webroot"/>
+            <parameter name="storeDocument" type="Boolean" default="true"/>
+        </in-parameters>
+        <actions>
+            <script>
+                import org.moqui.context.ExecutionContext
+                import javax.sql.rowset.serial.SerialBlob
+                import javax.xml.transform.stream.StreamSource
+
+                ExecutionContext ec = context.ec
+                if (screenParameters) context.putAll(screenParameters)
+                if (screenParametersStr) context.putAll(ec.resource.evaluateContextField(screenParametersStr, ""))
+                String xslFoText = ec.screen.makeRender().rootScreen(screenLocation).webappName(webappName).renderMode("xsl-fo").render()
+                ByteArrayOutputStream baos = new ByteArrayOutputStream()
+                ec.resource.xslFoTransform(new StreamSource(new StringReader(xslFoText)), null, baos, contentType)
+                serialBlob = new SerialBlob(baos.toByteArray())
+            </script>
+            <service-call name="org.moqui.impl.PrintServices.print#Document" out-map="context" in-map="context"/>
+        </actions>
+    </service>
+
     <service verb="send" noun="PrintJob">
         <in-parameters><parameter name="printJobId" required="true"/></in-parameters>
         <actions>
@@ -116,7 +145,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <service verb="send" noun="PrintJobInternal">
         <in-parameters><parameter name="printJob" type="Map" required="true"/></in-parameters>
         <actions>
-            <log level="warn" message="====== printJob=${printJob}"/>
+            <!-- <log level="warn" message="====== printJob=${printJob}"/> -->
             <entity-find-one entity-name="moqui.basic.print.PrintJob" value-field="printJob"/>
             <service-call name="org.moqui.impl.PrintServices.make#CupsPrinter"
                     in-map="[networkPrinterId:printJob.networkPrinterId]" out-map="context"/>
@@ -153,6 +182,7 @@ This Work includes contributions authored by David E. Jones, not as a
             </if>
         </actions>
     </service>
+
     <service verb="get" noun="PrintJobDetailsFromServer">
         <!-- org.moqui.impl.PrintServices.get#PrintJobDetailsFromServer -->
         <description>Gets known local job details (from PrintJob record) job details/attributes from the print server,
@@ -200,6 +230,7 @@ This Work includes contributions authored by David E. Jones, not as a
             </if>
         </actions>
     </service>
+
     <service verb="hold" noun="PrintJob">
         <!-- org.moqui.impl.PrintServices.hold#PrintJob -->
         <in-parameters><parameter name="printJobId"/></in-parameters>
