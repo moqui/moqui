@@ -11,6 +11,8 @@
  */
 package org.moqui.impl.webapp
 
+import org.moqui.context.ArtifactTarpitException
+
 import javax.servlet.ServletException
 import javax.servlet.http.HttpServlet
 import javax.servlet.http.HttpServletRequest
@@ -80,10 +82,17 @@ class MoquiFopServlet extends HttpServlet {
             xslFoTransform(new StreamSource(new StringReader(xslFoText)), null,
                     response.getOutputStream(), contentType)
         } catch (ArtifactAuthorizationException e) {
-            logger.warn("Web Access Unauthorized: " + e.message)
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.message)
+            // SC_UNAUTHORIZED 401 used when authc/login fails, use SC_FORBIDDEN 403 for authz failures
+            // See ScreenRenderImpl.checkWebappSettings for authc and SC_UNAUTHORIZED handling
+            logger.warn((String) "Web Access Forbidden (no authz): " + e.message)
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, e.message)
+        } catch (ArtifactTarpitException e) {
+            logger.warn((String) "Web Too Many Requests (tarpit): " + e.message)
+            if (e.getRetryAfterSeconds()) response.addIntHeader("Retry-After", e.getRetryAfterSeconds())
+            // NOTE: there is no constant on HttpServletResponse for 429; see RFC 6585 for details
+            response.sendError(429, e.message)
         } catch (ScreenResourceNotFoundException e) {
-            logger.warn("Resource Not Found: ${e.message}")
+            logger.warn((String) "Web Resource Not Found: " + e.message)
             response.sendError(HttpServletResponse.SC_NOT_FOUND, e.message)
         } catch (Throwable t) {
             logger.error("Error transforming XSL-FO content:\n${xslFoText}", t)
