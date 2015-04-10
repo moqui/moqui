@@ -49,7 +49,7 @@ dependencies {
     compile name: 'atomikos-transactions-jta', version: '4.0.0M4' // Apache 2.0
 
     // this is an optional alternative to Atomikos
-    compile name: 'btm', version: '2.1.4' // LGPL <== NOTE!
+    compile name: 'btm', version: '3.0.0-SNAPSHOT' // Apache 2.0
 
     apiCompile name: 'camel-core', version: '2.14.1' // Apache 2.0
     compile name: 'camel-core', version: '2.14.1' // Apache 2.0
