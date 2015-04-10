@@ -129,6 +129,12 @@ This Work includes contributions authored by David E. Jones, not as a
                 ByteArrayOutputStream baos = new ByteArrayOutputStream()
                 ec.resource.xslFoTransform(new StreamSource(new StringReader(xslFoText)), null, baos, contentType)
                 serialBlob = new SerialBlob(baos.toByteArray())
+                /* some test code to write a PDF to a file
+                File testFile = new File('test.pdf')
+                testFile.createNewFile()
+                FileOutputStream fos = new FileOutputStream(testFile)
+                org.apache.commons.io.IOUtils.write(baos.toByteArray(), fos)
+                */
             </script>
             <service-call name="org.moqui.impl.PrintServices.print#Document" out-map="context" in-map="context"/>
         </actions>
