@@ -103,7 +103,7 @@
     <!-- root logger -->
     <root>
         <!-- NOTE: Change the priority here to "info" or "warn" for production to reduce logging overhead. -->
-        <priority value="all"/>
+        <priority value="warn"/>
         <appender-ref ref="async"/>
     </root>
 </log4j:configuration>

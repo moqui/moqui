@@ -53,6 +53,7 @@ class MoquiFopServlet extends HttpServlet {
 
         ExecutionContext ec = ecfi.getExecutionContext()
         ec.initWebFacade(moquiWebappName, request, response)
+        ec.web.requestAttributes.put("moquiRequestStartTime", startTime)
 
         String xslFoText = null
         try {
