@@ -779,9 +779,11 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     ScreenFacade getScreen() { getScreenFacade() }
 
     // ========== Server Stat Tracking ==========
+    @CompileStatic
     boolean getSkipStats() {
         // NOTE: the results of this condition eval can't be cached because the expression can use any data in the ec
-        return skipStatsCond ? getEci().getResource().evaluateCondition(skipStatsCond, null) : false
+        ExecutionContextImpl eci = getEci()
+        return skipStatsCond ? eci.resource.evaluateCondition(skipStatsCond, null, [pathInfo:eci.web?.request?.pathInfo]) : false
     }
 
     @CompileStatic
