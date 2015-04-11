@@ -55,6 +55,7 @@ public interface ResourceFacade {
      * @return boolean representing the result of evaluating the expression
      */
     boolean evaluateCondition(String expression, String debugLocation);
+    boolean evaluateCondition(String expression, String debugLocation, Map additionalContext);
 
     /** Evaluate a Groovy expression as a context field, or more generally as an expression that evaluates to an Object
      * reference. This can be used to get a value from an expression or to run any general expression or script.

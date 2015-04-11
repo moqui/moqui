@@ -374,6 +374,24 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
     @Override
     @CompileStatic
+    boolean evaluateCondition(String expression, String debugLocation, Map additionalContext) {
+        ExecutionContext ec = ecfi.getExecutionContext()
+        ContextStack cs = (ContextStack) ec.context
+        try {
+            // push the entire context to isolate the context for the string expand
+            if (additionalContext) {
+                cs.pushContext()
+                cs.push(additionalContext)
+            }
+            return evaluateCondition(expression, debugLocation)
+        } finally {
+            // pop the entire context to get back to where we were before isolating the context with pushContext
+            if (additionalContext) cs.popContext()
+        }
+    }
+
+    @Override
+    @CompileStatic
     Object evaluateContextField(String expression, String debugLocation) {
         if (!expression) return null
         try {
