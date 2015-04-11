@@ -817,13 +817,14 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         return artifactStats
     }
 
-    protected Set<String> entitiesToSkipHitCount = new TreeSet(['moqui.server.ArtifactHit', 'moqui.server.ArtifactHitBin',
+    protected final Set<String> entitiesToSkipHitCount = new HashSet(['moqui.server.ArtifactHit', 'moqui.server.ArtifactHitBin',
             'moqui.entity.SequenceValueItem', 'moqui.security.UserAccount', 'moqui.tenant.Tenant',
             'moqui.tenant.TenantDataSource', 'moqui.tenant.TenantDataSourceXaProp',
             'moqui.entity.document.DataDocument', 'moqui.entity.document.DataDocumentField',
             'moqui.entity.document.DataDocumentCondition', 'moqui.entity.feed.DataFeedAndDocument',
             'moqui.entity.view.DbViewEntity', 'moqui.entity.view.DbViewEntityMember',
             'moqui.entity.view.DbViewEntityKeyMap', 'moqui.entity.view.DbViewEntityAlias'])
+    protected final Set<String> artifactTypesForStatsSkip = new TreeSet(["screen", "transition", "screen-content"])
 
     @CompileStatic
     void countArtifactHit(String artifactType, String artifactSubType, String artifactName, Map<String, Object> parameters,
@@ -831,10 +832,10 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         boolean isEntity = artifactType == "entity"
         // don't count the ones this calls
         if (artifactName.contains("moqui.server.ArtifactHit")) return
-        if (isEntity && artifactName in entitiesToSkipHitCount) return
-        if (["screen", "transition", "screen-content"].contains(artifactType) && getSkipStats()) return
-
+        if (isEntity && entitiesToSkipHitCount.contains(artifactName)) return
         ExecutionContextImpl eci = this.getEci()
+        if (eci.getSkipStats() && artifactTypesForStatsSkip.contains(artifactType)) return
+
         long runningTimeMillis = endTime - startTime
 
         // NOTE: never save individual hits for entity artifact hits, way too heavy and also avoids self-reference
