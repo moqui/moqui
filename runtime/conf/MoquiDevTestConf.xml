@@ -7,7 +7,7 @@
 
     <cache-list warm-on-start="false"/>
 
-    <server-stats>
+    <server-stats stats-skip-condition="pathInfo?.startsWith('/rpc') || pathInfo?.startsWith('/rest') || pathInfo?.startsWith('/status')">
         <!-- for dev testing tone down the stats, don't persist low-level hits -->
         <artifact-stats type="screen" persist-bin="true" persist-hit="true"/>
         <artifact-stats type="screen-content" persist-bin="true" persist-hit="true"/>
