@@ -47,6 +47,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <service verb="print" noun="DocumentInterface">
         <in-parameters>
             <parameter name="networkPrinterId" required="true"/>
+            <parameter name="createdDate" type="Timestamp" default="ec.user.nowTimestamp"/>
             <parameter name="username"/>
             <parameter name="jobName"/>
             <parameter name="copies" type="Integer" default="1"/>

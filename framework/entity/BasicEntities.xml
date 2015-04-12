@@ -440,6 +440,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <entity entity-name="PrintJob" package-name="moqui.basic.print">
         <field name="printJobId" type="id" is-pk="true"/>
         <field name="statusId" type="id" enable-audit-log="true"/>
+        <field name="createdDate" type="date-time"/>
         <field name="errorMessage" type="text-long"/>
         <field name="networkPrinterId" type="id"/>
         <field name="username" type="text-short"/>
@@ -448,7 +449,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="copies" type="number-integer"/>
         <field name="duplex" type="text-indicator"/>
         <field name="pageRanges" type="text-short"/>
-        <field name="mimeType" type="text-short"/>
+        <field name="contentType" type="text-short"/>
         <field name="document" type="binary-very-long"/>
         <relationship type="one" related-entity-name="moqui.basic.print.NetworkPrinter"/>
         <relationship type="one" title="PrintJob" related-entity-name="moqui.basic.StatusItem"/>
