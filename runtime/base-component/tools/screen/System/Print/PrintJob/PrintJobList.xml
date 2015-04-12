@@ -24,8 +24,8 @@ This Work includes contributions authored by David E. Jones, not as a
 
                 byte[] bytes = printJob.getBytes("document")
                 if (bytes.length > 0) {
-                    if (printJob.contentType) response.setContentType(printJob.contentType)
-                    response.addHeader("Content-Disposition", "attachment")
+                    if (printJob.contentType) ec.web.response.setContentType(printJob.contentType)
+                    ec.web.response.addHeader("Content-Disposition", "attachment")
                     IOUtils.write(bytes, ec.web.response.outputStream)
                 } else {
                     ec.message.addError("No document found in PrintJob [${printJobId}]")
@@ -102,15 +102,21 @@ This Work includes contributions authored by David E. Jones, not as a
                 <header-field show-order-by="true"><text-find size="15" hide-options="true"/></header-field>
                 <default-field><display/></default-field>
             </field>
-            <field name="document">
-                <conditional-field condition="document != null">
-                    <link url="downloadDocument" text="Download"/></conditional-field>
-                <default-field title="Document"><display text=" "/></default-field>
-            </field>
 
             <field name="find">
                 <header-field title="Find"><submit/></header-field>
+                <conditional-field condition="document != null">
+                    <link url="downloadDocument" text="Download"/></conditional-field>
+                <default-field><display text=" "/></default-field>
             </field>
+
+            <form-list-column><field-ref name="printJobId"/></form-list-column>
+            <form-list-column><field-ref name="statusId"/><field-ref name="createdDate"/></form-list-column>
+            <form-list-column><field-ref name="networkPrinterId"/><field-ref name="username"/></form-list-column>
+            <form-list-column><field-ref name="jobId"/><field-ref name="jobName"/></form-list-column>
+            <form-list-column><field-ref name="copies"/><field-ref name="duplex"/></form-list-column>
+            <form-list-column><field-ref name="pageRanges"/><field-ref name="contentType"/></form-list-column>
+            <form-list-column><field-ref name="find"/></form-list-column>
         </form-list>
     </widgets>
 </screen>
