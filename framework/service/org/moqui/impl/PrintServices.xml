@@ -64,6 +64,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <implements service="org.moqui.impl.PrintServices.print#DocumentInterface"/>
         <in-parameters>
             <parameter name="storeDocument" type="Boolean" default="true"/>
+            <parameter name="contentType"/>
 
             <parameter name="inputStream" type="java.io.InputStream"><description>The document may be passed in this
                 parameter as an InputStream or in the serialBlob field as a wrapped byte[].</description></parameter>
@@ -98,12 +99,13 @@ This Work includes contributions authored by David E. Jones, not as a
             <parameter name="resourceLocation" required="true"/>
         </in-parameters>
         <actions>
-            <set field="inputStream" from="ec.resource.getLocationStream(resourceLocation)"/>
-            <if condition="inputStream == null">
+            <set field="resourceReference" from="ec.resource.getLocationReference(resourceLocation)"/>
+            <if condition="resourceReference == null || !resourceReference.getExists()">
                 <return error="true" message="Could not find resource at [${resourceLocation}]"/>
             </if>
+            <set field="inputStream" from="resourceReference.openStream()"/>
             <service-call name="org.moqui.impl.PrintServices.print#Document" out-map="context"
-                    in-map="context + [inputStream:inputStream, storeDocument:false]"/>
+                    in-map="context + [inputStream:inputStream, contentType:resourceReference.getContentType(), storeDocument:false]"/>
         </actions>
     </service>
     <service verb="print" noun="ScreenDocument">
