@@ -24,11 +24,16 @@ This Work includes contributions authored by David E. Jones, not as a
 
                 byte[] bytes = printJob.getBytes("document")
                 if (bytes.length > 0) {
-                    contentDisposition = "attachment"
+                    fileExtension = null
                     if (printJob.contentType) {
                         ec.web.response.setContentType(printJob.contentType)
                         // TODO: need a more comprehensive way to determine extension based on contentType
-                        if (printJob.contentType == "application/pdf") contentDisposition = "attachment; filename=\"document.pdf\""
+                        if (printJob.contentType == "application/pdf") fileExtension = "pdf"
+                    }
+                    if (fileExtension) {
+                        contentDisposition = "attachment; filename=\"${printJob.jobName ?: 'document'}.${fileExtension}\""
+                    } else {
+                        contentDisposition = "attachment"
                     }
 
                     ec.web.response.addHeader("Content-Disposition", contentDisposition)
