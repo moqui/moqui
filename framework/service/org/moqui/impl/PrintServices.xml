@@ -122,16 +122,32 @@ This Work includes contributions authored by David E. Jones, not as a
         <actions>
             <script>
                 import org.moqui.context.ExecutionContext
+                import org.moqui.impl.screen.ScreenDefinition
+
                 import javax.sql.rowset.serial.SerialBlob
                 import javax.xml.transform.stream.StreamSource
 
                 ExecutionContext ec = context.ec
-                if (screenParameters) context.putAll(screenParameters)
-                if (screenParametersStr) context.putAll(ec.resource.evaluateContextField(screenParametersStr, ""))
+                ScreenDefinition screedDef = ec.getScreen().getScreenDefinition(screenLocation)
+                if (screedDef == null) {
+                    ec.message.addError("Screen not found at [${screenLocation}]")
+                    return
+                }
+                Map parmMap = [:]
+                if (screenParameters) parmMap.putAll(screenParameters)
+                if (screenParametersStr) parmMap.putAll(ec.resource.evaluateContextField(screenParametersStr, ""))
+                context.putAll(parmMap)
                 String xslFoText = ec.screen.makeRender().rootScreen(screenLocation).webappName(webappName).renderMode("xsl-fo").render()
                 ByteArrayOutputStream baos = new ByteArrayOutputStream()
                 ec.resource.xslFoTransform(new StreamSource(new StringReader(xslFoText)), null, baos, contentType)
                 serialBlob = new SerialBlob(baos.toByteArray())
+
+                if (!jobName) {
+                    StringBuilder jobNameSb = new StringBuilder()
+                    jobNameSb.append(screedDef.getScreenName())
+                    for (Map.Entry entry in parmMap) jobNameSb.append(" ").append(entry.getValue())
+                    jobName = jobNameSb.toString()
+                }
                 /* some test code to write a PDF to a file
                 File testFile = new File('test.pdf')
                 testFile.createNewFile()
