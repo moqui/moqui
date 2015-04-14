@@ -200,6 +200,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <if condition="errMsg">
                 <service-call name="update#moqui.basic.print.PrintJob" transaction="force-new"
                         in-map="[printJobId:printJob.printJobId, jobId:jobId, statusId:'PtjSendFailed', errorMessage:errMsg]"/>
+                <return error="true" message="${errMsg}"/>
                 <else>
                     <service-call name="update#moqui.basic.print.PrintJob" transaction="force-new"
                             in-map="[printJobId:printJob.printJobId, jobId:jobId, statusId:'PtjPending']"/>
