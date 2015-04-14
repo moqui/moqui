@@ -31,6 +31,9 @@ New Features:
   this isn't an API change, but this is a non-backward compatible change
   and some code using the ScreenRenderImpl and ScreenUrlInfo may need to be
   updated similar to the changes in DefaultScreenMacros.html.ftl
+- CUPS print server integration and print job management services and admin
+  screens in the System app; can render XSL-FO screens to PDF/etc and
+  print, print ResourceFacade resources, and direct print other documents
 
 Bug Fixes:
 
