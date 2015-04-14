@@ -171,7 +171,6 @@ This Work includes contributions authored by David E. Jones, not as a
         <in-parameters><parameter name="printJob" type="Map" required="true"/></in-parameters>
         <actions>
             <!-- <log level="warn" message="====== printJob=${printJob}"/> -->
-            <entity-find-one entity-name="moqui.basic.print.PrintJob" value-field="printJob"/>
             <service-call name="org.moqui.impl.PrintServices.make#CupsPrinter"
                     in-map="[networkPrinterId:printJob.networkPrinterId]" out-map="context"/>
 
@@ -215,8 +214,7 @@ This Work includes contributions authored by David E. Jones, not as a
             updating PrintJob record for status and just returning the rest.</description>
         <in-parameters><parameter name="printJobId"/></in-parameters>
         <out-parameters>
-            <auto-parameters entity-name="moqui.basic.print.PrintJob" include="nonpk">
-                <exclude field-name="document"/></auto-parameters>
+            <auto-parameters entity-name="moqui.basic.print.PrintJob" include="nonpk"/>
 
             <parameter name="completeTime" type="Timestamp"/>
             <parameter name="createTime" type="Timestamp"/>
