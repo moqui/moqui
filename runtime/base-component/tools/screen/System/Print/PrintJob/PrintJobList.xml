@@ -14,7 +14,7 @@ This Work includes contributions authored by David E. Jones, not as a
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd"
         default-menu-include="false">
 
-    <transition name="printJobDetail"><default-response url="."/></transition><!-- ../PrintJobDetail -->
+    <transition name="printJobDetail"><default-response url="../PrintJobDetail"/></transition>
     <transition name="downloadDocument">
         <parameter name="printJobId"/>
         <actions>
@@ -48,14 +48,16 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <actions>
         <entity-find entity-name="moqui.basic.print.PrintJob" list="printJobList">
-            <search-form-inputs default-order-by="-createdDate"/>
-        </entity-find>
+            <search-form-inputs default-order-by="-createdDate"/></entity-find>
     </actions>
     <widgets>
         <form-list name="PrintJobList" list="printJobList" skip-form="true">
             <field name="printJobId">
                 <header-field title="ID" show-order-by="true"><text-find size="10" hide-options="true"/></header-field>
-                <default-field><link text="${printJobId}" url="printJobDetail" link-type="anchor"/></default-field>
+                <default-field>
+                    <display/>
+                    <link text="View/Update" url="printJobDetail" link-type="anchor-button"/>
+                </default-field>
             </field>
             <field name="statusId">
                 <header-field title="Status">
