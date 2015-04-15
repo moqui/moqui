@@ -18,6 +18,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <default-response url="."/></transition>
     <transition name="createNetworkPrinter"><service-call name="create#moqui.basic.print.NetworkPrinter"/>
         <default-response url="."/></transition>
+    <transition name="updateNetworkPrinter"><service-call name="update#moqui.basic.print.NetworkPrinter"/>
+        <default-response url="."/></transition>
     <transition name="deleteNetworkPrinter"><service-call name="delete#moqui.basic.print.NetworkPrinter"/>
         <default-response url="."/></transition>
 
@@ -45,7 +47,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <field name="submitButton"><default-field title="Create Printer"><submit/></default-field></field>
             </form-single>
         </container-dialog>
-        <form-list name="PrintJobList" list="networkPrinterList" skip-form="true">
+        <form-list name="PrintJobList" list="networkPrinterList" transition="updateNetworkPrinter">
             <field name="networkPrinterId">
                 <header-field title="ID" show-order-by="true"><text-find size="10" hide-options="true"/></header-field>
                 <default-field><display/></default-field>
@@ -65,13 +67,14 @@ This Work includes contributions authored by David E. Jones, not as a
             </field>
             <field name="description">
                 <header-field show-order-by="true"><text-find size="15" hide-options="true"/></header-field>
-                <default-field><display/></default-field>
+                <default-field><text-line size="30"/></default-field>
             </field>
             <field name="location">
                 <header-field show-order-by="true"><text-find size="15" hide-options="true"/></header-field>
-                <default-field><display/></default-field>
+                <default-field><text-line size="30"/></default-field>
             </field>
 
+            <field name="update"><default-field title="Update"><submit/></default-field></field>
             <field name="find">
                 <header-field title="Find"><submit/></header-field>
                 <default-field><link url="deleteNetworkPrinter" text="Delete"/></default-field>
