@@ -22,7 +22,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <default-response url="."/></transition>
     <transition name="deleteNetworkPrinter"><service-call name="delete#moqui.basic.print.NetworkPrinter"/>
         <default-response url="."/></transition>
-
+    <transition name="printJobList"><default-response url="../../PrintJob/PrintJobList"/></transition>
 
     <actions>
         <entity-find entity-name="moqui.basic.print.NetworkPrinter" list="networkPrinterList">
@@ -48,17 +48,20 @@ This Work includes contributions authored by David E. Jones, not as a
             </form-single>
         </container-dialog>
         <form-list name="PrintJobList" list="networkPrinterList" transition="updateNetworkPrinter">
+            <field name="jobs"><default-field>
+                <link url="printJobList" text="Jobs" parameter-map="[networkPrinterId:networkPrinterId]"/>
+            </default-field></field>
             <field name="networkPrinterId">
-                <header-field title="ID" show-order-by="true"><text-find size="10" hide-options="true"/></header-field>
+                <header-field title="ID" show-order-by="true"><text-find size="8" hide-options="true"/></header-field>
                 <default-field><display/></default-field>
             </field>
 
             <field name="serverHost">
-                <header-field show-order-by="true"><text-find size="15" hide-options="true"/></header-field>
+                <header-field show-order-by="true"><text-find size="10" hide-options="true"/></header-field>
                 <default-field><display/></default-field>
             </field>
             <field name="serverPort">
-                <header-field show-order-by="true"><text-line size="5"/></header-field>
+                <header-field show-order-by="true"><text-line size="3"/></header-field>
                 <default-field><display/></default-field>
             </field>
             <field name="printerName">
@@ -71,7 +74,7 @@ This Work includes contributions authored by David E. Jones, not as a
             </field>
             <field name="location">
                 <header-field show-order-by="true"><text-find size="15" hide-options="true"/></header-field>
-                <default-field><text-line size="30"/></default-field>
+                <default-field><text-line size="20"/></default-field>
             </field>
 
             <field name="update"><default-field title="Update"><submit/></default-field></field>
