@@ -573,6 +573,10 @@ This Work includes contributions authored by David E. Jones, not as a
                     where the entry attribute refers to.
                 </xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="condition" type="xs:string">
+                <xs:annotation><xs:documentation>A condition expression, just like the section-iterate.condition.expression
+                    element but more concise.</xs:documentation></xs:annotation>
+            </xs:attribute>
             <!-- TODO handle paginate* in ScreenSection.groovy
             <xs:attribute name="paginate" type="xs:string" default="false">
                 <xs:annotation><xs:documentation>
