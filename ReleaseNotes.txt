@@ -43,6 +43,8 @@ Bug Fixes:
 - No longer create auto reverse relationships for relationships going to
   the same entity, results in multiple relationships with the same name and
   the reverse one can get picked up and isn't the one desired
+- Fixed issues with loading KIE modules and JAR files from components on
+  Windows caused by issue in BaseResourceReference URI handling
 
 ===========================================================================
 Release 1.5.1 - 29 Mar 2015
