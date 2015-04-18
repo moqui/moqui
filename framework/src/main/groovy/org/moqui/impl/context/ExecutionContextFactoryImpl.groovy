@@ -608,25 +608,30 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         }
         */
 
-        File kieDir = new File(kieRr.getUri())
-        KieBuilder builder = services.newKieBuilder(kieDir)
+        try {
+            File kieDir = new File(kieRr.getUrl().getPath())
+            KieBuilder builder = services.newKieBuilder(kieDir)
 
-        // build the KIE module
-        builder.buildAll()
-        Results results = builder.getResults()
-        if (results.hasMessages(Message.Level.ERROR)) {
-            throw new BaseException("Error building KIE module in component ${componentName}: ${results.toString()}")
-        } else if (results.hasMessages(Message.Level.WARNING)) {
-            logger.warn("Warning building KIE module in component ${componentName}: ${results.toString()}")
+            // build the KIE module
+            builder.buildAll()
+            Results results = builder.getResults()
+            if (results.hasMessages(Message.Level.ERROR)) {
+                throw new BaseException("Error building KIE module in component ${componentName}: ${results.toString()}")
+            } else if (results.hasMessages(Message.Level.WARNING)) {
+                logger.warn("Warning building KIE module in component ${componentName}: ${results.toString()}")
+            }
+
+            findComponentKieSessions(componentName)
+
+            // get the release ID and cache it
+            releaseId = builder.getKieModule().getReleaseId()
+            kieComponentReleaseIdCache.put(componentName, releaseId)
+
+            return releaseId
+        } catch (Throwable t) {
+            logger.error("Error initializing KIE at ${kieRr.getLocation()}", t)
+            return null
         }
-
-        findComponentKieSessions(componentName)
-
-        // get the release ID and cache it
-        releaseId = builder.getKieModule().getReleaseId()
-        kieComponentReleaseIdCache.put(componentName, releaseId)
-
-        return releaseId
     }
 
     protected void findAllComponentKieSessions() {
