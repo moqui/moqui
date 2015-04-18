@@ -58,10 +58,9 @@ This Work includes contributions authored by David E. Jones, not as a
         <log message="EditExample exampleId [${exampleId}] example [${example}]"/>
     </actions>
     <widgets>
-        <section name="ExampleMenu">
-            <condition><expression>example</expression></condition>
-            <widgets><link url="newExample" text="New Example" link-type="hidden-form" icon="glyphicon glyphicon-plus"/></widgets>
-        </section>
+        <section name="ExampleMenu" condition="example"><widgets>
+            <link url="newExample" text="New Example" link-type="hidden-form" icon="glyphicon glyphicon-plus"/>
+        </widgets></section>
         <label text="Test/Example Links:"/>
         <link url="edit" text="Edit" link-type="anchor"/>
         <link url="features" text="Features" link-type="anchor"/>

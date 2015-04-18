@@ -23,10 +23,9 @@ This Work includes contributions authored by David E. Jones, not as a
         <!-- showing conditionally here is only needed because of the pattern used for New Example using the
           EditExample screen; if a separate dialog or something is used this is not needed as EditExample would always
           have an exampleId parameter and conditional menu can be automatic -->
-        <section name="ExampleMenu">
-            <condition><expression>exampleId</expression></condition>
-            <widgets><subscreens-menu id="example-menu" type="tab"/></widgets>
-        </section>
+        <section name="ExampleMenu" condition="exampleId"><widgets>
+            <subscreens-menu id="example-menu" type="tab"/>
+        </widgets></section>
         <subscreens-active/>
         <!-- don't do it this way, we want the menu to be shown conditionally: <subscreens-panel id="example-panel" type="tab" dynamic="false"/> -->
     </widgets>
