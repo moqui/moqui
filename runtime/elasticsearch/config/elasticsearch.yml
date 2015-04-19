@@ -176,6 +176,13 @@ cluster.name: ElasticSearchMoqui
 #plugin.mandatory: mapper-attachments,lang-groovy
 
 
+#################################### Script ###################################
+
+script.disable_dynamic: sandbox
+script.default_lang: groovy
+script.groovy.sandbox.enabled: true
+
+
 ################################### Memory ####################################
 
 # Elasticsearch performs poorly when JVM starts swapping: you should ensure that
