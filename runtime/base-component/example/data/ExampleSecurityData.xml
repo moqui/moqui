@@ -11,9 +11,11 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 <entity-facade-xml type="seed">
+    <!-- loaded in the apps.xml file explicitly:
     <moqui.screen.SubscreensItem screenLocation="component://webroot/screen/webroot/apps.xml"
             subscreenName="example" userGroupId="ALL_USERS" menuTitle="Example" menuIndex="8" menuInclude="Y"
             subscreenLocation="component://example/screen/ExampleApp.xml"/>
+    -->
 
     <!-- Artifact group for all of the Example application via the ExampleApp screen (the root screen for the app) -->
     <moqui.security.ArtifactGroup artifactGroupId="EXAMPLE_APP" description="Example App (via root screen)"/>
