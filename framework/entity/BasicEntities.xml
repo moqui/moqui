@@ -472,7 +472,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="PtjSendFailed" toStatusId="PtjPending" transitionName="Send"/>
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="PtjPending" toStatusId="PtjProcessing" transitionName="Process"/>
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="PtjProcessing" toStatusId="PtjCompleted" transitionName="Complete"/>
-            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="PtjPending" toStatusId="PtjCompleted" transitionName="Process"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="PtjPending" toStatusId="PtjCompleted" transitionName="Complete"/>
 
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="PtjPending" toStatusId="PtjPendingHeld" transitionName="Hold"/>
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="PtjPendingHeld" toStatusId="PtjPending" transitionName="Release"/>
