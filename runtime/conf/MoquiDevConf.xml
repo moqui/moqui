@@ -6,8 +6,7 @@
     <tools enable-elasticsearch="true" enable-camel="true"/>
 
     <cache-list warm-on-start="false">
-        <!-- Development Mode - don't use these for production, load testing, etc.
-             Cleared by default every 20 seconds from when loaded into cache. -->
+        <!-- Development Mode - expires artifact cache entries; don't use these for production, load testing, etc -->
         <cache name="entity.definition" expire-time-idle="30"/>
         <!-- longer timeout since this basically looks through all files to check for new or moved entity defs -->
         <cache name="entity.location" expire-time-idle="300"/>
