@@ -110,7 +110,7 @@ public class CacheFacadeImpl implements CacheFacade {
     protected synchronized net.sf.ehcache.Cache initCache(String cacheName) {
         if (cacheManager.cacheExists(cacheName)) return cacheManager.getCache(cacheName)
 
-        // make a cache with the default seetings from ehcache.xml
+        // make a cache with the default settings from ehcache.xml
         cacheManager.addCacheIfAbsent(cacheName)
         net.sf.ehcache.Cache newCache = cacheManager.getCache(cacheName)
         // not supported in 2.7.2: newCache.setSampledStatisticsEnabled(true)
