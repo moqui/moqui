@@ -37,14 +37,14 @@ This Work includes contributions authored by David E. Jones, not as a
     <widgets>
         <dynamic-dialog id="EmtDialog" button-text="Edit Message Text" transition="EditMessageText" width="900"/>
 
-        <section name="SendSection"><condition><expression>systemMessage.isOutgoing == 'Y' &amp;&amp; (systemMessage.statusId == 'SmsgProduced' || systemMessage.statusId == 'SmsgError')</expression></condition>
+        <section name="SendSection" condition="systemMessage.isOutgoing == 'Y' &amp;&amp; (systemMessage.statusId == 'SmsgProduced' || systemMessage.statusId == 'SmsgError')">
             <widgets><link url="sendMessage" text="Send Message" parameter-map="[systemMessageId:systemMessageId]"/></widgets></section>
-        <section name="ConsumeSection"><condition><expression>systemMessage.isOutgoing == 'N' &amp;&amp; (systemMessage.statusId == 'SmsgReceived' || systemMessage.statusId == 'SmsgError')</expression></condition>
+        <section name="ConsumeSection" condition="systemMessage.isOutgoing == 'N' &amp;&amp; (systemMessage.statusId == 'SmsgReceived' || systemMessage.statusId == 'SmsgError')">
             <widgets><link url="consumeMessage" text="Consume Message" parameter-map="[systemMessageId:systemMessageId]"/></widgets></section>
-        <section name="CancelSection"><condition><expression>systemMessage.statusId in ['SmsgProduced', 'SmsgReceived', 'SmsgError']</expression></condition>
+        <section name="CancelSection" condition="systemMessage.statusId in ['SmsgProduced', 'SmsgReceived', 'SmsgError']">
             <widgets><link url="updateMessage" text="Cancel Message" parameter-map="[systemMessageId:systemMessageId, statusId:'SmsgCancelled']"/></widgets></section>
 
-        <section name="ResetErrorSection"><condition><expression>systemMessage.statusId == 'SmsgError'</expression></condition>
+        <section name="ResetErrorSection" condition="systemMessage.statusId == 'SmsgError'">
             <widgets><link url="resetError" text="Reset from Error" parameter-map="[systemMessageId:systemMessageId]"/></widgets></section>
 
         <container-row>

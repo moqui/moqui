@@ -82,6 +82,13 @@ This Work includes contributions authored by David E. Jones, not as a
             boolean loggedInAnonymous = ec.getUser().loginAnonymousIfNoUser()
 
             // TODO: reject requests until this is done?
+            // at least make sure there are no Enumeration records
+            if (ec.getEntity().find("moqui.basic.Enumeration").useCache(false).count()) {
+                String errMsg = "Not loading data, found Enumeration records so database isn't empty"
+                ec.logger.info(errMsg)
+                ec.message.addMessage(errMsg)
+                return
+            }
 
             // load all the data
             EntityDataLoader edl = ec.getEntity().makeDataLoader()

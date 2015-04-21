@@ -540,10 +540,12 @@ This Work includes contributions authored by David E. Jones, not as a
         <xs:complexType>
             <xs:group ref="section-elements"/>
             <xs:attribute name="name" type="xs:string" use="required">
-                <xs:annotation><xs:documentation>
-                    A name for the section, used for reference within the screen.
-                    Must be specified and must be unique within the screen.
-                </xs:documentation></xs:annotation>
+                <xs:annotation><xs:documentation>A name for the section, used for reference within the screen.
+                    Must be specified and must be unique within the screen.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="condition" type="xs:string">
+                <xs:annotation><xs:documentation>A condition expression, just like the section.condition.expression
+                    element but more concise.</xs:documentation></xs:annotation>
             </xs:attribute>
         </xs:complexType>
     </xs:element>
@@ -570,6 +572,10 @@ This Work includes contributions authored by David E. Jones, not as a
                     If list points to a Map or List of MapEntry the key will be put where this refers to, the value
                     where the entry attribute refers to.
                 </xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="condition" type="xs:string">
+                <xs:annotation><xs:documentation>A condition expression, just like the section-iterate.condition.expression
+                    element but more concise.</xs:documentation></xs:annotation>
             </xs:attribute>
             <!-- TODO handle paginate* in ScreenSection.groovy
             <xs:attribute name="paginate" type="xs:string" default="false">

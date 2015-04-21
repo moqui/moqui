@@ -6,8 +6,7 @@
     <tools enable-elasticsearch="true" enable-camel="true"/>
 
     <cache-list warm-on-start="false">
-        <!-- Development Mode - don't use these for production, load testing, etc.
-             Cleared by default every 20 seconds from when loaded into cache. -->
+        <!-- Development Mode - expires artifact cache entries; don't use these for production, load testing, etc -->
         <cache name="entity.definition" expire-time-idle="30"/>
         <!-- longer timeout since this basically looks through all files to check for new or moved entity defs -->
         <cache name="entity.location" expire-time-idle="300"/>
@@ -40,7 +39,7 @@
         <cache name="l10n.message" expire-time-idle="600"/>
     </cache-list>
     
-    <server-stats stats-skip-condition="ec.web?.request?.pathInfo?.startsWith('/rpc') || ec.web?.request?.pathInfo?.startsWith('/status')">
+    <server-stats stats-skip-condition="pathInfo?.startsWith('/rpc') || pathInfo?.startsWith('/rest') || pathInfo?.startsWith('/status')">
         <!-- For development, track everything! It'll run slow through... -->
         <artifact-stats type="screen" persist-bin="true" persist-hit="true"/>
         <artifact-stats type="screen-content" persist-bin="true" persist-hit="true"/>

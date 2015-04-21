@@ -12,7 +12,10 @@
 package org.moqui.impl.screen
 
 import groovy.transform.CompileStatic
+import org.codehaus.groovy.runtime.InvokerHelper
+import org.moqui.context.ExecutionContext
 import org.moqui.impl.actions.XmlAction
+import org.moqui.impl.context.ContextBinding
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.context.ContextStack
 
@@ -25,6 +28,7 @@ class ScreenSection {
     protected Node sectionNode
     protected String location
 
+    protected Class conditionClass = null
     protected XmlAction condition = null
     protected XmlAction actions = null
     protected ScreenWidgets widgets = null
@@ -34,7 +38,11 @@ class ScreenSection {
         this.sectionNode = sectionNode
         this.location = location
 
-        // prep condition
+        // prep condition attribute
+        String conditionAttr = sectionNode."@condition"
+        if (conditionAttr) conditionClass = new GroovyClassLoader().parseClass(conditionAttr)
+
+        // prep condition element
         if (sectionNode.condition && sectionNode.condition[0].children()) {
             // the script is effectively the first child of the condition element
             condition = new XmlAction(ecfi, (Node) sectionNode."condition"[0].children()[0], location + ".condition")
@@ -95,14 +103,20 @@ class ScreenSection {
     @CompileStatic
     protected void renderSingle(ScreenRenderImpl sri) {
         if (logger.traceEnabled) logger.trace("Begin rendering screen section at [${location}]")
+        ExecutionContext ec = sri.getEc()
         boolean conditionPassed = true
-        if (condition) conditionPassed = condition.checkCondition(sri.ec)
+        if (condition != null) conditionPassed = condition.checkCondition(ec)
+        if (conditionPassed && conditionClass != null) {
+            Script script = InvokerHelper.createScript(conditionClass, new ContextBinding(ec.getContext()))
+            Object result = script.run()
+            conditionPassed = result as boolean
+        }
 
         if (conditionPassed) {
-            if (actions) actions.run(sri.ec)
-            if (widgets) widgets.render(sri)
+            if (actions != null) actions.run(ec)
+            if (widgets != null) widgets.render(sri)
         } else {
-            if (failWidgets) failWidgets.render(sri)
+            if (failWidgets != null) failWidgets.render(sri)
         }
         if (logger.traceEnabled) logger.trace("End rendering screen section at [${location}]")
     }

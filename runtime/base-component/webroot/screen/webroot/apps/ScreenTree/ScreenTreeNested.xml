@@ -30,7 +30,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     <section name="ScreenItemRender">
                         <condition><expression>currentScreenDef != null &amp;&amp; currentUrlInfo?.isPermitted() &amp;&amp; (showAll == 'true' || !currentScreenDef?.hasRequiredParameters())</expression></condition>
                         <widgets>
-                            <section name="LinkOrLabel"><condition><expression>!currentScreenDef?.hasRequiredParameters()</expression></condition>
+                            <section name="LinkOrLabel" condition="!currentScreenDef?.hasRequiredParameters()">
                                 <widgets><link url="${currentUrlInfo.url}" link-type="anchor" url-type="plain"
                                         text="${currentSubscreensItem.menuTitle}"/></widgets>
                                 <fail-widgets><label text="${currentSubscreensItem.menuTitle}" style="text-muted"/></fail-widgets>

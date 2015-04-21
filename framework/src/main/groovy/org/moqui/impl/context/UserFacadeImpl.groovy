@@ -149,7 +149,7 @@ class UserFacadeImpl implements UserFacade {
         }
 
         this.visitId = session.getAttribute("moqui.visitId")
-        if (!this.visitId && !eci.getEcfi().getSkipStats()) {
+        if (!this.visitId && !eci.getSkipStats()) {
             Node serverStatsNode = eci.getEcfi().getServerStatsNode()
 
             // handle visitorId and cookie

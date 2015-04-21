@@ -7,6 +7,7 @@
     <meta name="keywords" content="${html_keywords?if_exists}">
     <meta name="description" content="${html_description?if_exists}">
     <title>${html_title!(((ec.tenant.tenantName)!'Moqui') + " - " + (sri.screenUrlInfo.targetScreen.getDefaultMenuName())!"Page")}</title>
+    <link rel="apple-touch-icon" href="/MoquiLogo100.png"/>
 <#-- Style Sheets -->
 <#list sri.getThemeValues("STRT_STYLESHEET") as styleSheetLocation>
     <link rel="stylesheet" href="${sri.buildUrl(styleSheetLocation).url}" type="text/css">

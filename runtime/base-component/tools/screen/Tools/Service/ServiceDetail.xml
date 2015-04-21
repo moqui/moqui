@@ -62,7 +62,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="entityField"><default-field><display text="${parameterNode.'@entity-name' ?: ''}${parameterNode.'@field-name' ? '.' + parameterNode.'@field-name' : ''}"/></default-field></field>
         </form-list>
 
-        <section name="XmlActionDisplaySection"><condition><expression>sd.xmlAction</expression></condition>
+        <section name="XmlActionDisplaySection" condition="sd.xmlAction">
             <widgets>
                 <label text="XML Actions" type="h3"/>
                 <container type="pre" style="line-numbers"><label text="${org.moqui.impl.StupidUtilities.encodeForXmlAttribute(org.moqui.impl.FtlNodeWrapper.prettyPrintNode(serviceNode.actions[0]))}"
@@ -73,7 +73,7 @@ This Work includes contributions authored by David E. Jones, not as a
                         style="language-groovy" encode="false"/></container>
             </widgets>
         </section>
-        <section name="LocationDisplaySection"><condition><expression>sd.serviceNode."@location"</expression></condition>
+        <section name="LocationDisplaySection" condition="sd.serviceNode.'@location'">
             <widgets>
                 <label text="Script" type="h3"/>
                 <container type="pre" style="line-numbers"><label text="${ec.resource.getLocationText(sd.serviceNode.'@location', false)}"

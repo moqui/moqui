@@ -19,6 +19,7 @@ class BasicJoinCondition extends EntityConditionImplBase {
     protected EntityConditionImplBase lhs
     protected EntityCondition.JoinOperator operator
     protected EntityConditionImplBase rhs
+    protected static final Class thisClass = BasicJoinCondition.class
 
     BasicJoinCondition(EntityConditionFactoryImpl ecFactoryImpl,
             EntityConditionImplBase lhs, EntityCondition.JoinOperator operator, EntityConditionImplBase rhs) {
@@ -79,7 +80,7 @@ class BasicJoinCondition extends EntityConditionImplBase {
 
     @Override
     boolean equals(Object o) {
-        if (o == null || o.getClass() != this.getClass()) return false
+        if (o == null || o.getClass() != thisClass) return false
         BasicJoinCondition that = (BasicJoinCondition) o
         if (!this.lhs.equals(that.lhs)) return false
         // NOTE: for Java Enums the != is WAY faster than the .equals

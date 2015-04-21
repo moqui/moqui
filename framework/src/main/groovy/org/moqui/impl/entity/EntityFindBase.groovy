@@ -881,7 +881,7 @@ abstract class EntityFindBase implements EntityFind {
             // call the abstract method
             count = countExtended(whereCondition, havingCondition)
 
-            if (doCache) entityCountCache.put(whereCondition, count)
+            if (doCache && whereCondition != null) entityCountCache.put(whereCondition, count)
         }
 
         // find EECA rules deprecated, not worth performance hit: efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-count", false)

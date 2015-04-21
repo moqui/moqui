@@ -1088,9 +1088,9 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
             <#assign caseInsensitive = fieldSubNode["@show-order-by"]! == "case-insensitive">
             <#assign orderByField = ec.context.orderByField!>
             <#assign ascActive = orderByField?has_content && orderByField?contains(fieldNode["@name"]) && !orderByField?starts_with("-")>
-            <#assign ascOrderByUrlInfo = sri.getScreenUrlInfo().getInstance(sri, false).addParameter("orderByField", "+" + caseInsensitive?string("^","") + fieldNode["@name"])>
+            <#assign ascOrderByUrlInfo = sri.getScreenUrlInstance().cloneUrlInstance().addParameter("orderByField", "+" + caseInsensitive?string("^","") + fieldNode["@name"])>
             <#assign descActive = orderByField?has_content && orderByField?contains(fieldNode["@name"]) && orderByField?starts_with("-")>
-            <#assign descOrderByUrlInfo = sri.getScreenUrlInfo().getInstance(sri, false).addParameter("orderByField", "-" + caseInsensitive?string("^","") + fieldNode["@name"])>
+            <#assign descOrderByUrlInfo = sri.getScreenUrlInstance().cloneUrlInstance().addParameter("orderByField", "-" + caseInsensitive?string("^","") + fieldNode["@name"])>
             <a href="${ascOrderByUrlInfo.getUrlWithParams()}" class="form-order-by<#if ascActive> active</#if>">+</a><a href="${descOrderByUrlInfo.getUrlWithParams()}" class="form-order-by<#if descActive> active</#if>">-</a>
             <#-- the old way, show + or -:
             <#if !orderByField?has_content || orderByField?starts_with("-") || !orderByField?contains(fieldNode["@name"])><#assign orderByField = ("+" + fieldNode["@name"])><#else><#assign orderByField = ("-" + fieldNode["@name"])></#if>

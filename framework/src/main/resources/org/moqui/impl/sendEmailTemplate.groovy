@@ -10,13 +10,15 @@
  * "work for hire", who hereby disclaims any copyright to the same.
  */
 import org.apache.commons.mail.HtmlEmail
-import org.apache.commons.mail.ByteArrayDataSource
+import javax.mail.util.ByteArrayDataSource
 import javax.activation.DataSource
 import org.moqui.BaseException
 import org.moqui.impl.context.ExecutionContextImpl
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+
+import javax.xml.transform.stream.StreamSource
 
 Logger logger = LoggerFactory.getLogger("org.moqui.impl.sendEmailTemplate")
 
@@ -68,28 +70,29 @@ if (emailTemplate.bccAddresses) {
 }
 
 // prepare and set the html message
-def bodyRender = ec.screen.makeRender().rootScreen(emailTemplate.bodyScreenLocation)
-        .webappName(emailTemplate.webappName).renderMode("html")
+def bodyRender = ec.screen.makeRender().rootScreen((String) emailTemplate.bodyScreenLocation)
+        .webappName((String) emailTemplate.webappName).renderMode("html")
 String bodyHtml = bodyRender.render()
 email.setHtmlMsg(bodyHtml)
 
 // set the alternative plain text message
 // render screen with renderMode=text for this
-def bodyTextRender = ec.screen.makeRender().rootScreen(emailTemplate.bodyScreenLocation)
-        .webappName(emailTemplate.webappName).renderMode("text")
+def bodyTextRender = ec.screen.makeRender().rootScreen((String) emailTemplate.bodyScreenLocation)
+        .webappName((String) emailTemplate.webappName).renderMode("text")
 String bodyText = bodyTextRender.render()
 email.setTextMsg(bodyText)
 //email.setTextMsg("Your email client does not support HTML messages")
 
 for (def emailTemplateAttachment in emailTemplateAttachmentList) {
     if (emailTemplateAttachment.screenRenderMode) {
-        def attachmentRender = ec.screen.makeRender().rootScreen(emailTemplateAttachment.attachmentLocation)
-                                                     .webappName(emailTemplate.webappName)
-                                                     .renderMode(emailTemplateAttachment.screenRenderMode)
+        def attachmentRender = ec.screen.makeRender().rootScreen((String) emailTemplateAttachment.attachmentLocation)
+                .webappName((String) emailTemplate.webappName).renderMode((String) emailTemplateAttachment.screenRenderMode)
         String attachmentText = attachmentRender.render()
         if (emailTemplateAttachment.screenRenderMode == "xsl-fo") {
-            // TODO: use FOP to change to PDF, then attach that
-
+            // use FOP to change to PDF, then attach that
+            ByteArrayOutputStream baos = new ByteArrayOutputStream()
+            ec.resource.xslFoTransform(new StreamSource(new StringReader(attachmentText)), null, baos, "application/pdf")
+            email.attach(new ByteArrayDataSource(baos.toByteArray(), "application/pdf"), (String) emailTemplateAttachment.fileName, "")
         } else {
             String mimeType = ec.screen.getMimeTypeByMode(emailTemplateAttachment.screenRenderMode)
             DataSource dataSource = new ByteArrayDataSource(attachmentText, mimeType)

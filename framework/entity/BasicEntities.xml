@@ -424,4 +424,70 @@ This Work includes contributions authored by David E. Jones, not as a
         </field>
         <relationship type="one" related-entity-name="moqui.basic.email.EmailTemplate"/>
     </entity>
+
+    <!-- ========================================================= -->
+    <!-- moqui.basic.print -->
+    <!-- ========================================================= -->
+    
+    <entity entity-name="NetworkPrinter" package-name="moqui.basic.print">
+        <field name="networkPrinterId" type="id" is-pk="true"/>
+        <field name="serverHost" type="text-medium"/>
+        <field name="serverPort" type="number-integer"><description>Defaults to 631</description></field>
+        <field name="printerName" type="text-medium"><description>Leave empty to use default printer on print server</description></field>
+        <field name="description" type="text-medium"/>
+        <field name="location" type="text-medium"/>
+    </entity>
+    <entity entity-name="PrintJob" package-name="moqui.basic.print">
+        <field name="printJobId" type="id" is-pk="true"/>
+        <field name="statusId" type="id" enable-audit-log="true"/>
+        <field name="createdDate" type="date-time"/>
+        <field name="errorMessage" type="text-long"/>
+        <field name="networkPrinterId" type="id"/>
+        <field name="username" type="text-short"/>
+        <field name="jobId" type="number-integer"/>
+        <field name="jobName" type="text-medium"/>
+        <field name="copies" type="number-integer"/>
+        <field name="duplex" type="text-indicator"/>
+        <field name="pageRanges" type="text-short"/>
+        <field name="contentType" type="text-short"/>
+        <field name="document" type="binary-very-long"/>
+        <relationship type="one" related-entity-name="moqui.basic.print.NetworkPrinter"/>
+        <relationship type="one" title="PrintJob" related-entity-name="moqui.basic.StatusItem"/>
+        <seed-data>
+            <!-- Print Job Status -->
+            <moqui.basic.StatusType description="Print Job Status" statusTypeId="PrintJob"/>
+            <moqui.basic.StatusItem description="Not Sent" sequenceNum="1" statusId="PtjNotSent" statusTypeId="PrintJob"/>
+            <moqui.basic.StatusItem description="Send Failed" sequenceNum="2" statusId="PtjSendFailed" statusTypeId="PrintJob"/>
+
+            <moqui.basic.StatusItem description="Pending" sequenceNum="11" statusId="PtjPending" statusTypeId="PrintJob"/>
+            <moqui.basic.StatusItem description="Pending Held" sequenceNum="12" statusId="PtjPendingHeld" statusTypeId="PrintJob"/>
+            <moqui.basic.StatusItem description="Processing" sequenceNum="13" statusId="PtjProcessing" statusTypeId="PrintJob"/>
+            <moqui.basic.StatusItem description="Processing Stopped" sequenceNum="14" statusId="PtjProcessingStopped" statusTypeId="PrintJob"/>
+            <moqui.basic.StatusItem description="Completed" sequenceNum="15" statusId="PtjCompleted" statusTypeId="PrintJob"/>
+            <moqui.basic.StatusItem description="Aborted" sequenceNum="18" statusId="PtjAborted" statusTypeId="PrintJob"/>
+            <moqui.basic.StatusItem description="Canceled" sequenceNum="19" statusId="PtjCanceled" statusTypeId="PrintJob"/>
+
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="PtjNotSent" toStatusId="PtjPending" transitionName="Send"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="PtjNotSent" toStatusId="PtjSendFailed" transitionName="Failed"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="PtjSendFailed" toStatusId="PtjPending" transitionName="Send"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="PtjPending" toStatusId="PtjProcessing" transitionName="Process"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="PtjProcessing" toStatusId="PtjCompleted" transitionName="Complete"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="PtjPending" toStatusId="PtjCompleted" transitionName="Complete"/>
+
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="PtjPending" toStatusId="PtjPendingHeld" transitionName="Hold"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="PtjPendingHeld" toStatusId="PtjPending" transitionName="Release"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="PtjProcessing" toStatusId="PtjProcessingStopped" transitionName="Stop"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="PtjProcessingStopped" toStatusId="PtjProcessing" transitionName="Resume"/>
+
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="PtjPending" toStatusId="PtjAborted" transitionName="Abort"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="PtjPendingHeld" toStatusId="PtjAborted" transitionName="Abort"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="PtjProcessing" toStatusId="PtjAborted" transitionName="Abort"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="PtjProcessingStopped" toStatusId="PtjAborted" transitionName="Abort"/>
+
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="PtjPending" toStatusId="PtjCanceled" transitionName="Cancel"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="PtjPendingHeld" toStatusId="PtjCanceled" transitionName="Cancel"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="PtjProcessing" toStatusId="PtjCanceled" transitionName="Cancel"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="PtjProcessingStopped" toStatusId="PtjCanceled" transitionName="Cancel"/>
+        </seed-data>
+    </entity>
 </entities>

@@ -11,6 +11,8 @@
  */
 package org.moqui.impl.webapp
 
+import org.moqui.context.ArtifactTarpitException
+
 import javax.servlet.ServletException
 import javax.servlet.http.HttpServlet
 import javax.servlet.http.HttpServletRequest
@@ -22,25 +24,12 @@ import org.moqui.context.ArtifactAuthorizationException
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 
 import javax.xml.transform.stream.StreamSource
-import javax.xml.transform.TransformerFactory
-import javax.xml.transform.Transformer
-import javax.xml.transform.URIResolver
-import javax.xml.transform.sax.SAXResult
-import javax.xml.transform.Source
-
-import org.apache.avalon.framework.configuration.DefaultConfigurationBuilder
-
-import org.apache.fop.apps.FOUserAgent
-import org.apache.fop.apps.Fop
-import org.apache.fop.apps.FopFactory
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 class MoquiFopServlet extends HttpServlet {
     protected final static Logger logger = LoggerFactory.getLogger(MoquiFopServlet.class)
-
-    protected FopFactory internalFopFactory = null
 
     MoquiFopServlet() {
         super()
@@ -64,6 +53,7 @@ class MoquiFopServlet extends HttpServlet {
 
         ExecutionContext ec = ecfi.getExecutionContext()
         ec.initWebFacade(moquiWebappName, request, response)
+        ec.web.requestAttributes.put("moquiRequestStartTime", startTime)
 
         String xslFoText = null
         try {
@@ -77,13 +67,20 @@ class MoquiFopServlet extends HttpServlet {
             String contentType = ec.web.requestParameters."contentType" ?: "application/pdf"
             response.setContentType(contentType)
 
-            xslFoTransform(new StreamSource(new StringReader(xslFoText)), null,
+            ec.resource.xslFoTransform(new StreamSource(new StringReader(xslFoText)), null,
                     response.getOutputStream(), contentType)
         } catch (ArtifactAuthorizationException e) {
-            logger.warn("Web Access Unauthorized: " + e.message)
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.message)
+            // SC_UNAUTHORIZED 401 used when authc/login fails, use SC_FORBIDDEN 403 for authz failures
+            // See ScreenRenderImpl.checkWebappSettings for authc and SC_UNAUTHORIZED handling
+            logger.warn((String) "Web Access Forbidden (no authz): " + e.message)
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, e.message)
+        } catch (ArtifactTarpitException e) {
+            logger.warn((String) "Web Too Many Requests (tarpit): " + e.message)
+            if (e.getRetryAfterSeconds()) response.addIntHeader("Retry-After", e.getRetryAfterSeconds())
+            // NOTE: there is no constant on HttpServletResponse for 429; see RFC 6585 for details
+            response.sendError(429, e.message)
         } catch (ScreenResourceNotFoundException e) {
-            logger.warn("Resource Not Found: ${e.message}")
+            logger.warn((String) "Web Resource Not Found: " + e.message)
             response.sendError(HttpServletResponse.SC_NOT_FOUND, e.message)
         } catch (Throwable t) {
             logger.error("Error transforming XSL-FO content:\n${xslFoText}", t)
@@ -100,53 +97,5 @@ class MoquiFopServlet extends HttpServlet {
         }
 
         if (logger.infoEnabled) logger.info("Finished FOP request to [${pathInfo}] of content type [${response.getContentType()}] in [${(System.currentTimeMillis()-startTime)/1000}] seconds in session [${request.session.id}] thread [${Thread.currentThread().id}:${Thread.currentThread().name}]")
-    }
-
-    FopFactory getFopFactory() {
-        if (internalFopFactory != null) return internalFopFactory
-
-        ExecutionContextFactoryImpl ecfi =
-                (ExecutionContextFactoryImpl) getServletContext().getAttribute("executionContextFactory")
-        // setup FopFactory
-        internalFopFactory = FopFactory.newInstance()
-        // Limit the validation for backwards compatibility
-        internalFopFactory.setStrictValidation(false)
-        DefaultConfigurationBuilder cfgBuilder = new DefaultConfigurationBuilder()
-        internalFopFactory.setUserConfig(cfgBuilder.build(ecfi.resourceFacade.getLocationStream("classpath://fop.xconf")))
-        internalFopFactory.getFontManager().setFontBaseURL(ecfi.runtimePath + "/conf")
-
-        return internalFopFactory
-    }
-
-    void xslFoTransform(StreamSource xslFoSrc, StreamSource xsltSrc, OutputStream out, String contentType) {
-        ExecutionContextFactoryImpl ecfi =
-                (ExecutionContextFactoryImpl) getServletContext().getAttribute("executionContextFactory")
-
-        FopFactory ff = getFopFactory()
-        FOUserAgent foUserAgent = ff.newFOUserAgent()
-        Fop fop = ff.newFop(contentType, foUserAgent, out)
-
-        TransformerFactory factory = TransformerFactory.newInstance()
-        Transformer transformer = xsltSrc == null ? factory.newTransformer() : factory.newTransformer(xsltSrc)
-        transformer.setURIResolver(new LocalResolver(ecfi, transformer.getURIResolver()))
-        transformer.transform(xslFoSrc, new SAXResult(fop.getDefaultHandler()))
-    }
-
-    static class LocalResolver implements URIResolver {
-        protected ExecutionContextFactoryImpl ecfi
-        protected URIResolver defaultResolver
-
-        protected LocalResolver() {}
-
-        public LocalResolver(ExecutionContextFactoryImpl ecfi, URIResolver defaultResolver) {
-            this.ecfi = ecfi
-            this.defaultResolver = defaultResolver
-        }
-
-        public Source resolve(String href, String base) {
-            InputStream is = ecfi.resourceFacade.getLocationStream(href)
-            if (is != null) return new StreamSource(is)
-            return defaultResolver.resolve(href, base)
-        }
     }
 }

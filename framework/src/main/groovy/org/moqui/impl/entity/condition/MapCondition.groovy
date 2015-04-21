@@ -24,6 +24,7 @@ class MapCondition extends EntityConditionImplBase {
     protected Boolean ignoreCase = false
     protected EntityConditionImplBase internalCond = null
     protected int curHashCode
+    protected static final Class thisClass = MapCondition.class
 
     MapCondition(EntityConditionFactoryImpl ecFactoryImpl,
             Map<String, Object> fieldMap, EntityCondition.ComparisonOperator comparisonOperator,
@@ -115,14 +116,12 @@ class MapCondition extends EntityConditionImplBase {
 
     @Override
     boolean equals(Object o) {
-        if (o == null || !(o instanceof MapCondition)) return false
+        if (o == null || o.getClass() != thisClass) return false
         MapCondition that = (MapCondition) o
-        // NOTE: for Java Enums the != is WAY faster than the .equals
-        // NOTE2: Groovy overrides != making it slower...
+        if (!fieldMap.equals(that.fieldMap)) return false
         if (!comparisonOperator.equals(that.comparisonOperator)) return false
         if (!joinOperator.equals(that.joinOperator)) return false
-        if (ignoreCase.booleanValue() != that.ignoreCase.booleanValue()) return false
-        if (!fieldMap.equals(that.fieldMap)) return false
+        if (ignoreCase != that.ignoreCase) return false
         return true
     }
 }

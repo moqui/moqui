@@ -58,20 +58,17 @@ This Work includes contributions authored by David E. Jones, not as a
                 </form-single>
             </widgets>
         </section>
-        <section name="ServiceParametersSection">
-            <condition><expression>serviceName</expression></condition>
-            <widgets>
-                <label text="Run Service: ${serviceName}" type="h3"/>
-                <form-single name="ServiceParameters" transition="run" dynamic="true">
-                    <auto-fields-service service-name="${serviceName}" field-type="edit"/>
-                    <field name="serviceName"><default-field><hidden/></default-field></field>
-                    <field name="doingRun"><default-field><hidden default-value="Y"/></default-field></field>
-                    <field name="submitButton"><default-field title="Run Service"><submit/></default-field></field>
-                    
-                    <field name="cronString"><default-field tooltip="Enter a cron string to schedule instead of running immediately">
-                        <text-line size="20"/></default-field></field>
-                </form-single>
-            </widgets>
-        </section>
+        <section name="ServiceParametersSection" condition="serviceName"><widgets>
+            <label text="Run Service: ${serviceName}" type="h3"/>
+            <form-single name="ServiceParameters" transition="run" dynamic="true">
+                <auto-fields-service service-name="${serviceName}" field-type="edit"/>
+                <field name="serviceName"><default-field><hidden/></default-field></field>
+                <field name="doingRun"><default-field><hidden default-value="Y"/></default-field></field>
+                <field name="submitButton"><default-field title="Run Service"><submit/></default-field></field>
+
+                <field name="cronString"><default-field tooltip="Enter a cron string to schedule instead of running immediately">
+                    <text-line size="20"/></default-field></field>
+            </form-single>
+        </widgets></section>
     </widgets>
 </screen>
