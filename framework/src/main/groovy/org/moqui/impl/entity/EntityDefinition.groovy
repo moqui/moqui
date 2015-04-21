@@ -419,8 +419,12 @@ public class EntityDefinition {
         relationshipInfoMap = new HashMap<String, RelationshipInfo>()
         List<RelationshipInfo> relInfoList = getRelationshipsInfo(false)
         for (RelationshipInfo relInfo in relInfoList) {
+            // always use the full relationshipName
             relationshipInfoMap.put(relInfo.relationshipName, relInfo)
+            // if there is a shortAlias add it under that
             if (relInfo.shortAlias) relationshipInfoMap.put(relInfo.shortAlias, relInfo)
+            // if there is no title, allow referring to the relationship by just the simple entity name (no package)
+            if (!relInfo.title) relationshipInfoMap.put(relInfo.relatedEd.getEntityName(), relInfo)
         }
         return relationshipInfoMap
     }
