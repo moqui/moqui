@@ -13,6 +13,9 @@ package org.moqui.impl.context
 
 import groovy.transform.CompileStatic
 
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentMap
+
 import static org.moqui.context.Cache.EvictionStrategy.*
 
 import org.moqui.context.CacheFacade
@@ -37,7 +40,7 @@ public class CacheFacadeImpl implements CacheFacade {
      */
     protected final CacheManager cacheManager
 
-    protected final Map<String, CacheImpl> localCacheImplMap = new HashMap()
+    protected final ConcurrentMap<String, CacheImpl> localCacheImplMap = new ConcurrentHashMap<String, CacheImpl>()
 
     CacheFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
@@ -69,12 +72,8 @@ public class CacheFacadeImpl implements CacheFacade {
     CacheImpl getCacheImpl(String cacheName) {
         CacheImpl theCache = localCacheImplMap.get(cacheName)
         if (theCache == null) {
-            if (cacheManager.cacheExists(cacheName)) {
-                theCache = new CacheImpl(cacheManager.getCache(cacheName))
-            } else {
-                theCache = new CacheImpl(initCache(cacheName))
-            }
-            localCacheImplMap.put(cacheName, theCache)
+            localCacheImplMap.putIfAbsent(cacheName, new CacheImpl(initCache(cacheName)))
+            theCache = localCacheImplMap.get(cacheName)
         }
         return theCache
     }
