@@ -21,6 +21,7 @@ class ListCondition extends EntityConditionImplBase {
     protected List<EntityConditionImplBase> conditionList
     protected EntityCondition.JoinOperator operator
     protected int curHashCode
+    protected static final Class thisClass = ListCondition.class
 
     ListCondition(EntityConditionFactoryImpl ecFactoryImpl,
             List<EntityConditionImplBase> conditionList, EntityCondition.JoinOperator operator) {
@@ -100,7 +101,7 @@ class ListCondition extends EntityConditionImplBase {
 
     @Override
     boolean equals(Object o) {
-        if (o == null || !(o instanceof ListCondition)) return false
+        if (o == null || o.getClass() != thisClass) return false
         ListCondition that = (ListCondition) o
         // NOTE: for Java Enums the != is WAY faster than the .equals
         if (this.operator != that.operator) return false

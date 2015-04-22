@@ -670,6 +670,9 @@ class ScreenForm {
                     Node dropDownNode = subFieldNode.appendNode("drop-down", ["allow-empty":"true"])
                     dropDownNode.appendNode("option", ["key":"Y"])
                     dropDownNode.appendNode("option", ["key":"N"])
+                } else if (efType == "binary-very-long") {
+                    // would be nice to have something better for this, like a download somehow
+                    subFieldNode.appendNode("display")
                 } else {
                     if (oneRelNode != null) {
                         String title = oneRelNode."@title"

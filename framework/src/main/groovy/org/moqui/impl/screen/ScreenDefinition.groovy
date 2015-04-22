@@ -14,6 +14,7 @@ package org.moqui.impl.screen
 import groovy.transform.CompileStatic
 import groovy.util.slurpersupport.GPathResult
 import org.codehaus.groovy.runtime.InvokerHelper
+import org.moqui.BaseException
 import org.moqui.context.ExecutionContext
 import org.moqui.entity.EntityList
 import org.moqui.entity.EntityValue
@@ -188,6 +189,8 @@ class ScreenDefinition {
                             subscreensByName.put(si.name, si)
                             if (logger.traceEnabled) logger.trace("Added file subscreen [${si.name}] at [${si.location}] to screen [${locationRef}]")
                         }
+                    } catch (Exception e) {
+                        throw new BaseException("Error parsing screen at [${subscreenRef.location}]", e)
                     } finally {
                         if (subscreenIs != null) subscreenIs.close()
                     }

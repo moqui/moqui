@@ -12,7 +12,6 @@
 package org.moqui.impl.entity
 
 import groovy.transform.CompileStatic
-import org.apache.commons.collections.set.ListOrderedSet
 
 import org.moqui.context.Cache
 import org.moqui.context.ResourceReference
@@ -434,13 +433,36 @@ class EntityFacadeImpl implements EntityFacade {
                 if (childNode.name() == "extend-entity") {
                     extendEntityNodes.add(childNode)
                 } else {
-                    if (entityNode != null) logger.warn("Entity [${entityName}] was found again, so overriding")
+                    if (entityNode != null) logger.warn("Entity [${entityName}] was found again at [${location}], so overriding definition from previous location")
                     entityNode = childNode
                 }
             }
         }
-
         if (!entityNode) throw new EntityNotFoundException("No definition found for entity [${entityName}]${packageName ? ' in package ['+packageName+']' : ''}")
+
+        // if entityName is a short-alias extend-entity elements won't match it, so find them again now that we have the main entityNode
+        if (entityName == entityNode."@short-alias") {
+            entityName = entityNode."@entity-name"
+            packageName = entityNode."@package-name"
+            for (String location in entityLocationList) {
+                Node entityRoot = null
+                if (tempEntityFileNodeMap != null) entityRoot = tempEntityFileNodeMap.get(location)
+                if (entityRoot == null) {
+                    InputStream entityStream = this.ecfi.resourceFacade.getLocationStream(location)
+                    entityRoot = new XmlParser().parse(entityStream)
+                    entityStream.close()
+                    if (tempEntityFileNodeMap != null) tempEntityFileNodeMap.put(location, entityRoot)
+                }
+                List<Node> packageChildren = (List<Node>) entityRoot.children()
+                        .findAll({ it."@entity-name" == entityName && (packageName ? it."@package-name" == packageName : true) })
+                for (Node childNode in packageChildren) {
+                    if (childNode.name() == "extend-entity") {
+                        extendEntityNodes.add(childNode)
+                    }
+                }
+            }
+        }
+        // if (entityName.endsWith("xample")) logger.warn("======== Creating Example ED entityNode=${entityNode}\nextendEntityNodes: ${extendEntityNodes}")
 
         // merge the extend-entity nodes
         for (Node extendEntity in extendEntityNodes) {

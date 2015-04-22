@@ -5,7 +5,7 @@
 
     <tools enable-elasticsearch="true" enable-camel="true"/>
 
-    <server-stats stats-skip-condition="ec.web?.request?.pathInfo?.startsWith('/rpc') || ec.web?.request?.pathInfo?.startsWith('/status')">
+    <server-stats stats-skip-condition="pathInfo?.startsWith('/rpc') || pathInfo?.startsWith('/rest') || pathInfo?.startsWith('/status')">
         <artifact-stats type="screen" persist-bin="true" persist-hit="true"/>
         <artifact-stats type="screen-content" persist-bin="true" persist-hit="true"/>
         <artifact-stats type="transition" persist-bin="true" persist-hit="true"/>

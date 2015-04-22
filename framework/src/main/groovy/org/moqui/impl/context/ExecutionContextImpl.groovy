@@ -20,6 +20,9 @@ import org.moqui.context.*
 import org.moqui.entity.EntityFacade
 import org.moqui.entity.EntityList
 import org.moqui.service.ServiceFacade
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpServletRequest
 import org.apache.camel.CamelContext
@@ -27,6 +30,7 @@ import org.moqui.entity.EntityValue
 
 @CompileStatic
 class ExecutionContextImpl implements ExecutionContext {
+    protected final static Logger loggerDirect = LoggerFactory.getLogger(ExecutionContextFactoryImpl.class)
 
     protected ExecutionContextFactoryImpl ecfi
 
@@ -37,6 +41,8 @@ class ExecutionContextImpl implements ExecutionContext {
     protected UserFacadeImpl userFacade = null
     protected MessageFacadeImpl messageFacade = null
     protected ArtifactExecutionFacadeImpl artifactExecutionFacade = null
+
+    protected Boolean skipStats = null
 
     ExecutionContextImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
@@ -160,6 +166,8 @@ class ExecutionContextImpl implements ExecutionContext {
 
     @Override
     void initWebFacade(String webappMoquiName, HttpServletRequest request, HttpServletResponse response) {
+        webFacade = new WebFacadeImpl(webappMoquiName, request, response, this)
+
         tenantId = request.session.getAttribute("moqui.tenantId")
         if (!tenantId) {
             boolean alreadyDisabled = getArtifactExecution().disableAuthz()
@@ -177,7 +185,7 @@ class ExecutionContextImpl implements ExecutionContext {
                 if (!alreadyDisabled) getArtifactExecution().enableAuthz()
             }
         }
-        webFacade = new WebFacadeImpl(webappMoquiName, request, response, this)
+        // now that we have the webFacade and tenantId in place we can do init UserFacade
         ((UserFacadeImpl) getUser()).initFromHttpRequest(request, response)
 
         // perhaps debatable whether or not this is a good idea, but makes things much easier
@@ -185,6 +193,12 @@ class ExecutionContextImpl implements ExecutionContext {
 
         // this is the beginning of a request, so trigger before-request actions
         webFacade.runBeforeRequestActions()
+    }
+
+    boolean getSkipStats() {
+        if (skipStats != null) return skipStats
+        skipStats = ecfi.getSkipStats()
+        return skipStats
     }
 
     void changeTenant(String tenantId) {

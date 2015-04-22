@@ -21,9 +21,9 @@ New Features:
   - overall the overhead of advanced features of the framework such as
     artifact authorization and hit counting are significantly reduced
   - entity, service, and screen operations are dramatically faster
-  - observed common entity and service operations over 10x faster, and
-    screen rendering over 3x faster; with these updates some performance
-    improvement is always possible but this gets pretty close to that limit
+  - observed common entity and service operations 3-8x faster, and
+    screen rendering around 3x faster; with these updates some performance
+    improvement is always possible but this gets pretty close to the limit
   - this effort involves over 3000 lines of code changes, nearly 10% of the
     roughly 35k lines of Java & Groovy code in the framework implementation
 - ScreenUrlInfo has been cleaned up with single use parts split into the
@@ -31,6 +31,11 @@ New Features:
   this isn't an API change, but this is a non-backward compatible change
   and some code using the ScreenRenderImpl and ScreenUrlInfo may need to be
   updated similar to the changes in DefaultScreenMacros.html.ftl
+- Added section.@condition attribute that does the same thing as
+  section.condition.expression but more concise
+- CUPS print server integration and print job management services and admin
+  screens in the System app; can render XSL-FO screens to PDF/etc and
+  print, print ResourceFacade resources, and direct print other documents
 
 Bug Fixes:
 
