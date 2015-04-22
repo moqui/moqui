@@ -73,5 +73,24 @@ class CacheFacadeTests extends Specification {
         testCache.setMaxElements(10000, Cache.LEAST_RECENTLY_USED)
     }
 
+    def "get cache concurrently"() {
+        def getCache = {
+            ec.cache.getCache("CacheFacadeConcurrencyTests")
+        }
+        when:
+        def caches = ConcurrentExecution.executeConcurrently(10, getCache)
+
+        then:
+        caches.size == 10
+        // all elements must be instances of the Cache class, no exceptions or nulls
+        caches.every { item ->
+            item instanceof Cache
+        }
+        // all elements must be references to the same object
+        caches.every { item ->
+            item.equals(caches[0])
+        }
+    }
+
     // TODO: test cache expire time
 }
