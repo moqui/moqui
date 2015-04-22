@@ -51,6 +51,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 import javax.sql.rowset.serial.SerialBlob
+import java.util.concurrent.atomic.AtomicLong
 
 // NOTE: Implementing a Quartz JobStore is a HUGE PITA, Quartz puts a lot of scheduler and state handling logic in the
 //     JobStore. The code here is based mostly on the JobStoreSupport class to replicate that logic.
@@ -1041,8 +1042,8 @@ class EntityJobStore implements JobStore {
         return nextTriggers
     }
 
-    protected static long ftrCtr = System.currentTimeMillis()
-    protected synchronized String getFiredTriggerRecordId() { return instanceId + ftrCtr++ }
+    protected static AtomicLong ftrCtr = new AtomicLong(System.currentTimeMillis())
+    protected String getFiredTriggerRecordId() { return instanceId + ftrCtr.getAndIncrement() }
 
     protected int updateTriggerState(TriggerKey triggerKey, String state) {
         return ecfi.entityFacade.find("moqui.service.quartz.QrtzTriggers")
