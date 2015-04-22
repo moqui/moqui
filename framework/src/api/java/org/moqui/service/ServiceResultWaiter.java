@@ -30,8 +30,6 @@ public class ServiceResultWaiter implements ServiceResultReceiver {
     /** Status code for a successful service */
     public static final int SERVICE_FINISHED = 1;
 
-    private boolean completed = false;
-    private int status = -1;
     private Map<String, Object> result = null;
     private Throwable t = null;
 
@@ -40,8 +38,6 @@ public class ServiceResultWaiter implements ServiceResultReceiver {
      */
     public synchronized void receiveResult(Map<String, Object> result) {
         this.result = result;
-        completed = true;
-        status = SERVICE_FINISHED;
         notify();
     }
 
@@ -50,8 +46,6 @@ public class ServiceResultWaiter implements ServiceResultReceiver {
      */
     public synchronized void receiveThrowable(Throwable t) {
         this.t = t;
-        completed = true;
-        status = SERVICE_FAILED;
         notify();
     }
 
@@ -59,13 +53,17 @@ public class ServiceResultWaiter implements ServiceResultReceiver {
      * Returns the status of the service.
      * @return int Status code
      */
-    public synchronized int status() { return this.status; }
+    public synchronized int status() {
+        if (this.result != null) return SERVICE_FINISHED;
+        if (this.t != null) return SERVICE_FAILED;
+        return SERVICE_RUNNING;
+    }
 
     /**
      * If the service has completed return true
      * @return boolean
      */
-    public synchronized boolean isCompleted() { return completed; }
+    public synchronized boolean isCompleted() { return this.result != null || this.t != null; }
 
     /**
      * Returns the exception which was thrown or null if none
@@ -93,14 +91,14 @@ public class ServiceResultWaiter implements ServiceResultReceiver {
      * Waits for the service to complete
      * @return Map
      */
-    public synchronized Map<String, Object> waitForResult() { return this.waitForResult(10); }
+    public Map<String, Object> waitForResult() { return this.waitForResult(10); }
 
     /**
      * Waits for the service to complete, check the status every n milliseconds
      * @param milliseconds Time in milliseconds to wait
      * @return Map
      */
-    public synchronized Map<String, Object> waitForResult(long milliseconds) {
+    public Map<String, Object> waitForResult(long milliseconds) {
         while (!isCompleted()) {
             try {
                 this.wait(milliseconds);
