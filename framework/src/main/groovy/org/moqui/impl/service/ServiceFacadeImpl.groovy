@@ -476,6 +476,16 @@ class ServiceFacadeImpl implements ServiceFacade {
         callbackList.add(serviceCallback)
     }
 
+    void callRegisteredCallbacks(String serviceName, Map<String, Object> context, Map<String, Object> result) {
+        List<ServiceCallback> callbackList = callbackRegistry.get(serviceName)
+        if (callbackList) for (ServiceCallback scb in callbackList) scb.receiveEvent(context, result)
+    }
+
+    void callRegisteredCallbacksThrowable(String serviceName, Map<String, Object> context, Throwable t) {
+        List<ServiceCallback> callbackList = callbackRegistry.get(serviceName)
+        if (callbackList) for (ServiceCallback scb in callbackList) scb.receiveEvent(context, t)
+    }
+
     @Override
     @CompileStatic
     Scheduler getScheduler() { return scheduler }

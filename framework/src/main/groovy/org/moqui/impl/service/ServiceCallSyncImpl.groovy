@@ -252,7 +252,10 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                     sfi.registerTxSecaRules(getServiceNameNoHash(), currentParameters, result)
                 }
 
+                // post-service SECA rules
                 sfi.runSecaRules(getServiceNameNoHash(), currentParameters, result, "post-service")
+                // registered callbacks, no Throwable
+                sfi.callRegisteredCallbacks(getServiceName(), currentParameters, result)
                 // if we got any errors added to the message list in the service, rollback for that too
                 if (eci.getMessage().hasError()) {
                     tf.rollback(beganTransaction, "Error running service [${getServiceName()}] (message): " + eci.getMessage().getErrorsString(), null)
@@ -264,6 +267,9 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                 throw e
             } catch (Throwable t) {
                 BaseException.filterStackTrace(t)
+                // registered callbacks with Throwable
+                sfi.callRegisteredCallbacksThrowable(getServiceName(), currentParameters, t)
+                // rollback the transaction
                 tf.rollback(beganTransaction, "Error running service [${getServiceName()}] (Throwable)", t)
                 logger.warn("Error running service [${getServiceName()}] (Throwable)", t)
                 // add all exception messages to the error messages list
