@@ -17,6 +17,7 @@ import org.moqui.context.Cache
 import org.moqui.context.ResourceReference
 import org.moqui.impl.StupidJavaUtilities
 import org.moqui.impl.StupidUtilities
+import org.moqui.impl.service.runner.EntityAutoServiceRunner
 import org.moqui.impl.service.runner.RemoteJsonRpcServiceRunner
 import org.moqui.service.ServiceFacade
 import org.moqui.service.ServiceCallback
@@ -137,8 +138,7 @@ class ServiceFacadeImpl implements ServiceFacade {
     @CompileStatic
     boolean isEntityAutoPattern(String path, String verb, String noun) {
         // if no path, verb is create|update|delete and noun is a valid entity name, do an implicit entity-auto
-        return !path && ("create".equals(verb) || "update".equals(verb) || "delete".equals(verb) || "store".equals(verb)) &&
-                getEcfi().getEntityFacade().isEntityDefined(noun)
+        return !path && EntityAutoServiceRunner.verbSet.contains(verb) && getEcfi().getEntityFacade().isEntityDefined(noun)
     }
 
 
