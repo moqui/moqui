@@ -36,6 +36,9 @@ import org.moqui.BaseException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+import java.util.concurrent.locks.Lock
+import java.util.concurrent.locks.ReentrantLock
+
 class EntityFacadeImpl implements EntityFacade {
     protected final static Logger logger = LoggerFactory.getLogger(EntityFacadeImpl.class)
 
@@ -53,6 +56,7 @@ class EntityFacadeImpl implements EntityFacade {
     /** Sequence name (often entity name) plus tenantId is the key and the value is an array of 2 Longs the first is the next
      * available value and the second is the highest value reserved/cached in the bank. */
     protected final Cache entitySequenceBankCache
+    protected final Lock locationLoadLock = new ReentrantLock()
 
     protected final Map<String, List<EntityEcaRule>> eecaRulesByEntityName = new HashMap()
     protected final Map<String, String> entityGroupNameMap = new HashMap()
@@ -238,39 +242,46 @@ class EntityFacadeImpl implements EntityFacade {
         return entityRrList
     }
 
-    synchronized void loadAllEntityLocations() {
-        // load all entity files based on ResourceReference
-        long startTime = System.currentTimeMillis()
-        List<ResourceReference> allEntityFileLocations = getAllEntityFileLocations()
-        for (ResourceReference entityRr in allEntityFileLocations) this.loadEntityFileLocations(entityRr)
-        if (logger.isInfoEnabled()) logger.info("Found entities in ${allEntityFileLocations.size()} files in ${System.currentTimeMillis() - startTime}ms")
+    void loadAllEntityLocations() {
+        // lock or wait for lock, this lock used here and for checking entity defined
+        locationLoadLock.lock()
 
-        // look for view-entity definitions in the database (moqui.entity.view.DbViewEntity)
-        if (entityLocationCache.get("moqui.entity.view.DbViewEntity")) {
-            int numDbViewEntities = 0
-            for (EntityValue dbViewEntity in makeFind("moqui.entity.view.DbViewEntity").list()) {
-                if (dbViewEntity.packageName) {
-                    List pkgList = (List) this.entityLocationCache.get(dbViewEntity.packageName + "." + dbViewEntity.dbViewEntityName)
-                    if (!pkgList) {
-                        pkgList = new LinkedList()
-                        this.entityLocationCache.put(dbViewEntity.packageName + "." + dbViewEntity.dbViewEntityName, pkgList)
+        try {
+            // load all entity files based on ResourceReference
+            long startTime = System.currentTimeMillis()
+            List<ResourceReference> allEntityFileLocations = getAllEntityFileLocations()
+            for (ResourceReference entityRr in allEntityFileLocations) this.loadEntityFileLocations(entityRr)
+            if (logger.isInfoEnabled()) logger.info("Found entities in ${allEntityFileLocations.size()} files in ${System.currentTimeMillis() - startTime}ms")
+
+            // look for view-entity definitions in the database (moqui.entity.view.DbViewEntity)
+            if (entityLocationCache.get("moqui.entity.view.DbViewEntity")) {
+                int numDbViewEntities = 0
+                for (EntityValue dbViewEntity in makeFind("moqui.entity.view.DbViewEntity").list()) {
+                    if (dbViewEntity.packageName) {
+                        List pkgList = (List) this.entityLocationCache.get(dbViewEntity.packageName + "." + dbViewEntity.dbViewEntityName)
+                        if (!pkgList) {
+                            pkgList = new LinkedList()
+                            this.entityLocationCache.put(dbViewEntity.packageName + "." + dbViewEntity.dbViewEntityName, pkgList)
+                        }
+                        if (!pkgList.contains("_DB_VIEW_ENTITY_")) pkgList.add("_DB_VIEW_ENTITY_")
                     }
-                    if (!pkgList.contains("_DB_VIEW_ENTITY_")) pkgList.add("_DB_VIEW_ENTITY_")
-                }
 
-                List nameList = (List) this.entityLocationCache.get((String) dbViewEntity.dbViewEntityName)
-                if (!nameList) {
-                    nameList = new LinkedList()
-                    // put in cache under both plain entityName and fullEntityName
-                    this.entityLocationCache.put((String) dbViewEntity.dbViewEntityName, nameList)
-                }
-                if (!nameList.contains("_DB_VIEW_ENTITY_")) nameList.add("_DB_VIEW_ENTITY_")
+                    List nameList = (List) this.entityLocationCache.get((String) dbViewEntity.dbViewEntityName)
+                    if (!nameList) {
+                        nameList = new LinkedList()
+                        // put in cache under both plain entityName and fullEntityName
+                        this.entityLocationCache.put((String) dbViewEntity.dbViewEntityName, nameList)
+                    }
+                    if (!nameList.contains("_DB_VIEW_ENTITY_")) nameList.add("_DB_VIEW_ENTITY_")
 
-                numDbViewEntities++
+                    numDbViewEntities++
+                }
+                if (logger.infoEnabled) logger.info("Found [${numDbViewEntities}] view-entity definitions in database (moqui.entity.view.DbViewEntity)")
+            } else {
+                logger.warn("Could not find view-entity definitions in database (moqui.entity.view.DbViewEntity), no location found for the moqui.entity.view.DbViewEntity entity.")
             }
-            if (logger.infoEnabled) logger.info("Found [${numDbViewEntities}] view-entity definitions in database (moqui.entity.view.DbViewEntity)")
-        } else {
-            logger.warn("Could not find view-entity definitions in database (moqui.entity.view.DbViewEntity), no location found for the moqui.entity.view.DbViewEntity entity.")
+        } finally {
+            locationLoadLock.unlock()
         }
 
         /* a little code to show all entities and their locations
@@ -283,7 +294,8 @@ class EntityFacadeImpl implements EntityFacade {
         */
     }
 
-    protected synchronized void loadEntityFileLocations(ResourceReference entityRr) {
+    // NOTE: only called by loadAllEntityLocations() which is synchronized/locked, so doesn't need to be
+    protected void loadEntityFileLocations(ResourceReference entityRr) {
         InputStream entityStream = entityRr.openStream()
         if (entityStream == null) throw new BaseException("Could not open stream to entity file at [${entityRr.location}]")
         Node entityRoot = new XmlParser().parse(entityStream)
@@ -349,9 +361,8 @@ class EntityFacadeImpl implements EntityFacade {
             // no locations found for this entity, entity probably doesn't exist
             if (!entityLocationList) {
                 entityLocationCache.put(entityName, [])
-                EntityException ee = new EntityNotFoundException("No definition found for entity-name [${entityName}]")
-                if (logger.infoEnabled) logger.info("No definition found for entity-name [${entityName}]")
-                throw ee
+                if (logger.isWarnEnabled()) logger.warn("No definition found for entity-name [${entityName}]")
+                throw new EntityNotFoundException("No definition found for entity-name [${entityName}]")
             }
         }
 
@@ -695,25 +706,46 @@ class EntityFacadeImpl implements EntityFacade {
         return entityInfoList
     }
 
+    /** This is used mostly by the service engine to quickly determine whether a noun is an entity. Called for all
+     * ServiceDefinition init to see if the noun is an entity name. Called by entity auto check if no path and verb is
+     * one of the entity-auto supported verbs. */
     @CompileStatic
     boolean isEntityDefined(String entityName) {
         if (!entityName) return false
-        // optimization, common case: if it's in the location cache it is exists, even if expired; if it isn't there
+        // Optimization, common case: if it's in the location cache it is exists, even if expired; if it isn't there
         //     doesn't necessarily mean it isn't defined, so then do more
-        if (entityLocationCache.containsKey(entityName)) return true
+        List locationList = (List) entityLocationCache.get(entityName)
+        if (locationList != null) return locationList.size() > 0
 
-        entityLocationCache.clearExpired()
-        if (entityLocationCache.size() > 0) {
-            return entityLocationCache.containsKey(entityName)
-        } else {
-            // faster to not do this, causes reload of all entity files if not found (happens a lot for this method):
-            try {
-                EntityDefinition ed = getEntityDefinition(entityName)
-                return ed != null
-            } catch (EntityException ee) {
-                // ignore the exception, just means entity not found
-                return false
+        // There is a concurrency issue here with clearExpired() and then checking for size() > 0 and assuming all
+        //     entities will be there... if loadEntityFileLocations() is running then some may be loaded and others not
+        //     yet, resulting in an error that is rare but has been observed
+        // The reason for this is performance, reloading all entity locations is expensive, but an empty
+        //     entityLocationCache only happens in dev mode with a timeout on cache entries, or in production when the
+        //     cache is cleared
+        // Solution: use a reentrant lock here and in loadEntityFileLocations()
+        locationLoadLock.lock()
+        try {
+            entityLocationCache.clearExpired()
+            if (entityLocationCache.size() > 0) {
+                return entityLocationCache.containsKey(entityName)
+            } else {
+                // faster to not do this, causes reload of all entity files if not found (happens a lot for this method):
+                long startTime = System.currentTimeMillis()
+                try {
+                    EntityDefinition ed = getEntityDefinition(entityName)
+                    boolean isEntity = ed != null
+                    // log the time it takes to do this to keep an eye on whether a better solution is needed
+                    if (logger.isInfoEnabled()) logger.info("Got definition for uncached entity [${entityName}] in ${System.currentTimeMillis() - startTime}ms, isEntity? ${isEntity}")
+                    return isEntity
+                } catch (EntityNotFoundException enfe) {
+                    // ignore the exception, just means entity not found
+                    if (logger.isInfoEnabled()) logger.info("Exception (not found) for uncached entity [${entityName}] in ${System.currentTimeMillis() - startTime}ms")
+                    return false
+                }
             }
+        } finally {
+            locationLoadLock.unlock()
         }
     }
 
