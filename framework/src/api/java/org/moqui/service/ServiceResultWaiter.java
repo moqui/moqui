@@ -15,6 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * ServiceFacade Result Waiter Class
@@ -32,12 +34,15 @@ public class ServiceResultWaiter implements ServiceResultReceiver {
 
     private Map<String, Object> result = null;
     private Throwable t = null;
+    private Lock stateLock = new ReentrantLock();
 
     /**
      * @see ServiceResultReceiver#receiveResult(java.util.Map)
      */
     public synchronized void receiveResult(Map<String, Object> result) {
+        stateLock.lock();
         this.result = result;
+        stateLock.unlock();
         notify();
     }
 
@@ -45,7 +50,9 @@ public class ServiceResultWaiter implements ServiceResultReceiver {
      * @see ServiceResultReceiver#receiveThrowable(java.lang.Throwable)
      */
     public synchronized void receiveThrowable(Throwable t) {
+        stateLock.lock();
         this.t = t;
+        stateLock.unlock();
         notify();
     }
 
@@ -53,38 +60,60 @@ public class ServiceResultWaiter implements ServiceResultReceiver {
      * Returns the status of the service.
      * @return int Status code
      */
-    public synchronized int status() {
-        if (this.result != null) return SERVICE_FINISHED;
-        if (this.t != null) return SERVICE_FAILED;
-        return SERVICE_RUNNING;
+    public int status() {
+        stateLock.lock();
+        try {
+            if (this.result != null) return SERVICE_FINISHED;
+            if (this.t != null) return SERVICE_FAILED;
+            return SERVICE_RUNNING;
+        } finally {
+            stateLock.unlock();
+        }
     }
 
     /**
      * If the service has completed return true
      * @return boolean
      */
-    public synchronized boolean isCompleted() { return this.result != null || this.t != null; }
+    public boolean isCompleted() {
+        stateLock.lock();
+        try {
+            return this.result != null || this.t != null;
+        } finally {
+            stateLock.unlock();
+        }
+    }
 
     /**
      * Returns the exception which was thrown or null if none
      * @return Exception
      */
-    public synchronized Throwable getThrowable() {
-        if (!isCompleted()) {
-            throw new java.lang.IllegalStateException("Cannot return exception, service has not completed.");
+    public Throwable getThrowable() {
+        stateLock.lock();
+        try {
+            if (!isCompleted()) {
+                throw new java.lang.IllegalStateException("Cannot return exception, service has not completed.");
+            }
+            return this.t;
+        } finally {
+            stateLock.unlock();
         }
-        return this.t;
     }
 
     /**
      * Gets the results of the service or null if none
      * @return Map
      */
-    public synchronized Map<String, Object> getResult() {
-        if (!isCompleted()) {
-            throw new java.lang.IllegalStateException("Cannot return result, service has not completed.");
+    public Map<String, Object> getResult() {
+        stateLock.lock();
+        try {
+            if (!isCompleted()) {
+                throw new java.lang.IllegalStateException("Cannot return result, service has not completed.");
+            }
+            return result;
+        } finally {
+            stateLock.unlock();
         }
-        return result;
     }
 
     /**
@@ -98,7 +127,7 @@ public class ServiceResultWaiter implements ServiceResultReceiver {
      * @param milliseconds Time in milliseconds to wait
      * @return Map
      */
-    public Map<String, Object> waitForResult(long milliseconds) {
+    public synchronized Map<String, Object> waitForResult(long milliseconds) {
         while (!isCompleted()) {
             try {
                 this.wait(milliseconds);
