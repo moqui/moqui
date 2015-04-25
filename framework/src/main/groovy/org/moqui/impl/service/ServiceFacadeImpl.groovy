@@ -46,6 +46,9 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 import java.sql.Timestamp
+import java.util.concurrent.ConcurrentMap
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArrayList
 
 class ServiceFacadeImpl implements ServiceFacade {
     protected final static Logger logger = LoggerFactory.getLogger(ServiceFacadeImpl.class)
@@ -62,7 +65,7 @@ class ServiceFacadeImpl implements ServiceFacade {
     protected final Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler()
     protected Map<String, Object> schedulerInfoMap
 
-    protected final Map<String, List<ServiceCallback>> callbackRegistry = new HashMap()
+    protected final ConcurrentMap<String, List<ServiceCallback>> callbackRegistry = new ConcurrentHashMap<>()
 
     ServiceFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
@@ -467,13 +470,24 @@ class ServiceFacadeImpl implements ServiceFacade {
 
     @Override
     @CompileStatic
-    synchronized void registerCallback(String serviceName, ServiceCallback serviceCallback) {
+    void registerCallback(String serviceName, ServiceCallback serviceCallback) {
         List<ServiceCallback> callbackList = callbackRegistry.get(serviceName)
         if (callbackList == null) {
-            callbackList = new ArrayList()
-            callbackRegistry.put(serviceName, callbackList)
+            callbackList = new CopyOnWriteArrayList()
+            callbackRegistry.putIfAbsent(serviceName, callbackList)
+            callbackList = callbackRegistry.get(serviceName)
         }
         callbackList.add(serviceCallback)
+    }
+
+    void callRegisteredCallbacks(String serviceName, Map<String, Object> context, Map<String, Object> result) {
+        List<ServiceCallback> callbackList = callbackRegistry.get(serviceName)
+        if (callbackList) for (ServiceCallback scb in callbackList) scb.receiveEvent(context, result)
+    }
+
+    void callRegisteredCallbacksThrowable(String serviceName, Map<String, Object> context, Throwable t) {
+        List<ServiceCallback> callbackList = callbackRegistry.get(serviceName)
+        if (callbackList) for (ServiceCallback scb in callbackList) scb.receiveEvent(context, t)
     }
 
     @Override
