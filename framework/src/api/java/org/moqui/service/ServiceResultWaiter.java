@@ -98,7 +98,7 @@ public class ServiceResultWaiter implements ServiceResultReceiver {
      * @param milliseconds Time in milliseconds to wait
      * @return Map
      */
-    public Map<String, Object> waitForResult(long milliseconds) {
+    public synchronized Map<String, Object> waitForResult(long milliseconds) {
         while (!isCompleted()) {
             try {
                 this.wait(milliseconds);
