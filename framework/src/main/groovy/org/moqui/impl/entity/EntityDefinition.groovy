@@ -415,7 +415,12 @@ public class EntityDefinition {
 
     @CompileStatic
     Map<String, RelationshipInfo> getRelationshipInfoMap() {
-        if (relationshipInfoMap != null) return relationshipInfoMap
+        if (relationshipInfoMap == null) makeRelInfoMap()
+        return relationshipInfoMap
+    }
+    @CompileStatic
+    private synchronized void makeRelInfoMap() {
+        if (relationshipInfoMap != null) return
         relationshipInfoMap = new HashMap<String, RelationshipInfo>()
         List<RelationshipInfo> relInfoList = getRelationshipsInfo(false)
         for (RelationshipInfo relInfo in relInfoList) {
@@ -426,7 +431,6 @@ public class EntityDefinition {
             // if there is no title, allow referring to the relationship by just the simple entity name (no package)
             if (!relInfo.title) relationshipInfoMap.put(relInfo.relatedEd.getEntityName(), relInfo)
         }
-        return relationshipInfoMap
     }
 
     @CompileStatic
