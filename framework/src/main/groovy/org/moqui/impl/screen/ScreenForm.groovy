@@ -14,6 +14,7 @@ package org.moqui.impl.screen
 import groovy.transform.CompileStatic
 import org.apache.commons.collections.map.ListOrderedMap
 import org.apache.commons.collections.set.ListOrderedSet
+import org.moqui.BaseException
 import org.moqui.impl.actions.XmlAction
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.impl.entity.EntityDefinition
@@ -278,6 +279,7 @@ class ScreenForm {
             boolean alreadyDisabled = ecfi.getExecutionContext().getArtifactExecution().disableAuthz()
             try {
                 EntityValue dbForm = ecfi.getEntityFacade().find("moqui.screen.form.DbForm").condition("formId", formId).useCache(true).one()
+                if (dbForm == null) throw new BaseException("Could not find DbForm record with ID [${formId}]")
                 dbFormNode = new Node(null, (dbForm.isListForm == "Y" ? "form-list" : "form-single"), null)
 
                 EntityList dbFormFieldList = ecfi.getEntityFacade().find("moqui.screen.form.DbFormField").condition("formId", formId)

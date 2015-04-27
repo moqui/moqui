@@ -65,8 +65,12 @@ public class ScreenFacadeImpl implements ScreenFacade {
     }
     protected void warmCacheScreen(ScreenDefinition sd) {
         for (SubscreensItem ssi in sd.subscreensByName.values()) {
-            ScreenDefinition subSd = getScreenDefinition(ssi.getLocation())
-            if (subSd) warmCacheScreen(subSd)
+            try {
+                ScreenDefinition subSd = getScreenDefinition(ssi.getLocation())
+                if (subSd) warmCacheScreen(subSd)
+            } catch (Throwable t) {
+                logger.error("Error loading screen at [${ssi.getLocation()}] during cache warming", t)
+            }
         }
     }
 
