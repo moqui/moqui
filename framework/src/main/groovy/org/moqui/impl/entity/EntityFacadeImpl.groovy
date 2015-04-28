@@ -145,16 +145,37 @@ class EntityFacadeImpl implements EntityFacade {
 
     void checkInitDatasourceTables() {
         // if startup-add-missing=true check tables now
-        for (Node datasourceNode in ecfi.getConfXmlRoot()."entity-facade"[0]."datasource") {
+        logger.info("Checking tables for all entities")
+        long currentTime = System.currentTimeMillis()
+
+        Map<String, Boolean> startupAddMissingByGroup = [:]
+        Node entityFacadeNode = ecfi.getConfXmlRoot()."entity-facade"[0]
+        for (Node datasourceNode in entityFacadeNode."datasource") {
+            String groupName = datasourceNode."@group-name"
             if (datasourceNode."@startup-add-missing" == "true") {
-                loadAllEntityLocations()
-                String groupName = datasourceNode."@group-name"
-                logger.info("Checking all tables in group [${groupName}]")
-                long currentTime = System.currentTimeMillis()
-                checkAllEntityTables(groupName)
-                logger.info("Checked all tables in group [${groupName}] in ${(System.currentTimeMillis() - currentTime)/1000} seconds")
+                startupAddMissingByGroup.put(groupName, true)
+                // checkAllEntityTables(groupName)
+            } else {
+                startupAddMissingByGroup.put(groupName, false)
             }
         }
+
+        loadAllEntityLocations()
+        for (String entityName in getAllEntityNames()) {
+            String groupName = getEntityGroupName(entityName)
+            boolean checkAndAdd = false
+            if (startupAddMissingByGroup.get(groupName) != null) {
+                checkAndAdd = startupAddMissingByGroup.get(groupName)
+            } else {
+                checkAndAdd = startupAddMissingByGroup.get(defaultGroupName)
+            }
+            if (checkAndAdd) {
+                EntityDatasourceFactory edf = getDatasourceFactory(groupName)
+                edf.checkAndAddTable(entityName)
+            }
+        }
+
+        logger.info("Checked tables for all entities in ${(System.currentTimeMillis() - currentTime)/1000} seconds")
     }
 
     protected void initAllDatasources() {
@@ -1229,6 +1250,7 @@ class EntityFacadeImpl implements EntityFacade {
         return groupEntityNames
     }
 
+    @CompileStatic
     @Override
     String getEntityGroupName(String entityName) {
         String entityGroupName = entityGroupNameMap.get(entityName)
@@ -1240,6 +1262,7 @@ class EntityFacadeImpl implements EntityFacade {
         return entityGroupName
     }
 
+    @CompileStatic
     @Override
     Connection getConnection(String groupName) {
         EntityDatasourceFactory edf = getDatasourceFactory(groupName)
