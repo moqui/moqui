@@ -15,8 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * ServiceFacade Result Waiter Class
@@ -32,28 +30,27 @@ public class ServiceResultWaiter implements ServiceResultReceiver {
     /** Status code for a successful service */
     public static final int SERVICE_FINISHED = 1;
 
-    private Map<String, Object> result = null;
-    private Throwable t = null;
-    private Lock stateLock = new ReentrantLock();
+    private volatile Map<String, Object> result = null;
+    private volatile Throwable t = null;
 
     /**
      * @see ServiceResultReceiver#receiveResult(java.util.Map)
      */
-    public synchronized void receiveResult(Map<String, Object> result) {
-        stateLock.lock();
+    public void receiveResult(Map<String, Object> result) {
         this.result = result;
-        stateLock.unlock();
-        notify();
+        synchronized (this) {
+            this.notify();
+        }
     }
 
     /**
      * @see ServiceResultReceiver#receiveThrowable(java.lang.Throwable)
      */
-    public synchronized void receiveThrowable(Throwable t) {
-        stateLock.lock();
+    public void receiveThrowable(Throwable t) {
         this.t = t;
-        stateLock.unlock();
-        notify();
+        synchronized (this) {
+            this.notify();
+        }
     }
 
     /**
@@ -61,14 +58,9 @@ public class ServiceResultWaiter implements ServiceResultReceiver {
      * @return int Status code
      */
     public int status() {
-        stateLock.lock();
-        try {
-            if (this.result != null) return SERVICE_FINISHED;
-            if (this.t != null) return SERVICE_FAILED;
-            return SERVICE_RUNNING;
-        } finally {
-            stateLock.unlock();
-        }
+        if (this.result != null) return SERVICE_FINISHED;
+        if (this.t != null) return SERVICE_FAILED;
+        return SERVICE_RUNNING;
     }
 
     /**
@@ -76,12 +68,7 @@ public class ServiceResultWaiter implements ServiceResultReceiver {
      * @return boolean
      */
     public boolean isCompleted() {
-        stateLock.lock();
-        try {
-            return this.result != null || this.t != null;
-        } finally {
-            stateLock.unlock();
-        }
+        return this.result != null || this.t != null;
     }
 
     /**
@@ -89,15 +76,10 @@ public class ServiceResultWaiter implements ServiceResultReceiver {
      * @return Exception
      */
     public Throwable getThrowable() {
-        stateLock.lock();
-        try {
-            if (!isCompleted()) {
-                throw new java.lang.IllegalStateException("Cannot return exception, service has not completed.");
-            }
-            return this.t;
-        } finally {
-            stateLock.unlock();
+        if (!isCompleted()) {
+            throw new java.lang.IllegalStateException("Cannot return exception, service has not completed.");
         }
+        return this.t;
     }
 
     /**
@@ -105,15 +87,10 @@ public class ServiceResultWaiter implements ServiceResultReceiver {
      * @return Map
      */
     public Map<String, Object> getResult() {
-        stateLock.lock();
-        try {
-            if (!isCompleted()) {
-                throw new java.lang.IllegalStateException("Cannot return result, service has not completed.");
-            }
-            return result;
-        } finally {
-            stateLock.unlock();
+        if (!isCompleted()) {
+            throw new java.lang.IllegalStateException("Cannot return result, service has not completed.");
         }
+        return result;
     }
 
     /**
@@ -127,10 +104,12 @@ public class ServiceResultWaiter implements ServiceResultReceiver {
      * @param milliseconds Time in milliseconds to wait
      * @return Map
      */
-    public synchronized Map<String, Object> waitForResult(long milliseconds) {
+    public Map<String, Object> waitForResult(long milliseconds) {
         while (!isCompleted()) {
             try {
-                this.wait(milliseconds);
+                synchronized (this) {
+                    this.wait(milliseconds);
+                }
             } catch (java.lang.InterruptedException e) {
                 logger.error("Error while waiting for result of async call to service", e);
             }
