@@ -313,7 +313,7 @@ ${sri.renderSection(.node["@name"])}
         <div class="modal-dialog" style="width: ${.node["@width"]!"600"}px;">
             <div class="modal-content">
                 <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                     <h4 class="modal-title">${buttonText}</h4>
                 </div>
                 <div class="modal-body">
@@ -356,7 +356,7 @@ ${sri.renderSection(.node["@name"])}
         <div class="modal-dialog" style="width: ${.node["@width"]!"600"}px;">
             <div class="modal-content">
                 <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                     <h4 class="modal-title">${buttonText}</h4>
                 </div>
                 <div class="modal-body" id="${divId}-body">
