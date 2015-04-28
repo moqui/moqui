@@ -47,6 +47,9 @@ Bug Fixes:
   the reverse one can get picked up and isn't the one desired
 - Fixed issues with loading KIE modules and JAR files from components on
   Windows caused by issue in BaseResourceReference URI handling
+- Fixed issue with startup-add-missing=true and runtime-add-missing=false
+  where entities in a group without an explicit datasource would never have
+  their tables created
 
 ===========================================================================
 Release 1.5.1 - 29 Mar 2015
