@@ -438,8 +438,10 @@ public class EntityDefinition {
     List<RelationshipInfo> getRelationshipsInfo(boolean dependentsOnly) {
         if (relationshipInfoList == null) makeRelInfoList()
 
+        if (!dependentsOnly) return new ArrayList(relationshipInfoList)
+        // just get dependents
         List<RelationshipInfo> infoListCopy = []
-        for (RelationshipInfo info in relationshipInfoList) if (!dependentsOnly || info.dependent) infoListCopy.add(info)
+        for (RelationshipInfo info in relationshipInfoList) if (info.dependent) infoListCopy.add(info)
         return infoListCopy
     }
     private synchronized void makeRelInfoList() {
