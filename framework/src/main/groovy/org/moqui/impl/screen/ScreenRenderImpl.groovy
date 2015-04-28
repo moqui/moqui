@@ -781,6 +781,7 @@ class ScreenRenderImpl implements ScreenRender {
             section.render(this)
             writer.flush()
         } catch (Throwable t) {
+            BaseException.filterStackTrace(t)
             logger.error("Error rendering section [${sectionName}] in screen [${sd.location}]: " + t.toString(), t)
             return "Error rendering section [${sectionName}] in screen [${sd.location}]: ${t.toString()}"
         }
