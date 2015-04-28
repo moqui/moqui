@@ -14,6 +14,7 @@ allprojects { version = '1.5.2' }
 
 def tomcatHome = '../apache-tomcat-8.0.21'
 def warName = 'moqui-' + version + '.war'
+def plusRuntimeName = 'moqui-plus-runtime.war'
 def execTempDir = 'execwartmp'
 
 def moquiRuntime = 'runtime'
@@ -42,6 +43,7 @@ task cleanLog(type: Delete) { delete fileTree(dir: moquiRuntime+'/log', include:
 task cleanTxLog(type: Delete) { delete fileTree(dir: moquiRuntime+'/txlog', include: '*') }
 task cleanLoadSave(type: Delete) { delete file('SaveDEFAULT.zip'); delete file('SaveTenant.zip'); delete file('SaveTransactional.zip');
     delete file('SaveAnalytical.zip'); delete file('SaveOrientDb.zip'); delete file('SaveElasticSearch.zip') }
+task cleanPlusRuntime(type: Delete) { delete file(plusRuntimeName) }
 task cleanOther(type: Delete) { delete fileTree(dir: '.', includes: ['**/.nbattrs', '**/*~', '**/.#*', '**/.DS_Store', '**/*.rej', '**/*.orig']) }
 
 task cleanAll {
@@ -53,6 +55,7 @@ task cleanAll {
     dependsOn cleanTxLog
     dependsOn cleanLog
     dependsOn cleanLoadSave
+    dependsOn cleanPlusRuntime
     dependsOn cleanOther
 }
 
@@ -172,8 +175,8 @@ task addRuntime << {
     copy { from file('MoquiInit.properties'); into 'wartemp/WEB-INF/classes' }
 
     // zip it up again
-    ant.zip(destfile: 'moqui-plus-runtime.war') { fileset(dir: 'wartemp') { include(name: '**/*') } }
-    // alternative once supported: zip { archiveName 'moqui-plus-runtime.war'; from fileTree(dir: 'wartemp', include: '**/*') }
+    ant.zip(destfile: plusRuntimeName) { fileset(dir: 'wartemp') { include(name: '**/*') } }
+    // alternative once supported: zip { archiveName plusRuntimeName; from fileTree(dir: 'wartemp', include: '**/*') }
     // clean up the temporary directory
     delete file('wartemp')
 }
@@ -181,7 +184,7 @@ task addRuntime << {
 // don't use this task directly, use addRuntimeTomcat which calls this
 task deployTomcatRuntime << {
     delete file(tomcatHome + '/runtime'); delete file(tomcatHome + '/webapps/ROOT'); delete file(tomcatHome + '/webapps/ROOT.war')
-    copy { from file('moqui-plus-runtime.war'); into file(tomcatHome + '/webapps'); rename('moqui-plus-runtime.war', 'ROOT.war') }
+    copy { from file(plusRuntimeName); into file(tomcatHome + '/webapps'); rename(plusRuntimeName, 'ROOT.war') }
 }
 task addRuntimeTomcat {
     dependsOn addRuntime
