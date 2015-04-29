@@ -100,11 +100,14 @@ class ServiceFacadeImpl implements ServiceFacade {
     }
 
     void warmCache()  {
-        logger.info("Warming cache for all services")
-        for (String serviceName in getKnownServiceNames()) {
+        logger.info("Warming cache for all service definitions")
+        long startTime = System.currentTimeMillis()
+        Set<String> serviceNames = getKnownServiceNames()
+        for (String serviceName in serviceNames) {
             try { getServiceDefinition(serviceName) }
             catch (Throwable t) { logger.warn("Error warming service cache: ${t.toString()}") }
         }
+        logger.info("Warmed service definition cache for ${serviceNames.size()} services in ${(System.currentTimeMillis() - startTime)/1000} seconds")
     }
 
     void destroy() {

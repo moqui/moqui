@@ -57,21 +57,28 @@ public class ScreenFacadeImpl implements ScreenFacade {
     ExecutionContextFactoryImpl getEcfi() { return ecfi }
 
     void warmCache() {
+        long startTime = System.currentTimeMillis()
+        int screenCount = 0
         for (String rootLocation in getAllRootScreenLocations()) {
             logger.info("Warming cache for all screens under ${rootLocation}")
             ScreenDefinition rootSd = getScreenDefinition(rootLocation)
-            warmCacheScreen(rootSd)
+            screenCount++
+            screenCount += warmCacheScreen(rootSd)
         }
+        logger.info("Warmed screen definition cache for ${screenCount} screens in ${(System.currentTimeMillis() - startTime)/1000} seconds")
     }
-    protected void warmCacheScreen(ScreenDefinition sd) {
+    protected int warmCacheScreen(ScreenDefinition sd) {
+        int screenCount = 0
         for (SubscreensItem ssi in sd.subscreensByName.values()) {
             try {
                 ScreenDefinition subSd = getScreenDefinition(ssi.getLocation())
-                if (subSd) warmCacheScreen(subSd)
+                screenCount++
+                if (subSd) screenCount += warmCacheScreen(subSd)
             } catch (Throwable t) {
                 logger.error("Error loading screen at [${ssi.getLocation()}] during cache warming", t)
             }
         }
+        return screenCount
     }
 
     List<String> getAllRootScreenLocations() {

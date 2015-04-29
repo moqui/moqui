@@ -184,11 +184,16 @@ class EntityFacadeImpl implements EntityFacade {
     }
 
     void warmCache()  {
-        logger.info("Warming cache for all entities")
-        for (String entityName in getAllEntityNames()) {
-            try { getEntityDefinition(entityName) }
-            catch (Throwable t) { logger.warn("Error warming service cache: ${t.toString()}") }
+        logger.info("Warming cache for all entity definitions")
+        long startTime = System.currentTimeMillis()
+        Set<String> entityNames = getAllEntityNames()
+        for (String entityName in entityNames) {
+            try {
+                EntityDefinition ed = getEntityDefinition(entityName)
+                ed.getRelationshipInfoMap()
+            } catch (Throwable t) { logger.warn("Error warming entity cache: ${t.toString()}") }
         }
+        logger.info("Warmed entity definition cache for ${entityNames.size()} entities in ${(System.currentTimeMillis() - startTime)/1000} seconds")
     }
 
     Set<String> getDatasourceGroupNames() {
