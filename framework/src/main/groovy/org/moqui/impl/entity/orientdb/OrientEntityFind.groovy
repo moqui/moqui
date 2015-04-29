@@ -216,7 +216,10 @@ class OrientEntityFind extends EntityFindBase {
             }
             List<ODocument> documentList = oddt.command(query).execute(paramValues.toArray(new Object[paramValues.size()])) as List<ODocument>
             if (!documentList) logger.warn("Got no result for count query: ${sqlString}")
-            count = (documentList?.get(0)?.field("count") as Long) ?: 0
+            ODocument countDoc = documentList?.get(0)
+            Object countVal = countDoc?.field("COUNT")
+            // logger.warn("========= Got count ${countVal} type ${countVal?.class?.getName()}; countDoc: ${countDoc?.fieldNames()}:${countDoc?.fieldValues()}")
+            count = (countVal as Long) ?: 0
         } catch (Exception e) {
             throw new EntityException("Error finding value", e)
         } finally {
