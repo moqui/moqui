@@ -1,10 +1,40 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+   ~ /*
+   ~  *  Copyright 2014 Orient Technologies LTD (info(at)orientechnologies.com)
+   ~  *
+   ~  *  Licensed under the Apache License, Version 2.0 (the "License");
+   ~  *  you may not use this file except in compliance with the License.
+   ~  *  You may obtain a copy of the License at
+   ~  *
+   ~  *       http://www.apache.org/licenses/LICENSE-2.0
+   ~  *
+   ~  *  Unless required by applicable law or agreed to in writing, software
+   ~  *  distributed under the License is distributed on an "AS IS" BASIS,
+   ~  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   ~  *  See the License for the specific language governing permissions and
+   ~  *  limitations under the License.
+   ~  *
+   ~  * For more information: http://www.orientechnologies.com
+   ~  */
+   -->
+
 <orient-server>
     <handlers>
         <handler class="com.orientechnologies.orient.graph.handler.OGraphServerHandler">
             <parameters>
                 <parameter name="enabled" value="true"/>
                 <parameter name="graph.pool.max" value="50"/>
+            </parameters>
+        </handler>
+        <!-- CLUSTER PLUGIN, TO TURN ON SET THE 'ENABLED' PARAMETER TO 'true' -->
+        <handler class="com.orientechnologies.orient.server.hazelcast.OHazelcastPlugin">
+            <parameters>
+                <!-- <parameter name="nodeName" value="europe1" /> -->
+                <parameter name="enabled" value="${distributed}"/>
+                <parameter name="configuration.db.default"
+                           value="${ORIENTDB_HOME}/config/default-distributed-db-config.json"/>
+                <parameter name="configuration.hazelcast" value="${ORIENTDB_HOME}/config/hazelcast.xml"/>
             </parameters>
         </handler>
         <!-- JMX SERVER, TO TURN ON SET THE 'ENABLED' PARAMETER TO 'true' -->
@@ -15,21 +45,19 @@
             </parameters>
         </handler>
         <!-- AUTOMATIC BACKUP, TO TURN ON SET THE 'ENABLED' PARAMETER TO 'true' -->
-        <handler
-                class="com.orientechnologies.orient.server.handler.OAutomaticBackup">
+        <handler class="com.orientechnologies.orient.server.handler.OAutomaticBackup">
             <parameters>
                 <parameter name="enabled" value="false"/>
                 <parameter name="delay" value="4h"/>
                 <parameter name="target.directory" value="backup"/>
-                <parameter name="target.fileName" value="${DBNAME}-${DATE:yyyyMMddHHmmss}.json"/>
-                <!--
-                                    ${DBNAME} AND ${DATE:} VARIABLES ARE SUPPORTED -->
+                <parameter name="target.fileName" value="${DBNAME}-${DATE:yyyyMMddHHmmss}.zip"/>
+                <parameter name="compressionLevel" value="9"/>
+                <parameter name="bufferSize" value="1048576"/>
+                <!--${DBNAME} AND ${DATE:} VARIABLES ARE SUPPORTED -->
                 <parameter name="db.include" value=""/>
-                <!-- DEFAULT: NO ONE,
-                                    THAT MEANS ALL DATABASES. USE COMMA TO SEPARATE MULTIPLE DATABASE NAMES -->
+                <!-- DEFAULT: NO ONE, THAT MEANS ALL DATABASES. USE COMMA TO SEPARATE MULTIPLE DATABASE NAMES -->
                 <parameter name="db.exclude" value=""/>
-                <!-- USE COMMA TO SEPARATE
-                                    MULTIPLE DATABASE NAMES -->
+                <!-- USE COMMA TO SEPARATE MULTIPLE DATABASE NAMES -->
             </parameters>
         </handler>
         <!-- SERVER SIDE SCRIPT INTERPRETER. WARNING! THIS CAN BE A SECURITY HOLE:
@@ -38,12 +66,44 @@
         <handler
                 class="com.orientechnologies.orient.server.handler.OServerSideScriptInterpreter">
             <parameters>
-                <parameter name="enabled" value="false"/>
+                <parameter name="enabled" value="true"/>
+                <parameter name="allowedLanguages" value="SQL"/>
             </parameters>
         </handler>
-
+        <!-- USE SESSION TOKEN, TO TURN ON SET THE 'ENABLED' PARAMETER TO 'true' -->
+        <handler class="com.orientechnologies.orient.server.token.OrientTokenHandler">
+            <parameters>
+                <parameter name="enabled" value="false"/>
+                <!-- PRIVATE KEY -->
+                <parameter name="oAuth2Key" value=""/>
+                <!-- SESSION LENGTH IN MINUTES, DEFAULT=1 HOUR -->
+                <parameter name="sessionLength" value="60"/>
+                <!-- ENCRYPTION ALGORITHM, DEFAULT=HmacSHA256 -->
+                <parameter name="encryptionAlgorithm" value="HmacSHA256"/>
+            </parameters>
+        </handler>
     </handlers>
     <network>
+        <sockets>
+            <socket implementation="com.orientechnologies.orient.server.network.OServerSSLSocketFactory" name="ssl">
+                <parameters>
+                    <parameter value="false" name="network.ssl.clientAuth"/>
+                    <parameter value="config/cert/orientdb.ks" name="network.ssl.keyStore"/>
+                    <parameter value="password" name="network.ssl.keyStorePassword"/>
+                    <parameter value="config/cert/orientdb.ks" name="network.ssl.trustStore"/>
+                    <parameter value="password" name="network.ssl.trustStorePassword"/>
+                </parameters>
+            </socket>
+            <socket implementation="com.orientechnologies.orient.server.network.OServerSSLSocketFactory" name="https">
+                <parameters>
+                    <parameter value="false" name="network.ssl.clientAuth"/>
+                    <parameter value="config/cert/orientdb.ks" name="network.ssl.keyStore"/>
+                    <parameter value="password" name="network.ssl.keyStorePassword"/>
+                    <parameter value="config/cert/orientdb.ks" name="network.ssl.trustStore"/>
+                    <parameter value="password" name="network.ssl.trustStorePassword"/>
+                </parameters>
+            </socket>
+        </sockets>
         <protocols>
             <!-- Default registered protocol. It reads commands using the HTTP protocol
                 and write data locally -->
@@ -53,8 +113,9 @@
                       implementation="com.orientechnologies.orient.server.network.protocol.http.ONetworkProtocolHttpDb"/>
         </protocols>
         <listeners>
-            <listener protocol="binary" ip-address="0.0.0.0" port-range="2424-2430"/>
-            <listener protocol="http" ip-address="0.0.0.0" port-range="2480-2490">
+            <listener protocol="binary" ip-address="0.0.0.0" port-range="2424-2430" socket="default"/>
+            <!-- <listener protocol="binary" ip-address="0.0.0.0" port-range="2434-2440" socket="ssl"/> -->
+            <listener protocol="http" ip-address="0.0.0.0" port-range="2480-2490" socket="default">
                 <parameters>
                     <!-- Connection's custom parameters. If not specified the global configuration
                         will be taken -->
@@ -66,7 +127,7 @@
                 </parameters>
                 <commands>
                     <command
-                            pattern="GET|www GET|studio/ GET| GET|*.htm GET|*.html GET|*.xml GET|*.jpeg GET|*.jpg GET|*.png GET|*.gif GET|*.js GET|*.css GET|*.swf GET|*.ico GET|*.txt GET|*.otf GET|*.pjs GET|*.svg"
+                            pattern="GET|www GET|studio/ GET| GET|*.htm GET|*.html GET|*.xml GET|*.jpeg GET|*.jpg GET|*.png GET|*.gif GET|*.js GET|*.css GET|*.swf GET|*.ico GET|*.txt GET|*.otf GET|*.pjs GET|*.svg GET|*.json GET|*.woff GET|*.ttf GET|*.svgz"
                             implementation="com.orientechnologies.orient.server.network.protocol.http.command.get.OServerCommandGetStaticContent">
                         <parameters>
                             <!-- Don't cache html resources in development mode -->
@@ -76,8 +137,7 @@
                             <entry name="http.cache:default" value="Cache-Control: max-age=120"/>
                         </parameters>
                     </command>
-                    <command pattern="GET|gephi/*"
-                             implementation="com.orientechnologies.orient.graph.server.command.OServerCommandGetGephi"/>
+                    <command pattern="GET|gephi/*" implementation="com.orientechnologies.orient.graph.server.command.OServerCommandGetGephi"/>
                 </commands>
             </listener>
         </listeners>
@@ -87,7 +147,7 @@
     <storages>
         <!-- Default in-memory storage. Data are not saved permanently. -->
         <storage name="temp" path="memory:temp" userName="admin" userPassword="admin" loaded-at-startup="true"/>
-        <storage name="MoquiNoSql" path="local:${ORIENTDB_HOME}/databases/MoquiNoSql"
+        <storage name="MoquiNoSql" path="plocal:${ORIENTDB_HOME}/databases/MoquiNoSql"
                 userName="admin" userPassword="admin" loaded-at-startup="true"/>
     </storages>
     <users>
@@ -95,7 +155,7 @@
     <properties>
         <!-- DATABASE POOL: size min/max -->
         <entry name="db.pool.min" value="1"/>
-        <entry name="db.pool.max" value="20"/>
+        <entry name="db.pool.max" value="50"/>
 
         <!-- LEVEL1 AND 2 CACHE: enable/disable and set the size as number of entries -->
         <entry name="cache.level1.enabled" value="false"/>

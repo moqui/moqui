@@ -13,8 +13,7 @@ package org.moqui.impl.entity.orientdb
 
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.record.impl.ODocument
-
-import org.apache.commons.collections.set.ListOrderedSet
+import groovy.transform.CompileStatic
 import org.moqui.entity.EntityCondition
 import org.moqui.entity.EntityException
 import org.moqui.entity.EntityList
@@ -30,6 +29,7 @@ import org.slf4j.LoggerFactory
 
 import java.sql.SQLException
 
+@CompileStatic
 class OrientEntityListIterator implements EntityListIterator {
     protected final static Logger logger = LoggerFactory.getLogger(OrientEntityListIterator.class)
 
@@ -43,7 +43,7 @@ class OrientEntityListIterator implements EntityListIterator {
     protected int internalIndex = -1
 
     protected EntityDefinition entityDefinition
-    protected ListOrderedSet fieldsSelected
+    protected ArrayList<String> fieldsSelected
     protected EntityCondition queryCondition = null
     protected List<String> orderByFields = null
 
@@ -53,7 +53,7 @@ class OrientEntityListIterator implements EntityListIterator {
     protected boolean closed = false
 
     OrientEntityListIterator(OrientDatasourceFactory odf, ODatabaseDocumentTx oddt, List<ODocument> documentList,
-                             EntityDefinition entityDefinition, ListOrderedSet fieldsSelected, EntityFacadeImpl efi) {
+                             EntityDefinition entityDefinition, ArrayList<String> fieldsSelected, EntityFacadeImpl efi) {
         this.efi = efi
         this.odf = odf
         this.oddt = oddt
@@ -245,6 +245,6 @@ class OrientEntityListIterator implements EntityListIterator {
             this.close()
             logger.error("OrientEntityListIterator not closed for entity [${entityDefinition.getEntityName()}], caught in finalize()")
         }
-        Object.finalize()
+        super.finalize()
     }
 }

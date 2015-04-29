@@ -11,6 +11,7 @@ New Features:
 
 - Updated Atomikos to 4.0.0M4, Bitronix to 3.0.0-SNAPSHOT (built from
   source in GitHub repo), FreeMarker to 2.3.22, Groovy to 2.4.3
+- Updated OrientDB to 2.0.8, tested and fixed a few issues
 - Updated Apache Commons Codec to 1.9, Apache Commons Logging to 1.2,
   Apache HttpClient and HttpCore to 4.4.1, JNA to 4.2.10
 - Significant performance improvements based on profiling
