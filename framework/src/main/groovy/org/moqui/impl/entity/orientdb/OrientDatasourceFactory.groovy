@@ -11,13 +11,14 @@
  */
 package org.moqui.impl.entity.orientdb
 
-import com.orientechnologies.orient.core.db.document.ODatabaseDocumentPool
+import com.orientechnologies.orient.core.db.OPartitionedDatabasePool
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.metadata.schema.OClass
 import com.orientechnologies.orient.core.metadata.schema.OProperty
 import com.orientechnologies.orient.core.metadata.schema.OType
 import com.orientechnologies.orient.server.OServer
 import com.orientechnologies.orient.server.OServerMain
+import groovy.transform.CompileStatic
 import org.moqui.context.TransactionFacade
 import org.moqui.entity.*
 import org.moqui.impl.entity.EntityDefinition
@@ -49,7 +50,7 @@ class OrientDatasourceFactory implements EntityDatasourceFactory {
     protected String tenantId
 
     protected OServer oserver
-    protected ODatabaseDocumentPool databaseDocumentPool
+    protected OPartitionedDatabasePool databaseDocumentPool
 
     protected String uri
     protected String username
@@ -92,17 +93,20 @@ class OrientDatasourceFactory implements EntityDatasourceFactory {
         oserver.startup(efi.getEcfi().getResourceFacade().getLocationStream("db/orientdb/config/orientdb-server-config.xml"))
         oserver.activate()
 
-        databaseDocumentPool = new ODatabaseDocumentPool(uri, username, password)
-        databaseDocumentPool.setup((inlineOtherNode."@pool-minsize" ?: "5") as int, (inlineOtherNode."@pool-maxsize" ?: "50") as int)
+        int maxSize = (inlineOtherNode."@pool-maxsize" ?: "50") as int
+        databaseDocumentPool = new OPartitionedDatabasePool(uri, username, password, maxSize)
+        // databaseDocumentPool.setup((inlineOtherNode."@pool-minsize" ?: "5") as int, (inlineOtherNode."@pool-maxsize" ?: "50") as int)
 
         return this
     }
 
-    ODatabaseDocumentPool getDatabaseDocumentPool() { return databaseDocumentPool }
+    @CompileStatic
+    OPartitionedDatabasePool getDatabaseDocumentPool() { return databaseDocumentPool }
 
     /** Returns the main database access object for OrientDB.
      * Remember to call close() on it when you're done with it (preferably in a try/finally block)!
      */
+    @CompileStatic
     ODatabaseDocumentTx getDatabase() { return databaseDocumentPool.acquire() }
     // NOTE: maybe try ODatabaseDocumentTxPooled... performs better?
 
@@ -111,6 +115,7 @@ class OrientDatasourceFactory implements EntityDatasourceFactory {
      *
      * This will return null if no transaction is in place.
      */
+    @CompileStatic
     ODatabaseDocumentTx getSynchronizationDatabase() {
         TransactionFacade tf = efi.getEcfi().getTransactionFacade()
         OrientSynchronization oxr = (OrientSynchronization) tf.getActiveSynchronization("OrientSynchronization")
@@ -131,6 +136,7 @@ class OrientDatasourceFactory implements EntityDatasourceFactory {
         oserver.shutdown()
     }
 
+    @CompileStatic
     @Override
     void checkAndAddTable(String entityName) {
         ODatabaseDocumentTx createOddt = getDatabase()
@@ -141,6 +147,7 @@ class OrientDatasourceFactory implements EntityDatasourceFactory {
         }
     }
 
+    @CompileStatic
     @Override
     EntityValue makeEntityValue(String entityName) {
         EntityDefinition entityDefinition = efi.getEntityDefinition(entityName)
@@ -150,14 +157,15 @@ class OrientDatasourceFactory implements EntityDatasourceFactory {
         return new OrientEntityValue(entityDefinition, efi, this)
     }
 
+    @CompileStatic
     @Override
-    EntityFind makeEntityFind(String entityName) {
-        return new OrientEntityFind(efi, entityName, this)
-    }
+    EntityFind makeEntityFind(String entityName) { return new OrientEntityFind(efi, entityName, this) }
 
+    @CompileStatic
     @Override
     DataSource getDataSource() { return null }
 
+    @CompileStatic
     void checkCreateDocumentClass(ODatabaseDocumentTx oddt, EntityDefinition ed) {
         // TODO: do something with view entities
         if (ed.isViewEntity()) return
@@ -191,7 +199,7 @@ class OrientDatasourceFactory implements EntityDatasourceFactory {
             List colNames = []
             for (String pkFieldName in pkFieldNames) colNames.add(ed.getColumnName(pkFieldName, false))
             // toArray because method uses Java ellipses syntax
-            oc.createIndex(indexName, OClass.INDEX_TYPE.UNIQUE, colNames.toArray(new String[colNames.size()]))
+            oc.createIndex(indexName, OClass.INDEX_TYPE.UNIQUE, (String[]) colNames.toArray(new String[colNames.size()]))
 
             // TODO: create other indexes
 
@@ -199,6 +207,7 @@ class OrientDatasourceFactory implements EntityDatasourceFactory {
         }
     }
 
+    @CompileStatic
     static OType getFieldType(String fieldName, EntityDefinition ed) {
         EntityDefinition.FieldInfo fieldInfo = ed.getFieldInfo(fieldName)
         int javaTypeInt = fieldInfo.typeValue
