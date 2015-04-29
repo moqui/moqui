@@ -67,10 +67,6 @@ class EntityFacadeImpl implements EntityFacade {
     protected final Locale databaseLocale
     protected final Calendar databaseTzLcCalendar
 
-    // this will be used to temporarily cache root Node objects of entity XML files, used when loading a bunch at once,
-    //     should be null otherwise to prevent its use
-    protected Map<String, Node> tempEntityFileNodeMap = null
-
     protected EntityDbMeta dbMeta = null
     protected final EntityCache entityCache
     protected final EntityDataFeed entityDataFeed
@@ -317,10 +313,7 @@ class EntityFacadeImpl implements EntityFacade {
 
     // NOTE: only called by loadAllEntityLocations() which is synchronized/locked, so doesn't need to be
     protected void loadEntityFileLocations(ResourceReference entityRr) {
-        InputStream entityStream = entityRr.openStream()
-        if (entityStream == null) throw new BaseException("Could not open stream to entity file at [${entityRr.location}]")
-        Node entityRoot = new XmlParser().parse(entityStream)
-        entityStream.close()
+        Node entityRoot = getEntityFileRoot(entityRr)
         if (entityRoot.name() == "entities") {
             // loop through all entity, view-entity, and extend-entity and add file location to List for any entity named
             int numEntities = 0
@@ -359,6 +352,32 @@ class EntityFacadeImpl implements EntityFacade {
                 numEntities++
             }
             if (logger.isTraceEnabled()) logger.trace("Found [${numEntities}] entity definitions in [${entityRr.location}]")
+        }
+    }
+
+    protected Map<String, Node> entityFileRootMap = new HashMap<>()
+    protected Node getEntityFileRoot(ResourceReference entityRr) {
+        Node existingNode = entityFileRootMap.get(entityRr.getLocation())
+        if (existingNode != null) {
+            Long loadedTime = (Long) existingNode.attribute("_loadedTime")
+            if (loadedTime != null) {
+                long lastModified = entityRr.getLastModified()
+                if (lastModified > loadedTime) existingNode = null
+            }
+        }
+        if (existingNode == null) {
+            InputStream entityStream = entityRr.openStream()
+            if (entityStream == null) throw new BaseException("Could not open stream to entity file at [${entityRr.location}]")
+            try {
+                Node entityRoot = new XmlParser().parse(entityStream)
+                entityRoot.attributes().put("_loadedTime", entityRr.getLastModified())
+                entityFileRootMap.put(entityRr.getLocation(), entityRoot)
+                return entityRoot
+            } finally {
+                entityStream.close()
+            }
+        } else {
+            return existingNode
         }
     }
 
@@ -449,14 +468,7 @@ class EntityFacadeImpl implements EntityFacade {
         Node entityNode = null
         List<Node> extendEntityNodes = new ArrayList<Node>()
         for (String location in entityLocationList) {
-            Node entityRoot = null
-            if (tempEntityFileNodeMap != null) entityRoot = tempEntityFileNodeMap.get(location)
-            if (entityRoot == null) {
-                InputStream entityStream = this.ecfi.resourceFacade.getLocationStream(location)
-                entityRoot = new XmlParser().parse(entityStream)
-                entityStream.close()
-                if (tempEntityFileNodeMap != null) tempEntityFileNodeMap.put(location, entityRoot)
-            }
+            Node entityRoot = getEntityFileRoot(this.ecfi.resourceFacade.getLocationReference(location))
             // filter by package-name if specified, otherwise grab whatever
             List<Node> packageChildren = (List<Node>) entityRoot.children()
                     .findAll({ (it."@entity-name" == entityName || it."@short-alias" == entityName) &&
@@ -477,14 +489,7 @@ class EntityFacadeImpl implements EntityFacade {
             entityName = entityNode."@entity-name"
             packageName = entityNode."@package-name"
             for (String location in entityLocationList) {
-                Node entityRoot = null
-                if (tempEntityFileNodeMap != null) entityRoot = tempEntityFileNodeMap.get(location)
-                if (entityRoot == null) {
-                    InputStream entityStream = this.ecfi.resourceFacade.getLocationStream(location)
-                    entityRoot = new XmlParser().parse(entityStream)
-                    entityStream.close()
-                    if (tempEntityFileNodeMap != null) tempEntityFileNodeMap.put(location, entityRoot)
-                }
+                Node entityRoot = getEntityFileRoot(this.ecfi.resourceFacade.getLocationReference(location))
                 List<Node> packageChildren = (List<Node>) entityRoot.children()
                         .findAll({ it."@entity-name" == entityName && (packageName ? it."@package-name" == packageName : true) })
                 for (Node childNode in packageChildren) {
@@ -687,8 +692,13 @@ class EntityFacadeImpl implements EntityFacade {
     }
 
     Set<String> getAllEntityNames() {
-        entityLocationCache.clearExpired()
-        if (entityLocationCache.size() == 0) loadAllEntityLocations()
+        locationLoadLock.lock()
+        try {
+            entityLocationCache.clearExpired()
+            if (entityLocationCache.size() == 0) loadAllEntityLocations()
+        } finally {
+            locationLoadLock.unlock()
+        }
 
         TreeSet<String> allNames = new TreeSet()
         // only add full entity names (with package-name in it, will always have at least one dot)
@@ -791,8 +801,6 @@ class EntityFacadeImpl implements EntityFacade {
     List<Map<String, Object>> getAllEntitiesInfo(String orderByField, String filterRegexp, boolean masterEntitiesOnly, boolean excludeViewEntities) {
         if (masterEntitiesOnly) createAllAutoReverseManyRelationships()
 
-        tempEntityFileNodeMap = new HashMap()
-
         List<Map<String, Object>> eil = new LinkedList()
         for (String en in getAllEntityNames()) {
             if (filterRegexp && !en.matches(filterRegexp)) continue
@@ -810,8 +818,6 @@ class EntityFacadeImpl implements EntityFacade {
             eil.add([entityName:ed.entityName, "package":ed.entityNode."@package-name",
                     isView:(ed.isViewEntity() ? "true" : "false"), fullEntityName:ed.fullEntityName])
         }
-
-        tempEntityFileNodeMap = null
 
         if (orderByField) StupidUtilities.orderMapList((List<Map>) eil, [orderByField])
         return eil
