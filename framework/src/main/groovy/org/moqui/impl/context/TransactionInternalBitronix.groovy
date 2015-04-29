@@ -116,10 +116,12 @@ class TransactionInternalBitronix implements TransactionInternal {
             }
             pds.setDriverProperties(p)
         } else {
+            String jdbcUri = tenantDataSource ? (String) tenantDataSource.jdbcUri : inlineJdbc."@jdbc-uri"
+            if (jdbcUri.contains("\${moqui.runtime}")) jdbcUri = jdbcUri.replace("\${moqui.runtime}", System.getProperty("moqui.runtime"))
             pds.setClassName("bitronix.tm.resource.jdbc.lrc.LrcXADataSource")
             String driver = inlineJdbc."@jdbc-driver" ? inlineJdbc."@jdbc-driver" : database."@default-jdbc-driver"
             pds.getDriverProperties().setProperty("driverClassName", driver)
-            pds.getDriverProperties().setProperty("url", tenantDataSource ? (String) tenantDataSource.jdbcUri : inlineJdbc."@jdbc-uri")
+            pds.getDriverProperties().setProperty("url", jdbcUri)
             pds.getDriverProperties().setProperty("user", tenantDataSource ? (String) tenantDataSource.jdbcUsername : inlineJdbc."@jdbc-username")
             pds.getDriverProperties().setProperty("password", tenantDataSource ? (String) tenantDataSource.jdbcPassword : inlineJdbc."@jdbc-password")
         }
