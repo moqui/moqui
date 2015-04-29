@@ -12,12 +12,15 @@
 package org.moqui.impl.context.renderer
 
 import freemarker.core.Environment
+import freemarker.core.ParseException
 import freemarker.ext.beans.BeansWrapper
 import freemarker.ext.beans.BeansWrapperBuilder
 import freemarker.template.Configuration
+import freemarker.template.MalformedTemplateNameException
 import freemarker.template.Template
 import freemarker.template.TemplateExceptionHandler
 import freemarker.template.TemplateException
+import freemarker.template.TemplateNotFoundException
 import freemarker.template.Version
 import org.moqui.context.Cache
 import org.moqui.context.ExecutionContextFactory
@@ -108,7 +111,9 @@ class FtlTemplateRenderer implements TemplateRenderer {
         }
 
         @Override
-        Template getTemplate(String name, Locale locale, String encoding, boolean parseAsFTL, boolean ignoreMissing) throws IOException {
+        Template getTemplate(String name, Locale locale, Object customLookupCondition, String encoding,
+                             boolean parseAsFTL, boolean ignoreMissing)
+                throws TemplateNotFoundException, MalformedTemplateNameException, ParseException, IOException {
             //return super.getTemplate(name, locale, encoding, parse)
             // NOTE: doing this because template loading behavior with cache/etc not desired and was having issues
             Template theTemplate
@@ -122,6 +127,7 @@ class FtlTemplateRenderer implements TemplateRenderer {
             if (theTemplate == null && !ignoreMissing) throw new FileNotFoundException("Template [${name}] not found.")
             return theTemplate
         }
+        // Old method for FTL 2.3.22: Template getTemplate(String name, Locale locale, String encoding, boolean parseAsFTL, boolean ignoreMissing) throws IOException { }
     }
 
     /* This is not needed with the getTemplate override
