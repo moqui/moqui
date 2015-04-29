@@ -109,9 +109,10 @@ public class ScreenFacadeImpl implements ScreenFacade {
         return makeScreenDefinition(location)
     }
 
+    @CompileStatic
     protected synchronized ScreenDefinition makeScreenDefinition(String location) {
         ScreenDefinition sd = (ScreenDefinition) screenLocationCache.get(location)
-        if (sd) return sd
+        if (sd != null) return sd
 
         ResourceReference screenRr = ecfi.getResourceFacade().getLocationReference(location)
 
