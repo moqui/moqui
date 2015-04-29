@@ -9,6 +9,8 @@ Moqui Framework 1.5.2 is a minor new feature and bug fix release.
 
 New Features:
 
+- Added H2 1.4.187, configuration for H2 Database, set as default embedded
+  database instead of Derby
 - Updated Atomikos to 4.0.0M4, Bitronix to 3.0.0-SNAPSHOT (built from
   source in GitHub repo), FreeMarker to 2.3.22, Groovy to 2.4.3
 - Updated OrientDB to 2.0.8, tested and fixed a few issues

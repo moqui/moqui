@@ -20,6 +20,7 @@ build/
 /runtime/db/derby/EXAMPLE1/
 /runtime/db/derby/CustJqp/
 /runtime/db/derby/derby.log
+/runtime/db/h2/
 /runtime/db/orientdb/databases/
 /runtime/elasticsearch/data/
 /runtime/elasticsearch/log/
