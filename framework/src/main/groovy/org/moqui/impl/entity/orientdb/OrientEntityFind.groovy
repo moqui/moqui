@@ -14,7 +14,7 @@ package org.moqui.impl.entity.orientdb
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.record.impl.ODocument
 import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery
-
+import groovy.transform.CompileStatic
 import org.moqui.impl.entity.condition.EntityConditionImplBase
 import org.moqui.entity.*
 import org.moqui.impl.entity.*
@@ -22,6 +22,7 @@ import org.moqui.impl.entity.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+@CompileStatic
 class OrientEntityFind extends EntityFindBase {
     protected final static Logger logger = LoggerFactory.getLogger(OrientEntityValue.class)
 
@@ -78,12 +79,12 @@ class OrientEntityFind extends EntityFindBase {
             for (EntityQueryBuilder.EntityConditionParameter entityConditionParam in efb.getParameters()) {
                 paramValues.add(entityConditionParam.getValue())
             }
-            List<ODocument> documentList = oddt.command(query).execute(paramValues.toArray(new Object[paramValues.size]))
+            List<ODocument> documentList = oddt.command(query).execute(paramValues.toArray(new Object[paramValues.size()])) as List<ODocument>
 
             // there should only be one value since we're querying by a set of fields with a unique index (the pk)
             if (!documentList) return null
 
-            ODocument document = documentList[0]
+            ODocument document = documentList.get(0)
             OrientEntityValue newEntityValue = new OrientEntityValue(ed, efi, odf, document)
 
             return newEntityValue
@@ -151,7 +152,7 @@ class OrientEntityFind extends EntityFindBase {
             for (EntityQueryBuilder.EntityConditionParameter entityConditionParam in efb.getParameters()) {
                 paramValues.add(entityConditionParam.getValue())
             }
-            List<ODocument> documentList = oddt.command(query).execute(paramValues.toArray(new Object[paramValues.size]))
+            List<ODocument> documentList = oddt.command(query).execute(paramValues.toArray(new Object[paramValues.size()])) as List<ODocument>
             // logger.warn("TOREMOVE: got OrientDb query results: ${documentList}")
 
             // NOTE: for now don't pass in oddt (pass in null), we're getting the whole list up front we can close it in finally
@@ -213,7 +214,7 @@ class OrientEntityFind extends EntityFindBase {
             for (EntityQueryBuilder.EntityConditionParameter entityConditionParam in efb.getParameters()) {
                 paramValues.add(entityConditionParam.getValue())
             }
-            List<ODocument> documentList = oddt.command(query).execute(paramValues.toArray(new Object[paramValues.size]))
+            List<ODocument> documentList = oddt.command(query).execute(paramValues.toArray(new Object[paramValues.size()])) as List<ODocument>
             if (!documentList) logger.warn("Got no result for count query: ${sqlString}")
             count = (documentList?.get(0)?.field("count") as Long) ?: 0
         } catch (Exception e) {

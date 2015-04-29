@@ -242,12 +242,12 @@
         -->
         <!-- Above the nosql group is in the transactional db by default. To use OrientDB use this instead: -->
         <!-- NOTE: startup-add-missing=true is required because OrientDB doesn't allow class create in a TX -->
-        <!--
+        <!-- -->
         <datasource group-name="nosql" object-factory="org.moqui.impl.entity.orientdb.OrientDatasourceFactory"
                 startup-add-missing="true">
-            <inline-other uri="local:${ORIENTDB_HOME}/databases/MoquiNoSql" username="admin" password="admin"/>
+            <inline-other uri="plocal:${ORIENTDB_HOME}/databases/MoquiNoSql" username="admin" password="admin"/>
         </datasource>
-        -->
+        <!-- -->
 
         <!-- The tenantcommon group can also in the same DB, but MUST have a separate definition for multi-tenant to work -->
         <datasource group-name="tenantcommon" database-conf-name="derby" schema-name="MOQUI">

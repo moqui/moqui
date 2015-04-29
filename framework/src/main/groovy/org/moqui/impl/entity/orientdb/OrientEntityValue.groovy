@@ -16,7 +16,7 @@ import com.orientechnologies.orient.core.id.ORID
 import com.orientechnologies.orient.core.record.impl.ODocument
 import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery
 import com.orientechnologies.orient.core.sql.OCommandSQL
-
+import groovy.transform.CompileStatic
 import org.apache.commons.collections.set.ListOrderedSet
 
 import org.moqui.entity.EntityException
@@ -32,6 +32,7 @@ import java.sql.Connection
 import java.sql.Time
 import java.sql.Timestamp
 
+@CompileStatic
 class OrientEntityValue extends EntityValueBase {
     protected final static Logger logger = LoggerFactory.getLogger(OrientEntityValue.class)
 
@@ -177,7 +178,7 @@ class OrientEntityValue extends EntityValueBase {
                 }
             }
 
-            int recordsChanged = oddt.command(new OCommandSQL(sql.toString())).execute(paramValues.toArray(new Object[paramValues.size]))
+            int recordsChanged = oddt.command(new OCommandSQL(sql.toString())).execute(paramValues.toArray(new Object[paramValues.size()])) as int
             if (recordsChanged == 0) throw new IllegalArgumentException("Cannot update entity [${ed.getFullEntityName()}] value with pk [${this.getPrimaryKeys()}], document not found")
 
             /* an interesting alternative, in basic tests is about the same speed...
@@ -240,7 +241,7 @@ class OrientEntityValue extends EntityValueBase {
                 sql.append("#").append(recordId.getClusterId()).append(":").append(recordId.getClusterPosition())
             }
 
-            int recordsChanged = oddt.command(new OCommandSQL(sql.toString())).execute(paramValues.toArray(new Object[paramValues.size]))
+            int recordsChanged = oddt.command(new OCommandSQL(sql.toString())).execute(paramValues.toArray(new Object[paramValues.size()])) as int
             if (recordsChanged == 0) throw new IllegalArgumentException("Cannot delete entity [${ed.getFullEntityName()}] value with pk [${this.getPrimaryKeys()}], document not found")
 
             /* alternate approach with query then delete():
@@ -289,7 +290,7 @@ class OrientEntityValue extends EntityValueBase {
             }
 
             OSQLSynchQuery<ODocument> query = new OSQLSynchQuery<ODocument>(sql.toString())
-            List<ODocument> documentList = oddt.command(query).execute(paramValues.toArray(new Object[paramValues.size]))
+            List<ODocument> documentList = oddt.command(query).execute(paramValues.toArray(new Object[paramValues.size()])) as List<ODocument>
 
             // there should only be one value since we're querying by a set of fields with a unique index (the pk)
             if (!documentList) {
@@ -297,7 +298,7 @@ class OrientEntityValue extends EntityValueBase {
                 return false
             }
 
-            ODocument document = documentList.first()
+            ODocument document = documentList.get(0)
             for (String fieldName in ed.getNonPkFieldNames())
                 getValueMap().put(fieldName, document.field(fieldName))
 

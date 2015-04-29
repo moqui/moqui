@@ -32,7 +32,7 @@ import javax.sql.DataSource
  * To use this:
  * 1. add a datasource under the entity-facade element in the Moqui Conf file; for example:
  *      <datasource group-name="transactional_nosql" object-factory="org.moqui.impl.entity.orientdb.OrientDatasourceFactory">
- *          <inline-other uri="local:runtime/db/orient/transactional" username="moqui" password="moqui"/>
+ *          <inline-other uri="plocal:${ORIENTDB_HOME}/databases/MoquiNoSql" username="admin" password="admin"/>
  *      </datasource>
  *
  * 2. to get OrientDB to automatically create the database, add a corresponding "storage" element to the
@@ -67,6 +67,7 @@ class OrientDatasourceFactory implements EntityDatasourceFactory {
         this.tenantId = tenantId
 
         System.setProperty("ORIENTDB_HOME", efi.getEcfi().getRuntimePath() + "/db/orientdb")
+        System.setProperty("ORIENTDB_ROOT_PASSWORD", "moqui")
 
         // init the DataSource
         EntityValue tenant = null

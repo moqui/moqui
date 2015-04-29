@@ -12,6 +12,7 @@
 package org.moqui.impl.entity.orientdb
 
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
+import groovy.transform.CompileStatic
 import org.moqui.context.TransactionException
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.slf4j.Logger
@@ -22,9 +23,8 @@ import javax.transaction.Synchronization
 import javax.transaction.Transaction
 import javax.transaction.TransactionManager
 import javax.transaction.xa.XAException
-import javax.transaction.xa.XAResource
-import javax.transaction.xa.Xid
 
+@CompileStatic
 class OrientSynchronization implements Synchronization {
     protected final static Logger logger = LoggerFactory.getLogger(OrientSynchronization.class)
 

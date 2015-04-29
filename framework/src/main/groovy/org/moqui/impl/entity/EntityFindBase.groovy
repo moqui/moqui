@@ -52,7 +52,6 @@ abstract class EntityFindBase implements EntityFind {
     protected EntityConditionImplBase whereEntityCondition = null
     protected EntityConditionImplBase havingEntityCondition = null
 
-    /** This is always a ListOrderedSet so that we can get the results in a consistent order */
     protected ArrayList<String> fieldsToSelect = null
     protected List<String> orderByFields = null
 
