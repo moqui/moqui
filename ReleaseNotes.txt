@@ -8,15 +8,21 @@ Release 1.5.2 - 2 May 2015 (estimated)
 Moqui Framework 1.5.2 is a minor new feature and bug fix release.
 
 The main improvement in this release is significantly better performance.
-All levels of the framework run faster, including screen rendering, with
-even more significant improvements for entity and service operations. There
-are also various improvements to stability, especially in production under
-a load. Some of these are from better concurrency handling in Moqui, others
-from updates to libraries including a newer version of Bitronix TM.
+Overall performance is about 3x faster, with various lower level operations
+around 10x faster. All levels of the framework run faster, including screen
+rendering, with even more significant improvements for entity and service
+operations. There are also various improvements to stability, especially in
+production under a load. Some of these are from better concurrency handling
+in Moqui, others from updates to libraries including a newer version of
+Bitronix TM.
 
 The H2 database is now used by default instead of Derby. There is now a
 CUPS server integration using Cups4J including services to print, and
 services and screens for managing printers and print jobs.
+
+There are fixes for running Moqui on Microsoft Windows, and for using the
+OrientDB database through the Entity Facade. There were both supported in
+the past but were broken in recent versions of Moqui Framework.
 
 New Features:
 
