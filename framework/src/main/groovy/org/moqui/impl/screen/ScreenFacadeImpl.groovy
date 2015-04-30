@@ -57,17 +57,28 @@ public class ScreenFacadeImpl implements ScreenFacade {
     ExecutionContextFactoryImpl getEcfi() { return ecfi }
 
     void warmCache() {
+        long startTime = System.currentTimeMillis()
+        int screenCount = 0
         for (String rootLocation in getAllRootScreenLocations()) {
             logger.info("Warming cache for all screens under ${rootLocation}")
             ScreenDefinition rootSd = getScreenDefinition(rootLocation)
-            warmCacheScreen(rootSd)
+            screenCount++
+            screenCount += warmCacheScreen(rootSd)
         }
+        logger.info("Warmed screen definition cache for ${screenCount} screens in ${(System.currentTimeMillis() - startTime)/1000} seconds")
     }
-    protected void warmCacheScreen(ScreenDefinition sd) {
+    protected int warmCacheScreen(ScreenDefinition sd) {
+        int screenCount = 0
         for (SubscreensItem ssi in sd.subscreensByName.values()) {
-            ScreenDefinition subSd = getScreenDefinition(ssi.getLocation())
-            if (subSd) warmCacheScreen(subSd)
+            try {
+                ScreenDefinition subSd = getScreenDefinition(ssi.getLocation())
+                screenCount++
+                if (subSd) screenCount += warmCacheScreen(subSd)
+            } catch (Throwable t) {
+                logger.error("Error loading screen at [${ssi.getLocation()}] during cache warming", t)
+            }
         }
+        return screenCount
     }
 
     List<String> getAllRootScreenLocations() {
@@ -105,9 +116,10 @@ public class ScreenFacadeImpl implements ScreenFacade {
         return makeScreenDefinition(location)
     }
 
+    @CompileStatic
     protected synchronized ScreenDefinition makeScreenDefinition(String location) {
         ScreenDefinition sd = (ScreenDefinition) screenLocationCache.get(location)
-        if (sd) return sd
+        if (sd != null) return sd
 
         ResourceReference screenRr = ecfi.getResourceFacade().getLocationReference(location)
 

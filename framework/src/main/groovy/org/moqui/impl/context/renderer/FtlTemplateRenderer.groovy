@@ -22,6 +22,7 @@ import freemarker.template.TemplateExceptionHandler
 import freemarker.template.TemplateException
 import freemarker.template.TemplateNotFoundException
 import freemarker.template.Version
+import org.moqui.BaseException
 import org.moqui.context.Cache
 import org.moqui.context.ExecutionContextFactory
 import org.moqui.context.TemplateRenderer
@@ -169,10 +170,12 @@ class FtlTemplateRenderer implements TemplateRenderer {
             try {
                 // TODO: encode error, something like: StringUtil.SimpleEncoder simpleEncoder = FreeMarkerWorker.getWrappedObject("simpleEncoder", env);
                 // stackTrace = simpleEncoder.encode(stackTrace);
-                if (te.cause) {
+                if (te.cause != null) {
+                    BaseException.filterStackTrace(te.cause)
                     logger.error("Error in FTL render", te.cause)
                     out.write((String) "[Error: ${te.cause.message}]")
                 } else {
+                    BaseException.filterStackTrace(te)
                     logger.error("Error in FTL render", te)
                     out.write((String) "[Template Error: ${te.message}]")
                 }

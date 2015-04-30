@@ -313,7 +313,7 @@ ${sri.renderSection(.node["@name"])}
         <div class="modal-dialog" style="width: ${.node["@width"]!"600"}px;">
             <div class="modal-content">
                 <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                     <h4 class="modal-title">${buttonText}</h4>
                 </div>
                 <div class="modal-body">
@@ -356,7 +356,7 @@ ${sri.renderSection(.node["@name"])}
         <div class="modal-dialog" style="width: ${.node["@width"]!"600"}px;">
             <div class="modal-content">
                 <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                     <h4 class="modal-title">${buttonText}</h4>
                 </div>
                 <div class="modal-body" id="${divId}-body">
@@ -366,7 +366,7 @@ ${sri.renderSection(.node["@name"])}
             </div>
         </div>
     </div>
-    <script>$("#${divId}").on("show.bs.modal", function (e) { $("#${divId}-body").load('${urlInstance.urlWithParams}') })</script>
+    <script>$("#${divId}").on("show.bs.modal", function (e) { $("#${divId}-body").load('${urlInstance.urlWithParams}'); }); $("#${divId}").on("hidden.bs.modal", function (e) { $("#${divId}-body").empty(); $("#${divId}-body").append('<img src="/images/wait_anim_16x16.gif" alt="Loading...">'); });</script>
     <#if _openDialog! == divId><#assign afterScreenScript>$('#${divId}').modal('show')</#assign><#t>${sri.appendToScriptWriter(afterScreenScript)}</#if>
 
     <#-- jQuery dialog:
@@ -880,10 +880,10 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
             <div class="form-header-group">
                 <#assign needHeaderForm = sri.isFormHeaderForm(formNode["@name"])>
                 <#if needHeaderForm>
-                    <#assign curUrlInfo = sri.getCurrentScreenUrl()>
+                    <#assign curUrlInstance = sri.getCurrentScreenUrl()>
                     <#assign headerFormId>${formId}-header</#assign>
-                <form name="${headerFormId}" id="${headerFormId}" class="form-header-row" method="post" action="${curUrlInfo.url}">
-                    <input type="hidden" name="moquiFormName" value="${formNode["@name"]}">
+                <form name="${headerFormId}" id="${headerFormId}" class="form-header-row" method="post" action="${curUrlInstance.url}">
+                    <#if orderByField?has_content><input type="hidden" name="orderByField" value="${orderByField}"></#if>
                     <#assign nonReferencedFieldList = sri.getFtlFormListColumnNonReferencedHiddenFieldList(.node["@name"])>
                     <#list nonReferencedFieldList as nonReferencedField><#if nonReferencedField["header-field"]?has_content><#recurse nonReferencedField["header-field"][0]/></#if></#list>
                 <#else>
@@ -995,6 +995,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                 <#if needHeaderForm && !skipStart>
                     <#assign curUrlInfo = sri.getCurrentScreenUrl()>
                     <form name="${formId}-header" id="${formId}-header" class="form-header-row" method="post" action="${curUrlInfo.url}">
+                        <#if orderByField?has_content><input type="hidden" name="orderByField" value="${orderByField}"></#if>
                 <#else>
                     <div class="form-header-row">
                 </#if>

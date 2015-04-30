@@ -135,6 +135,7 @@ abstract class EntityValueBase implements EntityValue {
                     return this.findRelated(name, null, null, null, null)
                 }
             } else {
+                // logger.warn("========== relInfo Map keys: ${ed.getRelationshipInfoMap().keySet()}, relInfoList: ${ed.getRelationshipsInfo(false)}")
                 throw new EntityException("The name [${name}] is not a valid field name or relationship name for entity [${entityName}]")
             }
         }

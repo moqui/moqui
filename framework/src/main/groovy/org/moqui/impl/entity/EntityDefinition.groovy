@@ -415,26 +415,33 @@ public class EntityDefinition {
 
     @CompileStatic
     Map<String, RelationshipInfo> getRelationshipInfoMap() {
-        if (relationshipInfoMap != null) return relationshipInfoMap
-        relationshipInfoMap = new HashMap<String, RelationshipInfo>()
+        if (relationshipInfoMap == null) makeRelInfoMap()
+        return relationshipInfoMap
+    }
+    @CompileStatic
+    private synchronized void makeRelInfoMap() {
+        if (relationshipInfoMap != null) return
+        Map<String, RelationshipInfo> relInfoMap = new HashMap<String, RelationshipInfo>()
         List<RelationshipInfo> relInfoList = getRelationshipsInfo(false)
         for (RelationshipInfo relInfo in relInfoList) {
             // always use the full relationshipName
-            relationshipInfoMap.put(relInfo.relationshipName, relInfo)
+            relInfoMap.put(relInfo.relationshipName, relInfo)
             // if there is a shortAlias add it under that
-            if (relInfo.shortAlias) relationshipInfoMap.put(relInfo.shortAlias, relInfo)
+            if (relInfo.shortAlias) relInfoMap.put(relInfo.shortAlias, relInfo)
             // if there is no title, allow referring to the relationship by just the simple entity name (no package)
-            if (!relInfo.title) relationshipInfoMap.put(relInfo.relatedEd.getEntityName(), relInfo)
+            if (!relInfo.title) relInfoMap.put(relInfo.relatedEd.getEntityName(), relInfo)
         }
-        return relationshipInfoMap
+        relationshipInfoMap = relInfoMap
     }
 
     @CompileStatic
     List<RelationshipInfo> getRelationshipsInfo(boolean dependentsOnly) {
         if (relationshipInfoList == null) makeRelInfoList()
 
+        if (!dependentsOnly) return new ArrayList(relationshipInfoList)
+        // just get dependents
         List<RelationshipInfo> infoListCopy = []
-        for (RelationshipInfo info in relationshipInfoList) if (!dependentsOnly || info.dependent) infoListCopy.add(info)
+        for (RelationshipInfo info in relationshipInfoList) if (info.dependent) infoListCopy.add(info)
         return infoListCopy
     }
     private synchronized void makeRelInfoList() {
@@ -504,6 +511,8 @@ public class EntityDefinition {
             }
             return targetParameterMap
         }
+
+        String toString() { return relationshipName + (shortAlias ? "(${shortAlias})" : "") }
     }
 
     EntityDependents getDependentsTree(Deque<String> ancestorEntities) {

@@ -6,6 +6,7 @@ ${sri.getAfterScreenWriterText()}
 </#list>
 <script>
 ${sri.getScriptWriterText()}
+$(window).unload(function(){}); // Does nothing but break the bfcache
 </script>
 </body>
 </html>

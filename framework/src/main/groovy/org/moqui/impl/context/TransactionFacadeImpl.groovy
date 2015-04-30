@@ -11,7 +11,7 @@
  */
 package org.moqui.impl.context
 
-import com.atomikos.icatch.jta.ExtendedSystemException
+import groovy.transform.CompileStatic
 import org.moqui.BaseException
 import org.moqui.context.TransactionException
 import org.moqui.context.TransactionFacade
@@ -118,15 +118,20 @@ class TransactionFacadeImpl implements TransactionFacade {
         activeSynchronizationStackList.remove()
     }
 
+    @CompileStatic
     TransactionInternal getTransactionInternal() { return transactionInternal }
+    @CompileStatic
     TransactionManager getTransactionManager() { return tm }
+    @CompileStatic
     UserTransaction getUserTransaction() { return ut }
+    @CompileStatic
     Long getCurrentTransactionStartTime() {
         Long time = getTransactionBeginStartTimeList() ? getTransactionBeginStartTimeList().get(0) : null
         if (time == null && logger.traceEnabled) logger.trace("The transactionBeginStackList is empty, transaction in place? [${this.isTransactionInPlace()}]", new BaseException("Empty transactionBeginStackList location"))
         return time
     }
 
+    @CompileStatic
     protected ArrayList<Exception> getTransactionBeginStack() {
         ArrayList<Exception> list = (ArrayList<Exception>) transactionBeginStackList.get()
         if (list == null) {
@@ -136,6 +141,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         }
         return list
     }
+    @CompileStatic
     protected ArrayList<Long> getTransactionBeginStartTimeList() {
         ArrayList<Long> list = (ArrayList<Long>) transactionBeginStartTimeList.get()
         if (list == null) {
@@ -145,6 +151,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         }
         return list
     }
+    @CompileStatic
     protected ArrayList<RollbackInfo> getRollbackOnlyInfoStack() {
         ArrayList<RollbackInfo> list = (ArrayList<RollbackInfo>) rollbackOnlyInfoStackList.get()
         if (list == null) {
@@ -154,6 +161,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         }
         return list
     }
+    @CompileStatic
     protected ArrayList<Transaction> getSuspendedTxStack() {
         ArrayList<Transaction> list = (ArrayList<Transaction>) suspendedTxStackList.get()
         if (list == null) {
@@ -163,6 +171,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         }
         return list
     }
+    @CompileStatic
     protected ArrayList<Exception> getSuspendedTxLocationStack() {
         ArrayList<Exception> list = (ArrayList<Exception>) suspendedTxLocationStack.get()
         if (list == null) {
@@ -173,6 +182,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         return list
     }
 
+    @CompileStatic
     @Override
     XAResource getActiveXaResource(String resourceName) {
         ArrayList<Map<String, XAResource>> activeXaResourceStack = getActiveXaResourceStack()
@@ -181,6 +191,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         if (activeXaResourceMap != null) return activeXaResourceMap.get(resourceName)
         return null
     }
+    @CompileStatic
     @Override
     void putAndEnlistActiveXaResource(String resourceName, XAResource xar) {
         ArrayList<Map<String, XAResource>> activeXaResourceStack = getActiveXaResourceStack()
@@ -196,6 +207,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         enlistResource(xar)
         activeXaResourceMap.put(resourceName, xar)
     }
+    @CompileStatic
     ArrayList<Map<String, XAResource>> getActiveXaResourceStack() {
         ArrayList<Map<String, XAResource>> list = (ArrayList<Map<String, XAResource>>) activeXaResourceStackList.get()
         if (list == null) {
@@ -205,6 +217,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         return list
     }
 
+    @CompileStatic
     @Override
     Synchronization getActiveSynchronization(String syncName) {
         ArrayList<Map<String, Synchronization>> activeSynchronizationStack = getActiveSynchronizationStack()
@@ -213,6 +226,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         if (activeSynchronizationMap != null) return activeSynchronizationMap.get(syncName)
         return null
     }
+    @CompileStatic
     @Override
     void putAndEnlistActiveSynchronization(String syncName, Synchronization sync) {
         ArrayList<Map<String, Synchronization>> activeSynchronizationStack = getActiveSynchronizationStack()
@@ -228,6 +242,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         registerSynchronization(sync)
         activeSynchronizationMap.put(syncName, sync)
     }
+    @CompileStatic
     ArrayList<Map<String, Synchronization>> getActiveSynchronizationStack() {
         ArrayList<Map<String, Synchronization>> list = (ArrayList<Map<String, Synchronization>>) activeSynchronizationStackList.get()
         if (list == null) {
@@ -238,6 +253,7 @@ class TransactionFacadeImpl implements TransactionFacade {
     }
 
 
+    @CompileStatic
     @Override
     int getStatus() {
         try {
@@ -247,6 +263,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         }
     }
 
+    @CompileStatic
     @Override
     String getStatusString() {
         int statusInt = getStatus()
@@ -289,9 +306,11 @@ class TransactionFacadeImpl implements TransactionFacade {
         }
     }
 
+    @CompileStatic
     @Override
     boolean isTransactionInPlace() { return getStatus() != Status.STATUS_NO_TRANSACTION }
 
+    @CompileStatic
     @Override
     boolean begin(Integer timeout) {
         try {
@@ -335,9 +354,11 @@ class TransactionFacadeImpl implements TransactionFacade {
         }
     }
 
+    @CompileStatic
     @Override
     void commit(boolean beganTransaction) { if (beganTransaction) this.commit() }
 
+    @CompileStatic
     @Override
     void commit() {
         try {
@@ -352,7 +373,7 @@ class TransactionFacadeImpl implements TransactionFacade {
                 ut.commit()
             } else {
                 if (status != Status.STATUS_NO_TRANSACTION)
-                    logger.warn("Not committing transaction because status is " + getStatusString(), new Exception("Bad TX status location"))
+                    logger.warn((String) "Not committing transaction because status is " + getStatusString(), new Exception("Bad TX status location"))
             }
         } catch (RollbackException e) {
             RollbackInfo rollbackOnlyInfo = getRollbackOnlyInfoStack().get(0)
@@ -383,6 +404,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         }
     }
 
+    @CompileStatic
     @Override
     void rollback(boolean beganTransaction, String causeMessage, Throwable causeThrowable) {
         if (beganTransaction) {
@@ -392,6 +414,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         }
     }
 
+    @CompileStatic
     @Override
     void rollback(String causeMessage, Throwable causeThrowable) {
         try {
@@ -422,6 +445,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         }
     }
 
+    @CompileStatic
     @Override
     void setRollbackOnly(String causeMessage, Throwable causeThrowable) {
         try {
@@ -445,6 +469,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         }
     }
 
+    @CompileStatic
     @Override
     boolean suspend() {
         try {
@@ -469,6 +494,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         }
     }
 
+    @CompileStatic
     @Override
     void resume() {
         try {
@@ -496,6 +522,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         }
     }
 
+    @CompileStatic
     @Override
     Connection enlistConnection(XAConnection con) {
         if (con == null) return null
@@ -508,6 +535,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         }
     }
 
+    @CompileStatic
     @Override
     void enlistResource(XAResource resource) {
         if (resource == null) return
@@ -525,13 +553,15 @@ class TransactionFacadeImpl implements TransactionFacade {
         } catch (RollbackException e) {
             throw new TransactionException("Could not enlist XAResource in transaction", e)
         } catch (SystemException e) {
-            if (e instanceof ExtendedSystemException) {
-                for (Throwable se in e.errors) logger.error("Extended Atomikos error: ${se.toString()}", se)
-            }
+            // This is deprecated, hopefully errors are adequate without, but leaving here for future reference
+            // if (e instanceof ExtendedSystemException) {
+            //     for (Throwable se in e.errors) logger.error("Extended Atomikos error: ${se.toString()}", se)
+            // }
             throw new TransactionException("Could not enlist XAResource in transaction", e)
         }
     }
 
+    @CompileStatic
     @Override
     void registerSynchronization(Synchronization sync) {
         if (sync == null) return
@@ -553,6 +583,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         }
     }
 
+    @CompileStatic
     @Override
     void initTransactionCache() {
         if (useTransactionCache && getActiveSynchronization("TransactionCache") == null) new TransactionCache(this.ecfi).enlist()

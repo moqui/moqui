@@ -212,31 +212,27 @@
         xa-properties element. If the xa-properties element is present the normal JDBC parameters will be ignored.
         -->
 
-        <datasource group-name="transactional" database-conf-name="derby" schema-name="MOQUI">
+        <datasource group-name="transactional" database-conf-name="h2" schema-name="">
             <inline-jdbc pool-minsize="5" pool-maxsize="50">
-                <xa-properties databaseName="${moqui.runtime}/db/derby/MoquiDEFAULT" createDatabase="create"/>
+                <xa-properties url="jdbc:h2:${moqui.runtime}/db/h2/MoquiDEFAULT" user="sa" password=""/>
             </inline-jdbc>
-            <!-- <inline-jdbc jdbc-uri="jdbc:derby:MoquiDEFAULT;create=true"
-                         jdbc-username="moqui" jdbc-password="moqui"
+            <!-- <inline-jdbc jdbc-uri="jdbc:h2:${moqui.runtime}/db/h2/MoquiDEFAULT"
+                         jdbc-username="sa" jdbc-password=""
                          pool-minsize="5" pool-maxsize="50"/> -->
-            <!-- <jndi-jdbc jndi-name="java:/MoquiTransactionalDataSource"/> -->
+            <!-- <jndi-jdbc jndi-name="java:/MoquiDEFAULTDataSource"/> -->
         </datasource>
         <!-- The entity-facade.default-group-name=transactional, so if other entity groups do not have a data source
             the transactional group's datasource will be used. -->
 
         <!-- leave these commented to use the MoquiDEFAULT database for all entity groups:
-        <datasource group-name="analytical" database-conf-name="derby" schema-name="MOQUI">
+        <datasource group-name="analytical" database-conf-name="h2" schema-name="">
             <inline-jdbc pool-minsize="2" pool-maxsize="10">
-                <xa-properties databaseName="${moqui.runtime}/db/derby/MoquiAnalytical" createDatabase="create"/>
+                <xa-properties url="jdbc:h2:${moqui.runtime}/db/h2/MoquiAnalyticalDEFAULT" user="sa" password=""/>
             </inline-jdbc>
-            <!- - <inline-jdbc jdbc-uri="jdbc:derby:MoquiAnalytical;create=true"
-                         jdbc-username="moqui" jdbc-password="moqui"
-                         pool-minsize="2" pool-maxsize="10"/> - ->
-            <!- - <jndi-jdbc jndi-name="java:/MoquiAnalyticalDataSource"/> - ->
         </datasource>
-        <datasource group-name="nosql" database-conf-name="derby" schema-name="MOQUI">
+        <datasource group-name="nosql" database-conf-name="h2" schema-name="">
             <inline-jdbc pool-minsize="2" pool-maxsize="10">
-                <xa-properties databaseName="${moqui.runtime}/db/derby/MoquiTransactional" createDatabase="create"/>
+                <xa-properties url="jdbc:h2:${moqui.runtime}/db/h2/MoquiNoSqlDEFAULT" user="sa" password=""/>
             </inline-jdbc>
         </datasource>
         -->
@@ -250,19 +246,25 @@
         -->
 
         <!-- The tenantcommon group can also in the same DB, but MUST have a separate definition for multi-tenant to work -->
-        <datasource group-name="tenantcommon" database-conf-name="derby" schema-name="MOQUI">
+        <datasource group-name="tenantcommon" database-conf-name="h2" schema-name="">
             <inline-jdbc pool-minsize="2" pool-maxsize="10">
-                <xa-properties databaseName="${moqui.runtime}/db/derby/MoquiDEFAULT" createDatabase="create"/>
+                <xa-properties url="jdbc:h2:${moqui.runtime}/db/h2/MoquiDEFAULT" user="sa" password=""/>
             </inline-jdbc>
-            <!-- <inline-jdbc jdbc-uri="jdbc:derby:MoquiTenant;create=true"
-                         jdbc-username="moqui" jdbc-password="moqui"
-                         pool-minsize="2" pool-maxsize="10"/> -->
-            <!-- <jndi-jdbc jndi-name="java:/MoquiTenantDataSource"/> -->
         </datasource>
 
 
         <!-- ===== some examples of how other databases would be configured ===== -->
 
+        <!-- Derby
+        <datasource group-name="transactional" database-conf-name="derby" schema-name="MOQUI">
+            <inline-jdbc pool-minsize="5" pool-maxsize="50">
+                <xa-properties databaseName="${moqui.runtime}/db/derby/MoquiDEFAULT" createDatabase="create"/>
+            </inline-jdbc>
+            <!- - <inline-jdbc jdbc-uri="jdbc:derby:MoquiDEFAULT;create=true"
+                         jdbc-username="moqui" jdbc-password="moqui"
+                         pool-minsize="5" pool-maxsize="50"/> - ->
+        </datasource>
+        -->
         <!-- DB2
         <datasource group-name="transactional" database-conf-name="db2" schema-name="" startup-add-missing="true" runtime-add-missing="false">
             <inline-jdbc pool-minsize="5" pool-maxsize="50">
@@ -271,6 +273,16 @@
             </inline-jdbc>
             <!- - <inline-jdbc jdbc-uri="jdbc:db2://localhost:5021/MoquiDEFAULT"
                     jdbc-username="moqui" jdbc-password="moqui" pool-minsize="2" pool-maxsize="50"/> - ->
+        </datasource>
+        -->
+        <!-- H2
+        <datasource group-name="transactional" database-conf-name="h2" schema-name="">
+            <inline-jdbc pool-minsize="5" pool-maxsize="50">
+                <xa-properties url="jdbc:h2:${moqui.runtime}/db/h2/MoquiDEFAULT" user="sa" password=""/>
+            </inline-jdbc>
+            <!- - <inline-jdbc jdbc-uri="jdbc:h2:${moqui.runtime}/db/h2/MoquiDEFAULT"
+                         jdbc-username="sa" jdbc-password=""
+                         pool-minsize="5" pool-maxsize="50"/> - ->
         </datasource>
         -->
         <!-- MS SQL Server
@@ -397,6 +409,11 @@
                 default-jdbc-driver="org.apache.derby.jdbc.EmbeddedDriver"
                 default-xa-ds-class="org.apache.derby.jdbc.EmbeddedXADataSource">
             <!-- default-test-query="???" maybe like SELECT 1 FROM SEQUENCE_VALUE_ITEM WHERE 1=0 -->
+        </database>
+        <database name="h2"
+                use-pk-constraint-names="false" use-indexes-unique="false" default-isolation-level="ReadCommitted"
+                default-jdbc-driver="org.h2.Driver"
+                default-xa-ds-class="org.h2.jdbcx.JdbcDataSource">
         </database>
         <database name="hsql" use-fk-initially-deferred="false" join-style="ansi-no-parenthesis"
                 default-isolation-level="ReadUncommitted" default-jdbc-driver="org.hsqldb.jdbcDriver"

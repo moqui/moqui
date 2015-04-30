@@ -21,6 +21,7 @@ import org.moqui.impl.context.ArtifactExecutionInfoImpl
 import org.moqui.impl.context.ExecutionContextImpl
 import org.moqui.impl.context.UserFacadeImpl
 import org.moqui.impl.entity.EntityDefinition
+import org.moqui.impl.entity.EntityFacadeImpl
 import org.moqui.impl.service.runner.EntityAutoServiceRunner
 import org.moqui.service.ServiceCallSync
 import org.moqui.service.ServiceException
@@ -208,6 +209,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                 eci.artifactExecution.pop()
                 return result
             } else {
+                logger.info("No service with name ${getServiceName()}, isEntityAutoPattern=${isEntityAutoPattern()}, path=${path}, verb=${verb}, noun=${noun}, noun is entity? ${((EntityFacadeImpl) eci.getEntity()).isEntityDefined(noun)}")
                 throw new ServiceException("Could not find service with name [${getServiceName()}]")
             }
         }

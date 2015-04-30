@@ -428,6 +428,8 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
         // always localize string before expanding
         if (inputString.length() < 256) inputString = ecfi.l10nFacade.getLocalizedMessage(inputString)
+        // if no $ then it's a plain String, just return it
+        if (!inputString.contains("\$")) return inputString
 
         String expression = '"""' + inputString + '"""'
         try {

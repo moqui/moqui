@@ -464,7 +464,7 @@ class ScreenRenderImpl implements ScreenRender {
 
                 if (tr != null) {
                     // if requires a render, don't cache and make it private
-                    if (response != null) response.addHeader("Cache-Control", "no-cache, must-revalidate, private")
+                    if (response != null) response.addHeader("Cache-Control", "no-cache, no-store, must-revalidate, private")
                     tr.render(screenUrlInfo.fileResourceRef.location, writer)
                 } else {
                     // static text, tell the browser to cache it
@@ -552,7 +552,7 @@ class ScreenRenderImpl implements ScreenRender {
                 response.setContentType(this.outputContentType)
                 response.setCharacterEncoding(this.characterEncoding)
                 // if requires a render, don't cache and make it private
-                response.addHeader("Cache-Control", "no-cache, must-revalidate, private")
+                response.addHeader("Cache-Control", "no-cache, no-store, must-revalidate, private")
             }
 
             // for inherited permissions to work, walk the screen list before the screenRenderDefList and artifact push
@@ -781,6 +781,7 @@ class ScreenRenderImpl implements ScreenRender {
             section.render(this)
             writer.flush()
         } catch (Throwable t) {
+            BaseException.filterStackTrace(t)
             logger.error("Error rendering section [${sectionName}] in screen [${sd.location}]: " + t.toString(), t)
             return "Error rendering section [${sectionName}] in screen [${sd.location}]: ${t.toString()}"
         }
@@ -1018,7 +1019,7 @@ class ScreenRenderImpl implements ScreenRender {
             case "content": throw new IllegalArgumentException("The url-type of content is not yet supported"); break;
             case "plain":
             default:
-                String url = origUrl?.contains("\${") ? ec.resource.evaluateStringExpand(origUrl, "") : origUrl
+                String url = ec.resource.evaluateStringExpand(origUrl, "")
                 suInfo = ScreenUrlInfo.getScreenUrlInfo(this, url)
                 break
         }

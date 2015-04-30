@@ -447,6 +447,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     }
     List<NotificationMessageListener> getNotificationMessageListeners() { return registeredNotificationMessageListeners }
 
+    @CompileStatic
     org.apache.shiro.mgt.SecurityManager getSecurityManager() {
         if (internalSecurityManager != null) return internalSecurityManager
 

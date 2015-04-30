@@ -61,7 +61,9 @@ public class StupidClassLoader extends ClassLoader {
 
     protected final List<JarFile> jarFileList = new ArrayList<JarFile>();
     protected final List<File> classesDirectoryList = new ArrayList<File>();
-    protected final Map<String, Class> classCache = new HashMap<String, Class>();
+    // This Map contains either a Class or a ClassNotFoundException, cached for fast access because Groovy hits a LOT of
+    //     weird invalid class names resulting in expensive new ClassNotFoundException instances
+    protected final Map<String, Object> classCache = new HashMap<>();
     protected final Map<String, URL> resourceCache = new HashMap<String, URL>();
     protected ProtectionDomain pd;
 
@@ -193,13 +195,19 @@ public class StupidClassLoader extends ClassLoader {
     public Class<?> loadClass(String name) throws ClassNotFoundException { return loadClass(name, false); }
 
     @Override
-    protected synchronized Class<?> loadClass(String className, boolean resolve) throws ClassNotFoundException {
-        if (classCache.containsKey(className)) {
-            Class<?> cl = classCache.get(className);
-            if (cl == null) throw new ClassNotFoundException("Class " + className + " not found.");
-            return cl;
+    protected Class<?> loadClass(String className, boolean resolve) throws ClassNotFoundException {
+        Object cachedValue = classCache.get(className);
+        if (cachedValue != null) {
+            if (cachedValue instanceof Class) {
+                return (Class) cachedValue;
+            } else if (cachedValue instanceof ClassNotFoundException) {
+                throw (ClassNotFoundException) cachedValue;
+            }
+            // should never be an instance of anything else, if it is fall through and try to load the class
         }
-
+        return loadClassInternal(className, resolve);
+    }
+    protected synchronized Class<?> loadClassInternal(String className, boolean resolve) throws ClassNotFoundException {
         Class<?> c = null;
         try {
             try {
@@ -215,7 +223,8 @@ public class StupidClassLoader extends ClassLoader {
                     c = cl.loadClass(className);
                 } catch (ClassNotFoundException e) {
                     // remember that the class is not found
-                    classCache.put(className, null);
+                    classCache.put(className, e);
+                    // System.out.println("Class " + className + " not found (ClassNotFoundException was thrown)");
                     // e.printStackTrace();
                     throw e;
                 } catch (RuntimeException e) {
@@ -225,17 +234,28 @@ public class StupidClassLoader extends ClassLoader {
             }
 
             // System.out.println("Loading class name [" + className + "] got class: " + c);
-            classCache.put(className, c);
+            if (c == null) {
+                // this shouldn't generally happen, the parent ClassLoader should throw a ClassNotFoundException
+                classCache.put(className, new ClassNotFoundException("Class " + className + " not found."));
+                System.out.println("Class " + className + " not found and no ClassNotFoundException was thrown, creating new one.");
+            } else {
+                classCache.put(className, c);
+            }
             return c;
         } finally {
-            if (c != null  &&  resolve) {
-                resolveClass(c);
-            }
+            if (c != null && resolve) resolveClass(c);
         }
     }
 
     protected Class<?> findJarClass(String className) throws IOException, ClassFormatError {
-        if (classCache.containsKey(className)) return classCache.get(className);
+        Object cachedValue = classCache.get(className);
+        if (cachedValue != null) {
+            if (cachedValue instanceof Class) {
+                return (Class) cachedValue;
+            } else {
+                return null;
+            }
+        }
 
         Class<?> c = null;
         String classFileName = className.replace('.', '/') + ".class";
