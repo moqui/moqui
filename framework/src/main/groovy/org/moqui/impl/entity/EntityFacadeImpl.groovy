@@ -191,8 +191,51 @@ class EntityFacadeImpl implements EntityFacade {
             try {
                 EntityDefinition ed = getEntityDefinition(entityName)
                 ed.getRelationshipInfoMap()
+                entityDbMeta.tableExists(ed)
             } catch (Throwable t) { logger.warn("Error warming entity cache: ${t.toString()}") }
         }
+
+        // init a few framework entity caches
+        entityCache.getCacheCount("moqui.basic.EnumerationType")
+
+        entityCache.getCacheList("moqui.entity.UserField")
+        entityCache.getCacheList("moqui.entity.document.DataDocument")
+        entityCache.getCacheList("moqui.entity.document.DataDocumentCondition")
+        entityCache.getCacheList("moqui.entity.document.DataDocumentField")
+        entityCache.getCacheList("moqui.entity.feed.DataFeedAndDocument")
+        entityCache.getCacheList("moqui.entity.view.DbViewEntity")
+        entityCache.getCacheList("moqui.entity.view.DbViewEntityAlias")
+        entityCache.getCacheList("moqui.entity.view.DbViewEntityKeyMap")
+        entityCache.getCacheList("moqui.entity.view.DbViewEntityMember")
+
+        entityCache.getCacheList("moqui.screen.ScreenThemeResource")
+        entityCache.getCacheList("moqui.screen.SubscreensItem")
+        entityCache.getCacheList("moqui.screen.form.DbFormField")
+        entityCache.getCacheList("moqui.screen.form.DbFormFieldAttribute")
+        entityCache.getCacheList("moqui.screen.form.DbFormFieldEntOpts")
+        entityCache.getCacheList("moqui.screen.form.DbFormFieldEntOptsCond")
+        entityCache.getCacheList("moqui.screen.form.DbFormFieldEntOptsOrder")
+        entityCache.getCacheList("moqui.screen.form.DbFormFieldOption")
+        entityCache.getCacheList("moqui.screen.form.DbFormLookup")
+
+        entityCache.getCacheList("moqui.security.ArtifactAuthzCheckView")
+        entityCache.getCacheList("moqui.security.ArtifactTarpitCheckView")
+        entityCache.getCacheList("moqui.security.ArtifactTarpitLock")
+        entityCache.getCacheList("moqui.security.UserGroupMember")
+        entityCache.getCacheList("moqui.security.UserGroupPreference")
+
+        entityCache.getCacheOne("moqui.basic.Enumeration")
+        entityCache.getCacheOne("moqui.basic.LocalizedMessage")
+        entityCache.getCacheOne("moqui.entity.document.DataDocument")
+        entityCache.getCacheOne("moqui.entity.view.DbViewEntity")
+        entityCache.getCacheOne("moqui.screen.form.DbForm")
+        entityCache.getCacheOne("moqui.security.UserAccount")
+        entityCache.getCacheOne("moqui.security.UserPreference")
+        entityCache.getCacheOne("moqui.security.UserScreenTheme")
+        entityCache.getCacheOne("moqui.server.Visit")
+        entityCache.getCacheOne("moqui.tenant.Tenant")
+        entityCache.getCacheOne("moqui.tenant.TenantHostDefault")
+
         logger.info("Warmed entity definition cache for ${entityNames.size()} entities in ${(System.currentTimeMillis() - startTime)/1000} seconds")
     }
 

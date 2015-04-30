@@ -1011,7 +1011,7 @@ class ScreenRenderImpl implements ScreenRender {
             A content location (without the content://). URL will be one that can access that content.
          */
         ScreenUrlInfo suInfo
-        String urlTypeExpanded = ec.resource.evaluateStringExpand(urlType, "")
+        String urlTypeExpanded = urlType?.contains("\${") ? ec.resource.evaluateStringExpand(urlType, "") : urlType
         switch (urlTypeExpanded) {
             // for transition we want a URL relative to the current screen, so just pass that to buildUrl
             case "transition": suInfo = buildUrlInfo(origUrl); break;
