@@ -2,10 +2,21 @@
 Moqui Framework Release Notes
 
 ===========================================================================
-Release 1.5.2 - TBD
+Release 1.5.2 - 2 May 2015 (estimated)
 ===========================================================================
 
 Moqui Framework 1.5.2 is a minor new feature and bug fix release.
+
+The main improvement in this release is significantly better performance.
+All levels of the framework run faster, including screen rendering, with
+even more significant improvements for entity and service operations. There
+are also various improvements to stability, especially in production under
+a load. Some of these are from better concurrency handling in Moqui, others
+from updates to libraries including a newer version of Bitronix TM.
+
+The H2 database is now used by default instead of Derby. There is now a
+CUPS server integration using Cups4J including services to print, and
+services and screens for managing printers and print jobs.
 
 New Features:
 
@@ -15,7 +26,7 @@ New Features:
   source in GitHub repo), FreeMarker to 2.3.22, Groovy to 2.4.3
 - Updated OrientDB to 2.0.8, tested and fixed a few issues
 - Updated Apache Commons Codec to 1.9, Apache Commons Logging to 1.2,
-  Apache HttpClient and HttpCore to 4.4.1, JNA to 4.2.10
+  Apache HttpClient and HttpCore to 4.4.1, JNA to 4.1.0
 - Significant performance improvements based on profiling
   - a big part of this is using the Groovy @CompileStatic annotation for
     strict typing and direct method calls for improved performance in many
@@ -41,6 +52,9 @@ New Features:
 - CUPS print server integration and print job management services and admin
   screens in the System app; can render XSL-FO screens to PDF/etc and
   print, print ResourceFacade resources, and direct print other documents
+- Various improvements to concurrency and load handling
+- Production mode artifact cache warming now does more so that initial page
+  loads are much faster, and heavy loads from start are handled better
 
 Bug Fixes:
 
@@ -55,6 +69,8 @@ Bug Fixes:
 - Fixed issue with startup-add-missing=true and runtime-add-missing=false
   where entities in a group without an explicit datasource would never have
   their tables created
+- Fixed issues with OrientDB wrapper objects related to EntityFacade
+  changes since 1.5.0
 
 ===========================================================================
 Release 1.5.1 - 29 Mar 2015
