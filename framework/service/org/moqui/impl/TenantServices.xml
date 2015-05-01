@@ -136,6 +136,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <implements service="org.moqui.impl.TenantServices.provision#Tenant"/>
         <in-parameters>
             <parameter name="user" default-value="sa"/>
+            <parameter name="password" default-value="sa"/>
         </in-parameters>
         <actions>
             <service-call name="create#moqui.tenant.Tenant" in-map="context" out-map="context"/>
@@ -147,6 +148,8 @@ This Work includes contributions authored by David E. Jones, not as a
                         propValue:('jdbc:h2:${moqui.runtime}/db/h2/' + tenantId)]"/>
             <service-call name="create#moqui.tenant.TenantDataSourceXaProp"
                     in-map="[tenantId:tenantId, entityGroupName:'transactional', propName:'user', propValue:user]"/>
+            <service-call name="create#moqui.tenant.TenantDataSourceXaProp"
+                    in-map="[tenantId:tenantId, entityGroupName:'transactional', propName:'password', propValue:password]"/>
 
             <!-- No need to do this for Derby, but the note here for future reference: create database(s), if datasource configured to do so -->
 
