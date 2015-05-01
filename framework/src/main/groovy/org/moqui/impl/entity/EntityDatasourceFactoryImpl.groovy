@@ -100,7 +100,11 @@ class EntityDatasourceFactoryImpl implements EntityDatasourceFactory {
                 for (int i = 0; i < args.length; i++) {
                     if (args[i].contains('${moqui.runtime}')) args[i] = args[i].replace('${moqui.runtime}', System.getProperty("moqui.runtime"))
                 }
-                h2Server = Server.createTcpServer(args).start();
+                try {
+                    h2Server = Server.createTcpServer(args).start();
+                } catch (Throwable t) {
+                    logger.warn("Error starting H2 server (may already be running): ${t.toString()}")
+                }
             }
 
             TransactionInternal ti = efi.getEcfi().getTransactionFacade().getTransactionInternal()
