@@ -24,8 +24,11 @@ the past but were broken in recent versions of Moqui Framework.
 
 New Features:
 
-- Added H2 1.4.187, configuration for H2 Database, set as default embedded
-  database instead of Derby
+- Added H2 1.4.187, configuration for H2 Database
+  - set as default embedded database instead of Derby
+  - in default setup can be accessed remotely on port 9092 using a URI like
+    jdbc:h2:tcp://localhost:9092/MoquiDEFAULT
+  - H2 console available by default (see web.xml) at /h2
 - Updated Atomikos to 4.0.0M4, Bitronix to 3.0.0-SNAPSHOT (built from
   source in GitHub repo), FreeMarker to 2.3.22, Groovy to 2.4.3
 - Updated OrientDB to 2.0.8, tested and fixed a few issues

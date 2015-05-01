@@ -212,9 +212,11 @@
         xa-properties element. If the xa-properties element is present the normal JDBC parameters will be ignored.
         -->
 
-        <datasource group-name="transactional" database-conf-name="h2" schema-name="">
+        <datasource group-name="transactional" database-conf-name="h2" schema-name=""
+                start-server-args="-tcpPort 9092 -ifExists -baseDir ${moqui.runtime}/db/h2">
+            <!-- with this setup you can connect remotely using "jdbc:h2:tcp://localhost:9092/MoquiDEFAULT" -->
             <inline-jdbc pool-minsize="5" pool-maxsize="50">
-                <xa-properties url="jdbc:h2:${moqui.runtime}/db/h2/MoquiDEFAULT" user="sa" password=""/>
+                <xa-properties url="jdbc:h2:${moqui.runtime}/db/h2/MoquiDEFAULT" user="sa" password="sa"/>
             </inline-jdbc>
             <!-- <inline-jdbc jdbc-uri="jdbc:h2:${moqui.runtime}/db/h2/MoquiDEFAULT"
                          jdbc-username="sa" jdbc-password=""
@@ -248,7 +250,7 @@
         <!-- The tenantcommon group can also in the same DB, but MUST have a separate definition for multi-tenant to work -->
         <datasource group-name="tenantcommon" database-conf-name="h2" schema-name="">
             <inline-jdbc pool-minsize="2" pool-maxsize="10">
-                <xa-properties url="jdbc:h2:${moqui.runtime}/db/h2/MoquiDEFAULT" user="sa" password=""/>
+                <xa-properties url="jdbc:h2:${moqui.runtime}/db/h2/MoquiDEFAULT" user="sa" password="sa"/>
             </inline-jdbc>
         </datasource>
 
