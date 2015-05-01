@@ -438,7 +438,12 @@ This Work includes contributions authored by David E. Jones, not as a
                     org.moqui.entity.EntityDatasourceFactory interface.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="sequence-primary-use-uuid" type="boolean" default="false">
-                <xs:annotation><xs:documentation>Uses java.util.UUID.randomUUID() to get sequenced IDs for this entity.</xs:documentation></xs:annotation>
+                <xs:annotation><xs:documentation>Uses java.util.UUID.randomUUID() to get sequenced IDs for all entities in this datasource.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="start-server-args" type="xs:string">
+                <xs:annotation><xs:documentation>Currently only for the H2 database. Start a remote access server for
+                    the embedded DB using these arguments. See the main() method at
+                    http://www.h2database.com/javadoc/org/h2/tools/Server.html for details.</xs:documentation></xs:annotation>
             </xs:attribute>
         </xs:complexType>
     </xs:element>

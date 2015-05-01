@@ -12,6 +12,7 @@
 package org.moqui.impl.entity
 
 import groovy.transform.CompileStatic
+import org.h2.tools.Server
 import org.moqui.context.TransactionInternal
 import org.moqui.entity.*
 import org.slf4j.Logger
@@ -30,6 +31,9 @@ class EntityDatasourceFactoryImpl implements EntityDatasourceFactory {
     protected String tenantId
 
     protected DataSource dataSource
+
+    // for the embedded H2 server to allow remote access, used to stop server on destroy
+    protected Server h2Server = null
 
     EntityDatasourceFactoryImpl() { }
 
@@ -90,6 +94,14 @@ class EntityDatasourceFactoryImpl implements EntityDatasourceFactory {
                 System.setProperty("derby.system.home", System.getProperty("moqui.runtime") + "/db/derby")
                 logger.info("Set property derby.system.home to [${System.getProperty("derby.system.home")}]")
             }
+            if (datasourceNode."@database-conf-name" == "h2" && datasourceNode."@start-server-args") {
+                String argsString = datasourceNode."@start-server-args"
+                String[] args = argsString.split(" ")
+                for (int i = 0; i < args.length; i++) {
+                    if (args[i].contains('${moqui.runtime}')) args[i] = args[i].replace('${moqui.runtime}', System.getProperty("moqui.runtime"))
+                }
+                h2Server = Server.createTcpServer(args).start();
+            }
 
             TransactionInternal ti = efi.getEcfi().getTransactionFacade().getTransactionInternal()
             this.dataSource = ti.getDataSource(efi, datasourceNode, tenantId)
@@ -103,6 +115,7 @@ class EntityDatasourceFactoryImpl implements EntityDatasourceFactory {
     @Override
     void destroy() {
         // NOTE: TransactionInternal DataSource will be destroyed when the TransactionFacade is destroyed
+        if (h2Server != null && h2Server.isRunning(true)) h2Server.stop()
     }
 
     @Override
