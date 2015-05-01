@@ -627,7 +627,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                         </#if>
                     </#list>
                     <#assign inFieldRow = false>
-                    </div><!-- /row -->
+                    </div><#-- /row -->
                 <#elseif layoutNode?node_name == "field-row-big">
                     <#if collapsibleOpened>
                         <#assign collapsibleOpened = false>
@@ -660,16 +660,16 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                     </#assign>
                     <#assign rowContent = rowContent?trim>
                     <#if rowContent?has_content>
-                    <div class="row"><#-- was field-row -->
+                    <div class="form-group"><#-- was row -->
                         <#if layoutNode["@title"]?has_content>
-                            <div class="col-lg-2 text-right"><label class="control-label">${ec.resource.evaluateStringExpand(layoutNode["@title"], "")}</label></div>
+                        <label class="control-label col-lg-2">${ec.resource.evaluateStringExpand(layoutNode["@title"], "")}</label>
                         <div class="col-lg-10">
                         <#else>
                         <div class="col-lg-12">
                         </#if>
                             ${rowContent}
-                        </div><!-- /col-lg-12 bigRow -->
-                    </div><!-- /row -->
+                        </div><#-- /col-lg-12 bigRow -->
+                    </div><#-- /row -->
                     </#if>
                     <#assign bigRow = false>
                     <#assign inFieldRow = false>
@@ -706,17 +706,17 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                                             <#else>
                                                 <@formSingleSubField fieldNode/>
                                             </#if>
-                                        </div><!-- /col-lg-6 not bigRow -->
+                                        </div><#-- /col-lg-6 not bigRow -->
                                     <#elseif rowChildNode?node_name == "fields-not-referenced">
                                         <#assign nonReferencedFieldList = sri.getFtlFormFieldLayoutNonReferencedFieldList(.node["@name"])>
                                         <#list nonReferencedFieldList as nonReferencedField><@formSingleSubField nonReferencedField/></#list>
                                     </#if>
                                 </#list>
                                 <#assign inFieldRow = false>
-                                </div><!-- /row -->
+                                </div><#-- /row -->
                             </#if>
                         </#list>
-                    </div><!-- /layoutNode -->
+                    </div><#-- /layoutNode -->
                 </#if>
             </#list>
             <#if collapsibleOpened>
