@@ -793,8 +793,15 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:attribute>
             <xs:attribute name="ac-delay" type="xs:positiveInteger" default="300"/>
             <xs:attribute name="ac-min-length" type="xs:positiveInteger" default="1"/>
-            <xs:attribute name="ac-show-value" type="boolean" default="false"/>
+            <xs:attribute name="ac-show-value" type="boolean" default="false">
+                <xs:annotation><xs:documentation>If true the value of the currently selected option will show next to
+                    the autocomplete input box.</xs:documentation></xs:annotation>
+            </xs:attribute>
             <xs:attribute name="ac-initial-text" type="xs:string" use="optional"/>
+            <xs:attribute name="ac-use-actual" type="boolean" default="false">
+                <xs:annotation><xs:documentation>If true the value enterred in the input box will be used even if no
+                    autocomplete option is selected.</xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="text-area" substitutionGroup="SubFields">
