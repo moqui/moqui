@@ -107,7 +107,7 @@ class ScreenTree {
 
                     String id = eci.getResource().evaluateStringExpand((String) tn.linkNode."@id", tn.location + ".id")
                     String text = eci.getResource().evaluateStringExpand((String) tn.linkNode."@text", tn.location + ".text")
-                    ScreenUrlInfo urlInfo = cs.get("sri").makeUrlByTypeGroovyNode(tn.linkNode."@url", tn.linkNode."@url-type" ?: "transition", tn.linkNode, tn.linkNode."@expand-transition-url" ?: "true")
+                    ScreenUrlInfo.UrlInstance urlInstance = cs.get("sri").makeUrlByTypeGroovyNode(tn.linkNode."@url", tn.linkNode."@url-type" ?: "transition", tn.linkNode, tn.linkNode."@expand-transition-url" ?: "true")
 
                     // now get children to check if has some, and if in treeOpenPath include them
                     List<Map> childNodeList = null
@@ -119,7 +119,7 @@ class ScreenTree {
                         cs.pop()
                     }
 
-                    String urlText = urlInfo.getUrlWithParams()
+                    String urlText = urlInstance.getUrlWithParams()
                     if (tn.linkNode."@dynamic-load-id") {
                         String loadId = tn.linkNode."@dynamic-load-id"
                         // NOTE: the void(0) is needed for Firefox and other browsers that render the result of the JS expression
