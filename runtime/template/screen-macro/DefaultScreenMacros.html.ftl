@@ -751,6 +751,9 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                 <#-- TODO: do something much fancier than a dumb alert box -->
                     alert("${formNode["@background-message"]}");
                 </#if>
+                <#if formNode["@close-dialog-id"]?has_content>
+                    $('#${formNode["@close-dialog-id"]}').modal('hide');
+                </#if>
             }
             $("#${formId}").ajaxForm({ success: backgroundSuccess${formId}, resetForm: false });
             </#if>

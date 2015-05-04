@@ -106,6 +106,9 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="background-message" type="xs:string">
                 <xs:annotation><xs:documentation>After the form is submitted in the background show this message in a dialog.</xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="close-dialog-id" type="xs:string">
+                <xs:annotation><xs:documentation>After the form is submitted in the background close the dialog with the specified id.</xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
 
