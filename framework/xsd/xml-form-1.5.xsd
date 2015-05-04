@@ -103,6 +103,10 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:annotation><xs:documentation>After the form is submitted in the background reload the
                     dynamic-container with this id.</xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="background-hide-id" type="xs:string">
+                <xs:annotation><xs:documentation>After the form is submitted in the background hide the element (usually
+                    a dialog) with the specified id.</xs:documentation></xs:annotation>
+            </xs:attribute>
             <xs:attribute name="background-message" type="xs:string">
                 <xs:annotation><xs:documentation>After the form is submitted in the background show this message in a dialog.</xs:documentation></xs:annotation>
             </xs:attribute>
