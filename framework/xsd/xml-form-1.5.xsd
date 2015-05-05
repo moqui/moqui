@@ -299,6 +299,7 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:documentation></xs:annotation></xs:attribute>
             <xs:attribute name="text" type="xs:string"/>
             <xs:attribute name="icon" type="xs:string"/>
+            <xs:attribute name="tooltip" type="xs:string"/>
             <xs:attribute name="target-window" type="xs:string"/>
             <xs:attribute name="confirmation" type="xs:string"><xs:annotation><xs:documentation>
                 If there is a message here it will show in a confirmation box when the link is clicked on.
