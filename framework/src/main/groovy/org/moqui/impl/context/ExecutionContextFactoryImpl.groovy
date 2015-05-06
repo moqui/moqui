@@ -831,6 +831,9 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             'moqui.entity.view.DbViewEntity', 'moqui.entity.view.DbViewEntityMember',
             'moqui.entity.view.DbViewEntityKeyMap', 'moqui.entity.view.DbViewEntityAlias'])
     protected final Set<String> artifactTypesForStatsSkip = new TreeSet(["screen", "transition", "screen-content"])
+    protected final BigDecimal BD_TWO = new BigDecimal(2)
+    protected final long checkSlowThreshold = 100L
+    protected final BigDecimal userImpactMinMillis = new BigDecimal(200)
 
     @CompileStatic
     void countArtifactHit(String artifactType, String artifactSubType, String artifactName, Map<String, Object> parameters,
@@ -878,20 +881,20 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             if (runningTimeMillis < ((BigDecimal) ahb.minTimeMillis)) ahb.minTimeMillis = runningTimeMillis
             if (runningTimeMillis > ((BigDecimal) ahb.maxTimeMillis)) ahb.maxTimeMillis = runningTimeMillis
 
-            if (hitCount > 100L) {
+            if (hitCount > checkSlowThreshold) {
                 // calc new average and standard deviation
                 BigDecimal average = hitCount ? totalTimeMillis/hitCount : null
                 BigDecimal stdDev = totalSquaredTime && hitCount > 1 ? new BigDecimal(
                         Math.sqrt(((BigDecimal) (totalSquaredTime - ((totalTimeMillis*totalTimeMillis) / hitCount)))
                                 .abs().divide(new BigDecimal(hitCount - 1L), BigDecimal.ROUND_HALF_UP).doubleValue())) : null
 
-                // if runningTime is more than 2 std devs from the avg, log it and count it
-                if (average != null && stdDev != null && runningTimeMillis > (average + stdDev + stdDev)) {
+                // if runningTime is more than X std devs from the avg, log it and count it
+                if (average != null && stdDev != null && runningTimeMillis > (average + (stdDev * BD_TWO))) {
                     String msgStr = "Slow hit to ${binKey} running time ${runningTimeMillis} is greater than average [${average}] plus 2 standard deviations [${stdDev}]"
-                    if (artifactType == "entity" || artifactType == "service") {
-                        if (logger.isTraceEnabled()) logger.trace(msgStr)
-                    } else {
+                    if (runningTimeMillis > userImpactMinMillis) {
                         logger.warn(msgStr)
+                    } else {
+                        if (logger.isTraceEnabled()) logger.trace(msgStr)
                     }
                     ahb.slowHitCount = ((Long) ahb.slowHitCount) + 1
                     isSlowHit = true
@@ -900,8 +903,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         }
         // NOTE: never save individual hits for entity artifact hits, way too heavy and also avoids self-reference
         //     (could also be done by checking for ArtifactHit/etc of course)
-        // Always save slow hits regardless of settings
-        if (!isEntity && (isSlowHit || artifactPersistHit(artifactType, artifactSubType))) {
+        // Always save slow hits above userImpactMinMillis regardless of settings
+        if (!isEntity && ((isSlowHit && runningTimeMillis > userImpactMinMillis) || artifactPersistHit(artifactType, artifactSubType))) {
             Map<String, Object> ahp = [visitId:eci.user.visitId, userId:eci.user.userId, isSlowHit:(isSlowHit ? 'Y' : 'N'),
                                        artifactType:artifactType, artifactSubType:artifactSubType, artifactName:artifactName,
                                        startDateTime:new Timestamp(startTime), runningTimeMillis:runningTimeMillis] as Map<String, Object>
