@@ -21,7 +21,6 @@ import java.sql.DatabaseMetaData
 import java.sql.ResultSet
 import java.sql.Timestamp
 
-import org.apache.commons.collections.set.ListOrderedSet
 import org.moqui.entity.EntityException
 
 import org.slf4j.Logger
@@ -105,7 +104,7 @@ class EntityDbMeta {
             }
         } else {
             // table exists, see if it is missing any columns
-            ListOrderedSet mcs = getMissingColumns(ed)
+            List<String> mcs = getMissingColumns(ed)
             if (mcs) {
                 boolean suspendedTransaction = false
                 try {
@@ -186,7 +185,7 @@ class EntityDbMeta {
 
         if (dbResult && !ed.isViewEntity()) {
             // on the first check also make sure all columns/etc exist; we'll do this even on read/exist check otherwise query will blow up when doesn't exist
-            ListOrderedSet mcs = getMissingColumns(ed)
+            List<String> mcs = getMissingColumns(ed)
             if (mcs) {
                 suspendedTransaction = false
                 try {
@@ -259,8 +258,8 @@ class EntityDbMeta {
         if (logger.infoEnabled) logger.info("Created table [${ed.tableName}] for entity [${ed.getFullEntityName()}]")
     }
 
-    ListOrderedSet getMissingColumns(EntityDefinition ed) {
-        if (ed.isViewEntity()) return new ListOrderedSet()
+    List<String> getMissingColumns(EntityDefinition ed) {
+        if (ed.isViewEntity()) return new ArrayList<String>()
 
         boolean suspendedTransaction = false
         try {
@@ -280,7 +279,7 @@ class EntityDbMeta {
                 colSet = dbData.getColumns(null, ed.getSchemaName(), ed.getTableName(), "%")
                 if (colSet.isClosed()) {
                     logger.error("Tried to get columns for entity ${ed.getFullEntityName()} but ResultSet was closed!")
-                    return new ListOrderedSet()
+                    return new ArrayList<String>()
                 }
                 while (colSet.next()) {
                     String colName = colSet.getString("COLUMN_NAME")
@@ -298,7 +297,7 @@ class EntityDbMeta {
                     colSet = dbData.getColumns(null, ed.getSchemaName(), ed.getTableName().toLowerCase(), "%")
                     if (colSet.isClosed()) {
                         logger.error("Tried to get columns for entity ${ed.getFullEntityName()} but ResultSet was closed!")
-                        return new ListOrderedSet()
+                        return new ArrayList<String>()
                     }
                     while (colSet.next()) {
                         String colName = colSet.getString("COLUMN_NAME")
@@ -319,7 +318,7 @@ class EntityDbMeta {
                 return fnSet
             } catch (Exception e) {
                 logger.error("Exception checking for missing columns in table [${ed.getTableName()}]", e)
-                return new ListOrderedSet()
+                return new ArrayList<String>()
             } finally {
                 if (colSet != null && !colSet.isClosed()) colSet.close()
                 if (con != null && !con.isClosed()) con.close()
