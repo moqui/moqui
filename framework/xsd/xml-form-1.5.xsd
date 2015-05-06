@@ -804,6 +804,10 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:annotation><xs:documentation>If true the value enterred in the input box will be used even if no
                     autocomplete option is selected.</xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="parameter-map" type="xs:string">
+                <xs:annotation><xs:documentation>A Map to get parameter names and values from for autocomplete requests.
+                    This is named to follow the pattern for parameters used elsewhere.</xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="text-area" substitutionGroup="SubFields">
