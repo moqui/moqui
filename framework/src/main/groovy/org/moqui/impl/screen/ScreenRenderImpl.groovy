@@ -317,7 +317,7 @@ class ScreenRenderImpl implements ScreenRender {
                     sfi.ecfi.countArtifactHit("transition", ri?.type ?: "",
                             targetTransition.parentScreen.getLocation() + "#" + targetTransition.name,
                             (ec.getWeb() ? ec.getWeb().requestParameters : null), transitionStartTime,
-                            new BigDecimal(System.nanoTime() - startTimeNanos).movePointLeft(6), null)
+                            (System.nanoTime() - startTimeNanos)/1E6, null)
                 }
             }
 
@@ -443,7 +443,7 @@ class ScreenRenderImpl implements ScreenRender {
                         if (screenUrlInfo.targetScreen.screenNode.attributes().get('track-artifact-hit') != "false") {
                             sfi.ecfi.countArtifactHit("screen-content", fileContentType, screenUrlInfo.fileResourceRef.location,
                                     (ec.getWeb() ? ec.getWeb().requestParameters : null), resourceStartTime,
-                                    new BigDecimal(System.nanoTime() - startTimeNanos).movePointLeft(6), (long) totalLen)
+                                    (System.nanoTime() - startTimeNanos)/1E6, (long) totalLen)
                         }
                         if (logger.traceEnabled) logger.trace("Sent binary response of length [${totalLen}] with from file [${screenUrlInfo.fileResourceRef.location}] for request to [${screenUrlInstance.url}]")
                         return
@@ -487,7 +487,7 @@ class ScreenRenderImpl implements ScreenRender {
                         if (screenUrlInfo.targetScreen.screenNode.attributes().get('track-artifact-hit') != "false") {
                             sfi.ecfi.countArtifactHit("screen-content", fileContentType, screenUrlInfo.fileResourceRef.location,
                                     (ec.getWeb() ? ec.getWeb().requestParameters : null), resourceStartTime,
-                                    new BigDecimal(System.nanoTime() - startTimeNanos).movePointLeft(6), (long) length)
+                                    (System.nanoTime() - startTimeNanos)/1E6, (long) length)
                         }
                     } else {
                         logger.warn("Not sending text response from file [${screenUrlInfo.fileResourceRef.location}] for request to [${screenUrlInstance.url}] because no text was found in the file.")
@@ -626,7 +626,7 @@ class ScreenRenderImpl implements ScreenRender {
             if (screenUrlInfo.targetScreen.screenNode.attributes().get('track-artifact-hit') != "false") {
                 sfi.ecfi.countArtifactHit("screen", this.outputContentType, screenUrlInfo.screenRenderDefList.last().getLocation(),
                         (ec.getWeb() ? ec.getWeb().requestParameters : null), screenStartTime,
-                        new BigDecimal(System.nanoTime() - startTimeNanos).movePointLeft(6), null)
+                        (System.nanoTime() - startTimeNanos)/1E6, null)
             }
         }
     }

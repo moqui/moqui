@@ -203,7 +203,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
             if (isEntityAutoPattern()) {
                 Map result = runImplicitEntityAuto(currentParameters, eci)
 
-                BigDecimal runningTimeMillis = new BigDecimal(System.nanoTime() - startTimeNanos).movePointLeft(6)
+                double runningTimeMillis = (System.nanoTime() - startTimeNanos)/1E6
                 if (logger.traceEnabled) logger.trace("Finished call to service [${getServiceName()}] in ${(runningTimeMillis)/1000} seconds")
                 sfi.getEcfi().countArtifactHit("service", "entity-implicit", getServiceName(), currentParameters,
                         callStartTime, runningTimeMillis, null)
@@ -319,7 +319,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                 logger.error("Error logging out user after call to service [${getServiceName()}]", t)
             }
 
-            BigDecimal runningTimeMillis = new BigDecimal(System.nanoTime() - startTimeNanos).movePointLeft(6)
+            double runningTimeMillis = (System.nanoTime() - startTimeNanos)/1E6
             sfi.getEcfi().countArtifactHit("service", serviceType, getServiceName(), currentParameters, callStartTime,
                     runningTimeMillis, null)
 

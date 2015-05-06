@@ -590,7 +590,7 @@ abstract class EntityFindBase implements EntityFind {
         // find EECA rules deprecated, not worth performance hit: efi.runEecaRules(ed.getFullEntityName(), newEntityValue, "find-one", false)
         // count the artifact hit
         efi.ecfi.countArtifactHit("entity", "one", ed.getFullEntityName(), simpleAndMap, startTime,
-                new BigDecimal(System.nanoTime() - startTimeNanos).movePointLeft(6), newEntityValue ? 1L : 0L)
+                (System.nanoTime() - startTimeNanos)/1E6, newEntityValue ? 1L : 0L)
         // pop the ArtifactExecutionInfo
         ec.getArtifactExecution().pop()
 
@@ -721,7 +721,7 @@ abstract class EntityFindBase implements EntityFind {
         // find EECA rules deprecated, not worth performance hit: efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-list", false)
         // count the artifact hit
         efi.ecfi.countArtifactHit("entity", "list", ed.getFullEntityName(), simpleAndMap, startTime,
-                new BigDecimal(System.nanoTime() - startTimeNanos).movePointLeft(6), el ? (long) el.size() : 0L)
+                (System.nanoTime() - startTimeNanos)/1E6, el ? (long) el.size() : 0L)
         // pop the ArtifactExecutionInfo
         ec.getArtifactExecution().pop()
 
@@ -813,7 +813,7 @@ abstract class EntityFindBase implements EntityFind {
         // find EECA rules deprecated, not worth performance hit: efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-iterator", false)
         // count the artifact hit
         efi.ecfi.countArtifactHit("entity", "iterator", ed.getFullEntityName(), simpleAndMap, startTime,
-                new BigDecimal(System.nanoTime() - startTimeNanos).movePointLeft(6), null)
+                (System.nanoTime() - startTimeNanos)/1E6, null)
         // pop the ArtifactExecutionInfo
         ec.getArtifactExecution().pop()
 
@@ -892,7 +892,7 @@ abstract class EntityFindBase implements EntityFind {
         // find EECA rules deprecated, not worth performance hit: efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-count", false)
         // count the artifact hit
         efi.ecfi.countArtifactHit("entity", "count", ed.getFullEntityName(), simpleAndMap, startTime,
-                new BigDecimal(System.nanoTime() - startTimeNanos).movePointLeft(6), count)
+                (System.nanoTime() - startTimeNanos)/1E6, count)
         // pop the ArtifactExecutionInfo
         ec.getArtifactExecution().pop()
 

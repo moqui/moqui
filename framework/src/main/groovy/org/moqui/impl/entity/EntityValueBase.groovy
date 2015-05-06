@@ -983,7 +983,7 @@ abstract class EntityValueBase implements EntityValue {
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "create", false)
         // count the artifact hit
         ecfi.countArtifactHit("entity", "create", ed.getFullEntityName(), this.getPrimaryKeys(), startTime,
-                new BigDecimal(System.nanoTime() - startTimeNanos).movePointLeft(6), 1L)
+                (System.nanoTime() - startTimeNanos)/1E6, 1L)
         // pop the ArtifactExecutionInfo to clean it up
         ec.getArtifactExecution().pop()
 
@@ -1108,7 +1108,7 @@ abstract class EntityValueBase implements EntityValue {
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "update", false)
         // count the artifact hit
         ecfi.countArtifactHit("entity", "update", ed.getFullEntityName(), this.getPrimaryKeys(), startTime,
-                new BigDecimal(System.nanoTime() - startTimeNanos).movePointLeft(6), 1L)
+                (System.nanoTime() - startTimeNanos)/1E6, 1L)
         // pop the ArtifactExecutionInfo to clean it up
         ec.getArtifactExecution().pop()
 
@@ -1221,7 +1221,7 @@ abstract class EntityValueBase implements EntityValue {
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "delete", false)
         // count the artifact hit
         ecfi.countArtifactHit("entity", "delete", ed.getFullEntityName(), this.getPrimaryKeys(), startTime,
-                new BigDecimal(System.nanoTime() - startTimeNanos).movePointLeft(6), 1L)
+                (System.nanoTime() - startTimeNanos)/1E6, 1L)
         // pop the ArtifactExecutionInfo to clean it up
         ec.getArtifactExecution().pop()
 
@@ -1287,7 +1287,7 @@ abstract class EntityValueBase implements EntityValue {
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "find-one", false)
         // count the artifact hit
         ecfi.countArtifactHit("entity", "refresh", ed.getFullEntityName(), this.getPrimaryKeys(), startTime,
-                new BigDecimal(System.nanoTime() - startTimeNanos).movePointLeft(6), retVal ? 1L : 0L)
+                (System.nanoTime() - startTimeNanos)/1E6, retVal ? 1L : 0L)
         // pop the ArtifactExecutionInfo to clean it up
         ec.getArtifactExecution().pop()
 
