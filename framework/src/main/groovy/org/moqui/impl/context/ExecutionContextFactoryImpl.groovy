@@ -835,7 +835,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     @CompileStatic
     void countArtifactHit(String artifactType, String artifactSubType, String artifactName, Map<String, Object> parameters,
                           long startTime, BigDecimal runningTimeMillis, Long outputSize) {
-        boolean isEntity = artifactType == "entity"
+        boolean isEntity = artifactType == 'entity' || artifactSubType == 'entity-implicit'
         // don't count the ones this calls
         if (artifactName.contains("moqui.server.ArtifactHit")) return
         if (isEntity && entitiesToSkipHitCount.contains(artifactName)) return
@@ -900,7 +900,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         }
         // NOTE: never save individual hits for entity artifact hits, way too heavy and also avoids self-reference
         //     (could also be done by checking for ArtifactHit/etc of course)
-        if (!isEntity && artifactPersistHit(artifactType, artifactSubType)) {
+        // Always save slow hits regardless of settings
+        if (!isEntity && (isSlowHit || artifactPersistHit(artifactType, artifactSubType))) {
             Map<String, Object> ahp = [visitId:eci.user.visitId, userId:eci.user.userId, isSlowHit:(isSlowHit ? 'Y' : 'N'),
                                        artifactType:artifactType, artifactSubType:artifactSubType, artifactName:artifactName,
                                        startDateTime:new Timestamp(startTime), runningTimeMillis:runningTimeMillis] as Map<String, Object>
