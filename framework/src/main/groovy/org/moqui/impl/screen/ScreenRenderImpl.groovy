@@ -290,6 +290,7 @@ class ScreenRenderImpl implements ScreenRender {
             }
 
             long transitionStartTime = System.currentTimeMillis()
+            long startTimeNanos = System.nanoTime()
 
             boolean beginTransaction = targetTransition.getBeginTransaction()
             boolean beganTransaction = beginTransaction ? sfi.getEcfi().getTransactionFacade().begin(null) : false
@@ -316,7 +317,7 @@ class ScreenRenderImpl implements ScreenRender {
                     sfi.ecfi.countArtifactHit("transition", ri?.type ?: "",
                             targetTransition.parentScreen.getLocation() + "#" + targetTransition.name,
                             (ec.getWeb() ? ec.getWeb().requestParameters : null), transitionStartTime,
-                            System.currentTimeMillis(), null)
+                            new BigDecimal(System.nanoTime() - startTimeNanos).movePointLeft(6), null)
                 }
             }
 
@@ -413,6 +414,7 @@ class ScreenRenderImpl implements ScreenRender {
             }
         } else if (screenUrlInfo.fileResourceRef != null) {
             long resourceStartTime = System.currentTimeMillis()
+            long startTimeNanos = System.nanoTime()
 
             TemplateRenderer tr = sfi.ecfi.resourceFacade.getTemplateRendererByLocation(screenUrlInfo.fileResourceRef.location)
 
@@ -441,7 +443,7 @@ class ScreenRenderImpl implements ScreenRender {
                         if (screenUrlInfo.targetScreen.screenNode.attributes().get('track-artifact-hit') != "false") {
                             sfi.ecfi.countArtifactHit("screen-content", fileContentType, screenUrlInfo.fileResourceRef.location,
                                     (ec.getWeb() ? ec.getWeb().requestParameters : null), resourceStartTime,
-                                    System.currentTimeMillis(), (long) totalLen)
+                                    new BigDecimal(System.nanoTime() - startTimeNanos).movePointLeft(6), (long) totalLen)
                         }
                         if (logger.traceEnabled) logger.trace("Sent binary response of length [${totalLen}] with from file [${screenUrlInfo.fileResourceRef.location}] for request to [${screenUrlInstance.url}]")
                         return
@@ -485,7 +487,7 @@ class ScreenRenderImpl implements ScreenRender {
                         if (screenUrlInfo.targetScreen.screenNode.attributes().get('track-artifact-hit') != "false") {
                             sfi.ecfi.countArtifactHit("screen-content", fileContentType, screenUrlInfo.fileResourceRef.location,
                                     (ec.getWeb() ? ec.getWeb().requestParameters : null), resourceStartTime,
-                                    System.currentTimeMillis(), (long) length)
+                                    new BigDecimal(System.nanoTime() - startTimeNanos).movePointLeft(6), (long) length)
                         }
                     } else {
                         logger.warn("Not sending text response from file [${screenUrlInfo.fileResourceRef.location}] for request to [${screenUrlInstance.url}] because no text was found in the file.")
@@ -533,6 +535,7 @@ class ScreenRenderImpl implements ScreenRender {
 
     void doActualRender() {
         long screenStartTime = System.currentTimeMillis()
+        long startTimeNanos = System.nanoTime()
         boolean beganTransaction = screenUrlInfo.beginTransaction ? sfi.ecfi.transactionFacade.begin(null) : false
         try {
             // make sure this (sri) is in the context before running actions
@@ -622,7 +625,8 @@ class ScreenRenderImpl implements ScreenRender {
             if (beganTransaction && sfi.ecfi.transactionFacade.isTransactionInPlace()) sfi.ecfi.transactionFacade.commit()
             if (screenUrlInfo.targetScreen.screenNode.attributes().get('track-artifact-hit') != "false") {
                 sfi.ecfi.countArtifactHit("screen", this.outputContentType, screenUrlInfo.screenRenderDefList.last().getLocation(),
-                        (ec.getWeb() ? ec.getWeb().requestParameters : null), screenStartTime, System.currentTimeMillis(), null)
+                        (ec.getWeb() ? ec.getWeb().requestParameters : null), screenStartTime,
+                        new BigDecimal(System.nanoTime() - startTimeNanos).movePointLeft(6), null)
             }
         }
     }

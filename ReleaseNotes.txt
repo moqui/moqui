@@ -11,11 +11,14 @@ TODO
 
 New Features:
 
-TODO
+- ArtifactHit and ArtifactHitBin timing fields are now number-decimal
+  instead of number-integer to record sub-millisecond timing; internal
+  changes for more precise timing, also calc of standard deviation, etc;
+  existing databases may need column type changes
 
 Bug Fixes:
 
-TODO
+- Fixed issues with adding missing columns at runtime
 
 ===========================================================================
 Release 1.5.2 - 2 May 2015 (estimated)

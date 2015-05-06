@@ -834,7 +834,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     @CompileStatic
     void countArtifactHit(String artifactType, String artifactSubType, String artifactName, Map<String, Object> parameters,
-                          long startTime, long endTime, Long outputSize) {
+                          long startTime, BigDecimal runningTimeMillis, Long outputSize) {
         boolean isEntity = artifactType == "entity"
         // don't count the ones this calls
         if (artifactName.contains("moqui.server.ArtifactHit")) return
@@ -842,14 +842,68 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         ExecutionContextImpl eci = this.getEci()
         if (eci.getSkipStats() && artifactTypesForStatsSkip.contains(artifactType)) return
 
-        long runningTimeMillis = endTime - startTime
+        boolean isSlowHit = false
+        if (artifactPersistBin(artifactType, artifactSubType)) {
+            String binKey = new StringBuilder().append(artifactType).append('.').append(artifactSubType).append(':').append(artifactName).toString()
+            Map<String, Object> ahb = artifactHitBinByType.get(binKey)
+            if (ahb == null) ahb = makeArtifactHitBinMap(binKey, artifactType, artifactSubType, artifactName, startTime)
 
+            // has the current bin expired since the last hit record?
+            long binStartTime = ((Timestamp) ahb.get("binStartDateTime")).getTime()
+            if (startTime > (binStartTime + hitBinLengthMillis)) {
+                if (logger.isTraceEnabled()) logger.trace("Advancing ArtifactHitBin [${artifactType}.${artifactSubType}:${artifactName}] current hit start [${new Timestamp(startTime)}], bin start [${ahb.get("binStartDateTime")}] bin length ${hitBinLengthMillis/1000} seconds")
+                ahb = advanceArtifactHitBin(binKey, artifactType, artifactSubType, artifactName, startTime, hitBinLengthMillis)
+            } else {
+                if (logger.isTraceEnabled()) logger.trace("Adding to ArtifactHitBin [${artifactType}.${artifactSubType}:${artifactName}] current hit start [${new Timestamp(startTime)}], bin start [${ahb.get("binStartDateTime")}] bin length ${hitBinLengthMillis/1000} seconds")
+            }
+
+            long hitCount = ((Long) ahb.hitCount) + 1
+            BigDecimal totalTimeMillis
+            BigDecimal totalSquaredTime
+
+            ahb.hitCount = hitCount
+            // do something funny with these so we get a better avg and std dev, leave out the first result (count 2nd
+            //     twice) if first hit is more than 2x the second because the first hit is almost always MUCH slower
+            if (((Long) ahb.hitCount) == 2L && ((BigDecimal) ahb.totalTimeMillis) > (runningTimeMillis * 2) ) {
+                totalTimeMillis = runningTimeMillis * 2
+                ahb.totalTimeMillis = totalTimeMillis
+                totalSquaredTime = runningTimeMillis * runningTimeMillis * 2
+                ahb.totalSquaredTime = totalSquaredTime
+            } else {
+                totalTimeMillis = ((BigDecimal) ahb.totalTimeMillis) + runningTimeMillis
+                ahb.totalTimeMillis = totalTimeMillis
+                totalSquaredTime = ((BigDecimal) ahb.totalSquaredTime) + (runningTimeMillis * runningTimeMillis)
+                ahb.totalSquaredTime = totalSquaredTime
+            }
+            if (runningTimeMillis < ((BigDecimal) ahb.minTimeMillis)) ahb.minTimeMillis = runningTimeMillis
+            if (runningTimeMillis > ((BigDecimal) ahb.maxTimeMillis)) ahb.maxTimeMillis = runningTimeMillis
+
+            if (hitCount > 100L) {
+                // calc new average and standard deviation
+                BigDecimal average = hitCount ? totalTimeMillis/hitCount : null
+                BigDecimal stdDev = totalSquaredTime && hitCount > 1 ? new BigDecimal(
+                        Math.sqrt(((BigDecimal) (totalSquaredTime - ((totalTimeMillis*totalTimeMillis) / hitCount)))
+                                .abs().divide(new BigDecimal(hitCount - 1L), BigDecimal.ROUND_HALF_UP).doubleValue())) : null
+
+                // if runningTime is more than 2 std devs from the avg, log it and count it
+                if (average != null && stdDev != null && runningTimeMillis > (average + stdDev + stdDev)) {
+                    String msgStr = "Slow hit to ${binKey} running time ${runningTimeMillis} is greater than average [${average}] plus 2 standard deviations [${stdDev}]"
+                    if (artifactType == "entity" || artifactType == "service") {
+                        if (logger.isTraceEnabled()) logger.trace(msgStr)
+                    } else {
+                        logger.warn(msgStr)
+                    }
+                    ahb.slowHitCount = ((Long) ahb.slowHitCount) + 1
+                    isSlowHit = true
+                }
+            }
+        }
         // NOTE: never save individual hits for entity artifact hits, way too heavy and also avoids self-reference
         //     (could also be done by checking for ArtifactHit/etc of course)
         if (!isEntity && artifactPersistHit(artifactType, artifactSubType)) {
-            Map<String, Object> ahp = [visitId:eci.user.visitId, userId:eci.user.userId,
-                artifactType:artifactType, artifactSubType:artifactSubType, artifactName:artifactName,
-                startDateTime:new Timestamp(startTime), runningTimeMillis:runningTimeMillis] as Map<String, Object>
+            Map<String, Object> ahp = [visitId:eci.user.visitId, userId:eci.user.userId, isSlowHit:(isSlowHit ? 'Y' : 'N'),
+                                       artifactType:artifactType, artifactSubType:artifactSubType, artifactName:artifactName,
+                                       startDateTime:new Timestamp(startTime), runningTimeMillis:runningTimeMillis] as Map<String, Object>
 
             if (parameters) {
                 StringBuilder ps = new StringBuilder()
@@ -885,26 +939,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             // call async, let the server do it whenever
             eci.service.async().name("create", "moqui.server.ArtifactHit").parameters(ahp).call()
         }
-        if (artifactPersistBin(artifactType, artifactSubType)) {
-            String binKey = new StringBuilder().append(artifactType).append('.').append(artifactSubType).append(':').append(artifactName).toString()
-            Map<String, Object> ahb = artifactHitBinByType.get(binKey)
-            if (ahb == null) ahb = makeArtifactHitBinMap(binKey, artifactType, artifactSubType, artifactName, startTime)
-
-            // has the current bin expired since the last hit record?
-            long binStartTime = ((Timestamp) ahb.get("binStartDateTime")).time
-            if (startTime > (binStartTime + hitBinLengthMillis)) {
-                if (logger.isTraceEnabled()) logger.trace("Advancing ArtifactHitBin [${artifactType}.${artifactSubType}:${artifactName}] current hit start [${new Timestamp(startTime)}], bin start [${ahb.get("binStartDateTime")}] bin length ${hitBinLengthMillis/1000} seconds")
-                ahb = advanceArtifactHitBin(binKey, artifactType, artifactSubType, artifactName, startTime, hitBinLengthMillis)
-            } else {
-                if (logger.isTraceEnabled()) logger.trace("Adding to ArtifactHitBin [${artifactType}.${artifactSubType}:${artifactName}] current hit start [${new Timestamp(startTime)}], bin start [${ahb.get("binStartDateTime")}] bin length ${hitBinLengthMillis/1000} seconds")
-            }
-
-            ahb.hitCount = ((Long) ahb.hitCount) + 1
-            ahb.totalTimeMillis = ((Long) ahb.totalTimeMillis) + runningTimeMillis
-            if (runningTimeMillis < ((Long) ahb.minTimeMillis)) ahb.minTimeMillis = runningTimeMillis
-            if (runningTimeMillis > ((Long) ahb.maxTimeMillis)) ahb.maxTimeMillis = runningTimeMillis
-        }
     }
+
     @CompileStatic
     protected synchronized Map<String, Object> advanceArtifactHitBin(String binKey, String artifactType, String artifactSubType,
                                                      String artifactName, long startTime, int hitBinLengthMillis) {
@@ -928,7 +964,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
                                                         String artifactName, long startTime) {
         Map<String, Object> ahb = [artifactType:artifactType, artifactSubType:artifactSubType,
                 artifactName:artifactName, binStartDateTime:new Timestamp(startTime), binEndDateTime:null,
-                hitCount:0L, totalTimeMillis:0L, minTimeMillis:Long.MAX_VALUE, maxTimeMillis:0]
+                hitCount:0L, totalTimeMillis:0, totalSquaredTime:0, minTimeMillis:new BigDecimal(Long.MAX_VALUE),
+                maxTimeMillis:0, slowHitCount:0L]
         ahb.serverIpAddress = localhostAddress?.getHostAddress() ?: "127.0.0.1"
         ahb.serverHostName = localhostAddress?.getHostName() ?: "localhost"
         artifactHitBinByType.put(binKey, ahb)
