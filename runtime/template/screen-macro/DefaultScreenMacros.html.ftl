@@ -1430,6 +1430,9 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
         <#assign formName = ec.resource.evaluateStringExpand(formNode["@name"], "")>
         <#assign afterFormScript>
             function populate_${id}() {
+                var hasAllParms = true;
+                <#list depNodeList as depNode>if (!$('#${formName}_${depNode["@field"]}<#if listEntryIndex?has_content>_${listEntryIndex}</#if><#if sectionEntryIndex?has_content>_${sectionEntryIndex}</#if>').val()) hasAllParms = false;</#list>
+                if (!hasAllParms) { $('#${id}').html(""); $("#${id}").trigger("chosen:updated"); return; }
                 $.ajax({ type:'POST', url:'${sri.screenUrlInstance.url}/${doNode["@transition"]}', data:{ <#list depNodeList as depNode>'${depNode["@field"]}': $('#${formName}_${depNode["@field"]}<#if listEntryIndex?has_content>_${listEntryIndex}</#if><#if sectionEntryIndex?has_content>_${sectionEntryIndex}</#if>').val()<#if depNode_has_next>, </#if></#list> }, dataType:'json' }).done(
                     function(list) {
                         if (list) {
