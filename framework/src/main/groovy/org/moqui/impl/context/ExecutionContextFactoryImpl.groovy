@@ -914,30 +914,30 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             }
 
             // handle current hit bin
-            ahb.@hitCount++
+            ahb.hitCount++
             // do something funny with these so we get a better avg and std dev, leave out the first result (count 2nd
             //     twice) if first hit is more than 2x the second because the first hit is almost always MUCH slower
-            if (ahb.@hitCount == 2L && ahb.totalTimeMillis > (runningTimeMillis * 2)) {
-                ahb.@totalTimeMillis = runningTimeMillis * 2
-                ahb.@totalSquaredTime = runningTimeMillis * runningTimeMillis * 2
+            if (ahb.hitCount == 2L && ahb.totalTimeMillis > (runningTimeMillis * 2)) {
+                ahb.totalTimeMillis = runningTimeMillis * 2
+                ahb.totalSquaredTime = runningTimeMillis * runningTimeMillis * 2
             } else {
-                ahb.@totalTimeMillis += runningTimeMillis
-                ahb.@totalSquaredTime += runningTimeMillis * runningTimeMillis
+                ahb.totalTimeMillis += runningTimeMillis
+                ahb.totalSquaredTime += runningTimeMillis * runningTimeMillis
             }
-            if (runningTimeMillis < ahb.@minTimeMillis) ahb.@minTimeMillis = runningTimeMillis
-            if (runningTimeMillis > ahb.@maxTimeMillis) ahb.@maxTimeMillis = runningTimeMillis
+            if (runningTimeMillis < ahb.minTimeMillis) ahb.minTimeMillis = runningTimeMillis
+            if (runningTimeMillis > ahb.maxTimeMillis) ahb.maxTimeMillis = runningTimeMillis
 
             // handle stats since start
-            statsInfo.@hitCount++
-            if ((statsInfo.@hitCount) == 2L && (statsInfo.@totalTimeMillis) > (runningTimeMillis * 2) ) {
-                statsInfo.@totalTimeMillis = runningTimeMillis * 2
-                statsInfo.@totalSquaredTime = runningTimeMillis * runningTimeMillis * 2
+            statsInfo.hitCount++
+            if ((statsInfo.hitCount) == 2L && (statsInfo.totalTimeMillis) > (runningTimeMillis * 2) ) {
+                statsInfo.totalTimeMillis = runningTimeMillis * 2
+                statsInfo.totalSquaredTime = runningTimeMillis * runningTimeMillis * 2
             } else {
-                statsInfo.@totalTimeMillis = statsInfo.@totalTimeMillis + runningTimeMillis
-                statsInfo.@totalSquaredTime = statsInfo.@totalSquaredTime + (runningTimeMillis * runningTimeMillis)
+                statsInfo.totalTimeMillis = statsInfo.totalTimeMillis + runningTimeMillis
+                statsInfo.totalSquaredTime = statsInfo.totalSquaredTime + (runningTimeMillis * runningTimeMillis)
             }
             // check for slow hits
-            if (statsInfo.@hitCount > checkSlowThreshold) {
+            if (statsInfo.hitCount > checkSlowThreshold) {
                 // calc new average and standard deviation
                 Double average = statsInfo.getAverage()
                 Double stdDev = statsInfo.getStdDev()
@@ -947,8 +947,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
                     String msgStr = "Slow hit to ${binKey} running time ${runningTimeMillis} is greater than average [${average}] plus 2 standard deviations [${stdDev}]"
                     if (runningTimeMillis > userImpactMinMillis) { logger.warn(msgStr) }
                     else { if (logger.isTraceEnabled()) logger.trace(msgStr) }
-                    ahb.@slowHitCount++
-                    statsInfo.@slowHitCount++
+                    ahb.slowHitCount++
+                    statsInfo.slowHitCount++
                     isSlowHit = true
                 }
             }
@@ -1007,7 +1007,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         }
 
         // check the time again and return just in case something got in while waiting with the same type
-        long binStartTime = abi.@startTime
+        long binStartTime = abi.startTime
         if (startTime < (binStartTime + hitBinLengthMillis)) return
 
         // otherwise, persist the old and create a new one
