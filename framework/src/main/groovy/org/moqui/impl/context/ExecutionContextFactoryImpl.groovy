@@ -828,7 +828,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             'moqui.entity.view.DbViewEntity', 'moqui.entity.view.DbViewEntityMember',
             'moqui.entity.view.DbViewEntityKeyMap', 'moqui.entity.view.DbViewEntityAlias'])
     protected final Set<String> artifactTypesForStatsSkip = new TreeSet(["screen", "transition", "screen-content"])
-    protected final long checkSlowThreshold = 100L
+    protected final long checkSlowThreshold = 20L
     protected final double userImpactMinMillis = 200
 
     @CompileStatic
