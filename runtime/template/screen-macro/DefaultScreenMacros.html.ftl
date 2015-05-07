@@ -446,13 +446,15 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#assign linkNode = .node>
     <#if linkNode["@condition"]?has_content><#assign conditionResult = ec.resource.evaluateCondition(linkNode["@condition"], "")><#else><#assign conditionResult = true></#if>
     <#if conditionResult>
+        <#if linkNode["@entity-name"]?has_content><#assign linkText = ""/><#assign linkText = sri.getFieldEntityValue(linkNode)/>
+            <#else><#assign linkText = ec.resource.evaluateStringExpand(linkNode["@text"], "")/></#if>
         <#assign urlInstance = sri.makeUrlByType(.node["@url"], .node["@url-type"]!"transition", .node, .node["@expand-transition-url"]!"true")>
         <#assign divId><@nodeId .node/></#assign>
-        <@linkFormForm linkNode divId urlInstance/>
-        <@linkFormLink linkNode divId urlInstance/>
+        <@linkFormForm linkNode divId linkText urlInstance/>
+        <@linkFormLink linkNode divId linkText urlInstance/>
     </#if>
 </#macro>
-<#macro linkFormLink linkNode linkFormId urlInstance>
+<#macro linkFormLink linkNode linkFormId linkText urlInstance>
     <#if urlInstance.disableLink>
         <a href="#"<#if linkFormId?has_content> id="${linkFormId}"</#if>class="<#if linkNode["@link-type"]! != "anchor" && linkNode["@link-type"]! != "hidden-form-link">btn btn-metis-5 btn-sm</#if><#if .node["@style"]?has_content> ${ec.resource.evaluateStringExpand(.node["@style"], "")}</#if>"><#if linkNode["@icon"]?has_content><i class="${linkNode["@icon"]}"></i></#if>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}</a>
     <#else>
@@ -467,7 +469,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                 <#assign urlText = urlInstance.urlWithParams/>
             </#if>
             <a href="${urlText}"<#if linkFormId?has_content> id="${linkFormId}"</#if><#if linkNode["@target-window"]?has_content> target="${linkNode["@target-window"]}"</#if><#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if> class="<#if linkNode["@link-type"]! != "anchor">btn btn-primary btn-sm</#if><#if linkNode["@style"]?has_content> ${ec.resource.evaluateStringExpand(linkNode["@style"], "")}</#if>"<#if linkNode["@tooltip"]?has_content> data-toggle="tooltip" title="${ec.resource.evaluateStringExpand(linkNode["@tooltip"], "")}"</#if>><#if linkNode["@icon"]?has_content><i class="${linkNode["@icon"]}"></i></#if>
-            <#t><#if linkNode["image"]?has_content><#visit linkNode["image"][0]><#else>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}</#if>
+            <#t><#if linkNode["image"]?has_content><#visit linkNode["image"][0]><#else>${linkText}</#if>
             <#t></a>
         <#else>
             <#if linkFormId?has_content>
@@ -475,14 +477,14 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                 <#if linkNode["image"]?has_content>
                     <#t><img src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"]!"content",null,"true")}"<#if imageNode["@alt"]?has_content> alt="${imageNode["@alt"]}"</#if>/>
                 <#else>
-                    <#t>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}
+                    <#t>${linkText}
                 </#if>
             </button>
             </#if>
         </#if>
     </#if>
 </#macro>
-<#macro linkFormForm linkNode linkFormId urlInstance>
+<#macro linkFormForm linkNode linkFormId linkText urlInstance>
     <#if urlInstance.disableLink>
         <#-- do nothing -->
     <#else>
@@ -502,7 +504,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                     <#if linkNode["image"]?has_content><#assign imageNode = linkNode["image"][0]/>
                         <input type="image" src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"]!"content",null,"true")}"<#if imageNode["@alt"]?has_content> alt="${imageNode["@alt"]}"</#if><#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if>>
                     <#else>
-                        <button type="submit"<#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if> class="<#if linkNode["@link-type"]! == "hidden-form-link">button-plain<#else>btn btn-primary btn-sm</#if><#if .node["@style"]?has_content> ${ec.resource.evaluateStringExpand(.node["@style"], "")}</#if>"<#if linkNode["@tooltip"]?has_content> data-toggle="tooltip" title="${ec.resource.evaluateStringExpand(linkNode["@tooltip"], "")}"</#if>><#if linkNode["@icon"]?has_content><i class="${linkNode["@icon"]}"></i> </#if>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}</button>
+                        <button type="submit"<#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if> class="<#if linkNode["@link-type"]! == "hidden-form-link">button-plain<#else>btn btn-primary btn-sm</#if><#if .node["@style"]?has_content> ${ec.resource.evaluateStringExpand(.node["@style"], "")}</#if>"<#if linkNode["@tooltip"]?has_content> data-toggle="tooltip" title="${ec.resource.evaluateStringExpand(linkNode["@tooltip"], "")}"</#if>><#if linkNode["@icon"]?has_content><i class="${linkNode["@icon"]}"></i> </#if>${linkText}</button>
                     </#if>
                 </#if>
             </form>
@@ -810,11 +812,13 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
             <#assign linkNode = widgetNode>
             <#if linkNode["@condition"]?has_content><#assign conditionResult = ec.resource.evaluateCondition(linkNode["@condition"], "")><#else><#assign conditionResult = true></#if>
             <#if conditionResult>
+                <#if linkNode["@entity-name"]?has_content><#assign linkText = ""/><#assign linkText = sri.getFieldEntityValue(linkNode)/>
+                    <#else><#assign linkText = ec.resource.evaluateStringExpand(linkNode["@text"], "")/></#if>
                 <#assign linkUrlInfo = sri.makeUrlByType(linkNode["@url"], linkNode["@url-type"]!"transition", linkNode, linkNode["@expand-transition-url"]!"true")>
                 <#assign linkFormId><@fieldId linkNode/></#assign>
-                <#assign afterFormText><@linkFormForm linkNode linkFormId linkUrlInfo/></#assign>
+                <#assign afterFormText><@linkFormForm linkNode linkFormId linkText linkUrlInfo/></#assign>
                 <#t>${sri.appendToAfterScreenWriter(afterFormText)}
-                <#t><@linkFormLink linkNode linkFormId linkUrlInfo/>
+                <#t><@linkFormLink linkNode linkFormId linkText linkUrlInfo/>
             </#if>
         <#elseif widgetNode?node_name == "set"><#-- do nothing, handled above -->
         <#else><#t><#visit widgetNode>
@@ -1138,11 +1142,13 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                 <#assign linkNode = widgetNode>
                 <#if linkNode["@condition"]?has_content><#assign conditionResult = ec.resource.evaluateCondition(linkNode["@condition"], "")><#else><#assign conditionResult = true></#if>
                 <#if conditionResult>
+                    <#if linkNode["@entity-name"]?has_content><#assign linkText = ""/><#assign linkText = sri.getFieldEntityValue(linkNode)/>
+                        <#else><#assign linkText = ec.resource.evaluateStringExpand(linkNode["@text"], "")/></#if>
                     <#assign linkUrlInfo = sri.makeUrlByType(linkNode["@url"], linkNode["@url-type"]!"transition", linkNode, linkNode["@expand-transition-url"]!"true")>
                     <#assign linkFormId><@fieldId linkNode/></#assign>
-                    <#assign afterFormText><@linkFormForm linkNode linkFormId linkUrlInfo/></#assign>
+                    <#assign afterFormText><@linkFormForm linkNode linkFormId linkText linkUrlInfo/></#assign>
                     <#t>${sri.appendToAfterScreenWriter(afterFormText)}
-                    <#t><@linkFormLink linkNode linkFormId linkUrlInfo/>
+                    <#t><@linkFormLink linkNode linkFormId linkText linkUrlInfo/>
                 </#if>
             <#elseif widgetNode?node_name == "set"><#-- do nothing, handled above -->
             <#else><#t><#visit widgetNode></#if>

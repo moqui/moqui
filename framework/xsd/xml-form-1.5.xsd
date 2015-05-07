@@ -320,6 +320,9 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="condition" type="xs:string"><xs:annotation><xs:documentation>
                 If specified and evaluates to false link is not rendered.
             </xs:documentation></xs:annotation></xs:attribute>
+            <xs:attribute name="entity-name" type="xs:string"/>
+            <xs:attribute name="entity-key-name" type="xs:string"/>
+            <xs:attribute name="entity-use-cache" default="true" type="boolean"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="image" substitutionGroup="StandaloneFields">
