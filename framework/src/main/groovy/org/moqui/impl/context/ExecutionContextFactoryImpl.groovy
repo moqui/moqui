@@ -1024,7 +1024,15 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         // otherwise, persist the old and create a new one
         Map<String, Object> ahb = abi.makeAhbMap(this, new Timestamp(binStartTime + hitBinLengthMillis))
         // do this sync to avoid overhead of job scheduling for a very simple service call, and to avoid infinite recursion when EntityJobStore is in place
-        executionContext.service.sync().name("create", "moqui.server.ArtifactHitBin").parameters(ahb).call()
+        try {
+            executionContext.service.sync().name("create", "moqui.server.ArtifactHitBin").parameters(ahb)
+                    .requireNewTransaction(true).call()
+        } catch (Throwable t) {
+            executionContext.message.clearErrors()
+            logger.error("Error creating ArtifactHitBin", t)
+            // just return, don't advance the bin so we can try again to save it later
+            return
+        }
 
         statsInfo.curHitBin = new ArtifactBinInfo(artifactType, artifactSubType, artifactName, startTime)
     }
