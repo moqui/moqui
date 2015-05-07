@@ -18,7 +18,8 @@ New Features:
 
 Bug Fixes:
 
-- Fixed issues with adding missing columns at runtime
+- Fixed issues with adding missing columns to database
+- The Gradle loadSave and reloadSave tasks now handle H2 files as well
 
 ===========================================================================
 Release 1.5.2 - 2 May 2015 (estimated)
