@@ -818,7 +818,9 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         return artifactStats
     }
 
-    protected final Set<String> entitiesToSkipHitCount = new HashSet(['moqui.server.ArtifactHit', 'moqui.server.ArtifactHitBin',
+    protected final Set<String> entitiesToSkipHitCount = new HashSet([
+            'moqui.server.ArtifactHit', 'create#moqui.server.ArtifactHit',
+            'moqui.server.ArtifactHitBin', 'create#moqui.server.ArtifactHitBin',
             'moqui.entity.SequenceValueItem', 'moqui.security.UserAccount', 'moqui.tenant.Tenant',
             'moqui.tenant.TenantDataSource', 'moqui.tenant.TenantDataSourceXaProp',
             'moqui.entity.document.DataDocument', 'moqui.entity.document.DataDocumentField',
@@ -827,7 +829,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             'moqui.entity.view.DbViewEntityKeyMap', 'moqui.entity.view.DbViewEntityAlias'])
     protected final Set<String> artifactTypesForStatsSkip = new TreeSet(["screen", "transition", "screen-content"])
     protected final long checkSlowThreshold = 100L
-    protected final BigDecimal userImpactMinMillis = new BigDecimal(200)
+    protected final double userImpactMinMillis = 200
 
     @CompileStatic
     static class ArtifactStatsInfo {
@@ -837,11 +839,16 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         long slowHitCount = 0L
         double totalTimeMillis = 0
         double totalSquaredTime = 0
-        Double getAverage() { return hitCount > 0 ? totalTimeMillis / hitCount : null }
-        Double getStdDev() {
-            if (hitCount < 2) return null
-            double sqTotal = Math.abs(totalSquaredTime - ((totalTimeMillis*totalTimeMillis) / hitCount)) / (hitCount - 1L)
-            return Math.sqrt(sqTotal)
+        double getAverage() { return hitCount > 0 ? totalTimeMillis / hitCount : 0 }
+        double getStdDev() {
+            if (hitCount < 2) return 0
+            return Math.sqrt(Math.abs(totalSquaredTime - ((totalTimeMillis*totalTimeMillis) / hitCount)) / (hitCount - 1L))
+        }
+        void incrementHitCount() { hitCount++ }
+        void incrementSlowHitCount() { slowHitCount++ }
+        void addRunningTime(double runningTime) {
+            totalTimeMillis = totalTimeMillis + runningTime
+            totalSquaredTime = totalSquaredTime + (runningTime * runningTime)
         }
     }
     @CompileStatic
@@ -865,6 +872,13 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             this.startTime = startTime
         }
 
+        void incrementHitCount() { hitCount++ }
+        void incrementSlowHitCount() { slowHitCount++ }
+        void addRunningTime(double runningTime) {
+            totalTimeMillis = totalTimeMillis + runningTime
+            totalSquaredTime = totalSquaredTime + (runningTime * runningTime)
+        }
+
         Map<String, Object> makeAhbMap(ExecutionContextFactoryImpl ecfi, Timestamp binEndDateTime) {
             Map<String, Object> ahb = [artifactType:artifactType, artifactSubType:artifactSubType,
                                        artifactName:artifactName, binStartDateTime:new Timestamp(startTime), binEndDateTime:binEndDateTime,
@@ -882,7 +896,6 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
                           long startTime, double runningTimeMillis, Long outputSize) {
         boolean isEntity = artifactType == 'entity' || artifactSubType == 'entity-implicit'
         // don't count the ones this calls
-        if (artifactName.contains("moqui.server.ArtifactHit")) return
         if (isEntity && entitiesToSkipHitCount.contains(artifactName)) return
         ExecutionContextImpl eci = this.getEci()
         if (eci.getSkipStats() && artifactTypesForStatsSkip.contains(artifactType)) return
@@ -897,58 +910,56 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
                 artifactStatsInfoByType.put(binKey, statsInfo)
             }
 
-            ArtifactBinInfo ahb = statsInfo.curHitBin
-            if (ahb == null) {
-                ahb = new ArtifactBinInfo(artifactType, artifactSubType, artifactName, startTime)
-                statsInfo.curHitBin = ahb
+            ArtifactBinInfo abi = statsInfo.curHitBin
+            if (abi == null) {
+                abi = new ArtifactBinInfo(artifactType, artifactSubType, artifactName, startTime)
+                statsInfo.curHitBin = abi
             }
 
             // has the current bin expired since the last hit record?
-            long binStartTime = ahb.startTime
+            long binStartTime = abi.startTime
             if (startTime > (binStartTime + hitBinLengthMillis)) {
-                if (logger.isTraceEnabled()) logger.trace("Advancing ArtifactHitBin [${artifactType}.${artifactSubType}:${artifactName}] current hit start [${new Timestamp(startTime)}], bin start [${new Timestamp(ahb.startTime)}] bin length ${hitBinLengthMillis/1000} seconds")
+                if (logger.isTraceEnabled()) logger.trace("Advancing ArtifactHitBin [${artifactType}.${artifactSubType}:${artifactName}] current hit start [${new Timestamp(startTime)}], bin start [${new Timestamp(abi.startTime)}] bin length ${hitBinLengthMillis/1000} seconds")
                 advanceArtifactHitBin(statsInfo, artifactType, artifactSubType, artifactName, startTime, hitBinLengthMillis)
-                ahb = statsInfo.curHitBin
-            } else {
-                if (logger.isTraceEnabled()) logger.trace("Adding to ArtifactHitBin [${artifactType}.${artifactSubType}:${artifactName}] current hit start [${new Timestamp(startTime)}], bin start [${new Timestamp(ahb.startTime)}] bin length ${hitBinLengthMillis/1000} seconds")
+                abi = statsInfo.curHitBin
             }
 
             // handle current hit bin
-            ahb.hitCount++
+            abi.incrementHitCount()
             // do something funny with these so we get a better avg and std dev, leave out the first result (count 2nd
             //     twice) if first hit is more than 2x the second because the first hit is almost always MUCH slower
-            if (ahb.hitCount == 2L && ahb.totalTimeMillis > (runningTimeMillis * 2)) {
-                ahb.totalTimeMillis = runningTimeMillis * 2
-                ahb.totalSquaredTime = runningTimeMillis * runningTimeMillis * 2
+            if (abi.hitCount == 2L && abi.totalTimeMillis > (runningTimeMillis * 2)) {
+                abi.setTotalTimeMillis(runningTimeMillis * 2)
+                abi.setTotalSquaredTime(runningTimeMillis * runningTimeMillis * 2)
             } else {
-                ahb.totalTimeMillis += runningTimeMillis
-                ahb.totalSquaredTime += runningTimeMillis * runningTimeMillis
+                abi.addRunningTime(runningTimeMillis)
             }
-            if (runningTimeMillis < ahb.minTimeMillis) ahb.minTimeMillis = runningTimeMillis
-            if (runningTimeMillis > ahb.maxTimeMillis) ahb.maxTimeMillis = runningTimeMillis
+            if (runningTimeMillis < abi.minTimeMillis) abi.setMinTimeMillis(runningTimeMillis)
+            if (runningTimeMillis > abi.maxTimeMillis) abi.setMaxTimeMillis(runningTimeMillis)
 
             // handle stats since start
-            statsInfo.hitCount++
-            if ((statsInfo.hitCount) == 2L && (statsInfo.totalTimeMillis) > (runningTimeMillis * 2) ) {
-                statsInfo.totalTimeMillis = runningTimeMillis * 2
-                statsInfo.totalSquaredTime = runningTimeMillis * runningTimeMillis * 2
+            statsInfo.incrementHitCount()
+            long statsHitCount = statsInfo.hitCount
+            if (statsHitCount == 2L && (statsInfo.totalTimeMillis) > (runningTimeMillis * 2) ) {
+                statsInfo.setTotalTimeMillis(runningTimeMillis * 2)
+                statsInfo.setTotalSquaredTime(runningTimeMillis * runningTimeMillis * 2)
             } else {
-                statsInfo.totalTimeMillis = statsInfo.totalTimeMillis + runningTimeMillis
-                statsInfo.totalSquaredTime = statsInfo.totalSquaredTime + (runningTimeMillis * runningTimeMillis)
+                statsInfo.addRunningTime(runningTimeMillis)
             }
             // check for slow hits
-            if (statsInfo.hitCount > checkSlowThreshold) {
+            if (statsHitCount > checkSlowThreshold) {
                 // calc new average and standard deviation
-                Double average = statsInfo.getAverage()
-                Double stdDev = statsInfo.getStdDev()
+                double average = statsInfo.getAverage()
+                double stdDev = statsInfo.getStdDev()
 
-                // if runningTime is more than X std devs from the avg, log it and count it
-                if (average != null && stdDev != null && runningTimeMillis.doubleValue() > (average + stdDev + stdDev)) {
-                    String msgStr = "Slow hit to ${binKey} running time ${runningTimeMillis} is greater than average [${average}] plus 2 standard deviations [${stdDev}]"
-                    if (runningTimeMillis > userImpactMinMillis) { logger.warn(msgStr) }
-                    else { if (logger.isTraceEnabled()) logger.trace(msgStr) }
-                    ahb.slowHitCount++
-                    statsInfo.slowHitCount++
+                // if runningTime is more than 2.6 std devs from the avg, count it and possibly log it
+                // using 2.6 standard deviations because 2 would give us around 5% of hits (normal distro), shooting for more like 1%
+                double slowTime = average + (stdDev * 2.6)
+                if (slowTime != 0 && runningTimeMillis > slowTime) {
+                    if (runningTimeMillis > userImpactMinMillis)
+                        logger.warn("Slow hit to ${binKey} running time ${runningTimeMillis} is greater than average [${average}] plus 2 standard deviations [${stdDev}]")
+                    abi.incrementSlowHitCount()
+                    statsInfo.incrementSlowHitCount()
                     isSlowHit = true
                 }
             }
