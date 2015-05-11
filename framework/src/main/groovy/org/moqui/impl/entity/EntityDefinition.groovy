@@ -67,6 +67,7 @@ public class EntityDefinition {
     // this is kept separately for quick access to relationships by name or short-alias
     protected Map<String, RelationshipInfo> relationshipInfoMap = null
     protected List<RelationshipInfo> relationshipInfoList = null
+    protected boolean hasReverseRelationships = false
 
     EntityDefinition(EntityFacadeImpl efi, Node entityNode) {
         this.efi = efi
@@ -449,7 +450,7 @@ public class EntityDefinition {
 
         if (!this.expandedRelationshipList) {
             // make sure this is done before as this isn't done by default
-            efi.createAllAutoReverseManyRelationships()
+            if (!hasReverseRelationships) efi.createAllAutoReverseManyRelationships()
             this.expandedRelationshipList = this.internalEntityNode."relationship"
         }
 

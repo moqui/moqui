@@ -636,8 +636,14 @@ class EntityFacadeImpl implements EntityFacade {
                 relationshipsCreated++
             }
         }
+        // all EntityDefinition objects now have reverse relationships in place, remember that so this will only be
+        //     called for new ones, not from cache
+        for (String entityName in entityNameSet) {
+            EntityDefinition ed = getEntityDefinition(entityName)
+            ed.hasReverseRelationships = true
+        }
 
-        if (logger.infoEnabled && relationshipsCreated > 0) logger.info("Created ${relationshipsCreated} automatic reverse-many relationships")
+        if (logger.infoEnabled && relationshipsCreated > 0) logger.info("Created ${relationshipsCreated} automatic reverse relationships")
     }
 
     @CompileStatic
