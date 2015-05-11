@@ -54,6 +54,27 @@ This Work includes contributions authored by David E. Jones, not as a
         </actions>
         <default-response url="." parameter-map="ec.entity.getEntityDefinition(aen).getPrimaryKeys(context)"/>
     </transition>
+    <transition name="getFormXml">
+        <actions><script><![CDATA[
+            StringWriter xmlWriter = new StringWriter()
+            XmlNodePrinter printer = new XmlNodePrinter(new PrintWriter(xmlWriter))
+            xmlWriter.append('<?xml version="1.0" encoding="UTF-8"?>\n')
+
+            Node screenNode = new Node(null, "screen", ["xmlns:xsi":"http://www.w3.org/2001/XMLSchema-instance", "xsi:noNamespaceSchemaLocation":"http://moqui.org/xsd/xml-screen-1.5.xsd"])
+            Node updateTransNode = screenNode.appendNode("transition", [name:"update"])
+            updateTransNode.appendNode("service-call", [name:"update#${aen}"])
+            updateTransNode.appendNode("default-response", [url:"."])
+
+            Node actionsNode = screenNode.appendNode("actions")
+            actionsNode.appendNode("entity-find-one", ["entity-name":aen, "value-field":"fieldValues"])
+            Node widgetsNode = screenNode.appendNode("widgets")
+            widgetsNode.append(sri.getActiveScreenDef().getForm("UpdateMasterEntityValue").getAutoCleanedNode())
+            printer.print(screenNode)
+
+            ec.web.sendTextResponse(xmlWriter.toString())
+        ]]></script></actions>
+        <default-response type="none"/>
+    </transition>
 
     <actions>
         <entity-find-one entity-name="${aen}" value-field="fieldValues"/>
@@ -82,5 +103,6 @@ This Work includes contributions authored by David E. Jones, not as a
                 <field-ref name="dependentLevels"/><field-ref name="fileType"/><field-ref name="submitButton"/>
             </field-row-big></field-layout>
         </form-single>
+        <link url="getFormXml" text="Get Form XML" link-type="hidden-form-link" target-window="_blank"/>
     </widgets>
 </screen>

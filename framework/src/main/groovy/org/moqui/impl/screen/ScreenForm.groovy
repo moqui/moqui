@@ -400,6 +400,22 @@ class ScreenForm {
         }
     }
 
+    Node getAutoCleanedNode() {
+        Node outNode = StupidUtilities.deepCopyNode(getFormNode())
+        outNode.attributes().remove("dynamic")
+        outNode.attributes().remove("multi")
+        for (Node fn in new ArrayList(outNode.children())) {
+            if (fn."@name" in ["aen", "den", "lastUpdatedStamp"]) {
+                outNode.remove(fn)
+            } else {
+                fn.attributes().remove("validate-entity")
+                fn.attributes().remove("validate-field")
+            }
+        }
+
+        return outNode
+    }
+
     static Set displayOnlyIgnoreNodeNames = ["hidden", "ignored", "label", "image"] as Set
     @CompileStatic
     protected void fieldSubNodeToDisplay(Node baseFormNode, Node fieldNode, Node fieldSubNode) {

@@ -18,26 +18,34 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <transition name="list"><default-response url="../MainEntityList"/></transition>
     <transition name="find"><default-response url="."/></transition>
-    <transition name="create">
-        <actions><service-call name="create#${aen}" in-map="true"/></actions>
-        <default-response url="."/>
-    </transition>
+    <transition name="create"><actions><service-call name="create#${aen}" in-map="true"/></actions>
+        <default-response url="."/></transition>
     <transition name="listSubmit">
-        <actions>
-            <if condition="delete != null">
-                <service-call name="delete#${aen}" in-map="true"/>
-            </if>
-        </actions>
-        <conditional-response url=".">
-            <condition><expression>delete != null</expression></condition>
-        </conditional-response>
+        <actions><if condition="delete != null"><service-call name="delete#${aen}" in-map="true"/></if></actions>
+        <conditional-response url="."><condition><expression>delete != null</expression></condition></conditional-response>
         <default-response url="../AutoEdit/AutoEditMaster" parameter-map="ec.entity.getEntityDefinition(aen).getPrimaryKeys(context)"/>
+    </transition>
+    <transition name="getFormXml">
+        <actions><script><![CDATA[
+            StringWriter xmlWriter = new StringWriter()
+            XmlNodePrinter printer = new XmlNodePrinter(new PrintWriter(xmlWriter))
+            xmlWriter.append('<?xml version="1.0" encoding="UTF-8"?>\n')
+            Node screenNode = new Node(null, "screen", ["xmlns:xsi":"http://www.w3.org/2001/XMLSchema-instance", "xsi:noNamespaceSchemaLocation":"http://moqui.org/xsd/xml-screen-1.5.xsd"])
+            Node actionsNode = screenNode.appendNode("actions")
+            actionsNode.appendNode("entity-find", ["entity-name":aen, list:"entityValueList"]).appendNode("search-form-inputs")
+            Node widgetsNode = screenNode.appendNode("widgets")
+            widgetsNode.append(sri.getActiveScreenDef().getForm("FindEntityValue").getAutoCleanedNode())
+            widgetsNode.append(sri.getActiveScreenDef().getForm("CreateEntityValue").getAutoCleanedNode())
+            widgetsNode.append(sri.getActiveScreenDef().getForm("ListEntityValue").getAutoCleanedNode())
+            printer.print(screenNode)
+            ec.web.sendTextResponse(xmlWriter.toString())
+        ]]></script></actions>
+        <default-response type="none"/>
     </transition>
 
     <actions>
         <entity-find entity-name="${aen}" list="entityValueList" offset="0" limit="50">
-            <search-form-inputs/>
-        </entity-find>
+            <search-form-inputs/></entity-find>
     </actions>
     <widgets>
         <container>
@@ -63,5 +71,6 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="delete"><default-field title="Delete"><submit confirmation="Are you sure?"/></default-field></field>
             <auto-fields-entity entity-name="${aen}" field-type="display"/>
         </form-list>
+        <link url="getFormXml" text="Get Forms XML" link-type="hidden-form-link" target-window="_blank"/>
     </widgets>
 </screen>
