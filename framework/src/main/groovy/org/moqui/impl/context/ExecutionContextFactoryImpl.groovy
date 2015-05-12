@@ -1027,6 +1027,10 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         try {
             executionContext.service.sync().name("create", "moqui.server.ArtifactHitBin").parameters(ahb)
                     .requireNewTransaction(true).call()
+            if (executionContext.message.hasError()) {
+                logger.error("Error creating ArtifactHitBin: ${executionContext.message.getErrorsString()}")
+                executionContext.message.clearErrors()
+            }
         } catch (Throwable t) {
             executionContext.message.clearErrors()
             logger.error("Error creating ArtifactHitBin", t)
