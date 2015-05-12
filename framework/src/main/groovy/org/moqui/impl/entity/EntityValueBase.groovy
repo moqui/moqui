@@ -337,17 +337,17 @@ abstract class EntityValueBase implements EntityValue {
 
     @Override
     EntityValue setSequencedIdPrimary() {
-        List<String> pkFields = getEntityDefinition().getPkFieldNames()
-        Node entityNode = getEntityDefinition().getEntityNode()
-        Long staggerMax = (entityNode.attributes().get('sequence-primary-stagger') as Long) ?: 1
-        Long bankSize = (entityNode.attributes().get('sequence-bank-size') as Long) ?: 50
+        EntityDefinition ed = getEntityDefinition()
+        EntityFacadeImpl localEfi = getEntityFacadeImpl()
+        List<String> pkFields = ed.getPkFieldNames()
 
         // get the entity-specific prefix, support string expansion for it too
         String entityPrefix = ""
-        String rawPrefix = getEntityDefinition().getEntityNode()?.attributes()?.get('sequence-primary-prefix')
-        if (rawPrefix) entityPrefix = efi.getEcfi().getResourceFacade().evaluateStringExpand(rawPrefix, null, valueMap)
+        String rawPrefix = ed.sequencePrimaryPrefix
+        if (rawPrefix) entityPrefix = localEfi.getEcfi().getResourceFacade().evaluateStringExpand(rawPrefix, null, valueMap)
+        String sequenceValue = localEfi.sequencedIdPrimary(getEntityName(), ed.sequencePrimaryStagger, ed.sequenceBankSize)
 
-        set(pkFields.get(0), entityPrefix + getEntityFacadeImpl().sequencedIdPrimary(getEntityName(), staggerMax, bankSize))
+        set(pkFields.get(0), entityPrefix + sequenceValue)
         return this
     }
 
