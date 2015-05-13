@@ -297,6 +297,7 @@ form.editable-form button { background: white; color: #333; border: 1px solid; b
 .table>thead>tr>th, .table>tbody>tr>td { padding: 4px; }
 .table>thead>tr>th { vertical-align: top; }
 .table>tbody>tr>td { vertical-align: middle; }
+.table { margin-bottom: 8px; }
 
 /* #content has white-space: nowrap, which is an annoying thing for all to inherit */
 div { white-space: normal; }
