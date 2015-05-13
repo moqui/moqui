@@ -91,6 +91,7 @@ div.panel-right { float: right; width: 180px; margin-left: 10px; }
 .field-row-item { display: inline-block; margin-left: 17px; margin-right: 17px; }
 .field-row-item input, .field-row-item select { display: inline-block; }
 
+/* Deprecated, now using Bootstrap table styles
 .form-list-outer {
 margin: 0 0 10px 0; padding: 4px; width: 100%;
 -moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px;
@@ -107,21 +108,22 @@ white-space: normal;
 .form-cell { display: table-cell; padding: 0px 4px 0px 2px; font-size: 1em; vertical-align: middle; }
 .form-cell span { display: inline-block; white-space: normal; }
 .form-cell input, .form-cell span input, .form-cell select, .form-cell span select { font-size: 0.9em; }
-.form-bottom-row { display: table-caption; caption-side: bottom; text-align: left; vertical-align: middle; width: 100%; }
 
 .bg-light .form-row:nth-child(odd) { background-color: #EEE; }
 .bg-dark .form-row:nth-child(odd) { background-color: #333; }
-/* .form-row:nth-child(even) { background-color: #FFF; } */
+/ * .form-row:nth-child(even) { background-color: #FFF; } * /
 .bg-light .form-row:hover { background-color: #DDD; }
 .bg-dark .form-row:hover { background-color: #222; }
 
 .bg-dark .modal-dialog .form-row:hover { background-color: #DDD; }
 .bg-dark .modal-dialog .form-row:nth-child(odd) { background-color: #EEE; }
 
-.form-list-outer .form-title { /* border-bottom: 1px solid #DDDDDF; */ white-space: nowrap; height: 1.5em; font-weight: bold; }
-
-.form-header-field { white-space: nowrap; padding-top: 4px; }
+.form-bottom-row { display: table-caption; caption-side: bottom; text-align: left; vertical-align: middle; width: 100%; }
 .form-header-cell, .form-header-cell div.form-title { vertical-align: top; }
+*/
+/* For the bottom row spanning all columns still use this */
+.form-list-outer .form-title { /* border-bottom: 1px solid #DDDDDF; */ white-space: nowrap; height: 1.5em; font-weight: bold; }
+.form-header-field { white-space: nowrap; padding-top: 4px; }
 
 /* .form-date-find span, .form-range-find span, .form-text-find span, .form-text-find select { font-size: .8em; } */
 /*.form-date-time { white-space: nowrap; display: inline; padding: 8px 52px 8px 12px; }
@@ -290,6 +292,9 @@ form.editable-form button { background: white; color: #333; border: 1px solid; b
 /* Metis makes the scrollbar invisible in webkit unless you hover over it, make it always visible */
 ::-webkit-scrollbar-thumb { background-color: #888; }
 ::-webkit-scrollbar-track { background: rgba(110, 110, 110, 0.25); }
+
+/* Reduce padding from Bootstrap default style */
+.table>thead>tr>th, .table>tbody>tr>td { padding: 4px; }
 
 /* #content has white-space: nowrap, which is an annoying thing for all to inherit */
 div { white-space: normal; }
