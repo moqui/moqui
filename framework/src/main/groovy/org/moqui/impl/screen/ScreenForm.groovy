@@ -1011,11 +1011,7 @@ class ScreenForm {
                     }
                 }
 
-                for (EntityValue ev in eli) {
-                    ec.context.push(ev)
-                    addFieldOption(options, fieldNode, childNode, ev, ec)
-                    ec.context.pop()
-                }
+                for (EntityValue ev in eli) addFieldOption(options, fieldNode, childNode, ev, ec)
             } else if (childNode.name() == "list-options") {
                 Object listObject = ec.resource.evaluateContextField((String) childNode.attributes().get('list'), null)
                 if (listObject instanceof EntityListIterator) {
@@ -1023,9 +1019,7 @@ class ScreenForm {
                     try {
                         eli = (EntityListIterator) listObject
                         EntityValue ev
-                        while ((ev = eli.next()) != null) {
-                            addFieldOption(options, fieldNode, childNode, ev, ec)
-                        }
+                        while ((ev = eli.next()) != null) addFieldOption(options, fieldNode, childNode, ev, ec)
                     } finally {
                         eli.close()
                     }
@@ -1051,7 +1045,9 @@ class ScreenForm {
     @CompileStatic
     static void addFieldOption(ListOrderedMap options, Node fieldNode, Node childNode, Map listOption,
                                ExecutionContext ec) {
-        ec.context.push(listOption)
+        EntityValueBase listOptionEvb = listOption instanceof EntityValueImpl ? listOption : null
+        if (listOptionEvb != null) ec.context.push(listOptionEvb.getValueMap())
+        else ec.context.push(listOption)
         try {
             String key = null
             String keyAttr = (String) childNode.attributes().get('key')
@@ -1059,8 +1055,8 @@ class ScreenForm {
                 key = ec.resource.evaluateStringExpand(keyAttr, null)
                 // we just did a string expand, if it evaluates to a literal "null" then there was no value
                 if (key == "null") key = null
-            } else if (listOption instanceof EntityValueImpl) {
-                String keyFieldName = listOption.getEntityDefinition().getPkFieldNames().get(0)
+            } else if (listOptionEvb != null) {
+                String keyFieldName = listOptionEvb.getEntityDefinition().getPkFieldNames().get(0)
                 if (keyFieldName) key = ec.context.get(keyFieldName)
             }
             if (key == null) key = ec.context.get(fieldNode.attributes().get('name'))
@@ -1068,8 +1064,7 @@ class ScreenForm {
 
             String text = childNode.attributes().get('text')
             if (!text) {
-                if ((!(listOption instanceof EntityValueBase)
-                            || ((EntityValueBase) listOption).getEntityDefinition().isField("description"))
+                if ((listOptionEvb == null || listOptionEvb.getEntityDefinition().isField("description"))
                         && listOption["description"]) {
                     options.put(key, listOption["description"])
                 } else {
