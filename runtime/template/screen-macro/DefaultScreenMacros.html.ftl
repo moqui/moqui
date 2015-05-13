@@ -783,25 +783,27 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     </#if>
 </#macro>
 <#macro formSingleWidget fieldSubNode>
-    <#if fieldSubNode["ignored"]?has_content && (fieldSubNode?parent["@hide"]! != "false")><#return></#if>
-    <#if fieldSubNode["hidden"]?has_content && (fieldSubNode?parent["@hide"]! != "false")><#recurse fieldSubNode/><#return></#if>
-    <#if fieldSubNode?parent["@hide"]! == "true"><#return></#if>
+    <#assign fieldSubParent = fieldSubNode?parent>
+    <#if fieldSubNode["ignored"]?has_content && (fieldSubParent["@hide"]! != "false")><#return></#if>
+    <#if fieldSubNode["hidden"]?has_content && (fieldSubParent["@hide"]! != "false")><#recurse fieldSubNode/><#return></#if>
+    <#if fieldSubParent["@hide"]! == "true"><#return></#if>
+    <#assign containerStyle = fieldSubNode["@container-style"]!>
     <#assign curFieldTitle><@fieldTitle fieldSubNode/></#assign>
     <#if bigRow>
         <div class="field-row-item">
             <div class="form-group">
                 <#if curFieldTitle?has_content && !fieldSubNode["submit"]?has_content>
-                    <label class="control-label" for="${formId}_${fieldSubNode?parent["@name"]}">${curFieldTitle}</label><#-- was form-title -->
+                    <label class="control-label" for="${formId}_${fieldSubParent["@name"]}">${curFieldTitle}</label><#-- was form-title -->
                 </#if>
     <#else>
         <#if fieldSubNode["submit"]?has_content>
         <div class="form-group"><#-- was single-form-field -->
             <div class="<#if inFieldRow>col-lg-4<#else>col-lg-2</#if>"> </div>
-            <div class="<#if inFieldRow>col-lg-8<#else>col-lg-10</#if>">
-        <#elseif !(inFieldRow?if_exists && !curFieldTitle?has_content)>
+            <div class="<#if inFieldRow>col-lg-8<#else>col-lg-10</#if><#if containerStyle?has_content> ${containerStyle}</#if>">
+        <#elseif !(inFieldRow! && !curFieldTitle?has_content)>
         <div class="form-group"><#-- was single-form-field -->
-            <label class="control-label <#if inFieldRow>col-lg-4<#else>col-lg-2</#if>" for="${formId}_${fieldSubNode?parent["@name"]}">${curFieldTitle}</label><#-- was form-title -->
-            <div class="<#if inFieldRow>col-lg-8<#else>col-lg-10</#if>">
+            <label class="control-label <#if inFieldRow>col-lg-4<#else>col-lg-2</#if>" for="${formId}_${fieldSubParent["@name"]}">${curFieldTitle}</label><#-- was form-title -->
+            <div class="<#if inFieldRow>col-lg-8<#else>col-lg-10</#if><#if containerStyle?has_content> ${containerStyle}</#if>">
         </#if>
     </#if>
     <#-- NOTE: this style is only good for 2 fields in a field-row! in field-row cols are double size because are inside a col-lg-6 element -->
@@ -834,7 +836,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
         <#if fieldSubNode["submit"]?has_content>
             </div><!-- /col -->
         </div><!-- /form-group -->
-        <#elseif !(inFieldRow?if_exists && !curFieldTitle?has_content)>
+        <#elseif !(inFieldRow! && !curFieldTitle?has_content)>
             </div><!-- /col -->
         </div><!-- /form-group -->
         </#if>
@@ -951,20 +953,16 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
             <#assign nonReferencedFieldList = sri.getFtlFormListColumnNonReferencedHiddenFieldList(.node["@name"])>
             <#list nonReferencedFieldList as nonReferencedField><@formListSubField nonReferencedField/></#list>
             <#list formNode["form-list-column"] as fieldListColumn>
-                <td>
                 <#list fieldListColumn["field-ref"] as fieldRef>
                     <#assign fieldRefName = fieldRef["@name"]>
                     <#assign fieldNode = "invalid">
                     <#list formNode["field"] as fn><#if fn["@name"] == fieldRefName><#assign fieldNode = fn><#break></#if></#list>
                     <#if fieldNode == "invalid">
-                        <div>Error: could not find field with name [${fieldRefName}] referred to in a form-list-column.field-ref.@name attribute.</div>
+                        <td><div>Error: could not find field with name [${fieldRefName}] referred to in a form-list-column.field-ref.@name attribute.</div></td>
                     <#else>
-                        <#assign formListSkipClass = true>
                         <@formListSubField fieldNode/>
-                        <#assign formListSkipClass = false>
                     </#if>
                 </#list>
-                </td>
             </#list>
             <#if isMulti || skipForm>
             </tr>
@@ -1071,7 +1069,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
         ${sri.safeCloseList(listObject)}<#-- if listObject is an EntityListIterator, close it -->
         <#if !skipEnd>
             <#if isMulti && !skipForm>
-                <tr><td colspan="0">
+                <tr><td colspan="${fieldNodeList?size}">
                     <#assign isMultiFinalRow = true>
                     <#list fieldNodeList as fieldNode><@formListSubField fieldNode/></#list>
                 </td></tr>
@@ -1142,12 +1140,14 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
 </#macro>
 <#macro formListWidget fieldSubNode isHeaderField=false>
     <#if fieldSubNode["ignored"]?has_content><#return/></#if>
-    <#if fieldSubNode?parent["@hide"]! == "true"><#return></#if>
+    <#assign fieldSubParent = fieldSubNode?parent>
+    <#if fieldSubParent["@hide"]! == "true"><#return></#if>
     <#-- don't do a column for submit fields, they'll go in their own row at the bottom -->
     <#t><#if !isHeaderField && isMulti && !isMultiFinalRow && fieldSubNode["submit"]?has_content><#return/></#if>
     <#t><#if !isHeaderField && isMulti && isMultiFinalRow && !fieldSubNode["submit"]?has_content><#return/></#if>
     <#if fieldSubNode["hidden"]?has_content><#recurse fieldSubNode/><#return/></#if>
-    <#if !isMultiFinalRow && !isHeaderField><#if !formListSkipClass?if_exists><td><#else><div></#if></#if>
+    <#assign containerStyle = fieldSubNode["@container-style"]!>
+    <#if !isMultiFinalRow && !isHeaderField><#if !formListSkipClass?if_exists><td<#if containerStyle?has_content> class="${containerStyle}"</#if>><#else><div<#if containerStyle?has_content> class="${containerStyle}"</#if>></#if></#if>
         ${sri.pushContext()}
         <#list fieldSubNode?children as widgetNode><#if widgetNode?node_name == "set">${sri.setInContext(widgetNode)}</#if></#list>
         <#list fieldSubNode?children as widgetNode>
