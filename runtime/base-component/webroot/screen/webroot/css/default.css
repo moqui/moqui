@@ -124,6 +124,8 @@ white-space: normal;
 /* For the bottom row spanning all columns still use this */
 .form-list-outer .form-title { /* border-bottom: 1px solid #DDDDDF; */ white-space: nowrap; height: 1.5em; font-weight: bold; }
 .form-header-field { white-space: nowrap; padding-top: 4px; }
+.bg-light .form-list-cell-item:nth-child(1n+2) { border-top: solid 1px #EEE; }
+.bg-dark .form-list-cell-item:nth-child(1n+2) { border-top: solid 1px #444; }
 
 /* .form-date-find span, .form-range-find span, .form-text-find span, .form-text-find select { font-size: .8em; } */
 /*.form-date-time { white-space: nowrap; display: inline; padding: 8px 52px 8px 12px; }
@@ -294,10 +296,12 @@ form.editable-form button { background: white; color: #333; border: 1px solid; b
 ::-webkit-scrollbar-track { background: rgba(110, 110, 110, 0.25); }
 
 /* Reduce padding from Bootstrap default style */
-.table>thead>tr>th, .table>tbody>tr>td { padding: 4px; }
 .table>thead>tr>th { vertical-align: top; }
 .table>tbody>tr>td { vertical-align: middle; }
 .table { margin-bottom: 8px; }
+.bg-dark .table-striped > tbody > tr:nth-child(odd) > td { background-color: #333333; }
+.bg-dark .table-hover > tbody > tr:hover > td { background-color: #2C2C2C; }
+
 
 /* #content has white-space: nowrap, which is an annoying thing for all to inherit */
 div { white-space: normal; }

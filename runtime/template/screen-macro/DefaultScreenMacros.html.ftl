@@ -889,7 +889,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     </#if>
     <#if formListColumnList?? && (formListColumnList?size > 0)>
         <#if !skipStart>
-        <table class="table table-striped table-hover" id="${formId}-table">
+        <table class="table table-striped table-hover table-condensed" id="${formId}-table">
             <thead>
                 <#assign needHeaderForm = sri.isFormHeaderForm(formNode["@name"])>
                 <#if needHeaderForm>
@@ -1153,7 +1153,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#t><#if !isHeaderField && isMulti && isMultiFinalRow && !fieldSubNode["submit"]?has_content><#return/></#if>
     <#if fieldSubNode["hidden"]?has_content><#recurse fieldSubNode/><#return/></#if>
     <#assign containerStyle = ec.resource.evaluateStringExpand(fieldSubNode["@container-style"]!, "")>
-    <#if !isMultiFinalRow && !isHeaderField><#if skipCell><div<#if containerStyle?has_content> class="${containerStyle}"</#if>><#else><td<#if containerStyle?has_content> class="${containerStyle}"</#if>></#if></#if>
+    <#if !isMultiFinalRow && !isHeaderField><#if skipCell><div class="form-list-cell-item<#if containerStyle?has_content> ${containerStyle}</#if>"><#else><td<#if containerStyle?has_content> class="${containerStyle}"</#if>></#if></#if>
         ${sri.pushContext()}
         <#list fieldSubNode?children as widgetNode><#if widgetNode?node_name == "set">${sri.setInContext(widgetNode)}</#if></#list>
         <#list fieldSubNode?children as widgetNode>
