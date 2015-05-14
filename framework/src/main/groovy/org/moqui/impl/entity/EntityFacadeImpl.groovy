@@ -50,12 +50,12 @@ class EntityFacadeImpl implements EntityFacade {
     protected final Map<String, EntityDatasourceFactory> datasourceFactoryByGroupMap = new HashMap()
 
     /** Cache with entity name as the key and an EntityDefinition as the value; clear this cache to reload entity def */
-    protected final Cache entityDefinitionCache
+    final Cache entityDefinitionCache
     /** Cache with entity name as the key and List of file location Strings as the value, Map<String, List<String>> */
-    protected final Cache entityLocationCache
+    final Cache entityLocationCache
     /** Sequence name (often entity name) plus tenantId is the key and the value is an array of 2 Longs the first is the next
      * available value and the second is the highest value reserved/cached in the bank. */
-    protected final Cache entitySequenceBankCache
+    final Cache entitySequenceBankCache
     protected final Lock locationLoadLock = new ReentrantLock()
 
     protected final Map<String, List<EntityEcaRule>> eecaRulesByEntityName = new HashMap()
