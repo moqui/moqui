@@ -50,12 +50,12 @@ class EntityFacadeImpl implements EntityFacade {
     protected final Map<String, EntityDatasourceFactory> datasourceFactoryByGroupMap = new HashMap()
 
     /** Cache with entity name as the key and an EntityDefinition as the value; clear this cache to reload entity def */
-    protected final Cache entityDefinitionCache
+    final Cache entityDefinitionCache
     /** Cache with entity name as the key and List of file location Strings as the value, Map<String, List<String>> */
-    protected final Cache entityLocationCache
+    final Cache entityLocationCache
     /** Sequence name (often entity name) plus tenantId is the key and the value is an array of 2 Longs the first is the next
      * available value and the second is the highest value reserved/cached in the bank. */
-    protected final Cache entitySequenceBankCache
+    final Cache entitySequenceBankCache
     protected final Lock locationLoadLock = new ReentrantLock()
 
     protected final Map<String, List<EntityEcaRule>> eecaRulesByEntityName = new HashMap()
@@ -66,6 +66,7 @@ class EntityFacadeImpl implements EntityFacade {
     protected final TimeZone databaseTimeZone
     protected final Locale databaseLocale
     protected final Calendar databaseTzLcCalendar
+    protected String sequencedIdPrefix = ""
 
     protected EntityDbMeta dbMeta = null
     protected final EntityCache entityCache
@@ -77,6 +78,7 @@ class EntityFacadeImpl implements EntityFacade {
         this.tenantId = tenantId ?: "DEFAULT"
         this.entityConditionFactory = new EntityConditionFactoryImpl(this)
         this.defaultGroupName = this.ecfi.getConfXmlRoot()."entity-facade"[0]."@default-group-name"
+        this.sequencedIdPrefix = this.ecfi.getConfXmlRoot()."entity-facade"[0]."@sequenced-id-prefix" ?: ""
 
         TimeZone theTimeZone = null
         if (this.ecfi.getConfXmlRoot()."entity-facade"[0]."@database-time-zone") {
@@ -636,8 +638,14 @@ class EntityFacadeImpl implements EntityFacade {
                 relationshipsCreated++
             }
         }
+        // all EntityDefinition objects now have reverse relationships in place, remember that so this will only be
+        //     called for new ones, not from cache
+        for (String entityName in entityNameSet) {
+            EntityDefinition ed = getEntityDefinition(entityName)
+            ed.hasReverseRelationships = true
+        }
 
-        if (logger.infoEnabled && relationshipsCreated > 0) logger.info("Created ${relationshipsCreated} automatic reverse-many relationships")
+        if (logger.infoEnabled && relationshipsCreated > 0) logger.info("Created ${relationshipsCreated} automatic reverse relationships")
     }
 
     @CompileStatic
@@ -1228,6 +1236,7 @@ class EntityFacadeImpl implements EntityFacade {
         return dbSequencedIdPrimary(seqName, staggerMax, bankSize)
     }
 
+    @CompileStatic
     protected synchronized String dbSequencedIdPrimary(String seqName, Long staggerMax, Long bankSize) {
         // TODO: find some way to get this running non-synchronized for performance reasons (right now if not
         // TODO:     synchronized the forUpdate won't help if the record doesn't exist yet, causing errors in high
@@ -1238,7 +1247,7 @@ class EntityFacadeImpl implements EntityFacade {
 
         // first get a bank if we don't have one already
         String bankCacheKey = seqName
-        ArrayList<Long> bank = (ArrayList) this.entitySequenceBankCache.get(bankCacheKey)
+        ArrayList<Long> bank = (ArrayList<Long>) this.entitySequenceBankCache.get(bankCacheKey)
         if (bank == null || bank[0] == null || bank[0] > bank[1]) {
             if (bank == null) {
                 bank = new ArrayList<Long>(2)
@@ -1257,14 +1266,14 @@ class EntityFacadeImpl implements EntityFacade {
                         svi = makeValue("moqui.entity.SequenceValueItem")
                         svi.set("seqName", seqName)
                         // a new tradition: start sequenced values at one hundred thousand instead of ten thousand
-                        bank[0] = 100000
-                        bank[1] = bank[0] + ((bankSize ?: 1) - 1)
+                        bank[0] = 100000L
+                        bank[1] = bank[0] + ((bankSize ?: 1L) - 1L)
                         svi.set("seqNum", bank[1])
                         svi.create()
                     } else {
                         Long lastSeqNum = svi.getLong("seqNum")
-                        bank[0] = lastSeqNum + 1
-                        bank[1] = bank[0] + ((bankSize ?: 1) - 1)
+                        bank[0] = (lastSeqNum > bank[0] ? lastSeqNum : bank[0]) + 1L
+                        bank[1] = bank[0] + ((bankSize ?: 1L) - 1L)
                         svi.set("seqNum", bank[1])
                         svi.update()
                     }
@@ -1280,19 +1289,18 @@ class EntityFacadeImpl implements EntityFacade {
             }
         }
 
-        Long seqNum = (Long) bank[0]
+        Long seqNum = bank[0]
         if (staggerMax) {
             long stagger = Math.round(Math.random() * staggerMax)
-            if (stagger == 0) stagger = 1
-            bank[0] += stagger
+            if (stagger == 0L) stagger = 1L
+            bank[0] = seqNum + stagger
             // NOTE: if bank[0] > bank[1] because of this just leave it and the next time we try to get a sequence
             //     value we'll get one from a new bank
         } else {
-            bank[0] += 1
+            bank[0] = seqNum + 1L
         }
 
-        String prefix = this.ecfi.getConfXmlRoot()."entity-facade"[0]."@sequenced-id-prefix" ?: ""
-        return prefix + seqNum.toString()
+        return sequencedIdPrefix + seqNum.toString()
     }
 
     Set<String> getAllEntityNamesInGroup(String groupName) {

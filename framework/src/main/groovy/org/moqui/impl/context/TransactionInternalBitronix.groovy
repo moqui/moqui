@@ -12,7 +12,6 @@
 package org.moqui.impl.context
 
 import bitronix.tm.BitronixTransactionManager
-import bitronix.tm.Configuration
 import bitronix.tm.TransactionManagerServices
 import bitronix.tm.resource.jdbc.PoolingDataSource
 
@@ -149,6 +148,9 @@ class TransactionInternalBitronix implements TransactionInternal {
         pds.setAllowLocalTransactions(true) // allow mixing XA and non-XA transactions
         pds.setAutomaticEnlistingEnabled(true) // automatically enlist/delist this resource in the tx
         pds.setShareTransactionConnections(true) // share connections within a transaction
+        pds.setDeferConnectionRelease(true) // only one transaction per DB connection (can be false if supported by DB)
+        // pds.setShareTransactionConnections(false) // don't share connections in the ACCESSIBLE, needed?
+        // pds.setIgnoreRecoveryFailures(false) // something to consider for XA recovery errors, quarantines by default
 
         if (inlineJdbc."@pool-test-query") {
             pds.setTestQuery((String) inlineJdbc."@pool-test-query")

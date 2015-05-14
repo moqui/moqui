@@ -59,12 +59,12 @@ public class StupidClassLoader extends ClassLoader {
         return m;
     }
 
-    protected final List<JarFile> jarFileList = new ArrayList<JarFile>();
-    protected final List<File> classesDirectoryList = new ArrayList<File>();
+    protected final ArrayList<JarFile> jarFileList = new ArrayList<>();
+    protected final ArrayList<File> classesDirectoryList = new ArrayList<>();
     // This Map contains either a Class or a ClassNotFoundException, cached for fast access because Groovy hits a LOT of
     //     weird invalid class names resulting in expensive new ClassNotFoundException instances
     protected final Map<String, Object> classCache = new HashMap<>();
-    protected final Map<String, URL> resourceCache = new HashMap<String, URL>();
+    protected final Map<String, URL> resourceCache = new HashMap<>();
     protected ProtectionDomain pd;
 
     public StupidClassLoader(ClassLoader parent) {
@@ -132,7 +132,9 @@ public class StupidClassLoader extends ClassLoader {
 
         URL resourceUrl = null;
 
-        for (File classesDir : classesDirectoryList) {
+        int classesDirectoryListSize = classesDirectoryList.size();
+        for (int i = 0; i < classesDirectoryListSize; i++) {
+            File classesDir = classesDirectoryList.get(i);
             File testFile = new File(classesDir.getAbsolutePath() + "/" + resourceName);
             try {
                 if (testFile.exists() && testFile.isFile()) resourceUrl = testFile.toURI().toURL();
@@ -142,7 +144,9 @@ public class StupidClassLoader extends ClassLoader {
         }
 
         if (resourceUrl == null) {
-            for (JarFile jarFile : jarFileList) {
+            int jarFileListSize = jarFileList.size();
+            for (int i = 0; i < jarFileListSize; i++) {
+                JarFile jarFile = jarFileList.get(i);
                 JarEntry jarEntry = jarFile.getJarEntry(resourceName);
                 if (jarEntry != null) {
                     try {
@@ -164,8 +168,10 @@ public class StupidClassLoader extends ClassLoader {
     /** @see java.lang.ClassLoader#findResources(java.lang.String) */
     @Override
     public Enumeration<URL> findResources(String resourceName) throws IOException {
-        List<URL> urlList = new ArrayList<URL>();
-        for (File classesDir : classesDirectoryList) {
+        List<URL> urlList = new ArrayList<>();
+        int classesDirectoryListSize = classesDirectoryList.size();
+        for (int i = 0; i < classesDirectoryListSize; i++) {
+            File classesDir = classesDirectoryList.get(i);
             File testFile = new File(classesDir.getAbsolutePath() + "/" + resourceName);
             try {
                 if (testFile.exists() && testFile.isFile()) urlList.add(testFile.toURI().toURL());
@@ -173,7 +179,9 @@ public class StupidClassLoader extends ClassLoader {
                 System.out.println("Error making URL for [" + resourceName + "] in classes directory [" + classesDir + "]: " + e.toString());
             }
         }
-        for (JarFile jarFile : jarFileList) {
+        int jarFileListSize = jarFileList.size();
+        for (int i = 0; i < jarFileListSize; i++) {
+            JarFile jarFile = jarFileList.get(i);
             JarEntry jarEntry = jarFile.getJarEntry(resourceName);
             if (jarEntry != null) {
                 try {
@@ -207,7 +215,21 @@ public class StupidClassLoader extends ClassLoader {
         }
         return loadClassInternal(className, resolve);
     }
+
+    static final ArrayList<String> ignoreSuffixes = new ArrayList<>(Arrays.asList("Customizer", "BeanInfo"));
+    static final int ignoreSuffixesSize = ignoreSuffixes.size();
     protected synchronized Class<?> loadClassInternal(String className, boolean resolve) throws ClassNotFoundException {
+        /* This may be a good idea, Groovy looks for all sorts of bogus class name but there may be a reason so not doing this or looking for other patterns:
+        for (int i = 0; i < ignoreSuffixesSize; i++) {
+            String ignoreSuffix = ignoreSuffixes.get(i);
+            if (className.endsWith(ignoreSuffix)) {
+                ClassNotFoundException cfne = new ClassNotFoundException("Ignoring Groovy style bogus class name " + className);
+                classCache.put(className, cfne);
+                throw cfne;
+            }
+        }
+        */
+
         Class<?> c = null;
         try {
             try {
@@ -260,7 +282,9 @@ public class StupidClassLoader extends ClassLoader {
         Class<?> c = null;
         String classFileName = className.replace('.', '/') + ".class";
 
-        for (File classesDir : classesDirectoryList) {
+        int classesDirectoryListSize = classesDirectoryList.size();
+        for (int i = 0; i < classesDirectoryListSize; i++) {
+            File classesDir = classesDirectoryList.get(i);
             File testFile = new File(classesDir.getAbsolutePath() + "/" + classFileName);
             try {
                 if (testFile.exists() && testFile.isFile()) {
@@ -279,7 +303,9 @@ public class StupidClassLoader extends ClassLoader {
         }
 
         if (c == null) {
-            for (JarFile jarFile: jarFileList) {
+            int jarFileListSize = jarFileList.size();
+            for (int i = 0; i < jarFileListSize; i++) {
+                JarFile jarFile = jarFileList.get(i);
                 // System.out.println("Finding class file " + classFileName + " in jar file " + jarFile.getName());
                 JarEntry jarEntry = jarFile.getJarEntry(classFileName);
                 if (jarEntry != null) {

@@ -299,6 +299,7 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:documentation></xs:annotation></xs:attribute>
             <xs:attribute name="text" type="xs:string"/>
             <xs:attribute name="icon" type="xs:string"/>
+            <xs:attribute name="tooltip" type="xs:string"/>
             <xs:attribute name="target-window" type="xs:string"/>
             <xs:attribute name="confirmation" type="xs:string"><xs:annotation><xs:documentation>
                 If there is a message here it will show in a confirmation box when the link is clicked on.
@@ -319,6 +320,9 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="condition" type="xs:string"><xs:annotation><xs:documentation>
                 If specified and evaluates to false link is not rendered.
             </xs:documentation></xs:annotation></xs:attribute>
+            <xs:attribute name="entity-name" type="xs:string"/>
+            <xs:attribute name="entity-key-name" type="xs:string"/>
+            <xs:attribute name="entity-use-cache" default="true" type="boolean"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="image" substitutionGroup="StandaloneFields">
@@ -542,6 +546,9 @@ This Work includes contributions authored by David E. Jones, not as a
                     <xs:enumeration value="by-name"/>
                 </xs:restriction>
             </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="container-style" type="xs:string">
+            <xs:annotation><xs:documentation>A style (HTML class) for the container around the field (table cell, etc).</xs:documentation></xs:annotation>
         </xs:attribute>
     </xs:attributeGroup>
     <!-- TABLED, not to be part of 1.0:

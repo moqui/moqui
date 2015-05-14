@@ -62,7 +62,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="types"><default-field><text-line size="60"/></default-field></field>
             <field name="location"><default-field><text-line size="80"/></default-field></field>
             <field name="xmlText"><default-field title="Text">
-                <text-area rows="10" cols="80" default-value="&lt;entity-facade-xml&gt;\n&lt;/entity-facade-xml&gt;"/>
+                <text-area rows="10" cols="80" default-value="&lt;entity-facade-xml&gt;&lt;/entity-facade-xml&gt;"/>
             </default-field></field>
             <field name="jsonText"><default-field title="Text">
                 <text-area rows="10" cols="80" default-value=""/>

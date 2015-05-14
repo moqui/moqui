@@ -246,9 +246,9 @@ public class MoquiStart extends ClassLoader {
     }
 
     protected JarFile outerFile = null;
-    protected final List<JarFile> jarFileList = new ArrayList<JarFile>();
-    protected final Map<String, Class<?>> classCache = new HashMap<String, Class<?>>();
-    protected final Map<String, URL> resourceCache = new HashMap<String, URL>();
+    protected final ArrayList<JarFile> jarFileList = new ArrayList<>();
+    protected final Map<String, Class<?>> classCache = new HashMap<>();
+    protected final Map<String, URL> resourceCache = new HashMap<>();
     protected ProtectionDomain pd;
     protected final boolean loadWebInf;
 
@@ -340,10 +340,13 @@ public class MoquiStart extends ClassLoader {
             System.out.println("Error making URL for [" + resourceName + "] in runtime classes directory [" + runtimePath + "/classes/" + "]: " + e.toString());
         }
 
-        for (JarFile jarFile : jarFileList) {
+        String webInfResourceName = "WEB-INF/classes/" + resourceName;
+        int jarFileListSize = jarFileList.size();
+        for (int i = 0; i < jarFileListSize; i++) {
+            JarFile jarFile = jarFileList.get(i);
             JarEntry jarEntry = jarFile.getJarEntry(resourceName);
             // to better support war format, look for the resourceName in the WEB-INF/classes directory
-            if (loadWebInf && jarEntry == null) jarEntry = jarFile.getJarEntry("WEB-INF/classes/" + resourceName);
+            if (loadWebInf && jarEntry == null) jarEntry = jarFile.getJarEntry(webInfResourceName);
             if (jarEntry != null) {
                 try {
                     String jarFileName = jarFile.getName();
@@ -362,11 +365,14 @@ public class MoquiStart extends ClassLoader {
     /** @see java.lang.ClassLoader#findResources(java.lang.String) */
     @Override
     public Enumeration<URL> findResources(String resourceName) throws IOException {
-        List<URL> urlList = new ArrayList<URL>();
-        for (JarFile jarFile : jarFileList) {
+        String webInfResourceName = "WEB-INF/classes/" + resourceName;
+        List<URL> urlList = new ArrayList<>();
+        int jarFileListSize = jarFileList.size();
+        for (int i = 0; i < jarFileListSize; i++) {
+            JarFile jarFile = jarFileList.get(i);
             JarEntry jarEntry = jarFile.getJarEntry(resourceName);
             // to better support war format, look for the resourceName in the WEB-INF/classes directory
-            if (loadWebInf && jarEntry == null) jarEntry = jarFile.getJarEntry("WEB-INF/classes/" + resourceName);
+            if (loadWebInf && jarEntry == null) jarEntry = jarFile.getJarEntry(webInfResourceName);
             if (jarEntry != null) {
                 try {
                     String jarFileName = jarFile.getName();
@@ -414,12 +420,15 @@ public class MoquiStart extends ClassLoader {
 
         Class<?> c = null;
         String classFileName = className.replace('.', '/') + ".class";
-        for (JarFile jarFile: jarFileList) {
+        String webInfFileName = "WEB-INF/classes/" + classFileName;
+        int jarFileListSize = jarFileList.size();
+        for (int i = 0; i < jarFileListSize; i++) {
+            JarFile jarFile = jarFileList.get(i);
             // System.out.println("Finding Class [" + className + "] in jarFile [" + jarFile.getName() + "]");
 
             JarEntry jarEntry = jarFile.getJarEntry(classFileName);
             // to better support war format, look for the resourceName in the WEB-INF/classes directory
-            if (loadWebInf && jarEntry == null) jarEntry = jarFile.getJarEntry("WEB-INF/classes/" + classFileName);
+            if (loadWebInf && jarEntry == null) jarEntry = jarFile.getJarEntry(webInfFileName);
             if (jarEntry != null) {
                 definePackage(className, jarFile);
                 byte[] jeBytes = getJarEntryBytes(jarFile, jarEntry);

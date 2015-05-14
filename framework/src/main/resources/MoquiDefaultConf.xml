@@ -15,11 +15,11 @@
         <!-- this is info for each entity for real-time push DataFeeds; expires every 15 min to get DataFeed and DataDocument updates -->
         <cache name="entity.data.feed.info." expire-time-idle="0" expire-time-live="900" max-elements="2000"/>
 
-        <cache name="entity.record.one." expire-time-idle="0" expire-time-live="0" max-elements="1000" eviction-strategy="least-frequently-used"/>
-        <cache name="entity.record.one_ra." expire-time-idle="0" expire-time-live="0" max-elements="10000" eviction-strategy="least-frequently-used"/>
-        <cache name="entity.record.list." expire-time-idle="0" expire-time-live="0" max-elements="1000" eviction-strategy="least-frequently-used"/>
-        <cache name="entity.record.list_ra." expire-time-idle="0" expire-time-live="0" max-elements="10000" eviction-strategy="least-frequently-used"/>
-        <cache name="entity.record.count." expire-time-idle="0" expire-time-live="0" max-elements="1000" eviction-strategy="least-frequently-used"/>
+        <cache name="entity.record.one." expire-time-idle="0" expire-time-live="0" max-elements="10000" eviction-strategy="least-frequently-used"/>
+        <cache name="entity.record.one_ra." expire-time-idle="0" expire-time-live="0" max-elements="20000" eviction-strategy="least-frequently-used"/>
+        <cache name="entity.record.list." expire-time-idle="0" expire-time-live="0" max-elements="10000" eviction-strategy="least-frequently-used"/>
+        <cache name="entity.record.list_ra." expire-time-idle="0" expire-time-live="0" max-elements="20000" eviction-strategy="least-frequently-used"/>
+        <cache name="entity.record.count." expire-time-idle="0" expire-time-live="0" max-elements="10000" eviction-strategy="least-frequently-used"/>
 
         <cache name="service.location" expire-time-idle="0" expire-time-live="0" max-elements="10000"/>
         <cache name="service.java.class" expire-time-idle="0" expire-time-live="0" max-elements="10000"/>

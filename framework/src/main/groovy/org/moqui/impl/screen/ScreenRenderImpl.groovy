@@ -290,6 +290,7 @@ class ScreenRenderImpl implements ScreenRender {
             }
 
             long transitionStartTime = System.currentTimeMillis()
+            long startTimeNanos = System.nanoTime()
 
             boolean beginTransaction = targetTransition.getBeginTransaction()
             boolean beganTransaction = beginTransaction ? sfi.getEcfi().getTransactionFacade().begin(null) : false
@@ -316,7 +317,7 @@ class ScreenRenderImpl implements ScreenRender {
                     sfi.ecfi.countArtifactHit("transition", ri?.type ?: "",
                             targetTransition.parentScreen.getLocation() + "#" + targetTransition.name,
                             (ec.getWeb() ? ec.getWeb().requestParameters : null), transitionStartTime,
-                            System.currentTimeMillis(), null)
+                            (System.nanoTime() - startTimeNanos)/1E6, null)
                 }
             }
 
@@ -413,6 +414,7 @@ class ScreenRenderImpl implements ScreenRender {
             }
         } else if (screenUrlInfo.fileResourceRef != null) {
             long resourceStartTime = System.currentTimeMillis()
+            long startTimeNanos = System.nanoTime()
 
             TemplateRenderer tr = sfi.ecfi.resourceFacade.getTemplateRendererByLocation(screenUrlInfo.fileResourceRef.location)
 
@@ -441,7 +443,7 @@ class ScreenRenderImpl implements ScreenRender {
                         if (screenUrlInfo.targetScreen.screenNode.attributes().get('track-artifact-hit') != "false") {
                             sfi.ecfi.countArtifactHit("screen-content", fileContentType, screenUrlInfo.fileResourceRef.location,
                                     (ec.getWeb() ? ec.getWeb().requestParameters : null), resourceStartTime,
-                                    System.currentTimeMillis(), (long) totalLen)
+                                    (System.nanoTime() - startTimeNanos)/1E6, (long) totalLen)
                         }
                         if (logger.traceEnabled) logger.trace("Sent binary response of length [${totalLen}] with from file [${screenUrlInfo.fileResourceRef.location}] for request to [${screenUrlInstance.url}]")
                         return
@@ -485,7 +487,7 @@ class ScreenRenderImpl implements ScreenRender {
                         if (screenUrlInfo.targetScreen.screenNode.attributes().get('track-artifact-hit') != "false") {
                             sfi.ecfi.countArtifactHit("screen-content", fileContentType, screenUrlInfo.fileResourceRef.location,
                                     (ec.getWeb() ? ec.getWeb().requestParameters : null), resourceStartTime,
-                                    System.currentTimeMillis(), (long) length)
+                                    (System.nanoTime() - startTimeNanos)/1E6, (long) length)
                         }
                     } else {
                         logger.warn("Not sending text response from file [${screenUrlInfo.fileResourceRef.location}] for request to [${screenUrlInstance.url}] because no text was found in the file.")
@@ -533,6 +535,7 @@ class ScreenRenderImpl implements ScreenRender {
 
     void doActualRender() {
         long screenStartTime = System.currentTimeMillis()
+        long startTimeNanos = System.nanoTime()
         boolean beganTransaction = screenUrlInfo.beginTransaction ? sfi.ecfi.transactionFacade.begin(null) : false
         try {
             // make sure this (sri) is in the context before running actions
@@ -622,7 +625,8 @@ class ScreenRenderImpl implements ScreenRender {
             if (beganTransaction && sfi.ecfi.transactionFacade.isTransactionInPlace()) sfi.ecfi.transactionFacade.commit()
             if (screenUrlInfo.targetScreen.screenNode.attributes().get('track-artifact-hit') != "false") {
                 sfi.ecfi.countArtifactHit("screen", this.outputContentType, screenUrlInfo.screenRenderDefList.last().getLocation(),
-                        (ec.getWeb() ? ec.getWeb().requestParameters : null), screenStartTime, System.currentTimeMillis(), null)
+                        (ec.getWeb() ? ec.getWeb().requestParameters : null), screenStartTime,
+                        (System.nanoTime() - startTimeNanos)/1E6, null)
             }
         }
     }
@@ -1173,9 +1177,11 @@ class ScreenRenderImpl implements ScreenRender {
 
         // find the entity value
         String keyFieldName = (String) widgetNode.attributes().get('key-field-name')
+        if (!keyFieldName) keyFieldName = (String) widgetNode.attributes().get('entity-key-name')
         if (!keyFieldName) keyFieldName = ed.getPkFieldNames().get(0)
+        String useCache = widgetNode.attributes().get('use-cache') ?: widgetNode.attributes().get('entity-use-cache') ?: 'true'
         EntityValue ev = ec.entity.find(entityName).condition(keyFieldName, fieldValue)
-                .useCache((widgetNode.attributes().get('use-cache')?:"true") == "true").one()
+                .useCache(useCache == "true").one()
         if (ev == null) return ""
 
         String value = ""
@@ -1241,13 +1247,13 @@ class ScreenRenderImpl implements ScreenRender {
         // see if there is a user setting for the theme
         String themeId = sfi.ecfi.entityFacade.find("moqui.security.UserScreenTheme")
                 .condition([userId:ec.user.userId, screenThemeTypeEnumId:stteId] as Map<String, Object>)
-                .useCache(true).one()?.screenThemeId
+                .useCache(true).disableAuthz().one()?.screenThemeId
         // use the Enumeration.enumCode from the type to find the theme type's default screenThemeId
         if (!themeId) {
             boolean alreadyDisabled = ec.getArtifactExecution().disableAuthz()
             try {
                 EntityValue themeTypeEnum = sfi.ecfi.entityFacade.find("moqui.basic.Enumeration")
-                        .condition("enumId", stteId).useCache(true).one()
+                        .condition("enumId", stteId).useCache(true).disableAuthz().one()
                 if (themeTypeEnum?.enumCode) themeId = themeTypeEnum.enumCode
             } finally {
                 if (!alreadyDisabled) ec.getArtifactExecution().enableAuthz()
@@ -1266,9 +1272,20 @@ class ScreenRenderImpl implements ScreenRender {
     List<String> getThemeValues(String resourceTypeEnumId) {
         EntityList strList = sfi.ecfi.entityFacade.find("moqui.screen.ScreenThemeResource")
                 .condition([screenThemeId:getCurrentThemeId(), resourceTypeEnumId:resourceTypeEnumId] as Map<String, Object>)
-                .orderBy("sequenceNum").useCache(true).list()
+                .orderBy("sequenceNum").useCache(true).disableAuthz().list()
         List<String> values = new LinkedList()
         for (EntityValue str in strList) values.add(str.resourceValue as String)
         return values
+    }
+
+    String getThemeIconClass(String text) {
+        EntityList stiList = sfi.ecfi.entityFacade.find("moqui.screen.ScreenThemeIcon").disableAuthz()
+                .condition([screenThemeId:getCurrentThemeId()] as Map<String, Object>).useCache(true).list()
+        for (EntityValue sti in stiList) {
+            if (text.matches((String) sti.textPattern)) {
+                return (String) sti.iconClass
+            }
+        }
+        return null
     }
 }
