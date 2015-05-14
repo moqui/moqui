@@ -957,6 +957,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
             <#assign nonReferencedFieldList = sri.getFtlFormListColumnNonReferencedHiddenFieldList(.node["@name"])>
             <#list nonReferencedFieldList as nonReferencedField><@formListSubField nonReferencedField/></#list>
             <#list formNode["form-list-column"] as fieldListColumn>
+                <td>
                 <#list fieldListColumn["field-ref"] as fieldRef>
                     <#assign fieldRefName = fieldRef["@name"]>
                     <#assign fieldNode = "invalid">
@@ -964,9 +965,10 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                     <#if fieldNode == "invalid">
                         <td><div>Error: could not find field with name [${fieldRefName}] referred to in a form-list-column.field-ref.@name attribute.</div></td>
                     <#else>
-                        <@formListSubField fieldNode/>
+                        <@formListSubField fieldNode true/>
                     </#if>
                 </#list>
+                </td>
             </#list>
             <#if isMulti || skipForm>
             </tr>
@@ -1129,20 +1131,20 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     </div>
     </#if>
 </#macro>
-<#macro formListSubField fieldNode>
+<#macro formListSubField fieldNode skipCell=false>
     <#list fieldNode["conditional-field"] as fieldSubNode>
         <#if ec.resource.evaluateCondition(fieldSubNode["@condition"], "")>
-            <@formListWidget fieldSubNode/>
+            <@formListWidget fieldSubNode skipCell/>
             <#return>
         </#if>
     </#list>
     <#if fieldNode["default-field"]?has_content>
         <#assign isHeaderField=false>
-        <@formListWidget fieldNode["default-field"][0]/>
+        <@formListWidget fieldNode["default-field"][0] skipCell/>
         <#return>
     </#if>
 </#macro>
-<#macro formListWidget fieldSubNode isHeaderField=false>
+<#macro formListWidget fieldSubNode skipCell=false isHeaderField=false>
     <#if fieldSubNode["ignored"]?has_content><#return/></#if>
     <#assign fieldSubParent = fieldSubNode?parent>
     <#if fieldSubParent["@hide"]! == "true"><#return></#if>
@@ -1151,7 +1153,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#t><#if !isHeaderField && isMulti && isMultiFinalRow && !fieldSubNode["submit"]?has_content><#return/></#if>
     <#if fieldSubNode["hidden"]?has_content><#recurse fieldSubNode/><#return/></#if>
     <#assign containerStyle = ec.resource.evaluateStringExpand(fieldSubNode["@container-style"]!, "")>
-    <#if !isMultiFinalRow && !isHeaderField><#if !formListSkipClass?if_exists><td<#if containerStyle?has_content> class="${containerStyle}"</#if>><#else><div<#if containerStyle?has_content> class="${containerStyle}"</#if>></#if></#if>
+    <#if !isMultiFinalRow && !isHeaderField><#if skipCell><div<#if containerStyle?has_content> class="${containerStyle}"</#if>><#else><td<#if containerStyle?has_content> class="${containerStyle}"</#if>></#if></#if>
         ${sri.pushContext()}
         <#list fieldSubNode?children as widgetNode><#if widgetNode?node_name == "set">${sri.setInContext(widgetNode)}</#if></#list>
         <#list fieldSubNode?children as widgetNode>
@@ -1171,7 +1173,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
             <#else><#t><#visit widgetNode></#if>
         </#list>
         ${sri.popContext()}
-    <#if !isMultiFinalRow && !isHeaderField><#if !formListSkipClass?if_exists></td><#else></div></#if></#if>
+    <#if !isMultiFinalRow && !isHeaderField><#if skipCell></div><#else></td></#if></#if>
 </#macro>
 <#macro "row-actions"><#-- do nothing, these are run by the SRI --></#macro>
 
