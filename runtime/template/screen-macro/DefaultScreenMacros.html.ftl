@@ -787,7 +787,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#if fieldSubNode["ignored"]?has_content && (fieldSubParent["@hide"]! != "false")><#return></#if>
     <#if fieldSubNode["hidden"]?has_content && (fieldSubParent["@hide"]! != "false")><#recurse fieldSubNode/><#return></#if>
     <#if fieldSubParent["@hide"]! == "true"><#return></#if>
-    <#assign containerStyle = fieldSubNode["@container-style"]!>
+    <#assign containerStyle = ec.resource.evaluateStringExpand(fieldSubNode["@container-style"]!, "")>
     <#assign curFieldTitle><@fieldTitle fieldSubNode/></#assign>
     <#if bigRow>
         <div class="field-row-item">
@@ -1146,7 +1146,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#t><#if !isHeaderField && isMulti && !isMultiFinalRow && fieldSubNode["submit"]?has_content><#return/></#if>
     <#t><#if !isHeaderField && isMulti && isMultiFinalRow && !fieldSubNode["submit"]?has_content><#return/></#if>
     <#if fieldSubNode["hidden"]?has_content><#recurse fieldSubNode/><#return/></#if>
-    <#assign containerStyle = fieldSubNode["@container-style"]!>
+    <#assign containerStyle = ec.resource.evaluateStringExpand(fieldSubNode["@container-style"]!, "")>
     <#if !isMultiFinalRow && !isHeaderField><#if !formListSkipClass?if_exists><td<#if containerStyle?has_content> class="${containerStyle}"</#if>><#else><div<#if containerStyle?has_content> class="${containerStyle}"</#if>></#if></#if>
         ${sri.pushContext()}
         <#list fieldSubNode?children as widgetNode><#if widgetNode?node_name == "set">${sri.setInContext(widgetNode)}</#if></#list>
