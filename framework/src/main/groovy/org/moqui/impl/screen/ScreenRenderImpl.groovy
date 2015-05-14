@@ -1277,4 +1277,15 @@ class ScreenRenderImpl implements ScreenRender {
         for (EntityValue str in strList) values.add(str.resourceValue as String)
         return values
     }
+
+    String getThemeIconClass(String text) {
+        EntityList stiList = sfi.ecfi.entityFacade.find("moqui.screen.ScreenThemeIcon")
+                .condition([screenThemeId:getCurrentThemeId()] as Map<String, Object>).useCache(true).list()
+        for (EntityValue sti in stiList) {
+            if (text.matches((String) sti.textPattern)) {
+                return (String) sti.iconClass
+            }
+        }
+        return null
+    }
 }
