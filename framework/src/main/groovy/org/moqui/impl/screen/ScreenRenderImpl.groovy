@@ -1247,13 +1247,13 @@ class ScreenRenderImpl implements ScreenRender {
         // see if there is a user setting for the theme
         String themeId = sfi.ecfi.entityFacade.find("moqui.security.UserScreenTheme")
                 .condition([userId:ec.user.userId, screenThemeTypeEnumId:stteId] as Map<String, Object>)
-                .useCache(true).one()?.screenThemeId
+                .useCache(true).disableAuthz().one()?.screenThemeId
         // use the Enumeration.enumCode from the type to find the theme type's default screenThemeId
         if (!themeId) {
             boolean alreadyDisabled = ec.getArtifactExecution().disableAuthz()
             try {
                 EntityValue themeTypeEnum = sfi.ecfi.entityFacade.find("moqui.basic.Enumeration")
-                        .condition("enumId", stteId).useCache(true).one()
+                        .condition("enumId", stteId).useCache(true).disableAuthz().one()
                 if (themeTypeEnum?.enumCode) themeId = themeTypeEnum.enumCode
             } finally {
                 if (!alreadyDisabled) ec.getArtifactExecution().enableAuthz()
@@ -1272,14 +1272,14 @@ class ScreenRenderImpl implements ScreenRender {
     List<String> getThemeValues(String resourceTypeEnumId) {
         EntityList strList = sfi.ecfi.entityFacade.find("moqui.screen.ScreenThemeResource")
                 .condition([screenThemeId:getCurrentThemeId(), resourceTypeEnumId:resourceTypeEnumId] as Map<String, Object>)
-                .orderBy("sequenceNum").useCache(true).list()
+                .orderBy("sequenceNum").useCache(true).disableAuthz().list()
         List<String> values = new LinkedList()
         for (EntityValue str in strList) values.add(str.resourceValue as String)
         return values
     }
 
     String getThemeIconClass(String text) {
-        EntityList stiList = sfi.ecfi.entityFacade.find("moqui.screen.ScreenThemeIcon")
+        EntityList stiList = sfi.ecfi.entityFacade.find("moqui.screen.ScreenThemeIcon").disableAuthz()
                 .condition([screenThemeId:getCurrentThemeId()] as Map<String, Object>).useCache(true).list()
         for (EntityValue sti in stiList) {
             if (text.matches((String) sti.textPattern)) {
