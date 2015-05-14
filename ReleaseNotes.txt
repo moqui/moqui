@@ -35,7 +35,7 @@ Bug Fixes:
   @id attribute needed to get the field's value
 
 ===========================================================================
-Release 1.5.2 - 2 May 2015 (estimated)
+Release 1.5.2 - 2 May 2015
 ===========================================================================
 
 Moqui Framework 1.5.2 is a minor new feature and bug fix release.
