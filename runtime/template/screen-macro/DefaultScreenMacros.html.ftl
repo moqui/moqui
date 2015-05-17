@@ -1007,7 +1007,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#else>
         <#assign fieldNodeList = formNode["field"]>
         <#if !skipStart>
-        <table class="table table-striped table-hover" id="${formId}-table">
+        <table class="table table-striped table-hover table-condensed" id="${formId}-table">
             <thead>
                 <#assign needHeaderForm = sri.isFormHeaderForm(formNode["@name"])>
                 <#if needHeaderForm && !skipStart>
