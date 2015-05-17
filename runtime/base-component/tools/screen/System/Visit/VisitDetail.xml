@@ -55,30 +55,31 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="userId"><default-field><display/></default-field></field>
 
             <field name="artifactType">
-                <header-field show-order-by="true">
-                    <drop-down allow-empty="true">
-                        <option key="screen"/><option key="screen-content"/><option key="transition"/>
-                        <option key="service"/><option key="entity"/>
-                    </drop-down>
-                </header-field>
+                <header-field show-order-by="true"><drop-down allow-empty="true">
+                    <option key="screen"/><option key="screen-content"/><option key="transition"/>
+                    <option key="service"/><option key="entity"/>
+                </drop-down></header-field>
                 <default-field title="Type"><display text="${artifactType?.replace('-',' - ')}"/></default-field>
             </field>
             <field name="artifactSubType"><default-field title="Sub Type"><display text="${artifactSubType?.replace('/',' / ')}"/></default-field></field>
 
-            <field name="artifactName">
-                <header-field show-order-by="true"/>
+            <field name="artifactName"><header-field show-order-by="true"/>
                 <default-field><display/></default-field>
             </field>
             <field name="parameterString"><default-field><display text="${parameterString?.replace(',',' , ') ?: 'N/A'}"/></default-field></field>
 
-            <field name="runningTimeMillis"><default-field title="Time"><display text="${runningTimeMillis}ms"/></default-field></field>
+            <field name="runningTimeMillis"><default-field title="Time"><display text="${ec.l10n.format(runningTimeMillis, '0.00')}ms"/></default-field></field>
+            <field name="isSlowHit">
+                <header-field title="Slow" show-order-by="true">
+                    <drop-down allow-empty="true"><option key="Y"/><option key="N"/></drop-down></header-field>
+                <default-field><display/></default-field>
+            </field>
             <field name="outputSize"><default-field title="Size"><display text="${outputSize ?: 'Unknown'}"/></default-field></field>
 
             <field name="wasError"><default-field title="Error"><display/></default-field></field>
             <field name="errorMessage"><default-field title="Message"><display/></default-field></field>
 
-            <field name="requestUrl">
-                <header-field show-order-by="true"/>
+            <field name="requestUrl"><header-field show-order-by="true"/>
                 <default-field><display/></default-field>
             </field>
             <field name="referrerUrl"><default-field><display text="${referrerUrl ?: 'N/A'}"/></default-field></field>
@@ -86,15 +87,14 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="serverIpAddress"><default-field><display/></default-field></field>
             <field name="serverHostName"><default-field><display/></default-field></field>
 
-            <field name="findButton">
-                <header-field title="Find"><submit/></header-field>
+            <field name="findButton"><header-field title="Find"><submit/></header-field>
                 <default-field><display text=" "/></default-field>
             </field>
 
             <!-- NOTE: maybe go to 3-4 rows per record instead of two -->
             <form-list-column><field-ref name="startDateTime"/><field-ref name="userId"/></form-list-column>
             <form-list-column><field-ref name="artifactType"/><field-ref name="artifactSubType"/></form-list-column>
-            <form-list-column><field-ref name="runningTimeMillis"/><field-ref name="outputSize"/></form-list-column>
+            <form-list-column><field-ref name="runningTimeMillis"/><field-ref name="isSlowHit"/><field-ref name="outputSize"/></form-list-column>
             <form-list-column><field-ref name="artifactName"/><field-ref name="parameterString"/>
                 <field-ref name="requestUrl"/><field-ref name="referrerUrl"/></form-list-column>
             <form-list-column><field-ref name="wasError"/><field-ref name="errorMessage"/></form-list-column>

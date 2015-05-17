@@ -337,17 +337,17 @@ abstract class EntityValueBase implements EntityValue {
 
     @Override
     EntityValue setSequencedIdPrimary() {
-        List<String> pkFields = getEntityDefinition().getPkFieldNames()
-        Node entityNode = getEntityDefinition().getEntityNode()
-        Long staggerMax = (entityNode.attributes().get('sequence-primary-stagger') as Long) ?: 1
-        Long bankSize = (entityNode.attributes().get('sequence-bank-size') as Long) ?: 50
+        EntityDefinition ed = getEntityDefinition()
+        EntityFacadeImpl localEfi = getEntityFacadeImpl()
+        List<String> pkFields = ed.getPkFieldNames()
 
         // get the entity-specific prefix, support string expansion for it too
         String entityPrefix = ""
-        String rawPrefix = getEntityDefinition().getEntityNode()?.attributes()?.get('sequence-primary-prefix')
-        if (rawPrefix) entityPrefix = efi.getEcfi().getResourceFacade().evaluateStringExpand(rawPrefix, null, valueMap)
+        String rawPrefix = ed.sequencePrimaryPrefix
+        if (rawPrefix) entityPrefix = localEfi.getEcfi().getResourceFacade().evaluateStringExpand(rawPrefix, null, valueMap)
+        String sequenceValue = localEfi.sequencedIdPrimary(getEntityName(), ed.sequencePrimaryStagger, ed.sequenceBankSize)
 
-        set(pkFields.get(0), entityPrefix + getEntityFacadeImpl().sequencedIdPrimary(getEntityName(), staggerMax, bankSize))
+        set(pkFields.get(0), entityPrefix + sequenceValue)
         return this
     }
 
@@ -940,6 +940,7 @@ abstract class EntityValueBase implements EntityValue {
     @Override
     EntityValue create() {
         long startTime = System.currentTimeMillis()
+        long startTimeNanos = System.nanoTime()
         EntityDefinition ed = getEntityDefinition()
         ExecutionContextFactoryImpl ecfi = getEntityFacadeImpl().getEcfi()
         ExecutionContext ec = ecfi.getExecutionContext()
@@ -982,7 +983,7 @@ abstract class EntityValueBase implements EntityValue {
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "create", false)
         // count the artifact hit
         ecfi.countArtifactHit("entity", "create", ed.getFullEntityName(), this.getPrimaryKeys(), startTime,
-                System.currentTimeMillis(), 1L)
+                (System.nanoTime() - startTimeNanos)/1E6, 1L)
         // pop the ArtifactExecutionInfo to clean it up
         ec.getArtifactExecution().pop()
 
@@ -1034,6 +1035,7 @@ abstract class EntityValueBase implements EntityValue {
     @Override
     EntityValue update() {
         long startTime = System.currentTimeMillis()
+        long startTimeNanos = System.nanoTime()
         EntityDefinition ed = getEntityDefinition()
         ExecutionContextFactoryImpl ecfi = getEntityFacadeImpl().getEcfi()
         ExecutionContext ec = ecfi.getExecutionContext()
@@ -1105,8 +1107,8 @@ abstract class EntityValueBase implements EntityValue {
 
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "update", false)
         // count the artifact hit
-        ecfi.countArtifactHit("entity", "update", ed.getFullEntityName(), this.getPrimaryKeys(),
-                startTime, System.currentTimeMillis(), 1L)
+        ecfi.countArtifactHit("entity", "update", ed.getFullEntityName(), this.getPrimaryKeys(), startTime,
+                (System.nanoTime() - startTimeNanos)/1E6, 1L)
         // pop the ArtifactExecutionInfo to clean it up
         ec.getArtifactExecution().pop()
 
@@ -1190,6 +1192,7 @@ abstract class EntityValueBase implements EntityValue {
     @Override
     EntityValue delete() {
         long startTime = System.currentTimeMillis()
+        long startTimeNanos = System.nanoTime()
         EntityDefinition ed = getEntityDefinition()
         ExecutionContextFactoryImpl ecfi = getEntityFacadeImpl().getEcfi()
         ExecutionContext ec = ecfi.getExecutionContext()
@@ -1217,8 +1220,8 @@ abstract class EntityValueBase implements EntityValue {
 
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "delete", false)
         // count the artifact hit
-        ecfi.countArtifactHit("entity", "delete", ed.getFullEntityName(), this.getPrimaryKeys(),
-                startTime, System.currentTimeMillis(), 1L)
+        ecfi.countArtifactHit("entity", "delete", ed.getFullEntityName(), this.getPrimaryKeys(), startTime,
+                (System.nanoTime() - startTimeNanos)/1E6, 1L)
         // pop the ArtifactExecutionInfo to clean it up
         ec.getArtifactExecution().pop()
 
@@ -1254,6 +1257,7 @@ abstract class EntityValueBase implements EntityValue {
     @Override
     boolean refresh() {
         long startTime = System.currentTimeMillis()
+        long startTimeNanos = System.nanoTime()
         EntityDefinition ed = getEntityDefinition()
         ExecutionContextFactoryImpl ecfi = getEntityFacadeImpl().getEcfi()
         ExecutionContext ec = ecfi.getExecutionContext()
@@ -1282,8 +1286,8 @@ abstract class EntityValueBase implements EntityValue {
 
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "find-one", false)
         // count the artifact hit
-        ecfi.countArtifactHit("entity", "refresh", ed.getFullEntityName(), this.getPrimaryKeys(),
-                startTime, System.currentTimeMillis(), retVal ? 1L : 0L)
+        ecfi.countArtifactHit("entity", "refresh", ed.getFullEntityName(), this.getPrimaryKeys(), startTime,
+                (System.nanoTime() - startTimeNanos)/1E6, retVal ? 1L : 0L)
         // pop the ArtifactExecutionInfo to clean it up
         ec.getArtifactExecution().pop()
 

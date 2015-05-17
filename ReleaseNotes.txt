@@ -11,14 +11,31 @@ TODO
 
 New Features:
 
-TODO
+- Changed form-list macros to use HTML table elements instead of div with
+  table styles
+- ArtifactHit and ArtifactHitBin timing fields are now number-decimal
+  instead of number-integer to record sub-millisecond timing; internal
+  changes for more precise timing, also calc of standard deviation, etc;
+  existing databases may need column type changes
+- Added link.@entity-name and related attributes for convenience as an
+  alternative to display-entity or link with row-actions lookup
+- Added link.@tooltip attribute for tooltips on any link
+- The Auto Screens in the Tools app now have a link to get screen/form XML
+  for the various forms (find, CrUD) for the current entity; handy as a
+  starting point when creating a bunch of new screens for various entities
 
 Bug Fixes:
 
-TODO
+- Fixed issues with adding missing columns to database
+- The Gradle loadSave and reloadSave tasks now handle H2 files as well
+- Fixed issue with form field options in certain cases where an EntityValue
+  was pushed onto the context (which should never be done)
+- Fixed issue when a drop-down with dynamic-options depends on a field with
+  a display or display-entity widget as the hidden input did not have the
+  @id attribute needed to get the field's value
 
 ===========================================================================
-Release 1.5.2 - 2 May 2015 (estimated)
+Release 1.5.2 - 2 May 2015
 ===========================================================================
 
 Moqui Framework 1.5.2 is a minor new feature and bug fix release.

@@ -46,10 +46,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <seed-data>
             <!-- Screen Themes -->
             <moqui.basic.EnumerationType description="Screen Theme Type" enumTypeId="ScreenThemeType"/>
-            <moqui.basic.Enumeration description="Internal Applications Theme Type" enumId="STT_INTERNAL"
-                                     enumTypeId="ScreenThemeType" enumCode="DEFAULT"/>
-            <moqui.basic.Enumeration description="Public Web Site/etc Theme Type" enumId="STT_PUBLIC"
-                                     enumTypeId="ScreenThemeType"/>
+            <moqui.basic.Enumeration description="Internal Applications" enumId="STT_INTERNAL" enumTypeId="ScreenThemeType" enumCode="DEFAULT"/>
+            <moqui.basic.Enumeration description="Public Web Site/etc" enumId="STT_PUBLIC" enumTypeId="ScreenThemeType"/>
 
             <!-- Default Theme -->
             <moqui.screen.ScreenTheme screenThemeId="DEFAULT" screenThemeTypeEnumId="STT_INTERNAL"
@@ -78,6 +76,12 @@ This Work includes contributions authored by David E. Jones, not as a
             <moqui.basic.Enumeration description="HTML Body CSS Class" enumId="STRT_BODY_CLASS" enumTypeId="ScreenThemeResourceType"/>
             <moqui.basic.Enumeration description="Theme Preview Screenshot" enumId="STRT_SCREENSHOT" enumTypeId="ScreenThemeResourceType"/>
         </seed-data>
+    </entity>
+    <entity entity-name="ScreenThemeIcon" package-name="moqui.screen" cache="true">
+        <field name="screenThemeId" type="id" is-pk="true"/>
+        <field name="textPattern" type="text-medium" is-pk="true"/>
+        <field name="iconClass" type="text-medium"/>
+        <relationship type="one" related-entity-name="moqui.screen.ScreenTheme"/>
     </entity>
 
     <!-- ========================================================= -->

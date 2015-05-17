@@ -182,7 +182,16 @@ public class EntityAutoServiceRunner implements ServiceRunner {
         checkAllPkFields(ed, parameters, tempResult, newEntityValue, outParamNames)
 
         newEntityValue.setFields(parameters, true, null, false)
-        newEntityValue.create()
+        try {
+            newEntityValue.create()
+        } catch (Exception e) {
+            if (e.getMessage().contains("Unique index or primary key violation")) {
+                ArrayList<Long> bank = (ArrayList<Long>) efi.entitySequenceBankCache.get(ed.getFullEntityName())
+                EntityValue svi = efi.makeFind("moqui.entity.SequenceValueItem").condition("seqName", ed.getFullEntityName())
+                        .useCache(false).one()
+                logger.warn("======= Got PK violation, current bank is ${bank}, PK is ${newEntityValue.getPrimaryKeys()}, current SequenceValueItem: ${svi}")
+            }
+        }
 
         // NOTE: keep a separate Map of parent PK values to pass down, can't just be current record's PK fields because
         //     we allow other entities to be nested, and they may have nested records that depend ANY ancestor's PKs

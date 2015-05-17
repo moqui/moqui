@@ -42,7 +42,8 @@ This Work includes contributions authored by David E. Jones, not as a
         </container>
         <form-list name="ArtifactHitBins" list="artifactHitBinList" skip-form="true">
             <row-actions>
-                <set field="averageTime" from="hitCount ? (totalTimeMillis/hitCount as BigDecimal).setScale(0,BigDecimal.ROUND_UP) : 0"/>
+                <set field="averageTime" from="hitCount ? totalTimeMillis/hitCount : null"/>
+                <set field="stdDev" from="totalSquaredTime &amp;&amp; hitCount > 1 ? Math.sqrt((totalSquaredTime - ((totalTimeMillis*totalTimeMillis) / hitCount)).abs() / (hitCount - 1)) : null"/>
             </row-actions>
             <field name="artifactType">
                 <header-field show-order-by="true">
@@ -51,7 +52,7 @@ This Work includes contributions authored by David E. Jones, not as a
                         <option key="service"/><option key="entity"/>
                     </drop-down>
                 </header-field>
-                <default-field><display also-hidden="false"/></default-field>
+                <default-field><display/></default-field>
             </field>
             <field name="artifactSubType">
                 <header-field show-order-by="true">
@@ -63,35 +64,38 @@ This Work includes contributions authored by David E. Jones, not as a
                     </drop-down>
                 </header-field>
                 <!-- NOTE: was using this to add space to avoid wide cells: ?.replace('/',' / ') -->
-                <default-field><display text="${artifactSubType}" also-hidden="false"/></default-field>
+                <default-field><display text="${artifactSubType}"/></default-field>
             </field>
             <field name="artifactName">
                 <header-field show-order-by="true"><text-find hide-options="true" size="20"/></header-field>
                 <!-- NOTE: these replace() calls are to add spaces so that longer artifactNames can wrap instead of making the table super-wide: ?.replace('/',' / ')?.replace(' /  / ', '//')?.replace('.',' . ') -->
-                <default-field><display text="${artifactName}" also-hidden="false"/></default-field>
+                <default-field><display text="${artifactName}"/></default-field>
             </field>
             <field name="binStartDateTime">
                 <header-field title="Bin Start" show-order-by="true"><text-find hide-options="true" size="15"/></header-field>
-                <default-field><display also-hidden="false"/></default-field>
+                <default-field><display/></default-field>
             </field>
             <field name="hitCount">
                 <header-field title="Hits" show-order-by="true"/>
-                <default-field><display also-hidden="false"/></default-field>
-            </field>
-            <field name="minTimeMillis">
-                <header-field title="Min" show-order-by="true"/>
-                <default-field><display also-hidden="false"/></default-field>
-            </field>
-            <field name="averageTime">
-                <default-field title="Avg"><display also-hidden="false"/></default-field>
-            </field>
-            <field name="maxTimeMillis">
-                <header-field title="Max" show-order-by="true"/>
-                <default-field><display also-hidden="false"/></default-field>
+                <default-field><display/></default-field>
             </field>
             <field name="totalTimeMillis">
                 <header-field title="Total" show-order-by="true"/>
-                <default-field><display also-hidden="false"/></default-field>
+                <default-field><display/></default-field>
+            </field>
+            <field name="minTimeMillis">
+                <header-field title="Min" show-order-by="true"/>
+                <default-field><display/></default-field>
+            </field>
+            <field name="maxTimeMillis">
+                <header-field title="Max" show-order-by="true"/>
+                <default-field><display/></default-field>
+            </field>
+            <field name="averageTime"><default-field title="Avg"><display/></default-field></field>
+            <field name="stdDev"><default-field title="Std Dev"><display/></default-field></field>
+            <field name="slowHitCount">
+                <header-field title="Slow Hits" show-order-by="true"/>
+                <default-field><display/></default-field>
             </field>
             <field name="find"><header-field title="Find"><submit/></header-field></field>
         </form-list>

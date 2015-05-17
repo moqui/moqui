@@ -153,6 +153,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         if (logger.traceEnabled) logger.trace("Calling service [${getServiceName()}] initial input: ${currentParameters}")
 
         long callStartTime = System.currentTimeMillis()
+        long startTimeNanos = System.nanoTime()
 
         // get these before cleaning up the parameters otherwise will be removed
         String userId = ((Map) currentParameters.authUserAccount)?.userId ?: currentParameters.authUsername
@@ -202,9 +203,10 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
             if (isEntityAutoPattern()) {
                 Map result = runImplicitEntityAuto(currentParameters, eci)
 
-                long endTime = System.currentTimeMillis()
-                if (logger.traceEnabled) logger.trace("Finished call to service [${getServiceName()}] in ${(endTime-callStartTime)/1000} seconds")
-                sfi.getEcfi().countArtifactHit("service", "entity-implicit", getServiceName(), currentParameters, callStartTime, endTime, null)
+                double runningTimeMillis = (System.nanoTime() - startTimeNanos)/1E6
+                if (logger.traceEnabled) logger.trace("Finished call to service [${getServiceName()}] in ${(runningTimeMillis)/1000} seconds")
+                sfi.getEcfi().countArtifactHit("service", "entity-implicit", getServiceName(), currentParameters,
+                        callStartTime, runningTimeMillis, null)
 
                 eci.artifactExecution.pop()
                 return result
@@ -317,10 +319,11 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                 logger.error("Error logging out user after call to service [${getServiceName()}]", t)
             }
 
-            long endTime = System.currentTimeMillis()
-            sfi.getEcfi().countArtifactHit("service", serviceType, getServiceName(), currentParameters, callStartTime, endTime, null)
+            double runningTimeMillis = (System.nanoTime() - startTimeNanos)/1E6
+            sfi.getEcfi().countArtifactHit("service", serviceType, getServiceName(), currentParameters, callStartTime,
+                    runningTimeMillis, null)
 
-            if (logger.traceEnabled) logger.trace("Finished call to service [${getServiceName()}] in ${(endTime-callStartTime)/1000} seconds" + (eci.getMessage().hasError() ? " with ${eci.getMessage().getErrors().size() + eci.getMessage().getValidationErrors().size()} error messages" : ", was successful"))
+            if (logger.traceEnabled) logger.trace("Finished call to service [${getServiceName()}] in ${(runningTimeMillis)/1000} seconds" + (eci.getMessage().hasError() ? " with ${eci.getMessage().getErrors().size() + eci.getMessage().getValidationErrors().size()} error messages" : ", was successful"))
         }
 
         // all done so pop the artifact info; don't bother making sure this is done on errors/etc like in a finally clause because if there is an error this will help us know how we got there

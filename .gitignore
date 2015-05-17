@@ -9,6 +9,7 @@ build/
 /SaveTenant.zip
 /SaveTransactional.zip
 /SaveAnalytical.zip
+/SaveH2.zip
 /SaveOrientDb.zip
 /SaveElasticSearch.zip
 

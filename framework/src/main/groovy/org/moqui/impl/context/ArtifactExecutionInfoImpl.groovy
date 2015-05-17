@@ -16,6 +16,8 @@ import org.moqui.context.ArtifactExecutionInfo
 import org.moqui.entity.EntityValue
 import org.moqui.impl.StupidUtilities
 
+import java.math.RoundingMode
+
 class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
 
     protected final String name
@@ -30,16 +32,16 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
     //protected Exception createdLocation = null
     protected ArtifactExecutionInfoImpl parentAeii = null
     protected long startTime
-    protected Long endTime = null
+    protected long endTime = 0
     protected List<ArtifactExecutionInfoImpl> childList = []
-    protected Long childrenRunningTime = null
+    protected long childrenRunningTime = 0
 
     ArtifactExecutionInfoImpl(String name, String typeEnumId, String actionEnumId) {
         this.name = name
         this.typeEnumId = typeEnumId
         this.actionEnumId = actionEnumId ?: "AUTHZA_ALL"
         //createdLocation = new Exception("Create AEII location for ${name}, type ${typeEnumId}, action ${actionEnumId}")
-        this.startTime = System.currentTimeMillis()
+        this.startTime = System.nanoTime()
     }
 
     @CompileStatic
@@ -93,9 +95,10 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
         this.authorizationInheritable = aeii.authorizationInheritable
     }
 
-    void setEndTime() { this.endTime = System.currentTimeMillis() }
+    @CompileStatic
+    void setEndTime() { this.endTime = System.nanoTime() }
     @Override
-    long getRunningTime() { return endTime != null ? endTime - startTime : 0 }
+    long getRunningTime() { return endTime != 0 ? endTime - startTime : 0 }
     void calcChildTime(boolean recurse) {
         childrenRunningTime = 0
         for (ArtifactExecutionInfoImpl aeii in childList) {
@@ -107,9 +110,13 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
     long getThisRunningTime() { return getRunningTime() - getChildrenRunningTime() }
     @Override
     long getChildrenRunningTime() {
-        if (childrenRunningTime == null) calcChildTime(false)
+        if (childrenRunningTime == 0) calcChildTime(false)
         return childrenRunningTime ?: 0
     }
+
+    BigDecimal getRunningTimeMillis() { new BigDecimal(getRunningTime()).movePointLeft(6).setScale(2, RoundingMode.HALF_UP) }
+    BigDecimal getThisRunningTimeMillis() { new BigDecimal(getThisRunningTime()).movePointLeft(6).setScale(2, RoundingMode.HALF_UP) }
+    BigDecimal getChildrenRunningTimeMillis() { new BigDecimal(getChildrenRunningTime()).movePointLeft(6).setScale(2, RoundingMode.HALF_UP) }
 
     @CompileStatic
     void setParent(ArtifactExecutionInfoImpl parentAeii) { this.parentAeii = parentAeii }
@@ -117,7 +124,7 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
     @CompileStatic
     ArtifactExecutionInfo getParent() { return parentAeii }
     @Override
-    BigDecimal getPercentOfParentTime() { parentAeii && endTime ?
+    BigDecimal getPercentOfParentTime() { parentAeii && endTime != 0 ?
         (((getRunningTime() / parentAeii.getRunningTime()) * 100) as BigDecimal).setScale(2, BigDecimal.ROUND_HALF_UP) : 0 }
 
 
@@ -129,9 +136,9 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
     void print(Writer writer, int level, boolean children) {
         for (int i = 0; i < (level * 2); i++) writer.append(' ')
         writer.append('[').append(parentAeii ? StupidUtilities.paddedString(getPercentOfParentTime() as String, 5, false) : '     ').append('%]')
-        writer.append('[').append(StupidUtilities.paddedString(getRunningTime() as String, 5, false)).append(']')
-        writer.append('[').append(StupidUtilities.paddedString(getThisRunningTime() as String, 3, false)).append(']')
-        writer.append('[').append(childList ? StupidUtilities.paddedString(getChildrenRunningTime() as String, 3, false) : '   ').append('] ')
+        writer.append('[').append(StupidUtilities.paddedString(getRunningTimeMillis() as String, 5, false)).append(']')
+        writer.append('[').append(StupidUtilities.paddedString(getThisRunningTimeMillis() as String, 3, false)).append(']')
+        writer.append('[').append(childList ? StupidUtilities.paddedString(getChildrenRunningTimeMillis() as String, 3, false) : '   ').append('] ')
         writer.append(StupidUtilities.paddedString(ArtifactExecutionFacadeImpl.artifactTypeDescriptionMap.get(typeEnumId), 10, true)).append(' ')
         writer.append(StupidUtilities.paddedString(ArtifactExecutionFacadeImpl.artifactActionDescriptionMap.get(actionEnumId), 7, true)).append(' ')
         writer.append(StupidUtilities.paddedString(actionDetail, 5, true)).append(' ')
@@ -152,9 +159,9 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
         // in some cases we get REALLY long times before the system is warmed, knock those out
         for (Map val in hotSpotList) {
             int knockOutCount = 0
-            List<Long> newTimes = []
+            List<BigDecimal> newTimes = []
             def timeAvg = val.timeAvg
-            for (Long time in val.times) {
+            for (BigDecimal time in val.times) {
                 // this ain't no standard deviation, but consider 3 times average to be abnormal
                 if (time > (timeAvg * 3)) {
                     knockOutCount++
@@ -164,12 +171,12 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
             }
             if (knockOutCount > 0) {
                 // calc new average, add knockOutCount times to fill in gaps, calc new time total
-                long newTotal = 0
-                long newMax = 0
-                for (long time in newTimes) { newTotal += time; if (time > newMax) newMax = time }
+                BigDecimal newTotal = 0
+                BigDecimal newMax = 0
+                for (BigDecimal time in newTimes) { newTotal += time; if (time > newMax) newMax = time }
                 BigDecimal newAvg = ((newTotal / newTimes.size()) as BigDecimal).setScale(2, BigDecimal.ROUND_HALF_UP)
-                long newTimeAvg = newAvg.setScale(0, BigDecimal.ROUND_HALF_UP)
-                newTotal += newTimeAvg * knockOutCount
+                // long newTimeAvg = newAvg.setScale(0, BigDecimal.ROUND_HALF_UP)
+                newTotal += newAvg * knockOutCount
                 val.time = newTotal
                 val.timeMax = newMax
                 val.timeAvg = newAvg
@@ -182,7 +189,7 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
     void addToMapByTime(Map<String, Map> timeByArtifact, boolean ownTime) {
         String key = getKeyString()
         Map val = timeByArtifact.get(key)
-        long curTime = ownTime ? getThisRunningTime() : getRunningTime()
+        BigDecimal curTime = ownTime ? getThisRunningTimeMillis() : getRunningTimeMillis()
         if (val == null) {
             timeByArtifact.put(key, [times:[curTime], time:curTime, timeMin:curTime, timeMax:curTime, timeAvg:curTime,
                     count:1, name:name, actionDetail:actionDetail,
@@ -191,22 +198,31 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
         } else {
             val = timeByArtifact[key]
             val.count = val.count + 1
-            val.times.add(curTime)
-            val.time = val.time + curTime
-            val.timeMin = val.timeMin > curTime ? curTime : val.timeMin
-            val.timeMax = val.timeMax > curTime ? val.timeMax : curTime
-            val.timeAvg = ((val.time / val.count) as BigDecimal).setScale(2, BigDecimal.ROUND_HALF_UP)
+            if (val.count == 2 && val.times[0] > (curTime * 3)) {
+                // if the first is much higher than the 2nd, use the 2nd for both
+                val.times = [curTime, curTime]
+                val.time = curTime + curTime
+                val.timeMin = curTime
+                val.timeMax = curTime
+                val.timeAvg = curTime
+            } else {
+                val.times.add(curTime)
+                val.time = val.time + curTime
+                val.timeMin = val.timeMin > curTime ? curTime : val.timeMin
+                val.timeMax = val.timeMax > curTime ? val.timeMax : curTime
+                val.timeAvg = ((val.time / val.count) as BigDecimal).setScale(2, BigDecimal.ROUND_HALF_UP)
+            }
         }
         for (ArtifactExecutionInfoImpl aeii in childList) aeii.addToMapByTime(timeByArtifact, ownTime)
     }
     static void printHotSpotList(Writer writer, List<Map> infoList) {
         // "[${time}:${timeMin}:${timeAvg}:${timeMax}][${count}] ${type} ${action} ${actionDetail} ${name}"
         for (Map info in infoList) {
-            writer.append('[').append(StupidUtilities.paddedString(info.time as String, 5, false)).append(':')
-            writer.append(StupidUtilities.paddedString(info.timeMin as String, 3, false)).append(':')
-            writer.append(StupidUtilities.paddedString(info.timeAvg as String, 5, false)).append(':')
-            writer.append(StupidUtilities.paddedString(info.timeMax as String, 3, false)).append(']')
-            writer.append('[').append(StupidUtilities.paddedString(info.count as String, 3, false)).append('] ')
+            writer.append('[').append(StupidUtilities.paddedString(info.time as String, 8, false)).append(':')
+            writer.append(StupidUtilities.paddedString(info.timeMin as String, 7, false)).append(':')
+            writer.append(StupidUtilities.paddedString(info.timeAvg as String, 7, false)).append(':')
+            writer.append(StupidUtilities.paddedString(info.timeMax as String, 7, false)).append(']')
+            writer.append('[').append(StupidUtilities.paddedString(info.count as String, 4, false)).append('] ')
             writer.append(StupidUtilities.paddedString((String) info.type, 10, true)).append(' ')
             writer.append(StupidUtilities.paddedString((String) info.action, 7, true)).append(' ')
             writer.append(StupidUtilities.paddedString((String) info.actionDetail, 5, true)).append(' ')
@@ -225,7 +241,7 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
         String key = getKeyString()
         Map artifactMap = flatMap.get(key)
         if (artifactMap == null) {
-            artifactMap = [time:getRunningTime(), thisTime:getThisRunningTime(), childrenTime:getChildrenRunningTime(),
+            artifactMap = [time:getRunningTimeMillis(), thisTime:getThisRunningTimeMillis(), childrenTime:getChildrenRunningTimeMillis(),
                     count:1, name:name, actionDetail:actionDetail, childInfoList:[], key:key,
                     type:ArtifactExecutionFacadeImpl.artifactTypeDescriptionMap.get(typeEnumId),
                     action:ArtifactExecutionFacadeImpl.artifactActionDescriptionMap.get(actionEnumId)]
@@ -237,9 +253,9 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
             }
         } else {
             artifactMap.count = artifactMap.count + 1
-            artifactMap.time = artifactMap.time + getRunningTime()
-            artifactMap.thisTime = artifactMap.thisTime + getThisRunningTime()
-            artifactMap.childrenTime = artifactMap.childrenTime + getChildrenRunningTime()
+            artifactMap.time = artifactMap.time + getRunningTimeMillis()
+            artifactMap.thisTime = artifactMap.thisTime + getThisRunningTimeMillis()
+            artifactMap.childrenTime = artifactMap.childrenTime + getChildrenRunningTimeMillis()
             if (parentArtifactMap != null) {
                 // is the current artifact in the current parent's child list? if not add it (a given artifact may be under multiple parents, normal)
                 boolean foundMap = false
@@ -259,10 +275,10 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
         // "[${time}:${thisTime}:${childrenTime}][${count}] ${type} ${action} ${actionDetail} ${name}"
         for (Map info in infoList) {
             for (int i = 0; i < level; i++) writer.append('|').append(' ')
-            writer.append('[').append(StupidUtilities.paddedString(info.time as String, 5, false)).append(':')
-            writer.append(StupidUtilities.paddedString(info.thisTime as String, 3, false)).append(':')
-            writer.append(StupidUtilities.paddedString(info.childrenTime as String, 3, false)).append(']')
-            writer.append('[').append(StupidUtilities.paddedString(info.count as String, 3, false)).append('] ')
+            writer.append('[').append(StupidUtilities.paddedString(info.time as String, 8, false)).append(':')
+            writer.append(StupidUtilities.paddedString(info.thisTime as String, 6, false)).append(':')
+            writer.append(StupidUtilities.paddedString(info.childrenTime as String, 6, false)).append(']')
+            writer.append('[').append(StupidUtilities.paddedString(info.count as String, 4, false)).append('] ')
             writer.append(StupidUtilities.paddedString((String) info.type, 10, true)).append(' ')
             writer.append(StupidUtilities.paddedString((String) info.action, 7, true)).append(' ')
             writer.append(StupidUtilities.paddedString((String) info.actionDetail, 5, true)).append(' ')

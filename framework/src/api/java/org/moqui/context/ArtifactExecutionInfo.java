@@ -29,9 +29,12 @@ public interface ArtifactExecutionInfo {
     boolean isAuthorizationInheritable();
 
     long getRunningTime();
-    List<ArtifactExecutionInfo> getChildList();
+    BigDecimal getRunningTimeMillis();
     long getThisRunningTime();
+    BigDecimal getThisRunningTimeMillis();
     long getChildrenRunningTime();
+    BigDecimal getChildrenRunningTimeMillis();
+    List<ArtifactExecutionInfo> getChildList();
     ArtifactExecutionInfo getParent();
     BigDecimal getPercentOfParentTime();
 

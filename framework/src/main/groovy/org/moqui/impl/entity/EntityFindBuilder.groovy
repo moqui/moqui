@@ -124,8 +124,9 @@ class EntityFindBuilder extends EntityQueryBuilder {
         // find the a link back one in the set
         Node memberEntityNode = (Node) entityNode.get("member-entity").find({ ((Node) it).attributes().get('entity-alias') == searchEntityAlias })
         if (memberEntityNode == null)
-            throw new EntityException("Could not find member-entity with entity-alias [${searchEntityAlias}] in entity [${entityNode.attributes().get('entity-name')}]")
+            throw new EntityException("Could not find member-entity with entity-alias [${searchEntityAlias}] in view-entity [${entityNode.attributes().get('entity-name')}]")
         String joinFromAlias = memberEntityNode.attributes().get('join-from-alias')
+        if (!joinFromAlias) throw new EntityException("In view-entity [${entityNode.attributes().get('entity-name')}] the member-entity for entity-alias [${searchEntityAlias}] has no join-from-alias and is not the first member-entity")
         if (entityAliasesJoinedInSet.contains(joinFromAlias)) {
             entityAliasesJoinedInSet.add(searchEntityAlias)
             entityAliasUsedSet.add(joinFromAlias)

@@ -40,9 +40,10 @@ This Work includes contributions authored by David E. Jones, not as a
             <link url="ArtifactHitSummaryStats.xml" text="Get as XML" target-window="_blank" expand-transition-url="false"/>
             <link url="ArtifactHitSummaryStats.pdf" text="Get as PDF" target-window="_blank"/>
         </container>
-        <form-list name="ArtifactHitSummaryList" list="artifactHitReportList">
+        <form-list name="ArtifactHitSummaryList" list="artifactHitReportList" skip-form="true">
             <row-actions>
-                <set field="averageTime" from="(totalTimeMillis/hitCount as BigDecimal).setScale(0,BigDecimal.ROUND_UP)"/>
+                <set field="averageTime" from="hitCount ? totalTimeMillis/hitCount : null"/>
+                <set field="stdDev" from="totalSquaredTime &amp;&amp; hitCount > 1 ? Math.sqrt((totalSquaredTime - ((totalTimeMillis*totalTimeMillis) / hitCount)).abs() / (hitCount - 1)) : null"/>
             </row-actions>
 
             <field name="artifactType">
@@ -52,31 +53,50 @@ This Work includes contributions authored by David E. Jones, not as a
                         <option key="service"/><option key="entity"/>
                     </drop-down>
                 </header-field>
-                <default-field><display also-hidden="false"/></default-field>
+                <default-field><display/></default-field>
+            </field>
+            <field name="artifactSubType">
+                <header-field show-order-by="true">
+                    <drop-down allow-empty="true">
+                        <option key="one"/><option key="list"/><option key="iterator"/><option key="count"/>
+                        <option key="create"/><option key="update"/><option key="delete"/><option key="refresh"/>
+                        <option key="entity-auto"/><option key="entity-implicit"/><option key="inline"/>
+                        <option key="script"/><option key="java"/>
+                    </drop-down>
+                </header-field>
+                <!-- NOTE: was using this to add space to avoid wide cells: ?.replace('/',' / ') -->
+                <default-field><display text="${artifactSubType}"/></default-field>
             </field>
             <field name="artifactName">
                 <header-field show-order-by="true"><text-find hide-options="true" size="20"/></header-field>
                 <!-- NOTE: these replace() calls are to add spaces so that longer artifactNames can wrap instead of making the table super-wide: .replace('/',' / ').replace(' /  / ', '//').replace('.',' . ') -->
-                <default-field><display text="${artifactName}" also-hidden="false"/></default-field>
+                <default-field><display text="${artifactName}"/></default-field>
             </field>
             <field name="lastHitDateTime">
                 <header-field title="Last Hit" show-order-by="true"/>
-                <default-field><display also-hidden="false"/></default-field>
+                <default-field><display/></default-field>
             </field>
             <field name="hitCount">
                 <header-field title="Hits" show-order-by="true"/>
-                <default-field><display also-hidden="false"/></default-field>
+                <default-field><display/></default-field>
+            </field>
+            <field name="totalTimeMillis">
+                <header-field title="Total" show-order-by="true"/>
+                <default-field><display/></default-field>
             </field>
             <field name="minTimeMillis">
                 <header-field title="Min" show-order-by="true"/>
-                <default-field><display also-hidden="false"/></default-field>
-            </field>
-            <field name="averageTime">
-                <default-field title="Avg"><display also-hidden="false"/></default-field>
+                <default-field><display/></default-field>
             </field>
             <field name="maxTimeMillis">
                 <header-field title="Max" show-order-by="true"/>
-                <default-field><display also-hidden="false"/></default-field>
+                <default-field><display/></default-field>
+            </field>
+            <field name="averageTime"><default-field title="Avg"><display/></default-field></field>
+            <field name="stdDev"><default-field title="Std Dev"><display/></default-field></field>
+            <field name="slowHitCount">
+                <header-field title="Slow Hits" show-order-by="true"/>
+                <default-field><display/></default-field>
             </field>
             <field name="find"><header-field title="Find"><submit/></header-field></field>
         </form-list>

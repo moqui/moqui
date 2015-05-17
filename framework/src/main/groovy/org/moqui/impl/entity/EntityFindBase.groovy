@@ -510,6 +510,7 @@ abstract class EntityFindBase implements EntityFind {
         if (this.dynamicView) throw new IllegalArgumentException("Dynamic View not supported for 'one' find.")
 
         long startTime = System.currentTimeMillis()
+        long startTimeNanos = System.nanoTime()
         EntityDefinition ed = this.getEntityDef()
         Node entityNode = ed.getEntityNode()
         ExecutionContext ec = efi.getEcfi().getExecutionContext()
@@ -588,7 +589,8 @@ abstract class EntityFindBase implements EntityFind {
         // final ECA trigger
         // find EECA rules deprecated, not worth performance hit: efi.runEecaRules(ed.getFullEntityName(), newEntityValue, "find-one", false)
         // count the artifact hit
-        efi.ecfi.countArtifactHit("entity", "one", ed.getFullEntityName(), simpleAndMap, startTime, System.currentTimeMillis(), newEntityValue ? 1L : 0L)
+        efi.ecfi.countArtifactHit("entity", "one", ed.getFullEntityName(), simpleAndMap, startTime,
+                (System.nanoTime() - startTimeNanos)/1E6, newEntityValue ? 1L : 0L)
         // pop the ArtifactExecutionInfo
         ec.getArtifactExecution().pop()
 
@@ -622,6 +624,7 @@ abstract class EntityFindBase implements EntityFind {
     }
     protected EntityList listInternal() throws EntityException {
         long startTime = System.currentTimeMillis()
+        long startTimeNanos = System.nanoTime()
         EntityDefinition ed = this.getEntityDef()
         Node entityNode = ed.getEntityNode()
         ExecutionContext ec = efi.getEcfi().getExecutionContext()
@@ -718,7 +721,7 @@ abstract class EntityFindBase implements EntityFind {
         // find EECA rules deprecated, not worth performance hit: efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-list", false)
         // count the artifact hit
         efi.ecfi.countArtifactHit("entity", "list", ed.getFullEntityName(), simpleAndMap, startTime,
-                System.currentTimeMillis(), el ? (long) el.size() : 0L)
+                (System.nanoTime() - startTimeNanos)/1E6, el ? (long) el.size() : 0L)
         // pop the ArtifactExecutionInfo
         ec.getArtifactExecution().pop()
 
@@ -736,6 +739,7 @@ abstract class EntityFindBase implements EntityFind {
     }
     protected EntityListIterator iteratorInternal() throws EntityException {
         long startTime = System.currentTimeMillis()
+        long startTimeNanos = System.nanoTime()
         EntityDefinition ed = this.getEntityDef()
         Node entityNode = ed.getEntityNode()
         ExecutionContext ec = efi.getEcfi().getExecutionContext()
@@ -808,7 +812,8 @@ abstract class EntityFindBase implements EntityFind {
 
         // find EECA rules deprecated, not worth performance hit: efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-iterator", false)
         // count the artifact hit
-        efi.ecfi.countArtifactHit("entity", "iterator", ed.getFullEntityName(), simpleAndMap, startTime, System.currentTimeMillis(), null)
+        efi.ecfi.countArtifactHit("entity", "iterator", ed.getFullEntityName(), simpleAndMap, startTime,
+                (System.nanoTime() - startTimeNanos)/1E6, null)
         // pop the ArtifactExecutionInfo
         ec.getArtifactExecution().pop()
 
@@ -829,6 +834,7 @@ abstract class EntityFindBase implements EntityFind {
     }
     protected long countInternal() throws EntityException {
         long startTime = System.currentTimeMillis()
+        long startTimeNanos = System.nanoTime()
         EntityDefinition ed = this.getEntityDef()
         Node entityNode = ed.getEntityNode()
         ExecutionContext ec = efi.getEcfi().getExecutionContext()
@@ -885,7 +891,8 @@ abstract class EntityFindBase implements EntityFind {
 
         // find EECA rules deprecated, not worth performance hit: efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-count", false)
         // count the artifact hit
-        efi.ecfi.countArtifactHit("entity", "count", ed.getFullEntityName(), simpleAndMap, startTime, System.currentTimeMillis(), count)
+        efi.ecfi.countArtifactHit("entity", "count", ed.getFullEntityName(), simpleAndMap, startTime,
+                (System.nanoTime() - startTimeNanos)/1E6, count)
         // pop the ArtifactExecutionInfo
         ec.getArtifactExecution().pop()
 
