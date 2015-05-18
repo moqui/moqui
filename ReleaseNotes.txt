@@ -23,6 +23,8 @@ New Features:
 - The Auto Screens in the Tools app now have a link to get screen/form XML
   for the various forms (find, CrUD) for the current entity; handy as a
   starting point when creating a bunch of new screens for various entities
+- Entity Data Loader class, command line, and DataImport screen now support
+  a list of components name to load data from by data type
 
 Bug Fixes:
 
