@@ -1040,8 +1040,6 @@ abstract class EntityValueBase implements EntityValue {
         ExecutionContextFactoryImpl ecfi = getEntityFacadeImpl().getEcfi()
         ExecutionContext ec = ecfi.getExecutionContext()
 
-        if (ed.createOnly()) throw new EntityException("Entity [${getEntityName()}] is create-only (immutable), cannot be updated.")
-
         String authorizeSkip = ed.entityNode.attributes().get('authorize-skip')
         ec.getArtifactExecution().push(
                 new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_UPDATE").setParameters(valueMap),
@@ -1059,7 +1057,7 @@ abstract class EntityValueBase implements EntityValue {
         List entityInfoList = doDataFeed() ? getEntityFacadeImpl().getEntityDataFeed().getDataFeedEntityInfoList(ed.getFullEntityName()) : []
 
         EntityValueImpl refreshedValue = null
-        if (ed.needsAuditLog() || entityInfoList || ed.getEntityNode().attributes().get('optimistic-lock') == "true") {
+        if (ed.needsAuditLog() || ed.createOnly() || entityInfoList || ed.getEntityNode().attributes().get('optimistic-lock') == "true") {
             refreshedValue = (EntityValueImpl) this.clone()
             refreshedValue.refresh()
         }
@@ -1072,16 +1070,17 @@ abstract class EntityValueBase implements EntityValue {
         int size = fieldNameList.size()
         for (int i = 0; i < size; i++) {
             String fieldName = fieldNameList.get(i)
-            if (valueMap.containsKey(fieldName) &&
-                    (!dbValueMapFromDb || valueMap.get(fieldName) != dbValueMap.get(fieldName))) {
+            if (valueMap.containsKey(fieldName) && valueMap.get(fieldName) != oldValues.get(fieldName))
                 nonPkFieldList.add(fieldName)
-            }
         }
         // logger.warn("================ evb.update() ${getEntityName()} nonPkFieldList=${nonPkFieldList};\nvalueMap=${valueMap};\ndbValueMap=${dbValueMap}")
         if (!nonPkFieldList) {
             if (logger.isTraceEnabled()) logger.trace((String) "Not doing update on entity with no populated non-PK fields; entity=" + this.toString())
             return this
         }
+
+        // do this after the empty nonPkFieldList check so that if nothing has changed then ignore the attempt to update
+        if (ed.createOnly()) throw new EntityException("Entity [${getEntityName()}] is create-only (immutable), cannot be updated.")
 
         if (ed.getEntityNode().attributes().get('optimistic-lock') == "true") {
             if (getTimestamp("lastUpdatedStamp") != refreshedValue.getTimestamp("lastUpdatedStamp"))
