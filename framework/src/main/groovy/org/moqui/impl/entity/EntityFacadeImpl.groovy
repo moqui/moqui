@@ -269,7 +269,7 @@ class EntityFacadeImpl implements EntityFacade {
     List<ResourceReference> getAllEntityFileLocations() {
         List<ResourceReference> entityRrList = new LinkedList()
         entityRrList.addAll(getConfEntityFileLocations())
-        entityRrList.addAll(getComponentEntityFileLocations())
+        entityRrList.addAll(getComponentEntityFileLocations(null))
         return entityRrList
     }
     List<ResourceReference> getConfEntityFileLocations() {
@@ -282,12 +282,21 @@ class EntityFacadeImpl implements EntityFacade {
 
         return entityRrList
     }
-    List<ResourceReference> getComponentEntityFileLocations() {
+    List<ResourceReference> getComponentEntityFileLocations(List<String> componentNameList) {
         List<ResourceReference> entityRrList = new LinkedList()
 
+        List<String> componentBaseLocations
+        if (componentNameList) {
+            componentBaseLocations = []
+            for (String cn in componentNameList)
+                componentBaseLocations.add(ecfi.getComponentBaseLocations().get(cn))
+        } else {
+            componentBaseLocations = new ArrayList(ecfi.getComponentBaseLocations().values())
+        }
+
         // loop through components look for XML files in the entity directory, check each for "<entities>" root element
-        for (String location in this.ecfi.getComponentBaseLocations().values()) {
-            ResourceReference entityDirRr = this.ecfi.resourceFacade.getLocationReference(location + "/entity")
+        for (String location in componentBaseLocations) {
+            ResourceReference entityDirRr = ecfi.resourceFacade.getLocationReference(location + "/entity")
             if (entityDirRr.supportsAll()) {
                 // if directory doesn't exist skip it, component doesn't have an entity directory
                 if (!entityDirRr.exists || !entityDirRr.isDirectory()) continue
