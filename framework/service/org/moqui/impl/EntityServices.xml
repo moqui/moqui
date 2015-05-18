@@ -283,6 +283,13 @@ This Work includes contributions authored by David E. Jones, not as a
             <parameter name="copyLinks" default="false" type="Boolean"/>
         </in-parameters>
         <actions>
+            <entity-find-one entity-name="moqui.entity.document.DataDocument" value-field="newDataDocument" cache="false">
+                <field-map field-name="dataDocumentId" from="newDataDocumentId"/></entity-find-one>
+            <if condition="newDataDocument">
+                <log level="info" message="Not cloning DataDocument with ID [${dataDocumentId}] to new ID [${newDataDocumentId}], already exists"/>
+                <return/>
+            </if>
+
             <entity-find-one entity-name="moqui.entity.document.DataDocument" value-field="dataDocument" cache="false"/>
             <set field="dataDocument.dataDocumentId" from="newDataDocumentId"/>
             <set field="dataDocument.indexName" from="newIndexName"/>
