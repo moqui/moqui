@@ -137,7 +137,9 @@ return;
     <#else>
         ${.node["@list"]} = ${.node["@list"]}_xafind.list()
         <#if useCache>
-            <#list .node["date-filter"] as df>${.node["@list"]} = ${.node["@list"]}.filterByDate("${df["@from-field-name"]?default("fromDate")}", "${df["@thru-field-name"]?default("thruDate")}", <#if df["@valid-date"]?has_content>${df["@valid-date"]} as Timestamp<#else>null</#if>, ${df["@ignore-if-empty"]?default("false")})</#list>
+            <#list .node["date-filter"] as df>
+                ${.node["@list"]} = ${.node["@list"]}.filterByDate("${df["@from-field-name"]?default("fromDate")}", "${df["@thru-field-name"]?default("thruDate")}", <#if df["@valid-date"]?has_content>${df["@valid-date"]} as Timestamp<#else>null</#if>, ${df["@ignore-if-empty"]?default("false")})
+            </#list>
             <#if doPaginate>
                 <#-- get the Count after the date-filter, but before the limit/pagination filter -->
                 ${.node["@list"]}Count = ${.node["@list"]}.size()
