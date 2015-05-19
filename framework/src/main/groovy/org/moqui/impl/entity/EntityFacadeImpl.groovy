@@ -841,6 +841,10 @@ class EntityFacadeImpl implements EntityFacade {
     @CompileStatic
     boolean isEntityDefined(String entityName) {
         if (!entityName) return false
+
+        // Special treatment for framework entities, quick Map lookup (also faster than Cache get)
+        if (frameworkEntityDefinitions.containsKey(entityName)) return true
+
         // Optimization, common case: if it's in the location cache it is exists, even if expired; if it isn't there
         //     doesn't necessarily mean it isn't defined, so then do more
         List locationList = (List) entityLocationCache.get(entityName)
