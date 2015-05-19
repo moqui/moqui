@@ -11,6 +11,7 @@
  */
 
 allprojects { version = '1.5.3' }
+defaultTasks 'build'
 
 def tomcatHome = '../apache-tomcat-8.0.21'
 def warName = 'moqui-' + version + '.war'
@@ -22,16 +23,9 @@ def moquiRuntime = 'runtime'
 def moquiConfDev = 'conf/MoquiDevConf.xml'
 def moquiConfProduction = 'conf/MoquiProductionConf.xml'
 
-def allBuildTasks = []
-def allCleanTasks = []
-allprojects {
-    afterEvaluate { project ->
-        for (def task in project.tasks) {
-            if (task.name == 'build') allBuildTasks.add(task)
-            if (task.name == 'clean') allCleanTasks.add(task)
-        }
-    }
-}
+def allCleanTasks = getTasksByName('clean', true)
+def allBuildTasks = getTasksByName('build', true)
+
 // ========== clean tasks ==========
 
 task clean(type: Delete) { delete file(warName); delete file(execTempDir) }
@@ -86,6 +80,7 @@ task runProduction(type: JavaExec) {
 
 // use user-specified command line args like: "gradle load -Ptypes=seed -PtenantId=EXAMPLE1"
 task load(type: JavaExec) {
+    println 'allBuildTasks: ' + allBuildTasks
     dependsOn allBuildTasks
     workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=192m']; maxHeapSize = '512M'
     systemProperties = ['moqui.conf':moquiConfDev, 'moqui.runtime':moquiRuntime]
