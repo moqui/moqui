@@ -64,15 +64,18 @@ class EntityValueImpl extends EntityValueBase {
             StringBuilder values = new StringBuilder()
 
             int size = fieldList.size()
+            ArrayList<EntityDefinition.FieldInfo> fieldInfoList = new ArrayList<>(size)
             for (int i = 0; i < size; i++) {
                 String fieldName = fieldList.get(i)
+                EntityDefinition.FieldInfo fieldInfo = ed.getFieldInfo(fieldName)
+                fieldInfoList.add(fieldInfo)
                 if (isFirstField) {
                     isFirstField = false
                 } else {
                     sql.append(", ")
                     values.append(", ")
                 }
-                sql.append(ed.getColumnName(fieldName, false))
+                sql.append(fieldInfo.getFullColumnName(false))
                 values.append('?')
             }
             sql.append(") VALUES (").append(values.toString()).append(')')
@@ -83,8 +86,9 @@ class EntityValueImpl extends EntityValueBase {
                 if (con != null) eqb.useConnection(con) else eqb.makeConnection()
                 eqb.makePreparedStatement()
                 for (int i = 0; i < size; i++) {
-                    String fieldName = fieldList.get(i)
-                    eqb.setPreparedStatementValue(i+1, getValueMap().get(fieldName), getEntityDefinition().getFieldInfo(fieldName))
+                    EntityDefinition.FieldInfo fieldInfo = fieldInfoList.get(i)
+                    String fieldName = fieldInfo.name
+                    eqb.setPreparedStatementValue(i+1, getValueMap().get(fieldName), fieldInfo)
                 }
                 eqb.executeUpdate()
                 setSyncedWithDb()
@@ -111,20 +115,20 @@ class EntityValueImpl extends EntityValueBase {
             int size = nonPkFieldList.size()
             for (int i = 0; i < size; i++) {
                 String fieldName = nonPkFieldList.get(i)
+                EntityDefinition.FieldInfo fieldInfo = ed.getFieldInfo(fieldName)
                 if (isFirstField) isFirstField = false else sql.append(", ")
-                sql.append(ed.getColumnName(fieldName, false)).append("=?")
-                eqb.getParameters().add(new EntityConditionParameter(ed.getFieldInfo(fieldName),
-                        getValueMap().get(fieldName), eqb))
+                sql.append(fieldInfo.getFullColumnName(false)).append("=?")
+                eqb.getParameters().add(new EntityConditionParameter(fieldInfo, getValueMap().get(fieldName), eqb))
             }
             sql.append(" WHERE ")
             boolean isFirstPk = true
             int sizePk = pkFieldList.size()
             for (int i = 0; i < sizePk; i++) {
                 String fieldName = pkFieldList.get(i)
+                EntityDefinition.FieldInfo fieldInfo = ed.getFieldInfo(fieldName)
                 if (isFirstPk) isFirstPk = false else sql.append(" AND ")
-                sql.append(ed.getColumnName(fieldName, false)).append("=?")
-                eqb.getParameters().add(new EntityConditionParameter(ed.getFieldInfo(fieldName),
-                        getValueMap().get(fieldName), eqb))
+                sql.append(fieldInfo.getFullColumnName(false)).append("=?")
+                eqb.getParameters().add(new EntityConditionParameter(fieldInfo, getValueMap().get(fieldName), eqb))
             }
 
             try {
@@ -160,10 +164,10 @@ class EntityValueImpl extends EntityValueBase {
             int sizePk = pkFieldList.size()
             for (int i = 0; i < sizePk; i++) {
                 String fieldName = pkFieldList.get(i)
+                EntityDefinition.FieldInfo fieldInfo = ed.getFieldInfo(fieldName)
                 if (isFirstPk) isFirstPk = false else sql.append(" AND ")
-                sql.append(ed.getColumnName(fieldName, false)).append("=?")
-                eqb.getParameters().add(new EntityConditionParameter(ed.getFieldInfo(fieldName),
-                        getValueMap().get(fieldName), eqb))
+                sql.append(fieldInfo.getFullColumnName(false)).append("=?")
+                eqb.getParameters().add(new EntityConditionParameter(fieldInfo, getValueMap().get(fieldName), eqb))
             }
 
             try {
