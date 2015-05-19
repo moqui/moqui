@@ -268,7 +268,7 @@ public class EntityDefinition {
         String fullColumnName = null
         String defaultStr
         String javaType = null
-        Integer typeValue = null
+        int typeValue = -1
         boolean isPk
         boolean encrypt
         boolean isSimple

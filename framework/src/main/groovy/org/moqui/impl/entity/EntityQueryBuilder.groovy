@@ -48,8 +48,11 @@ class EntityQueryBuilder {
 
     protected EntityFacadeImpl efi
     EntityDefinition mainEntityDefinition
-    protected StringBuilder sqlTopLevel = new StringBuilder()
-    protected ArrayList<EntityConditionParameter> parameters = new ArrayList()
+    // init the StringBuilder fairly large to avoid having to grow the buffer
+    protected final static int sqlInitSize = 500
+    protected StringBuilder sqlTopLevel = new StringBuilder(sqlInitSize)
+    protected final static int parametersInitSize = 10
+    protected ArrayList<EntityConditionParameter> parameters = new ArrayList(parametersInitSize)
 
     protected PreparedStatement ps
     protected ResultSet rs
@@ -199,8 +202,8 @@ class EntityQueryBuilder {
                                             EntityFacadeImpl efi) throws EntityException {
         String fieldName = fieldInfo.name
         String fieldType = fieldInfo.type
-        if (fieldInfo.typeValue == null) throw new EntityException("No typeValue found for ${fieldInfo.ed.getFullEntityName()}.${fieldName}, type=${fieldType}")
         int typeValue = fieldInfo.typeValue
+        if (typeValue == -1) throw new EntityException("No typeValue found for ${fieldInfo.ed.getFullEntityName()}.${fieldName}, type=${fieldType}")
         /*
         // jump straight to the type int for common/OOTB field types for FAR better performance than hunting through conf elements
         Integer directTypeInt = EntityFacadeImpl.fieldTypeIntMap.get(fieldType)
