@@ -155,12 +155,18 @@ ul.float-box li { background: #EEEEEE; display: inline-block; line-height: 18px;
 .bg-dark ul.float-box li { background: #333; -webkit-box-shadow: 0 0 0 1px #080808 inset, 0 0 0 1px #333;
     box-shadow: 0 0 0 1px #080808 inset, 0 0 0 1px #333; }
 
-.shaded-area { padding: 8px; margin-bottom: 8px; }
+ul.float-plain { display: inline-block; list-style: none outside none; margin: 0 0 -8px 0; padding: 0; }
+ul.float-plain li { display: inline-block; line-height: 18px; margin: 0 8px 8px 0; padding: 8px; float: left; }
+ul.float-plain.condensed { margin: 0; }
+ul.float-plain.condensed li { margin: 0 4px 0 0; padding: 4px; }
+
+.shaded-area { padding: 8px; margin-bottom: 8px; line-height: 18px; }
 span.shaded-area { display: inline-block; white-space: normal; }
 .bg-light .shaded-area { background: #EEE; -webkit-box-shadow: 0 0 0 1px #F8F8F8 inset, 0 0 0 1px #CCC;
     box-shadow: 0 0 0 1px #F8F8F8 inset, 0 0 0 1px #CCC; }
 .bg-dark .shaded-area { background: #333; -webkit-box-shadow: 0 0 0 1px #080808 inset, 0 0 0 1px #333;
     box-shadow: 0 0 0 1px #080808 inset, 0 0 0 1px #333; }
+.shaded-area.condensed { padding: 4px; margin-bottom: 4px; }
 
 /* ======================= Screen-specific ======================= */
 
