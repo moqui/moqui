@@ -80,7 +80,6 @@ task runProduction(type: JavaExec) {
 
 // use user-specified command line args like: "gradle load -Ptypes=seed -PtenantId=EXAMPLE1"
 task load(type: JavaExec) {
-    println 'allBuildTasks: ' + allBuildTasks
     dependsOn allBuildTasks
     workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=192m']; maxHeapSize = '512M'
     systemProperties = ['moqui.conf':moquiConfDev, 'moqui.runtime':moquiRuntime]
