@@ -29,4 +29,4 @@
 </head>
 
 <#assign bodyClassList = sri.getThemeValues("STRT_BODY_CLASS")>
-<body class="${(ec.user.getPreference("OUTER_STYLE")!(bodyClassList?first))!"bg-light lter"}"><!-- try "bg-dark dk" or "bg-light lter" -->
+<body class="${(ec.user.getPreference("OUTER_STYLE")!(bodyClassList?first))!"bg-light lter"} ${(sri.screenUrlInfo.targetScreen.screenName)!""}"><!-- try "bg-dark dk" or "bg-light lter" -->
