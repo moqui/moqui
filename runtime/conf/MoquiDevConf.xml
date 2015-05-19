@@ -9,8 +9,7 @@
         <!-- Development Mode - expires artifact cache entries; don't use these for production, load testing, etc -->
         <cache name="entity.definition" expire-time-idle="30"/>
         <!-- longer timeout since this basically looks through all files to check for new or moved entity defs -->
-        <!-- No timeout for location cache, causes more problems than it helps with, can manually clear to recognize
-            new entity definitions: <cache name="entity.location" expire-time-idle="300"/> -->
+        <cache name="entity.location" expire-time-idle="300"/>
         <cache name="entity.data.feed.info" expire-time-idle="30"/>
 
         <cache name="service.location" expire-time-idle="5"/>

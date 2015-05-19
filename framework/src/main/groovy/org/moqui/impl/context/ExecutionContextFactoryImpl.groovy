@@ -284,6 +284,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         // load entity defs
         this.entityFacade.loadAllEntityLocations()
         this.entityFacade.getAllEntitiesInfo(null, null, false, false)
+        // load/warm framework entities
+        this.entityFacade.loadFrameworkEntities()
         // init ESAPI
         StupidWebUtilities.canonicalizeValue("test")
 

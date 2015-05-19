@@ -21,7 +21,8 @@ This Work includes contributions authored by David E. Jones, not as a
                 String source = ""
                 if (context.types) {
                     edl.dataTypes(new HashSet(Arrays.asList(context.types.split(","))))
-                    source = context.types
+                    edl.componentNameList(Arrays.asList(context.components.split(",")))
+                    source = "Types: ${context.types}, Components: ${context.components}"
                 } else if (context.location) {
                     edl.location(context.location)
                     source = context.location
@@ -59,7 +60,11 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="useTryInsert"><default-field title=""><check><option key="true" text="Use Try Insert?"/></check></default-field></field>
             <field name="checkOnly"><default-field title=""><check><option key="true" text="Check Only"/></check></default-field></field>
 
-            <field name="types"><default-field><text-line size="60"/></default-field></field>
+            <field name="types"><default-field tooltip="Comma Separated (from entity-facade-xml.@type)">
+                <text-line size="60"/></default-field></field>
+            <field name="components"><default-field tooltip="Component Names, Comma Separated">
+                <text-line size="60"/></default-field></field>
+
             <field name="location"><default-field><text-line size="80"/></default-field></field>
             <field name="xmlText"><default-field title="Text">
                 <text-area rows="10" cols="80" default-value="&lt;entity-facade-xml&gt;&lt;/entity-facade-xml&gt;"/>
@@ -74,7 +79,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <field-ref name="timeout"/>
                 <field-row-big><field-ref name="dummyFks"/><field-ref name="useTryInsert"/><field-ref name="checkOnly"/></field-row-big>
 
-                <field-group title="Data Types, Comma Separated (from entity-facade-xml.@type)"><field-ref name="types"/></field-group>
+                <field-group title="By Data Types"><field-ref name="types"/><field-ref name="components"/></field-group>
                 <field-group title="Resource Location"><field-ref name="location"/></field-group>
                 <field-group title="XML Text"><field-ref name="xmlText"/></field-group>
                 <field-group title="JSON Text"><field-ref name="jsonText"/></field-group>

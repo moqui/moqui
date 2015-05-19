@@ -53,6 +53,9 @@ class EntityFacadeImpl implements EntityFacade {
     final Cache entityDefinitionCache
     /** Cache with entity name as the key and List of file location Strings as the value, Map<String, List<String>> */
     final Cache entityLocationCache
+    /** Map for framework entity definitions, avoid cache overhead and timeout issues */
+    final Map<String, EntityDefinition> frameworkEntityDefinitions = new HashMap()
+
     /** Sequence name (often entity name) plus tenantId is the key and the value is an array of 2 Longs the first is the next
      * available value and the second is the highest value reserved/cached in the bank. */
     final Cache entitySequenceBankCache
@@ -185,9 +188,27 @@ class EntityFacadeImpl implements EntityFacade {
         }
     }
 
+    void loadFrameworkEntities() {
+        // load framework entity definitions (moqui.*)
+        long startTime = System.nanoTime()
+        Set<String> entityNames = getAllEntityNames()
+        int entityCount = 0
+        for (String entityName in entityNames) {
+            if (entityName.startsWith("moqui.")) {
+                entityCount++
+                try {
+                    EntityDefinition ed = getEntityDefinition(entityName)
+                    ed.getRelationshipInfoMap()
+                    entityDbMeta.tableExists(ed)
+                } catch (Throwable t) { logger.warn("Error loading framework entity definitions: ${t.toString()}") }
+            }
+        }
+        logger.info("Loaded ${entityCount} framework entity definitions in ${(System.nanoTime() - startTime)/1E9} seconds")
+    }
+
     void warmCache()  {
         logger.info("Warming cache for all entity definitions")
-        long startTime = System.currentTimeMillis()
+        long startTime = System.nanoTime()
         Set<String> entityNames = getAllEntityNames()
         for (String entityName in entityNames) {
             try {
@@ -238,7 +259,7 @@ class EntityFacadeImpl implements EntityFacade {
         entityCache.getCacheOne("moqui.tenant.Tenant")
         entityCache.getCacheOne("moqui.tenant.TenantHostDefault")
 
-        logger.info("Warmed entity definition cache for ${entityNames.size()} entities in ${(System.currentTimeMillis() - startTime)/1000} seconds")
+        logger.info("Warmed entity definition cache for ${entityNames.size()} entities in ${(System.nanoTime() - startTime)/1E9} seconds")
     }
 
     Set<String> getDatasourceGroupNames() {
@@ -269,7 +290,7 @@ class EntityFacadeImpl implements EntityFacade {
     List<ResourceReference> getAllEntityFileLocations() {
         List<ResourceReference> entityRrList = new LinkedList()
         entityRrList.addAll(getConfEntityFileLocations())
-        entityRrList.addAll(getComponentEntityFileLocations())
+        entityRrList.addAll(getComponentEntityFileLocations(null))
         return entityRrList
     }
     List<ResourceReference> getConfEntityFileLocations() {
@@ -282,12 +303,21 @@ class EntityFacadeImpl implements EntityFacade {
 
         return entityRrList
     }
-    List<ResourceReference> getComponentEntityFileLocations() {
+    List<ResourceReference> getComponentEntityFileLocations(List<String> componentNameList) {
         List<ResourceReference> entityRrList = new LinkedList()
 
+        List<String> componentBaseLocations
+        if (componentNameList) {
+            componentBaseLocations = []
+            for (String cn in componentNameList)
+                componentBaseLocations.add(ecfi.getComponentBaseLocations().get(cn))
+        } else {
+            componentBaseLocations = new ArrayList(ecfi.getComponentBaseLocations().values())
+        }
+
         // loop through components look for XML files in the entity directory, check each for "<entities>" root element
-        for (String location in this.ecfi.getComponentBaseLocations().values()) {
-            ResourceReference entityDirRr = this.ecfi.resourceFacade.getLocationReference(location + "/entity")
+        for (String location in componentBaseLocations) {
+            ResourceReference entityDirRr = ecfi.resourceFacade.getLocationReference(location + "/entity")
             if (entityDirRr.supportsAll()) {
                 // if directory doesn't exist skip it, component doesn't have an entity directory
                 if (!entityDirRr.exists || !entityDirRr.isDirectory()) continue
@@ -505,11 +535,17 @@ class EntityFacadeImpl implements EntityFacade {
 
             // create the new EntityDefinition
             ed = new EntityDefinition(this, dbViewNode)
-            // cache it under both entityName and fullEntityName
-            entityDefinitionCache.put(ed.getEntityName(), ed)
-            entityDefinitionCache.put(ed.getFullEntityName(), ed)
-            // also cache it for lookup by the short-alias
-            if (ed.getShortAlias()) entityDefinitionCache.put(ed.getShortAlias(), ed)
+            // cache it under entityName, fullEntityName, and short-alias
+            String fullEntityName = ed.getFullEntityName()
+            if (fullEntityName.startsWith("moqui.")) {
+                frameworkEntityDefinitions.put(ed.getEntityName(), ed)
+                frameworkEntityDefinitions.put(ed.getFullEntityName(), ed)
+                if (ed.getShortAlias()) frameworkEntityDefinitions.put(ed.getShortAlias(), ed)
+            } else {
+                entityDefinitionCache.put(ed.getEntityName(), ed)
+                entityDefinitionCache.put(ed.getFullEntityName(), ed)
+                if (ed.getShortAlias()) entityDefinitionCache.put(ed.getShortAlias(), ed)
+            }
             // send it on its way
             return ed
         }
@@ -572,11 +608,17 @@ class EntityFacadeImpl implements EntityFacade {
 
         // create the new EntityDefinition
         ed = new EntityDefinition(this, entityNode)
-        // cache it
-        entityDefinitionCache.put(ed.getEntityName(), ed)
-        entityDefinitionCache.put(ed.getFullEntityName(), ed)
-        // also cache it for lookup by the short-alias
-        if (ed.getShortAlias()) entityDefinitionCache.put(ed.getShortAlias(), ed)
+        // cache it under entityName, fullEntityName, and short-alias
+        String fullEntityName = ed.getFullEntityName()
+        if (fullEntityName.startsWith("moqui.")) {
+            frameworkEntityDefinitions.put(ed.getEntityName(), ed)
+            frameworkEntityDefinitions.put(ed.getFullEntityName(), ed)
+            if (ed.getShortAlias()) frameworkEntityDefinitions.put(ed.getShortAlias(), ed)
+        } else {
+            entityDefinitionCache.put(ed.getEntityName(), ed)
+            entityDefinitionCache.put(ed.getFullEntityName(), ed)
+            if (ed.getShortAlias()) entityDefinitionCache.put(ed.getShortAlias(), ed)
+        }
         // send it on its way
         return ed
     }
@@ -799,6 +841,10 @@ class EntityFacadeImpl implements EntityFacade {
     @CompileStatic
     boolean isEntityDefined(String entityName) {
         if (!entityName) return false
+
+        // Special treatment for framework entities, quick Map lookup (also faster than Cache get)
+        if (frameworkEntityDefinitions.containsKey(entityName)) return true
+
         // Optimization, common case: if it's in the location cache it is exists, even if expired; if it isn't there
         //     doesn't necessarily mean it isn't defined, so then do more
         List locationList = (List) entityLocationCache.get(entityName)
@@ -839,7 +885,9 @@ class EntityFacadeImpl implements EntityFacade {
     @CompileStatic
     EntityDefinition getEntityDefinition(String entityName) {
         if (!entityName) return null
-        EntityDefinition ed = (EntityDefinition) this.entityDefinitionCache.get(entityName)
+        EntityDefinition ed = (EntityDefinition) this.frameworkEntityDefinitions.get(entityName)
+        if (ed != null) return ed
+        ed = (EntityDefinition) this.entityDefinitionCache.get(entityName)
         if (ed != null) return ed
         return loadEntityDefinition(entityName)
     }

@@ -58,7 +58,8 @@ public class MoquiStart extends ClassLoader {
             System.out.println("Usage: java -jar moqui.war [command] [arguments]");
             System.out.println("-help, -? ---- Help (this text)");
             System.out.println("-load -------- Run data loader");
-            System.out.println("    -types=<type>[,<type>] -- Data types to load (can be anything, common are: seed, seed-initial, demo, ...)");
+            System.out.println("    -types=<type>[,<type>] ------- Data types to load (can be anything, common are: seed, seed-initial, demo, ...)");
+            System.out.println("    -components=<name>[,<name>] -- Component names to load for data types; if none specified loads from all");
             System.out.println("    -location=<location> ---- Location of data file to load");
             System.out.println("    -timeout=<seconds> ------ Transaction timeout for each file, defaults to 600 seconds (10 minutes)");
             System.out.println("    -dummy-fks -------------- Use dummy foreign-keys to avoid referential integrity errors");

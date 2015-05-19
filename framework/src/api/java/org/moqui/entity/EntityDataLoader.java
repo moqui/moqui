@@ -47,6 +47,8 @@ public interface EntityDataLoader {
      * @return Reference to this for convenience.
      */
     EntityDataLoader dataTypes(Set<String> dataTypes);
+    /** Used along with dataTypes; a list of component names to load data from. If none specified will load from all components. */
+    EntityDataLoader componentNameList(List<String> componentNames);
 
     /** The transaction timeout for this data load in seconds. Defaults to 3600 which is 1 hour.
      * @return Reference to this for convenience.
