@@ -1107,7 +1107,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     </#if>
     <#assign headerFieldNode = fieldNode["header-field"][0]!>
     <#assign defaultFieldNode = fieldNode["default-field"][0]!>
-    <div class="form-title">
+    <#assign containerStyle = ec.resource.evaluateStringExpand(headerFieldNode["@container-style"]!, "")>
+    <div class="form-title<#if containerStyle?has_content> ${containerStyle}</#if>">
         <#if fieldSubNode["submit"]?has_content>&nbsp;<#else><#if headerFieldNode["@title"]?has_content><@fieldTitle headerFieldNode/><#elseif defaultFieldNode["@title"]?has_content><@fieldTitle defaultFieldNode/><#else><@fieldTitle fieldSubNode/></#if></#if>
         <#if fieldSubNode["@show-order-by"]! == "true" || fieldSubNode["@show-order-by"]! == "case-insensitive">
             <#assign caseInsensitive = fieldSubNode["@show-order-by"]! == "case-insensitive">
@@ -1125,7 +1126,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
         </#if>
     </div>
     <#if fieldNode["header-field"]?has_content && fieldNode["header-field"][0]?children?has_content>
-    <div class="form-header-field">
+    <div class="form-header-field<#if containerStyle?has_content> ${containerStyle}</#if>">
         <@formListWidget fieldNode["header-field"][0] true/>
         <#-- <#recurse fieldNode["header-field"][0]/> -->
     </div>
