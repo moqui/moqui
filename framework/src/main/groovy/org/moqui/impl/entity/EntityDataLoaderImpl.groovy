@@ -52,11 +52,13 @@ class EntityDataLoaderImpl implements EntityDataLoader {
     protected ServiceFacadeImpl sfi
 
     // NOTE: these are Groovy Beans style with no access modifier, results in private fields with implicit getters/setters
+
     List<String> locationList = new LinkedList<String>()
     String xmlText = null
     String csvText = null
     String jsonText = null
     Set<String> dataTypes = new HashSet<String>()
+    List<String> componentNameList = new LinkedList<String>()
 
     int transactionTimeout = 600
     boolean useTryInsert = false
@@ -87,6 +89,11 @@ class EntityDataLoaderImpl implements EntityDataLoader {
     @Override
     EntityDataLoader dataTypes(Set<String> dataTypes) {
         for (String dt in dataTypes) this.dataTypes.add(dt.trim())
+        return this
+    }
+    @Override
+    EntityDataLoader componentNameList(List<String> componentNames) {
+        for (String cn in componentNames) this.componentNameList.add(cn.trim())
         return this
     }
 
@@ -146,23 +153,33 @@ class EntityDataLoaderImpl implements EntityDataLoader {
         // if no xmlText or locations, so find all of the component and entity-facade files
         if (!this.xmlText && !this.csvText && !this.jsonText && !this.locationList) {
             // if we're loading seed type data, add configured (Moqui Conf XML) entity def files to the list of locations to load
-            if (!dataTypes || dataTypes.contains("seed")) {
+            if (!componentNameList && (!dataTypes || dataTypes.contains("seed"))) {
                 for (ResourceReference entityRr in efi.getConfEntityFileLocations())
                     if (!entityRr.location.endsWith(".eecas.xml")) locationList.add(entityRr.location)
             }
 
             // loop through all of the entity-facade.load-data nodes
-            for (Node loadData in efi.ecfi.getConfXmlRoot()."entity-facade"[0]."load-data") {
-                locationList.add((String) loadData."@location")
+            if (!componentNameList) {
+                for (Node loadData in efi.ecfi.getConfXmlRoot()."entity-facade"[0]."load-data") {
+                    locationList.add((String) loadData."@location")
+                }
             }
 
             // if we're loading seed type data, add COMPONENT entity def files to the list of locations to load
             if (!dataTypes || dataTypes.contains("seed")) {
-                for (ResourceReference entityRr in efi.getComponentEntityFileLocations())
+                for (ResourceReference entityRr in efi.getComponentEntityFileLocations(componentNameList))
                     if (!entityRr.location.endsWith(".eecas.xml")) locationList.add(entityRr.location)
             }
 
-            for (String location in efi.ecfi.getComponentBaseLocations().values()) {
+            List<String> componentBaseLocations
+            if (componentNameList) {
+                componentBaseLocations = []
+                for (String cn in componentNameList)
+                    componentBaseLocations.add(efi.ecfi.getComponentBaseLocations().get(cn))
+            } else {
+                componentBaseLocations = new ArrayList(efi.ecfi.getComponentBaseLocations().values())
+            }
+            for (String location in componentBaseLocations) {
                 ResourceReference dataDirRr = efi.ecfi.resourceFacade.getLocationReference(location + "/data")
                 if (dataDirRr.supportsAll()) {
                     // if directory doesn't exist skip it, component doesn't have a data directory

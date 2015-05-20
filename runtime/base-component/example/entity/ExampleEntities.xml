@@ -13,17 +13,17 @@ This Work includes contributions authored by David E. Jones, not as a
 <entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/entity-definition-1.5.xsd">
 
     <!-- ========================================================= -->
-    <!-- moqui.example -->
+    <!-- example -->
     <!-- ========================================================= -->
 
     <!-- Example -->
-    <extend-entity entity-name="Example" package-name="moqui.example">
+    <extend-entity entity-name="Example" package-name="example">
         <field name="auditedField" type="text-medium" enable-audit-log="true"/>
         <field name="encryptedField" type="text-medium" encrypt="true"/>
         <field name="exampleEmail" type="text-medium"/>
         <field name="exampleUrl" type="text-medium"/>
     </extend-entity>
-    <entity entity-name="Example" package-name="moqui.example" short-alias="examples" allow-user-field="true">
+    <entity entity-name="Example" package-name="example" short-alias="examples" allow-user-field="true">
         <field name="exampleId" type="id" is-pk="true"><description>primary sequenced ID</description></field>
         <field name="exampleTypeEnumId" type="id"/>
         <field name="statusId" type="id" enable-audit-log="true"/>
@@ -45,7 +45,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
         <!-- This is not generally necessary, reverse relationships are created automatically, but needed to specify
             the short-alias for use in entity REST requests and quick path look ups -->
-        <relationship type="many" related-entity-name="moqui.example.ExampleItem" short-alias="items">
+        <relationship type="many" related-entity-name="example.ExampleItem" short-alias="items">
             <key-map field-name="exampleId"/></relationship>
 
         <seed-data>
@@ -77,7 +77,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="EXST_TESTED" toStatusId="EXST_CANCELLED" transitionName="Cancel Example"/>
         </seed-data>
     </entity>
-    <entity entity-name="ExampleItem" package-name="moqui.example" short-alias="exampleItems">
+    <entity entity-name="ExampleItem" package-name="example" short-alias="exampleItems">
         <field name="exampleId" type="id" is-pk="true"/>
         <field name="exampleItemSeqId" type="id" is-pk="true"><description>secondary sequenced ID</description></field>
         <field name="description" type="text-medium"/>
@@ -85,16 +85,16 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="amountUomId" type="id"/>
         <relationship type="one" title="Amount" related-entity-name="moqui.basic.Uom">
             <key-map field-name="amountUomId"/></relationship>
-        <relationship type="one" related-entity-name="moqui.example.Example"/>
+        <relationship type="one" related-entity-name="example.Example"/>
     </entity>
-    <entity entity-name="ExampleContent" package-name="moqui.example">
+    <entity entity-name="ExampleContent" package-name="example">
         <field name="exampleId" type="id" is-pk="true"/>
         <field name="contentLocation" type="text-medium" is-pk="true"/>
         <field name="purposeEnumId" type="id"/>
         <field name="locale" type="text-short"/>
         <relationship type="one" title="ExampleContentPurpose" related-entity-name="moqui.basic.Enumeration">
             <key-map field-name="purposeEnumId"/></relationship>
-        <relationship type="one" related-entity-name="moqui.example.Example"/>
+        <relationship type="one" related-entity-name="example.Example"/>
         <seed-data>
             <moqui.basic.EnumerationType description="Example Content Purpose" enumTypeId="ExampleContentPurpose"/>
             <moqui.basic.Enumeration description="Sketch" enumId="EXCNTPRP_SKETCH" enumTypeId="ExampleContentPurpose"/>
@@ -105,7 +105,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
 
     <!-- Example Feature -->
-    <entity entity-name="ExampleFeature" package-name="moqui.example" short-alias="exampleFeatures">
+    <entity entity-name="ExampleFeature" package-name="example" short-alias="exampleFeatures">
         <field name="exampleFeatureId" type="id" is-pk="true"><description>primary sequenced ID</description></field>
         <field name="featureSourceEnumId" type="id"/>
         <field name="description" type="text-medium"/>
@@ -119,15 +119,15 @@ This Work includes contributions authored by David E. Jones, not as a
             <moqui.basic.Enumeration description="Employee" enumId="EXFTSRC_EMPLOYEE" sequenceNum="3" enumTypeId="ExampleFeatureSource"/>
         </seed-data>
     </entity>
-    <entity entity-name="ExampleFeatureAppl" package-name="moqui.example">
+    <entity entity-name="ExampleFeatureAppl" package-name="example">
         <field name="exampleId" type="id" is-pk="true"/>
         <field name="exampleFeatureId" type="id" is-pk="true"/>
         <field name="fromDate" type="date-time" is-pk="true"/>
         <field name="thruDate" type="date-time"/>
         <field name="exampleFeatureApplEnumId" type="id"/>
         <field name="sequenceNum" type="number-integer"/>
-        <relationship type="one" related-entity-name="moqui.example.Example"/>
-        <relationship type="one" related-entity-name="moqui.example.ExampleFeature"/>
+        <relationship type="one" related-entity-name="example.Example"/>
+        <relationship type="one" related-entity-name="example.ExampleFeature"/>
         <relationship type="one" title="ExampleFeatureAppl" related-entity-name="moqui.basic.Enumeration">
             <key-map field-name="exampleFeatureApplEnumId"/></relationship>
 

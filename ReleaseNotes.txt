@@ -23,6 +23,9 @@ New Features:
 - The Auto Screens in the Tools app now have a link to get screen/form XML
   for the various forms (find, CrUD) for the current entity; handy as a
   starting point when creating a bunch of new screens for various entities
+- Entity Data Loader class, command line, and DataImport screen now support
+  a list of component names to load data from when loading by data type
+- The entity.@create-only attribute now only checked if fields are changed
 
 Bug Fixes:
 
