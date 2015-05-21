@@ -133,6 +133,7 @@ td span.form-display { display: inline-block; width: 100%; }
 /*.form-date-time { white-space: nowrap; display: inline; padding: 8px 52px 8px 12px; }
 .form-date-find { white-space: nowrap; display: inline; padding: 8px 12px 8px 12px; }*/
 .form-date-find, .form-range-find { display: block; padding-bottom: 4px; }
+.input-group { display: inline-block; }
 .input-group-addon, .input-group-btn, .input-group .form-control { display: inline; }
 .form-date-find .input-group-addon { line-height: 34px; padding: 8px 12px 8px 12px; }
 .form-date-find .input-group { display: inline-block; }
