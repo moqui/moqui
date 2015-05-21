@@ -1339,7 +1339,6 @@ class EntityFacadeImpl implements EntityFacade {
         }
 
         long seqNum = bank[0]
-        if (seqName.contains("Example")) logger.warn("=========== before seqNum=${seqNum}, bank=${bank}, staggerMax=${staggerMax}")
         if (staggerMax != null && staggerMax > 1L) {
             long stagger = Math.round(Math.random() * staggerMax)
             if (stagger == 0L) stagger = 1L
@@ -1349,7 +1348,6 @@ class EntityFacadeImpl implements EntityFacade {
         } else {
             bank[0] = seqNum + 1L
         }
-        if (seqName.contains("Example")) logger.warn("=========== after seqNum=${seqNum}, bank=${bank}")
 
         return sequencedIdPrefix + seqNum
     }
