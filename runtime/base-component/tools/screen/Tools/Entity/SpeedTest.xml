@@ -36,6 +36,8 @@ This Work includes contributions authored by David E. Jones, not as a
             baseCalls = baseCalls ?: '1000'
             baseCallsNum = ec.l10n.parseNumber(baseCalls, '') as int
 
+            // NOTE: long sleep times (like 1000ms) do help the numbers, but still somewhat inconsistent
+            long sleepTime = 10
             beginTime = System.nanoTime()
 
             performanceList = []
@@ -75,6 +77,9 @@ This Work includes contributions authored by David E. Jones, not as a
                     msPerCall:(milliseconds / calls),
                     callsPerSecond:((calls / milliseconds) * 1000)])
 
+            // sleep to hopefully let GC do its thing, make times more consistent
+            sleep(sleepTime)
+
             // one PK cache
             calls = baseCallsNum
             startTime = System.nanoTime()
@@ -99,6 +104,9 @@ This Work includes contributions authored by David E. Jones, not as a
 
             // ========== direct CrUD tests ==========
             calls = baseCallsNum
+
+            // sleep to hopefully let GC do its thing, make times more consistent
+            sleep(sleepTime)
 
             // create with sequenced ID test
             startTime = System.nanoTime()
@@ -125,6 +133,9 @@ This Work includes contributions authored by David E. Jones, not as a
                     msPerCall:(milliseconds / calls),
                     callsPerSecond:((calls / milliseconds) * 1000)])
 
+            // sleep to hopefully let GC do its thing, make times more consistent
+            sleep(sleepTime)
+
             // update test
             calls = createTestList.size()
             startTime = System.nanoTime()
@@ -150,6 +161,9 @@ This Work includes contributions authored by David E. Jones, not as a
 
             // ========== service CrUD tests ==========
             calls = baseCallsNum
+
+            // sleep to hopefully let GC do its thing, make times more consistent
+            sleep(sleepTime)
 
             // create with sequenced ID test
             startTime = System.nanoTime()
@@ -189,6 +203,9 @@ This Work includes contributions authored by David E. Jones, not as a
             // ========== NoSQL direct CrUD tests ==========
             calls = baseCallsNum
 
+            // sleep to hopefully let GC do its thing, make times more consistent
+            sleep(sleepTime)
+
             // create with sequenced ID test
             startTime = System.nanoTime()
             List createNoSqlTestList = []
@@ -215,6 +232,9 @@ This Work includes contributions authored by David E. Jones, not as a
             performanceList.add([operation:"direct create with preset ID", entity:"moqui.tools.test.ToolsTestNoSqlEntity", calls:calls, milliseconds:milliseconds,
                     msPerCall:(milliseconds / calls),
                     callsPerSecond:((calls / milliseconds) * 1000)])
+
+            // sleep to hopefully let GC do its thing, make times more consistent
+            sleep(sleepTime)
 
             // update test
             calls = createNoSqlTestList.size()
