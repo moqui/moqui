@@ -189,6 +189,9 @@ abstract class EntityFindBase implements EntityFind {
         ExecutionContext ec = efi.getEcfi().getExecutionContext()
         EntityDefinition ed = getEntityDef()
 
+        // to avoid issues with entities that have cache=true, if no cache value is specified for this set it to false (avoids pagination errors, etc)
+        if (useCache == null) useCache(false)
+
         for (String fn in ed.getAllFieldNames()) {
             // NOTE: do we need to do type conversion here?
 
