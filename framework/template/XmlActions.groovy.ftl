@@ -52,8 +52,13 @@ return;
         <#elseif (.node["@web-send-json-response"]?has_content && .node["@web-send-json-response"] != "false")>
         ec.web.sendJsonResponse(ec.resource.evaluateContextField("${.node["@web-send-json-response"]}", "", call_service_result))
         </#if>
-        <#if !(.node["@ignore-error"]?if_exists == "true")>
-        if (ec.message.errors) return
+        <#if (.node["@ignore-error"]?if_exists == "true")>
+        if (ec.message.hasError()) {
+            ec.logger.warn("Ignoring error running service ${.node.@name}: " + ec.message.getErrorsString())
+            ec.message.clearErrors()
+        }
+        <#else>
+        if (ec.message.hasError()) return
         </#if>
     }
 </#macro>
