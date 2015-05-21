@@ -1007,7 +1007,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#else>
         <#assign fieldNodeList = formNode["field"]>
         <#if !skipStart>
-        <table class="table table-striped table-hover" id="${formId}-table">
+        <table class="table table-striped table-hover table-condensed" id="${formId}-table">
             <thead>
                 <#assign needHeaderForm = sri.isFormHeaderForm(formNode["@name"])>
                 <#if needHeaderForm && !skipStart>
@@ -1107,7 +1107,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     </#if>
     <#assign headerFieldNode = fieldNode["header-field"][0]!>
     <#assign defaultFieldNode = fieldNode["default-field"][0]!>
-    <div class="form-title">
+    <#assign containerStyle = ec.resource.evaluateStringExpand(headerFieldNode["@container-style"]!, "")>
+    <div class="form-title<#if containerStyle?has_content> ${containerStyle}</#if>">
         <#if fieldSubNode["submit"]?has_content>&nbsp;<#else><#if headerFieldNode["@title"]?has_content><@fieldTitle headerFieldNode/><#elseif defaultFieldNode["@title"]?has_content><@fieldTitle defaultFieldNode/><#else><@fieldTitle fieldSubNode/></#if></#if>
         <#if fieldSubNode["@show-order-by"]! == "true" || fieldSubNode["@show-order-by"]! == "case-insensitive">
             <#assign caseInsensitive = fieldSubNode["@show-order-by"]! == "case-insensitive">
@@ -1125,7 +1126,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
         </#if>
     </div>
     <#if fieldNode["header-field"]?has_content && fieldNode["header-field"][0]?children?has_content>
-    <div class="form-header-field">
+    <div class="form-header-field<#if containerStyle?has_content> ${containerStyle}</#if>">
         <@formListWidget fieldNode["header-field"][0] true/>
         <#-- <#recurse fieldNode["header-field"][0]/> -->
     </div>
@@ -1164,7 +1165,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                     <#if linkNode["@entity-name"]?has_content><#assign linkText = ""/><#assign linkText = sri.getFieldEntityValue(linkNode)/>
                         <#else><#assign linkText = ec.resource.evaluateStringExpand(linkNode["@text"]!"", "")/></#if>
                     <#assign linkUrlInfo = sri.makeUrlByType(linkNode["@url"], linkNode["@url-type"]!"transition", linkNode, linkNode["@expand-transition-url"]!"true")>
-                    <#assign linkFormId><@fieldId linkNode/></#assign>
+                    <#assign linkFormId><@fieldId linkNode/>_${linkNode["@url"]?replace(".", "_")}</#assign>
                     <#assign afterFormText><@linkFormForm linkNode linkFormId linkText linkUrlInfo/></#assign>
                     <#t>${sri.appendToAfterScreenWriter(afterFormText)}
                     <#t><@linkFormLink linkNode linkFormId linkText linkUrlInfo/>

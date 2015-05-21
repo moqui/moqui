@@ -48,7 +48,10 @@ class ScreenSection {
             condition = new XmlAction(ecfi, (Node) sectionNode."condition"[0].children()[0], location + ".condition")
         }
         // prep actions
-        if (sectionNode.actions) actions = new XmlAction(ecfi, (Node) sectionNode."actions"[0], location + ".actions")
+        if (sectionNode.actions) {
+            actions = new XmlAction(ecfi, (Node) sectionNode."actions"[0], location + ".actions")
+            // if (location.contains("FOO")) logger.warn("====== Actions for ${location}: ${actions.writeGroovyWithLines()}")
+        }
         // prep widgets
         if (sectionNode.widgets) widgets = new ScreenWidgets((Node) sectionNode."widgets"[0], location + ".widgets")
         // prep fail-widgets

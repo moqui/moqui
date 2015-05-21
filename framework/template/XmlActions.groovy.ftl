@@ -52,8 +52,13 @@ return;
         <#elseif (.node["@web-send-json-response"]?has_content && .node["@web-send-json-response"] != "false")>
         ec.web.sendJsonResponse(ec.resource.evaluateContextField("${.node["@web-send-json-response"]}", "", call_service_result))
         </#if>
-        <#if !(.node["@ignore-error"]?if_exists == "true")>
-        if (ec.message.errors) return
+        <#if (.node["@ignore-error"]?if_exists == "true")>
+        if (ec.message.hasError()) {
+            ec.logger.warn("Ignoring error running service ${.node.@name}: " + ec.message.getErrorsString())
+            ec.message.clearErrors()
+        }
+        <#else>
+        if (ec.message.hasError()) return
         </#if>
     }
 </#macro>
@@ -119,7 +124,7 @@ return;
 <#macro "entity-find">
     <#assign useCache = (.node["@cache"]?if_exists == "true")>
     <#assign doPaginate = .node["search-form-inputs"]?has_content && !(.node["search-form-inputs"][0]["@paginate"]?if_exists == "false")>
-    ${.node["@list"]}_xafind = ec.entity.find("${.node["@entity-name"]}")<#if useCache>.useCache(true)</#if><#if .node["@for-update"]?has_content>.forUpdate(${.node["@for-update"]})</#if><#if .node["@distinct"]?has_content>.distinct(${.node["@distinct"]})</#if><#if .node["@offset"]?has_content>.offset(${.node["@offset"]})</#if><#if .node["@limit"]?has_content>.limit(${.node["@limit"]})</#if><#list .node["select-field"] as sf>.selectField('${sf["@field-name"]}')</#list><#list .node["order-by"] as ob>.orderBy("${ob["@field-name"]}")</#list>
+    ${.node["@list"]}_xafind = ec.entity.find("${.node["@entity-name"]}")<#if .node["@cache"]?has_content>.useCache(${.node["@cache"]})</#if><#if .node["@for-update"]?has_content>.forUpdate(${.node["@for-update"]})</#if><#if .node["@distinct"]?has_content>.distinct(${.node["@distinct"]})</#if><#if .node["@offset"]?has_content>.offset(${.node["@offset"]})</#if><#if .node["@limit"]?has_content>.limit(${.node["@limit"]})</#if><#list .node["select-field"] as sf>.selectField('${sf["@field-name"]}')</#list><#list .node["order-by"] as ob>.orderBy("${ob["@field-name"]}")</#list>
             <#if !useCache><#list .node["date-filter"] as df>.condition(<#visit df/>)</#list></#if><#list .node["econdition"] as ecn>.condition(<#visit ecn/>)</#list><#list .node["econditions"] as ecs>.condition(<#visit ecs/>)</#list><#list .node["econdition-object"] as eco>.condition(<#visit eco/>)</#list>
     <#-- do having-econditions first, if present will disable cached query, used in search-form-inputs -->
     <#if .node["having-econditions"]?has_content>${.node["@list"]}_xafind<#list .node["having-econditions"]["*"] as havingCond>.havingCondition(<#visit havingCond/>)</#list>
@@ -137,7 +142,9 @@ return;
     <#else>
         ${.node["@list"]} = ${.node["@list"]}_xafind.list()
         <#if useCache>
-            <#list .node["date-filter"] as df>${.node["@list"]} = ${.node["@list"]}.filterByDate("${df["@from-field-name"]?default("fromDate")}", "${df["@thru-field-name"]?default("thruDate")}", <#if df["@valid-date"]?has_content>${df["@valid-date"]} as Timestamp<#else>null</#if>, ${df["@ignore-if-empty"]?default("false")})</#list>
+            <#list .node["date-filter"] as df>
+                ${.node["@list"]} = ${.node["@list"]}.filterByDate("${df["@from-field-name"]?default("fromDate")}", "${df["@thru-field-name"]?default("thruDate")}", <#if df["@valid-date"]?has_content>${df["@valid-date"]} as Timestamp<#else>null</#if>, ${df["@ignore-if-empty"]?default("false")})
+            </#list>
             <#if doPaginate>
                 <#-- get the Count after the date-filter, but before the limit/pagination filter -->
                 ${.node["@list"]}Count = ${.node["@list"]}.size()
