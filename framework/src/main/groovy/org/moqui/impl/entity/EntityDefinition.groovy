@@ -64,7 +64,7 @@ public class EntityDefinition {
     protected String useCache = null
     protected String sequencePrimaryPrefix = ""
     protected long sequencePrimaryStagger = 1
-    protected long sequenceBankSize = 50
+    protected long sequenceBankSize = EntityFacadeImpl.defaultBankSize
 
     protected List<Node> expandedRelationshipList = null
     // this is kept separately for quick access to relationships by name or short-alias
@@ -80,8 +80,10 @@ public class EntityDefinition {
         this.fullEntityName = (internalEntityNode."@package-name" + "." + this.internalEntityName).intern()
         this.shortAlias = internalEntityNode."@short-alias" ?: null
         this.sequencePrimaryPrefix = internalEntityNode."@sequence-primary-prefix" ?: ""
-        this.sequencePrimaryStagger = (internalEntityNode."@sequence-primary-stagger" ?: "1") as long
-        this.sequenceBankSize = (internalEntityNode."@sequence-bank-size" ?: "1") as long
+        if (internalEntityNode."@sequence-primary-stagger")
+            this.sequencePrimaryStagger = internalEntityNode."@sequence-primary-stagger" as long
+        if (internalEntityNode."@sequence-bank-size")
+            this.sequenceBankSize = internalEntityNode."@sequence-bank-size" as long
 
         if (isViewEntity()) {
             // get group-name, etc from member-entity
