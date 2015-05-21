@@ -50,7 +50,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <widgets>
         <container>
             <link url="list" text="Entity List" link-type="hidden-form"/>
-            <container-dialog id="FindValueDialog" button-text="Find ${ec.entity.getEntityDefinition(aen).getPrettyName(null, null)}">
+            <container-dialog id="FindValueDialog" button-text="Find ${ec.entity.getEntityDefinition(aen).getPrettyName(null, null)}" width="800">
                 <form-single name="FindEntityValue" transition="find" dynamic="true">
                     <auto-fields-entity entity-name="${aen}" field-type="find"/>
                     <field name="aen"><default-field><hidden/></default-field></field>
@@ -66,10 +66,16 @@ This Work includes contributions authored by David E. Jones, not as a
             </container-dialog>
         </container>
         <form-list name="ListEntityValue" list="entityValueList" transition="listSubmit" multi="false" dynamic="true">
-            <field name="aen"><default-field><hidden/></default-field></field>
-            <field name="edit"><default-field title="Edit"><submit/></default-field></field>
+            <field name="aen">
+                <header-field><hidden/></header-field>
+                <default-field><hidden/></default-field>
+            </field>
+            <field name="edit">
+                <header-field title="Find"><submit/></header-field>
+                <default-field title="Edit"><submit/></default-field>
+            </field>
             <field name="delete"><default-field title="Delete"><submit confirmation="Are you sure?"/></default-field></field>
-            <auto-fields-entity entity-name="${aen}" field-type="display"/>
+            <auto-fields-entity entity-name="${aen}" field-type="find-display"/>
         </form-list>
         <link url="getFormXml" text="Get Forms XML" link-type="hidden-form-link" target-window="_blank"/>
     </widgets>
