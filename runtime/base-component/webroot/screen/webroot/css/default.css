@@ -127,6 +127,8 @@ white-space: normal;
 .bg-light .form-list-cell-item:nth-child(1n+2) { border-top: solid 1px #EEE; }
 .bg-dark .form-list-cell-item:nth-child(1n+2) { border-top: solid 1px #444; }
 
+td span.form-display { display: inline-block; width: 100%; }
+
 /* .form-date-find span, .form-range-find span, .form-text-find span, .form-text-find select { font-size: .8em; } */
 /*.form-date-time { white-space: nowrap; display: inline; padding: 8px 52px 8px 12px; }
 .form-date-find { white-space: nowrap; display: inline; padding: 8px 12px 8px 12px; }*/
@@ -144,8 +146,8 @@ a.form-order-by { margin: 0; padding: 0; font-family: "Courier New", monospace; 
 a.form-order-by:hover { color: blue; }
 a.active { color: red; }
 
-.form-cell .BigDecimal, .form-cell .Long, .form-cell .Double, .form-cell .Float, .form-cell .Integer { text-align: center; }
-.form-cell .currency { text-align: right; }
+td .Long, td .Double, td .Float, td .Integer { text-align: center; }
+td .BigDecimal, td .currency { text-align: right; }
 
 /* ======================= Handy Styles ======================= */
 
