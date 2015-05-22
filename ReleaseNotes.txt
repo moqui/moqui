@@ -26,6 +26,7 @@ New Features:
 - Entity Data Loader class, command line, and DataImport screen now support
   a list of component names to load data from when loading by data type
 - The entity.@create-only attribute now only checked if fields are changed
+- If service-call.@ignore-error=true now logs and clears error messages
 
 Bug Fixes:
 

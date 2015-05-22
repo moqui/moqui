@@ -1284,6 +1284,7 @@ class EntityFacadeImpl implements EntityFacade {
         return dbSequencedIdPrimary(seqName, staggerMax, bankSize)
     }
 
+    protected final static long defaultBankSize = 50L
     @CompileStatic
     protected synchronized String dbSequencedIdPrimary(String seqName, Long staggerMax, Long bankSize) {
         // TODO: find some way to get this running non-synchronized for performance reasons (right now if not
@@ -1315,13 +1316,13 @@ class EntityFacadeImpl implements EntityFacade {
                         svi.set("seqName", seqName)
                         // a new tradition: start sequenced values at one hundred thousand instead of ten thousand
                         bank[0] = 100000L
-                        bank[1] = bank[0] + ((bankSize ?: 1L) - 1L)
+                        bank[1] = bank[0] + ((bankSize ?: defaultBankSize) - 1L)
                         svi.set("seqNum", bank[1])
                         svi.create()
                     } else {
                         Long lastSeqNum = svi.getLong("seqNum")
-                        bank[0] = (lastSeqNum > bank[0] ? lastSeqNum : bank[0]) + 1L
-                        bank[1] = bank[0] + ((bankSize ?: 1L) - 1L)
+                        bank[0] = (lastSeqNum > bank[0] ? lastSeqNum + 1L : bank[0])
+                        bank[1] = bank[0] + ((bankSize ?: defaultBankSize) - 1L)
                         svi.set("seqNum", bank[1])
                         svi.update()
                     }
@@ -1337,8 +1338,8 @@ class EntityFacadeImpl implements EntityFacade {
             }
         }
 
-        Long seqNum = bank[0]
-        if (staggerMax) {
+        long seqNum = bank[0]
+        if (staggerMax != null && staggerMax > 1L) {
             long stagger = Math.round(Math.random() * staggerMax)
             if (stagger == 0L) stagger = 1L
             bank[0] = seqNum + stagger
@@ -1348,7 +1349,7 @@ class EntityFacadeImpl implements EntityFacade {
             bank[0] = seqNum + 1L
         }
 
-        return sequencedIdPrefix + seqNum.toString()
+        return sequencedIdPrefix + seqNum
     }
 
     Set<String> getAllEntityNamesInGroup(String groupName) {

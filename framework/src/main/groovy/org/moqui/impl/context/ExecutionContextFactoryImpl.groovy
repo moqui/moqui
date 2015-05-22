@@ -904,7 +904,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
         boolean isSlowHit = false
         if (artifactPersistBin(artifactType, artifactSubType)) {
-            String binKey = new StringBuilder().append(artifactType).append('.').append(artifactSubType).append(':').append(artifactName).toString()
+            String binKey = new StringBuilder(200).append(artifactType).append('.').append(artifactSubType).append(':').append(artifactName).toString()
             ArtifactStatsInfo statsInfo = artifactStatsInfoByType.get(binKey)
             if (statsInfo == null) {
                 // consider seeding this from the DB using ArtifactHitReport to get all past data, or maybe not to better handle different servers/etc over time, etc

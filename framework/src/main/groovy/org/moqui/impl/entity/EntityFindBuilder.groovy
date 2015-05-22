@@ -422,7 +422,7 @@ class EntityFindBuilder extends EntityQueryBuilder {
 
             // not that it's all torn down, build it back up using the column name
             if (foo.caseUpperLower != null && typeValue == 1) this.sqlTopLevel.append(foo.caseUpperLower ? "UPPER(" : "LOWER(")
-            this.sqlTopLevel.append(this.mainEntityDefinition.getColumnName(fieldName, false))
+            this.sqlTopLevel.append(fieldInfo.getFullColumnName(false))
             if (foo.caseUpperLower != null && typeValue == 1) this.sqlTopLevel.append(")")
 
             this.sqlTopLevel.append(foo.descending ? " DESC" : " ASC")
