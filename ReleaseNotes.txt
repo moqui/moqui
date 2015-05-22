@@ -37,6 +37,12 @@ Bug Fixes:
 - Fixed issue when a drop-down with dynamic-options depends on a field with
   a display or display-entity widget as the hidden input did not have the
   @id attribute needed to get the field's value
+- Fixed issue when alias-all is used with a member-entity that is a
+  view-entity where all expanded aliases would be ignored in the outer view
+- Fixed issue where member-entities of a view-entity used as a
+  member-entity and the fields of that view member-entity were aliased with
+  an alias-all with a @prefix or other name not matching the field were
+  trimmed because no matching field was in the fields to select
 
 ===========================================================================
 Release 1.5.2 - 2 May 2015

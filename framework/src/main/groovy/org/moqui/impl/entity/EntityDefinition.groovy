@@ -1206,7 +1206,7 @@ public class EntityDefinition {
                 continue;
             }
 
-            for (Node fieldNode in aliasedEntityDefinition.internalEntityNode."field") {
+            for (Node fieldNode in aliasedEntityDefinition.getFieldNodes(true, true, false)) {
                 // never auto-alias these
                 if (fieldNode."@name" == "lastUpdatedStamp") continue
                 // if specified as excluded, leave it out
