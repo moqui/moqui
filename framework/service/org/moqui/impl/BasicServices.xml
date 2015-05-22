@@ -104,7 +104,21 @@ along with this software (see the LICENSE.md file). If not, see
             <iterate list="enumerationList" entry="enumeration"><script>enumIdSet.add(enumeration.enumId)</script></iterate>
         </actions>
     </service>
-    
+    <service verb="get" noun="EnumsByTypeForDropDown" allow-remote="true">
+        <in-parameters><parameter name="enumTypeId"/></in-parameters>
+        <out-parameters><parameter name="resultList" type="List"/></out-parameters>
+        <actions>
+            <set field="resultList" from="[]"/>
+            <if condition="enumTypeId">
+                <entity-find entity-name="moqui.basic.Enumeration" list="enumList">
+                    <econdition field-name="enumTypeId"/>
+                    <order-by field-name="sequenceNum,description"/>
+                </entity-find>
+                <script>for (def enumEntry in enumList) resultList.add([enumId:enumEntry.enumId, label:"${enumEntry.description} [${enumEntry.enumId}]"])</script>
+            </if>
+        </actions>
+    </service>
+
     <!-- ========== Uom Services ========== -->
     <service verb="create" noun="UomConversion" type="entity-auto">
         <in-parameters><auto-parameters entity-name="moqui.basic.UomConversion" include="nonpk"/></in-parameters>
