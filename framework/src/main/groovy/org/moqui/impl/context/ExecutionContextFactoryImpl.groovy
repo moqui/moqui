@@ -1,13 +1,14 @@
 /*
- * This Work is in the public domain and is provided on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
- * including, without limitation, any warranties or conditions of TITLE,
- * NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
- * You are solely responsible for determining the appropriateness of using
- * this Work and assume any risks associated with your use of this Work.
- *
- * This Work includes contributions authored by David E. Jones, not as a
- * "work for hire", who hereby disclaims any copyright to the same.
+ * This software is in the public domain under CC0 1.0 Universal.
+ * 
+ * To the extent possible under law, the author(s) have dedicated all
+ * copyright and related and neighboring rights to this software to the
+ * public domain worldwide. This software is distributed without any
+ * warranty.
+ * 
+ * You should have received a copy of the CC0 Public Domain Dedication
+ * along with this software (see the LICENSE.md file). If not, see
+ * <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 package org.moqui.impl.context
 
@@ -904,7 +905,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
         boolean isSlowHit = false
         if (artifactPersistBin(artifactType, artifactSubType)) {
-            String binKey = new StringBuilder().append(artifactType).append('.').append(artifactSubType).append(':').append(artifactName).toString()
+            String binKey = new StringBuilder(200).append(artifactType).append('.').append(artifactSubType).append(':').append(artifactName).toString()
             ArtifactStatsInfo statsInfo = artifactStatsInfoByType.get(binKey)
             if (statsInfo == null) {
                 // consider seeding this from the DB using ArtifactHitReport to get all past data, or maybe not to better handle different servers/etc over time, etc

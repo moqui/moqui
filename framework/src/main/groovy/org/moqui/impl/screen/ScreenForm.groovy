@@ -1,13 +1,14 @@
 /*
- * This Work is in the public domain and is provided on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
- * including, without limitation, any warranties or conditions of TITLE,
- * NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
- * You are solely responsible for determining the appropriateness of using
- * this Work and assume any risks associated with your use of this Work.
- *
- * This Work includes contributions authored by David E. Jones, not as a
- * "work for hire", who hereby disclaims any copyright to the same.
+ * This software is in the public domain under CC0 1.0 Universal.
+ * 
+ * To the extent possible under law, the author(s) have dedicated all
+ * copyright and related and neighboring rights to this software to the
+ * public domain worldwide. This software is distributed without any
+ * warranty.
+ * 
+ * You should have received a copy of the CC0 Public Domain Dedication
+ * along with this software (see the LICENSE.md file). If not, see
+ * <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 package org.moqui.impl.screen
 
@@ -20,6 +21,7 @@ import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.impl.entity.EntityDefinition
 import org.moqui.impl.entity.EntityDefinition.RelationshipInfo
 import org.moqui.impl.entity.EntityFindImpl
+import org.moqui.impl.entity.condition.EntityConditionImplBase
 import org.moqui.impl.service.ServiceDefinition
 import org.moqui.impl.FtlNodeWrapper
 import org.moqui.context.ExecutionContext
@@ -693,37 +695,7 @@ class ScreenForm {
                     subFieldNode.appendNode("display")
                 } else {
                     if (oneRelNode != null) {
-                        String title = oneRelNode."@title"
-
-                        if (relatedEd == null) subFieldNode.appendNode("text-line")
-
-                        // use the combo-box just in case the drop-down as a default is over-constrained
-                        Node dropDownNode = subFieldNode.appendNode("drop-down", ["combo-box":"true", "allow-empty":"true"])
-                        Node entityOptionsNode = dropDownNode.appendNode("entity-options")
-                        Node entityFindNode = entityOptionsNode.appendNode("entity-find",
-                                ["entity-name":relatedEntityName, "list":"optionsValueList", "offset":0, "limit":200])
-                        // don't require any permissions for this
-                        boolean alreadyDisabled = this.ecfi.getExecutionContext().getArtifactExecution().disableAuthz()
-                        try {
-                            if (relatedEntityName == "moqui.basic.Enumeration") {
-                                // make sure the title is an actual enumTypeId before adding condition
-                                if (ecfi.entityFacade.find("moqui.basic.EnumerationType").condition("enumTypeId", title).count() > 0) {
-                                    entityFindNode.appendNode("econdition", ["field-name":"enumTypeId", "value":title])
-                                }
-                            } else if (relatedEntityName == "moqui.basic.StatusItem") {
-                                // make sure the title is an actual statusTypeId before adding condition
-                                if (ecfi.entityFacade.find("moqui.basic.StatusType").condition("statusTypeId", title).count() > 0) {
-                                    entityFindNode.appendNode("econdition", ["field-name":"statusTypeId", "value":title])
-                                }
-                            }
-                        } finally {
-                            if (!alreadyDisabled) this.ecfi.getExecutionContext().getArtifactExecution().enableAuthz()
-                        }
-
-                        if (relDefaultDescriptionField) {
-                            entityOptionsNode.attributes().put("text", "\${" + relDefaultDescriptionField + " ?: ''} [\${" + relKeyField + "}]")
-                            entityFindNode.appendNode("order-by", ["field-name":relDefaultDescriptionField])
-                        }
+                        addEntityFieldDropDown(oneRelNode, subFieldNode, relatedEd, relKeyField, "chosen-wider")
                     } else {
                         if (efType.startsWith("number-") || efType.startsWith("currency-")) {
                             subFieldNode.appendNode("text-line", [size:"10"])
@@ -742,7 +714,11 @@ class ScreenForm {
             } else if (efType.startsWith("number-") || efType.startsWith("currency-")) {
                 subFieldNode.appendNode("range-find")
             } else {
-                subFieldNode.appendNode("text-find")
+                if (oneRelNode != null) {
+                    addEntityFieldDropDown(oneRelNode, subFieldNode, relatedEd, relKeyField, "chosen-wider")
+                } else {
+                    subFieldNode.appendNode("text-find")
+                }
             }
             break
         case "display":
@@ -760,12 +736,18 @@ class ScreenForm {
                 newFieldNode.appendNode("header-field", ["show-order-by":"case-insensitive"])
             Node headerFieldNode = newFieldNode."header-field" ?
                 newFieldNode."header-field"[0] : newFieldNode.appendNode("header-field")
-            if (efType.startsWith("date") || efType.startsWith("time")) {
+            if (efType == "date" || efType == "time") {
                 headerFieldNode.appendNode("date-find", [type:efType])
+            } else if (efType == "date-time") {
+                headerFieldNode.appendNode("date-period")
             } else if (efType.startsWith("number-") || efType.startsWith("currency-")) {
-                headerFieldNode.appendNode("range-find")
+                headerFieldNode.appendNode("range-find", [size:'4'])
             } else {
-                headerFieldNode.appendNode("text-find")
+                if (oneRelNode != null) {
+                    addEntityFieldDropDown(oneRelNode, headerFieldNode, relatedEd, relKeyField, "")
+                } else {
+                    headerFieldNode.appendNode("text-find", ['hide-options':'true', size:'15'])
+                }
             }
             if (oneRelNode != null) {
                 String textStr
@@ -789,6 +771,43 @@ class ScreenForm {
                 linkNode.appendNode("parameter", [name:"aen", value:relatedEntityName])
                 linkNode.appendNode("parameter", [name:relKeyField, from:"fieldValues.${keyField}"])
             }
+        }
+    }
+
+    protected void addEntityFieldDropDown(Node oneRelNode, Node subFieldNode, EntityDefinition relatedEd,
+                                          String relKeyField, String dropDownStyle) {
+        String title = oneRelNode."@title"
+
+        if (relatedEd == null) subFieldNode.appendNode("text-line")
+        String relatedEntityName = relatedEd.getFullEntityName()
+        String relDefaultDescriptionField = relatedEd.getDefaultDescriptionField()
+
+        // use the combo-box just in case the drop-down as a default is over-constrained
+        Node dropDownNode = subFieldNode.appendNode("drop-down", ["allow-empty":"true", style:(dropDownStyle ?: "")])
+        Node entityOptionsNode = dropDownNode.appendNode("entity-options")
+        Node entityFindNode = entityOptionsNode.appendNode("entity-find",
+                ["entity-name":relatedEntityName, "offset":0, "limit":200])
+        // don't require any permissions for this
+        boolean alreadyDisabled = this.ecfi.getExecutionContext().getArtifactExecution().disableAuthz()
+        try {
+            if (relatedEntityName == "moqui.basic.Enumeration") {
+                // make sure the title is an actual enumTypeId before adding condition
+                if (ecfi.entityFacade.find("moqui.basic.EnumerationType").condition("enumTypeId", title).count() > 0) {
+                    entityFindNode.appendNode("econdition", ["field-name":"enumTypeId", "value":title])
+                }
+            } else if (relatedEntityName == "moqui.basic.StatusItem") {
+                // make sure the title is an actual statusTypeId before adding condition
+                if (ecfi.entityFacade.find("moqui.basic.StatusType").condition("statusTypeId", title).count() > 0) {
+                    entityFindNode.appendNode("econdition", ["field-name":"statusTypeId", "value":title])
+                }
+            }
+        } finally {
+            if (!alreadyDisabled) this.ecfi.getExecutionContext().getArtifactExecution().enableAuthz()
+        }
+
+        if (relDefaultDescriptionField) {
+            entityOptionsNode.attributes().put("text", "\${" + relDefaultDescriptionField + " ?: ''} [\${" + relKeyField + "}]")
+            entityFindNode.appendNode("order-by", ["field-name":relDefaultDescriptionField])
         }
     }
 

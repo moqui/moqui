@@ -1,13 +1,14 @@
 /*
- * This Work is in the public domain and is provided on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
- * including, without limitation, any warranties or conditions of TITLE,
- * NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
- * You are solely responsible for determining the appropriateness of using
- * this Work and assume any risks associated with your use of this Work.
- *
- * This Work includes contributions authored by David E. Jones, not as a
- * "work for hire", who hereby disclaims any copyright to the same.
+ * This software is in the public domain under CC0 1.0 Universal.
+ * 
+ * To the extent possible under law, the author(s) have dedicated all
+ * copyright and related and neighboring rights to this software to the
+ * public domain worldwide. This software is distributed without any
+ * warranty.
+ * 
+ * You should have received a copy of the CC0 Public Domain Dedication
+ * along with this software (see the LICENSE.md file). If not, see
+ * <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 package org.moqui.impl.entity
 
@@ -64,15 +65,18 @@ class EntityValueImpl extends EntityValueBase {
             StringBuilder values = new StringBuilder()
 
             int size = fieldList.size()
+            ArrayList<EntityDefinition.FieldInfo> fieldInfoList = new ArrayList<>(size)
             for (int i = 0; i < size; i++) {
                 String fieldName = fieldList.get(i)
+                EntityDefinition.FieldInfo fieldInfo = ed.getFieldInfo(fieldName)
+                fieldInfoList.add(fieldInfo)
                 if (isFirstField) {
                     isFirstField = false
                 } else {
                     sql.append(", ")
                     values.append(", ")
                 }
-                sql.append(ed.getColumnName(fieldName, false))
+                sql.append(fieldInfo.getFullColumnName(false))
                 values.append('?')
             }
             sql.append(") VALUES (").append(values.toString()).append(')')
@@ -83,8 +87,9 @@ class EntityValueImpl extends EntityValueBase {
                 if (con != null) eqb.useConnection(con) else eqb.makeConnection()
                 eqb.makePreparedStatement()
                 for (int i = 0; i < size; i++) {
-                    String fieldName = fieldList.get(i)
-                    eqb.setPreparedStatementValue(i+1, getValueMap().get(fieldName), getEntityDefinition().getFieldInfo(fieldName))
+                    EntityDefinition.FieldInfo fieldInfo = fieldInfoList.get(i)
+                    String fieldName = fieldInfo.name
+                    eqb.setPreparedStatementValue(i+1, getValueMap().get(fieldName), fieldInfo)
                 }
                 eqb.executeUpdate()
                 setSyncedWithDb()
@@ -111,20 +116,20 @@ class EntityValueImpl extends EntityValueBase {
             int size = nonPkFieldList.size()
             for (int i = 0; i < size; i++) {
                 String fieldName = nonPkFieldList.get(i)
+                EntityDefinition.FieldInfo fieldInfo = ed.getFieldInfo(fieldName)
                 if (isFirstField) isFirstField = false else sql.append(", ")
-                sql.append(ed.getColumnName(fieldName, false)).append("=?")
-                eqb.getParameters().add(new EntityConditionParameter(ed.getFieldInfo(fieldName),
-                        getValueMap().get(fieldName), eqb))
+                sql.append(fieldInfo.getFullColumnName(false)).append("=?")
+                eqb.getParameters().add(new EntityConditionParameter(fieldInfo, getValueMap().get(fieldName), eqb))
             }
             sql.append(" WHERE ")
             boolean isFirstPk = true
             int sizePk = pkFieldList.size()
             for (int i = 0; i < sizePk; i++) {
                 String fieldName = pkFieldList.get(i)
+                EntityDefinition.FieldInfo fieldInfo = ed.getFieldInfo(fieldName)
                 if (isFirstPk) isFirstPk = false else sql.append(" AND ")
-                sql.append(ed.getColumnName(fieldName, false)).append("=?")
-                eqb.getParameters().add(new EntityConditionParameter(ed.getFieldInfo(fieldName),
-                        getValueMap().get(fieldName), eqb))
+                sql.append(fieldInfo.getFullColumnName(false)).append("=?")
+                eqb.getParameters().add(new EntityConditionParameter(fieldInfo, getValueMap().get(fieldName), eqb))
             }
 
             try {
@@ -160,10 +165,10 @@ class EntityValueImpl extends EntityValueBase {
             int sizePk = pkFieldList.size()
             for (int i = 0; i < sizePk; i++) {
                 String fieldName = pkFieldList.get(i)
+                EntityDefinition.FieldInfo fieldInfo = ed.getFieldInfo(fieldName)
                 if (isFirstPk) isFirstPk = false else sql.append(" AND ")
-                sql.append(ed.getColumnName(fieldName, false)).append("=?")
-                eqb.getParameters().add(new EntityConditionParameter(ed.getFieldInfo(fieldName),
-                        getValueMap().get(fieldName), eqb))
+                sql.append(fieldInfo.getFullColumnName(false)).append("=?")
+                eqb.getParameters().add(new EntityConditionParameter(fieldInfo, getValueMap().get(fieldName), eqb))
             }
 
             try {

@@ -1,13 +1,14 @@
 /*
- * This Work is in the public domain and is provided on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
- * including, without limitation, any warranties or conditions of TITLE,
- * NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
- * You are solely responsible for determining the appropriateness of using
- * this Work and assume any risks associated with your use of this Work.
- *
- * This Work includes contributions authored by David E. Jones, not as a
- * "work for hire", who hereby disclaims any copyright to the same.
+ * This software is in the public domain under CC0 1.0 Universal.
+ * 
+ * To the extent possible under law, the author(s) have dedicated all
+ * copyright and related and neighboring rights to this software to the
+ * public domain worldwide. This software is distributed without any
+ * warranty.
+ * 
+ * You should have received a copy of the CC0 Public Domain Dedication
+ * along with this software (see the LICENSE.md file). If not, see
+ * <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 package org.moqui.impl.entity
 
@@ -46,9 +47,6 @@ public class EntityDefinition {
     protected Node internalEntityNode
     protected final Map<String, Node> fieldNodeMap = new HashMap<String, Node>()
     protected final Map<String, FieldInfo> fieldInfoMap = new HashMap<String, FieldInfo>()
-    // get rid of this, refactor code to use getRelationshipMap()
-    // protected final Map<String, Node> relationshipNodeMap = new HashMap<String, Node>()
-    protected final Map<String, String> columnNameMap = new HashMap<String, String>()
     // small lists, but very frequently accessed
     protected ArrayList<String> pkFieldNameList = null
     protected ArrayList<String> nonPkFieldNameList = null
@@ -64,7 +62,7 @@ public class EntityDefinition {
     protected String useCache = null
     protected String sequencePrimaryPrefix = ""
     protected long sequencePrimaryStagger = 1
-    protected long sequenceBankSize = 50
+    protected long sequenceBankSize = EntityFacadeImpl.defaultBankSize
 
     protected List<Node> expandedRelationshipList = null
     // this is kept separately for quick access to relationships by name or short-alias
@@ -80,8 +78,10 @@ public class EntityDefinition {
         this.fullEntityName = (internalEntityNode."@package-name" + "." + this.internalEntityName).intern()
         this.shortAlias = internalEntityNode."@short-alias" ?: null
         this.sequencePrimaryPrefix = internalEntityNode."@sequence-primary-prefix" ?: ""
-        this.sequencePrimaryStagger = (internalEntityNode."@sequence-primary-stagger" ?: "1") as long
-        this.sequenceBankSize = (internalEntityNode."@sequence-bank-size" ?: "1") as long
+        if (internalEntityNode."@sequence-primary-stagger")
+            this.sequencePrimaryStagger = internalEntityNode."@sequence-primary-stagger" as long
+        if (internalEntityNode."@sequence-bank-size")
+            this.sequenceBankSize = internalEntityNode."@sequence-bank-size" as long
 
         if (isViewEntity()) {
             // get group-name, etc from member-entity
@@ -268,9 +268,10 @@ public class EntityDefinition {
         String name
         String type
         String columnName
+        String fullColumnName = null
         String defaultStr
         String javaType = null
-        Integer typeValue = null
+        int typeValue = -1
         boolean isPk
         boolean encrypt
         boolean isSimple
@@ -300,6 +301,50 @@ public class EntityDefinition {
             enableLocalization = 'true'.equals(fnAttrs.get('enable-localization'))
             isUserField = 'true'.equals(fnAttrs.get('is-user-field'))
             isSimple = !enableLocalization && !isUserField
+        }
+
+        String getFullColumnName(boolean includeFunctionAndComplex) {
+            if (fullColumnName != null) return fullColumnName
+
+            if (ed.isViewEntity()) {
+                // NOTE: for view-entity the incoming fieldNode will actually be for an alias element
+                StringBuilder colNameBuilder = new StringBuilder()
+                if (includeFunctionAndComplex) {
+                    // column name for view-entity (prefix with "${entity-alias}.")
+                    //colName.append(fieldNode."@entity-alias").append('.')
+                    if (logger.isTraceEnabled()) logger.trace("For view-entity include function and complex not yet supported, for entity [${internalEntityName}], may get bad SQL...")
+                }
+                // else {
+
+                if (fieldNode.get('complex-alias')) {
+                    String function = fieldNode.attributes().get('function')
+                    if (function) {
+                        colNameBuilder.append(getFunctionPrefix(function))
+                    }
+                    ed.buildComplexAliasName(fieldNode, "+", colNameBuilder)
+                    if (function) colNameBuilder.append(')')
+                } else {
+                    String function = fieldNode.attributes().get('function')
+                    if (function) {
+                        colNameBuilder.append(getFunctionPrefix(function))
+                    }
+                    // column name for view-entity (prefix with "${entity-alias}.")
+                    colNameBuilder.append(fieldNode.attributes().get('entity-alias')).append('.')
+
+                    String memberFieldName = fieldNode.attributes().get('field') ?: fieldNode.attributes().get('name')
+                    colNameBuilder.append(ed.getBasicFieldColName(ed.internalEntityNode,
+                            (String) fieldNode.attributes().get('entity-alias'), memberFieldName))
+
+                    if (function) colNameBuilder.append(')')
+                }
+
+                // }
+                fullColumnName = colNameBuilder.toString()
+            } else {
+                fullColumnName = columnName
+            }
+
+            return fullColumnName
         }
     }
 
@@ -595,55 +640,11 @@ public class EntityDefinition {
 
     @CompileStatic
     String getColumnName(String fieldName, boolean includeFunctionAndComplex) {
-        String cn = columnNameMap.get(fieldName)
-        if (cn != null) return cn
-
         FieldInfo fieldInfo = this.getFieldInfo(fieldName)
         if (fieldInfo == null) {
             throw new EntityException("Invalid field-name [${fieldName}] for the [${this.getFullEntityName()}] entity")
         }
-
-        if (isViewEntity()) {
-            // NOTE: for view-entity the incoming fieldNode will actually be for an alias element
-            StringBuilder colNameBuilder = new StringBuilder()
-            if (includeFunctionAndComplex) {
-                // column name for view-entity (prefix with "${entity-alias}.")
-                //colName.append(fieldNode."@entity-alias").append('.')
-                if (logger.isTraceEnabled()) logger.trace("For view-entity include function and complex not yet supported, for entity [${internalEntityName}], may get bad SQL...")
-            }
-            // else {
-
-            Node fieldNode = fieldInfo.fieldNode
-            if (fieldNode.get('complex-alias')) {
-                String function = fieldNode.attributes().get('function')
-                if (function) {
-                    colNameBuilder.append(getFunctionPrefix(function))
-                }
-                buildComplexAliasName(fieldNode, "+", colNameBuilder)
-                if (function) colNameBuilder.append(')')
-            } else {
-                String function = fieldNode.attributes().get('function')
-                if (function) {
-                    colNameBuilder.append(getFunctionPrefix(function))
-                }
-                // column name for view-entity (prefix with "${entity-alias}.")
-                colNameBuilder.append(fieldNode.attributes().get('entity-alias')).append('.')
-
-                String memberFieldName = fieldNode.attributes().get('field') ?: fieldNode.attributes().get('name')
-                colNameBuilder.append(getBasicFieldColName(internalEntityNode,
-                        (String) fieldNode.attributes().get('entity-alias'), memberFieldName))
-
-                if (function) colNameBuilder.append(')')
-            }
-
-            // }
-            cn = colNameBuilder.toString()
-        } else {
-            cn = fieldInfo.columnName
-        }
-
-        columnNameMap.put(fieldName, cn)
-        return cn
+        return fieldInfo.getFullColumnName(includeFunctionAndComplex)
     }
 
     protected String getBasicFieldColName(Node entityNode, String entityAlias, String fieldName) {

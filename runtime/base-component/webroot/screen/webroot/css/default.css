@@ -1,13 +1,14 @@
 /*
- * This Work is in the public domain and is provided on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
- * including, without limitation, any warranties or conditions of TITLE,
- * NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
- * You are solely responsible for determining the appropriateness of using
- * this Work and assume any risks associated with your use of this Work.
- *
- * This Work includes contributions authored by David E. Jones, not as a
- * "work for hire", who hereby disclaims any copyright to the same.
+ * This software is in the public domain under CC0 1.0 Universal.
+ * 
+ * To the extent possible under law, the author(s) have dedicated all
+ * copyright and related and neighboring rights to this software to the
+ * public domain worldwide. This software is distributed without any
+ * warranty.
+ * 
+ * You should have received a copy of the CC0 Public Domain Dedication
+ * along with this software (see the LICENSE.md file). If not, see
+ * <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
 
@@ -127,10 +128,13 @@ white-space: normal;
 .bg-light .form-list-cell-item:nth-child(1n+2) { border-top: solid 1px #EEE; }
 .bg-dark .form-list-cell-item:nth-child(1n+2) { border-top: solid 1px #444; }
 
+td span.form-display { display: inline-block; width: 100%; }
+
 /* .form-date-find span, .form-range-find span, .form-text-find span, .form-text-find select { font-size: .8em; } */
 /*.form-date-time { white-space: nowrap; display: inline; padding: 8px 52px 8px 12px; }
 .form-date-find { white-space: nowrap; display: inline; padding: 8px 12px 8px 12px; }*/
 .form-date-find, .form-range-find { display: block; padding-bottom: 4px; }
+.input-group { display: inline-block; }
 .input-group-addon, .input-group-btn, .input-group .form-control { display: inline; }
 .form-date-find .input-group-addon { line-height: 34px; padding: 8px 12px 8px 12px; }
 .form-date-find .input-group { display: inline-block; }
@@ -144,8 +148,8 @@ a.form-order-by { margin: 0; padding: 0; font-family: "Courier New", monospace; 
 a.form-order-by:hover { color: blue; }
 a.active { color: red; }
 
-.form-cell .BigDecimal, .form-cell .Long, .form-cell .Double, .form-cell .Float, .form-cell .Integer { text-align: center; }
-.form-cell .currency { text-align: right; }
+td .Long, td .Double, td .Float, td .Integer { text-align: center; }
+td .BigDecimal, td .currency { text-align: right; }
 
 /* ======================= Handy Styles ======================= */
 
@@ -155,12 +159,18 @@ ul.float-box li { background: #EEEEEE; display: inline-block; line-height: 18px;
 .bg-dark ul.float-box li { background: #333; -webkit-box-shadow: 0 0 0 1px #080808 inset, 0 0 0 1px #333;
     box-shadow: 0 0 0 1px #080808 inset, 0 0 0 1px #333; }
 
-.shaded-area { padding: 8px; margin-bottom: 8px; }
+ul.float-plain { display: inline-block; list-style: none outside none; margin: 0 0 -8px 0; padding: 0; }
+ul.float-plain li { display: inline-block; line-height: 18px; margin: 0 8px 8px 0; padding: 8px; float: left; }
+ul.float-plain.condensed { margin: 0; }
+ul.float-plain.condensed li { margin: 0 4px 0 0; padding: 4px; }
+
+.shaded-area { padding: 8px; margin-bottom: 8px; line-height: 18px; }
 span.shaded-area { display: inline-block; white-space: normal; }
 .bg-light .shaded-area { background: #EEE; -webkit-box-shadow: 0 0 0 1px #F8F8F8 inset, 0 0 0 1px #CCC;
     box-shadow: 0 0 0 1px #F8F8F8 inset, 0 0 0 1px #CCC; }
 .bg-dark .shaded-area { background: #333; -webkit-box-shadow: 0 0 0 1px #080808 inset, 0 0 0 1px #333;
     box-shadow: 0 0 0 1px #080808 inset, 0 0 0 1px #333; }
+.shaded-area.condensed { padding: 4px; margin-bottom: 4px; }
 
 /* ======================= Screen-specific ======================= */
 

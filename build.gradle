@@ -1,16 +1,18 @@
 /*
- * This Work is in the public domain and is provided on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
- * including, without limitation, any warranties or conditions of TITLE,
- * NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
- * You are solely responsible for determining the appropriateness of using
- * this Work and assume any risks associated with your use of this Work.
- *
- * This Work includes contributions authored by David E. Jones, not as a
- * "work for hire", who hereby disclaims any copyright to the same.
+ * This software is in the public domain under CC0 1.0 Universal.
+ * 
+ * To the extent possible under law, the author(s) have dedicated all
+ * copyright and related and neighboring rights to this software to the
+ * public domain worldwide. This software is distributed without any
+ * warranty.
+ * 
+ * You should have received a copy of the CC0 Public Domain Dedication
+ * along with this software (see the LICENSE.md file). If not, see
+ * <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
 allprojects { version = '1.5.3' }
+defaultTasks 'build'
 
 def tomcatHome = '../apache-tomcat-8.0.21'
 def warName = 'moqui-' + version + '.war'
@@ -22,16 +24,9 @@ def moquiRuntime = 'runtime'
 def moquiConfDev = 'conf/MoquiDevConf.xml'
 def moquiConfProduction = 'conf/MoquiProductionConf.xml'
 
-def allBuildTasks = []
-def allCleanTasks = []
-allprojects {
-    afterEvaluate { project ->
-        for (def task in project.tasks) {
-            if (task.name == 'build') allBuildTasks.add(task)
-            if (task.name == 'clean') allCleanTasks.add(task)
-        }
-    }
-}
+def allCleanTasks = getTasksByName('clean', true)
+def allBuildTasks = getTasksByName('build', true)
+
 // ========== clean tasks ==========
 
 task clean(type: Delete) { delete file(warName); delete file(execTempDir) }

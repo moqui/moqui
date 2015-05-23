@@ -1,13 +1,14 @@
 <#--
-This Work is in the public domain and is provided on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
-including, without limitation, any warranties or conditions of TITLE,
-NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
-You are solely responsible for determining the appropriateness of using
-this Work and assume any risks associated with your use of this Work.
+This software is in the public domain under CC0 1.0 Universal.
 
-This Work includes contributions authored by David E. Jones, not as a
-"work for hire", who hereby disclaims any copyright to the same.
+To the extent possible under law, the author(s) have dedicated all
+copyright and related and neighboring rights to this software to the
+public domain worldwide. This software is distributed without any
+warranty.
+
+You should have received a copy of the CC0 Public Domain Dedication
+along with this software (see the LICENSE.md file). If not, see
+<http://creativecommons.org/publicdomain/zero/1.0/>.
 -->
 import org.moqui.impl.StupidUtilities
 // these are in the context by default: ExecutionContext ec, Map<String, Object> context, Map<String, Object> result
@@ -52,8 +53,13 @@ return;
         <#elseif (.node["@web-send-json-response"]?has_content && .node["@web-send-json-response"] != "false")>
         ec.web.sendJsonResponse(ec.resource.evaluateContextField("${.node["@web-send-json-response"]}", "", call_service_result))
         </#if>
-        <#if !(.node["@ignore-error"]?if_exists == "true")>
-        if (ec.message.errors) return
+        <#if (.node["@ignore-error"]?if_exists == "true")>
+        if (ec.message.hasError()) {
+            ec.logger.warn("Ignoring error running service ${.node.@name}: " + ec.message.getErrorsString())
+            ec.message.clearErrors()
+        }
+        <#else>
+        if (ec.message.hasError()) return
         </#if>
     }
 </#macro>
@@ -119,7 +125,7 @@ return;
 <#macro "entity-find">
     <#assign useCache = (.node["@cache"]?if_exists == "true")>
     <#assign doPaginate = .node["search-form-inputs"]?has_content && !(.node["search-form-inputs"][0]["@paginate"]?if_exists == "false")>
-    ${.node["@list"]}_xafind = ec.entity.find("${.node["@entity-name"]}")<#if useCache>.useCache(true)</#if><#if .node["@for-update"]?has_content>.forUpdate(${.node["@for-update"]})</#if><#if .node["@distinct"]?has_content>.distinct(${.node["@distinct"]})</#if><#if .node["@offset"]?has_content>.offset(${.node["@offset"]})</#if><#if .node["@limit"]?has_content>.limit(${.node["@limit"]})</#if><#list .node["select-field"] as sf>.selectField('${sf["@field-name"]}')</#list><#list .node["order-by"] as ob>.orderBy("${ob["@field-name"]}")</#list>
+    ${.node["@list"]}_xafind = ec.entity.find("${.node["@entity-name"]}")<#if .node["@cache"]?has_content>.useCache(${.node["@cache"]})</#if><#if .node["@for-update"]?has_content>.forUpdate(${.node["@for-update"]})</#if><#if .node["@distinct"]?has_content>.distinct(${.node["@distinct"]})</#if><#if .node["@offset"]?has_content>.offset(${.node["@offset"]})</#if><#if .node["@limit"]?has_content>.limit(${.node["@limit"]})</#if><#list .node["select-field"] as sf>.selectField('${sf["@field-name"]}')</#list><#list .node["order-by"] as ob>.orderBy("${ob["@field-name"]}")</#list>
             <#if !useCache><#list .node["date-filter"] as df>.condition(<#visit df/>)</#list></#if><#list .node["econdition"] as ecn>.condition(<#visit ecn/>)</#list><#list .node["econditions"] as ecs>.condition(<#visit ecs/>)</#list><#list .node["econdition-object"] as eco>.condition(<#visit eco/>)</#list>
     <#-- do having-econditions first, if present will disable cached query, used in search-form-inputs -->
     <#if .node["having-econditions"]?has_content>${.node["@list"]}_xafind<#list .node["having-econditions"]["*"] as havingCond>.havingCondition(<#visit havingCond/>)</#list>
@@ -137,7 +143,9 @@ return;
     <#else>
         ${.node["@list"]} = ${.node["@list"]}_xafind.list()
         <#if useCache>
-            <#list .node["date-filter"] as df>${.node["@list"]} = ${.node["@list"]}.filterByDate("${df["@from-field-name"]?default("fromDate")}", "${df["@thru-field-name"]?default("thruDate")}", <#if df["@valid-date"]?has_content>${df["@valid-date"]} as Timestamp<#else>null</#if>, ${df["@ignore-if-empty"]?default("false")})</#list>
+            <#list .node["date-filter"] as df>
+                ${.node["@list"]} = ${.node["@list"]}.filterByDate("${df["@from-field-name"]?default("fromDate")}", "${df["@thru-field-name"]?default("thruDate")}", <#if df["@valid-date"]?has_content>${df["@valid-date"]} as Timestamp<#else>null</#if>, ${df["@ignore-if-empty"]?default("false")})
+            </#list>
             <#if doPaginate>
                 <#-- get the Count after the date-filter, but before the limit/pagination filter -->
                 ${.node["@list"]}Count = ${.node["@list"]}.size()

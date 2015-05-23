@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-This Work is in the public domain and is provided on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
-including, without limitation, any warranties or conditions of TITLE,
-NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
-You are solely responsible for determining the appropriateness of using
-this Work and assume any risks associated with your use of this Work.
+This software is in the public domain under CC0 1.0 Universal.
 
-This Work includes contributions authored by David E. Jones, not as a
-"work for hire", who hereby disclaims any copyright to the same.
+To the extent possible under law, the author(s) have dedicated all
+copyright and related and neighboring rights to this software to the
+public domain worldwide. This software is distributed without any
+warranty.
+
+You should have received a copy of the CC0 Public Domain Dedication
+along with this software (see the LICENSE.md file). If not, see
+<http://creativecommons.org/publicdomain/zero/1.0/>.
 -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd"
@@ -50,7 +51,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <widgets>
         <container>
             <link url="list" text="Entity List" link-type="hidden-form"/>
-            <container-dialog id="FindValueDialog" button-text="Find ${ec.entity.getEntityDefinition(aen).getPrettyName(null, null)}">
+            <container-dialog id="FindValueDialog" button-text="Find ${ec.entity.getEntityDefinition(aen).getPrettyName(null, null)}" width="800">
                 <form-single name="FindEntityValue" transition="find" dynamic="true">
                     <auto-fields-entity entity-name="${aen}" field-type="find"/>
                     <field name="aen"><default-field><hidden/></default-field></field>
@@ -66,10 +67,16 @@ This Work includes contributions authored by David E. Jones, not as a
             </container-dialog>
         </container>
         <form-list name="ListEntityValue" list="entityValueList" transition="listSubmit" multi="false" dynamic="true">
-            <field name="aen"><default-field><hidden/></default-field></field>
-            <field name="edit"><default-field title="Edit"><submit/></default-field></field>
+            <field name="aen">
+                <header-field><hidden/></header-field>
+                <default-field><hidden/></default-field>
+            </field>
+            <field name="edit">
+                <header-field title="Find"><submit/></header-field>
+                <default-field title="Edit"><submit/></default-field>
+            </field>
             <field name="delete"><default-field title="Delete"><submit confirmation="Are you sure?"/></default-field></field>
-            <auto-fields-entity entity-name="${aen}" field-type="display"/>
+            <auto-fields-entity entity-name="${aen}" field-type="find-display"/>
         </form-list>
         <link url="getFormXml" text="Get Forms XML" link-type="hidden-form-link" target-window="_blank"/>
     </widgets>
