@@ -309,9 +309,11 @@ form.editable-form button { background: white; color: #333; border: 1px solid; b
 .table>thead>tr>th { vertical-align: top; }
 .table>tbody>tr>td { vertical-align: middle; }
 .table { margin-bottom: 8px; }
-.bg-dark .table-striped > tbody > tr:nth-child(odd) > td { background-color: #333333; }
-.bg-dark .table-hover > tbody > tr:hover > td { background-color: #2C2C2C; }
+.bg-dark .table-striped > tbody > tr:nth-child(odd) > td { background-color: rgba(48, 48, 48, 0.5); }
+.bg-dark .table-hover > tbody > tr:hover > td { background-color: rgba(40, 40, 40, 0.5); }
 
+.bg-light .table-striped>tbody>tr:nth-child(odd)>td { background-color: rgba(243, 243, 243, 0.5); }
+.bg-light .table-hover > tbody > tr:hover > td { background-color: rgba(234, 234, 234, 0.5); }
 
 /* #content has white-space: nowrap, which is an annoying thing for all to inherit */
 div { white-space: normal; }
