@@ -59,6 +59,7 @@ public class EntityDefinition {
     protected Boolean needsAuditLogVal = null
     protected Boolean needsEncryptVal = null
     protected Boolean createOnlyVal = null
+    protected Boolean optimisticLockVal = null
     protected String useCache = null
     protected String sequencePrimaryPrefix = ""
     protected long sequencePrimaryStagger = 1
@@ -178,6 +179,13 @@ public class EntityDefinition {
         if (createOnlyVal != null) return createOnlyVal
         createOnlyVal = internalEntityNode.attributes().get('create-only') == "true"
         return createOnlyVal
+    }
+
+    @CompileStatic
+    boolean optimisticLock() {
+        if (optimisticLockVal != null) return optimisticLockVal
+        optimisticLockVal = internalEntityNode.attributes().get('optimistic-lock') == "true"
+        return optimisticLockVal
     }
 
     @CompileStatic
@@ -1049,7 +1057,7 @@ public class EntityDefinition {
                     }
                 } else if (setIfEmpty && src.containsKey(sourceFieldName)) {
                     // treat empty String as null, otherwise set as whatever null or empty type it is
-                    if (value != null && value instanceof CharSequence) {
+                    if (value != null && isCharSequence) {
                         if (destIsEntityValueBase) destEvb.putNoCheck(fieldName, null) else dest.put(fieldName, null)
                     } else {
                         if (destIsEntityValueBase) destEvb.putNoCheck(fieldName, value) else dest.put(fieldName, value)
