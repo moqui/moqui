@@ -22,7 +22,7 @@ along with this software (see the LICENSE.md file). If not, see
     <transition name="find"><default-response url="../EntityDataFind"/></transition>
     <transition name="refresh"><default-response url="."/>
         <actions>
-            <set field="refresh" value=""/>
+            <set field="refresh" value="Y"/>
         </actions>
     </transition>
 
