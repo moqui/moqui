@@ -144,7 +144,7 @@ td span.form-display { display: inline-block; width: 100%; }
 fieldset span.form-display { display: inline-block; padding-top: 7px; }
 
 /* This is the +/- in the header, use fixed width font for consistent sizing, Courier New has the best vertical alignment with + and - */
-a.form-order-by { margin: 0; padding: 0; font-family: "Courier New", monospace; font-weight: bold; font-size: 1.2em; vertical-align: top; }
+a.form-order-by { margin: 0; padding: 0; font-family: "Courier New", monospace; font-weight: bold; font-size: 1.0em; padding-left: 0.25em; vertical-align: top; }
 a.form-order-by:hover { color: blue; }
 a.active { color: red; }
 
@@ -309,9 +309,11 @@ form.editable-form button { background: white; color: #333; border: 1px solid; b
 .table>thead>tr>th { vertical-align: top; }
 .table>tbody>tr>td { vertical-align: middle; }
 .table { margin-bottom: 8px; }
-.bg-dark .table-striped > tbody > tr:nth-child(odd) > td { background-color: #333333; }
-.bg-dark .table-hover > tbody > tr:hover > td { background-color: #2C2C2C; }
+.bg-dark .table-striped > tbody > tr:nth-child(odd) > td { background-color: rgba(40, 40, 40, 0.5); }
+.bg-dark .table-hover > tbody > tr:hover > td { background-color: rgba(28, 28, 28, 0.5); }
 
+.bg-light .table-striped>tbody>tr:nth-child(odd)>td { background-color: rgba(243, 243, 243, 0.5); }
+.bg-light .table-hover > tbody > tr:hover > td { background-color: rgba(234, 234, 234, 0.5); }
 
 /* #content has white-space: nowrap, which is an annoying thing for all to inherit */
 div { white-space: normal; }

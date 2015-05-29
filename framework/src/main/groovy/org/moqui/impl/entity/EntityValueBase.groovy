@@ -1058,7 +1058,7 @@ abstract class EntityValueBase implements EntityValue {
         List entityInfoList = doDataFeed() ? getEntityFacadeImpl().getEntityDataFeed().getDataFeedEntityInfoList(ed.getFullEntityName()) : []
 
         EntityValueImpl refreshedValue = null
-        if (ed.needsAuditLog() || ed.createOnly() || entityInfoList || ed.getEntityNode().attributes().get('optimistic-lock') == "true") {
+        if (ed.needsAuditLog() || ed.createOnly() || entityInfoList || ed.optimisticLock()) {
             refreshedValue = (EntityValueImpl) this.clone()
             refreshedValue.refresh()
         }
@@ -1071,10 +1071,10 @@ abstract class EntityValueBase implements EntityValue {
         int size = fieldNameList.size()
         for (int i = 0; i < size; i++) {
             String fieldName = fieldNameList.get(i)
-            if (valueMap.containsKey(fieldName) && valueMap.get(fieldName) != oldValues.get(fieldName))
+            if (valueMap.containsKey(fieldName) && (!oldValues.containsKey(fieldName) || valueMap.get(fieldName) != oldValues.get(fieldName)))
                 nonPkFieldList.add(fieldName)
         }
-        // logger.warn("================ evb.update() ${getEntityName()} nonPkFieldList=${nonPkFieldList};\nvalueMap=${valueMap};\ndbValueMap=${dbValueMap}")
+        // logger.warn("================ evb.update() ${getEntityName()} nonPkFieldList=${nonPkFieldList};\nvalueMap=${valueMap};\noldValues=${oldValues}")
         if (!nonPkFieldList) {
             if (logger.isTraceEnabled()) logger.trace((String) "Not doing update on entity with no populated non-PK fields; entity=" + this.toString())
             return this
@@ -1083,7 +1083,7 @@ abstract class EntityValueBase implements EntityValue {
         // do this after the empty nonPkFieldList check so that if nothing has changed then ignore the attempt to update
         if (ed.createOnly()) throw new EntityException("Entity [${getEntityName()}] is create-only (immutable), cannot be updated.")
 
-        if (ed.getEntityNode().attributes().get('optimistic-lock') == "true") {
+        if (ed.optimisticLock()) {
             if (getTimestamp("lastUpdatedStamp") != refreshedValue.getTimestamp("lastUpdatedStamp"))
                 throw new EntityException("This record was updated by someone else at [${getTimestamp("lastUpdatedStamp")}] which was after the version you loaded at [${refreshedValue.getTimestamp("lastUpdatedStamp")}]. Not updating to avoid overwriting data.")
         }

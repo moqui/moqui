@@ -139,9 +139,9 @@ class EntityFindBuilder extends EntityQueryBuilder {
     }
 
     void makeSqlFromClause() {
-        makeSqlFromClause(this.mainEntityDefinition, this.sqlTopLevel)
+        makeSqlFromClause(this.mainEntityDefinition, this.sqlTopLevel, null)
     }
-    void makeSqlFromClause(EntityDefinition localEntityDefinition, StringBuilder localBuilder) {
+    void makeSqlFromClause(EntityDefinition localEntityDefinition, StringBuilder localBuilder, Set<String> additionalFieldsUsed) {
         localBuilder.append(" FROM ")
 
         Node entityNode = localEntityDefinition.getEntityNode()
@@ -171,6 +171,8 @@ class EntityFindBuilder extends EntityQueryBuilder {
                 FieldOrderOptions foo = new FieldOrderOptions(orderByField)
                 fieldUsedSet.add(foo.fieldName)
             }
+            // additional fields to look for, when this is a sub-select for a member-entity that is a view-entity
+            if (additionalFieldsUsed) fieldUsedSet.addAll(additionalFieldsUsed)
             // get a list of entity aliases used
             for (String fieldName in fieldUsedSet) {
                 Node aliasNode = localEntityDefinition.getFieldNode(fieldName)
@@ -187,6 +189,8 @@ class EntityFindBuilder extends EntityQueryBuilder {
                     }
                 }
             }
+            // if (localEntityDefinition.getFullEntityName().contains("Example"))
+            //    logger.warn("============== entityAliasUsedSet=${entityAliasUsedSet} for entity ${localEntityDefinition.entityName}\nfieldUsedSet=${fieldUsedSet}\nfieldsToSelect=${entityFindBase.fieldsToSelect}\norderByFields=${entityFindBase.orderByFields}")
 
             // make sure each entityAlias in the entityAliasUsedSet links back to the main
             Node memberEntityNode = (Node) entityNode.get("member-entity").find({ !((Node) it).attributes().get('join-from-alias') })
@@ -270,7 +274,9 @@ class EntityFindBuilder extends EntityQueryBuilder {
                     if (isFirstKeyMap) isFirstKeyMap = false else localBuilder.append(" AND ")
 
                     localBuilder.append(joinFromAlias).append(".")
-                    localBuilder.append(sanitizeColumnName(linkEntityDefinition.getColumnName((String) keyMap.attributes().get('field-name'), false)))
+                    // NOTE: sanitizeColumnName caused issues elsewhere, eliminate here too since we're not using AS clauses
+                    localBuilder.append(linkEntityDefinition.getColumnName((String) keyMap.attributes().get('field-name'), false))
+                    // localBuilder.append(sanitizeColumnName(linkEntityDefinition.getColumnName((String) keyMap.attributes().get('field-name'), false)))
 
                     localBuilder.append(" = ")
 
@@ -282,7 +288,9 @@ class EntityFindBuilder extends EntityQueryBuilder {
                     }
                     localBuilder.append(entityAlias)
                     localBuilder.append(".")
-                    localBuilder.append(sanitizeColumnName(relatedLinkEntityDefinition.getColumnName(relatedFieldName, false)))
+                    localBuilder.append(relatedLinkEntityDefinition.getColumnName(relatedFieldName, false))
+                    // NOTE: sanitizeColumnName here breaks the generated SQL, in the case of a view within a view we want EAO.EAI.COL_NAME...
+                    // localBuilder.append(sanitizeColumnName(relatedLinkEntityDefinition.getColumnName(relatedFieldName, false)))
                 }
 
                 NodeList entityConditionList = (NodeList) relatedMemberEntityNode.get("entity-condition")
@@ -326,21 +334,25 @@ class EntityFindBuilder extends EntityQueryBuilder {
             localBuilder.append("(SELECT ")
 
             boolean isFirst = true
-            Set<String> fieldsToSelect = new HashSet<String>()
+            // fields used for group by clause
+            Set<String> fieldsToSelect = new HashSet<>()
+            // additional fields to consider when trimming the member-entities to join
+            Set<String> additionalFieldsUsed = new HashSet<>()
             for (Object aliasNodeObj in ((NodeList) localEntityDefinition.getEntityNode().get("alias"))) {
                 Node aliasNode = null
                 if (aliasNodeObj instanceof Node) aliasNode = (Node) aliasNodeObj
                 if (aliasNode == null) continue
 
                 fieldsToSelect.add((String) aliasNode.attributes().get('name'))
+                additionalFieldsUsed.add((String) aliasNode.attributes().get('field') ?: (String) aliasNode.attributes().get('name'))
                 if (isFirst) isFirst = false else localBuilder.append(", ")
                 localBuilder.append(localEntityDefinition.getColumnName((String) aliasNode.attributes().get('name'), true))
                 // TODO: are the next two lines really needed? have removed AS stuff elsewhere since it is not commonly used and not needed
-                localBuilder.append(" AS ")
-                localBuilder.append(sanitizeColumnName(localEntityDefinition.getColumnName((String) aliasNode.attributes().get('name'), false)))
+                //localBuilder.append(" AS ")
+                //localBuilder.append(sanitizeColumnName(localEntityDefinition.getColumnName((String) aliasNode.attributes().get('name'), false)))
             }
 
-            makeSqlFromClause(localEntityDefinition, localBuilder)
+            makeSqlFromClause(localEntityDefinition, localBuilder, additionalFieldsUsed)
 
 
             StringBuilder gbClause = new StringBuilder()
