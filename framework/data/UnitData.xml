@@ -252,9 +252,9 @@ along with this software (see the LICENSE.md file). If not, see
     <moqui.basic.UomConversion uomConversionId="WT_gr_oz" uomId="WT_gr" toUomId="WT_oz" conversionFactor="0.00229"/>
     <moqui.basic.UomConversion uomConversionId="WT_gr_g" uomId="WT_gr" toUomId="WT_g" conversionFactor="0.0648"/>
     <moqui.basic.UomConversion uomConversionId="WT_kg_g" uomId="WT_kg" toUomId="WT_g" conversionFactor="1000"/>
-    <moqui.basic.UomConversion uomConversionId="WT_kg_lb" uomId="WT_kg" toUomId="WT_lb" conversionFactor="2.2"/>
+    <moqui.basic.UomConversion uomConversionId="WT_kg_lb" uomId="WT_kg" toUomId="WT_lb" conversionFactor="2.2046226"/>
     <moqui.basic.UomConversion uomConversionId="WT_g_mg" uomId="WT_g" toUomId="WT_mg" conversionFactor="1000"/>
-    <moqui.basic.UomConversion uomConversionId="WT_g_oz" uomId="WT_g" toUomId="WT_oz" conversionFactor="0.03527"/>
+    <moqui.basic.UomConversion uomConversionId="WT_g_oz" uomId="WT_g" toUomId="WT_oz" conversionFactor="0.035273962"/>
     <moqui.basic.UomConversion uomConversionId="WT_oz_lb" uomId="WT_oz" toUomId="WT_lb" conversionFactor="0.0625"/>
     <moqui.basic.UomConversion uomConversionId="WT_oz_g" uomId="WT_oz" toUomId="WT_g" conversionFactor="28"/>
     <moqui.basic.UomConversion uomConversionId="WT_oz_tr_g" uomId="WT_oz_tr" toUomId="WT_g" conversionFactor="30"/>
