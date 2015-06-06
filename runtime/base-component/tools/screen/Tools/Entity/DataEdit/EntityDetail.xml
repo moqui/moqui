@@ -16,22 +16,11 @@ along with this software (see the LICENSE.md file). If not, see
         default-menu-title="Entity Detail">
 
     <parameter name="entityName" required="true"/>
-    <parameter name="refresh" required="false"/>
 
     <transition name="list"><default-response url="../EntityList"/></transition>
     <transition name="find"><default-response url="../EntityDataFind"/></transition>
-    <transition name="refresh"><default-response url="."/>
-        <actions>
-            <set field="refresh" value="Y"/>
-        </actions>
-    </transition>
 
     <actions>
-        <if condition="refresh">
-            <script>
-                ec.getEntity().getEntityDbMeta().forceCheckTableRuntime(ec.getEntity().getEntityDefinition(entityName))
-            </script>
-        </if>
         <set field="entityDefinition" from="ec.entity.getEntityDefinition(entityName)"/>
         <set field="entityNode" from="entityDefinition.getEntityNode()"/>
         <set field="fieldNodes" from="entityDefinition.getFieldNodes(true, true, false)"/>
@@ -46,7 +35,6 @@ along with this software (see the LICENSE.md file). If not, see
         <container>
             <link url="list" text="Entity List"/>
             <link url="find" text="Find ${entityDefinition.entityName}"/>
-            <link url="refresh" text="Refresh"/>
         </container>
         <container><label text="Entity Detail for '${entityDefinition.fullEntityName}'" type="h3"/></container>
         <container-row>
