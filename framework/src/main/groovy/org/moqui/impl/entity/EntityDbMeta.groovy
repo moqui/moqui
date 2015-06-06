@@ -47,14 +47,6 @@ class EntityDbMeta {
     }
 
     @CompileStatic
-    void forceCheckTableRuntime(EntityDefinition ed) {
-        if (entityTablesChecked.containsKey(ed.getFullEntityName())) {
-            entityTablesChecked.remove(ed.getFullEntityName())
-        }
-        checkTableRuntime(ed)
-    }
-    
-    @CompileStatic
     void checkTableRuntime(EntityDefinition ed) {
         String groupName = ed.getEntityGroupName()
         Boolean runtimeAddMissing = runtimeAddMissingMap.get(groupName)
