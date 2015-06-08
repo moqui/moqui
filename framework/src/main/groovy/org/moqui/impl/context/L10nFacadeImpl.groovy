@@ -67,6 +67,9 @@ public class L10nFacadeImpl implements L10nFacade {
         if (!localizedMessage && localeString.contains('_')) {
             localizedMessage = find.condition("locale", localeString.substring(0, localeString.indexOf('_'))).one()
         }
+        if (!localizedMessage) {
+            localizedMessage = find.condition("locale", "default").one()
+        }
 
         String result = localizedMessage ? localizedMessage.localized : original
         l10nMessage.put(cacheKey, result)
