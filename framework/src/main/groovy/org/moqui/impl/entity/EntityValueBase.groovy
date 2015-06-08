@@ -175,7 +175,7 @@ abstract class EntityValueBase implements EntityValue {
                             EntityFind lefFind = getEntityFacadeImpl().find("moqui.basic.LocalizedEntityField")
                             lefFind.condition([entityName:ed.getFullEntityName(), fieldName:name, pkValue:pkValue, locale:localeStr] as Map<String, Object>)
                             EntityValue lefValue = lefFind.useCache(true).one()
-                            if (lefValue) {
+                            if (lefValue != null) {
                                 String localized = (String) lefValue.localized
                                 StupidUtilities.addToMapInMap(name, localeStr, localized, localizedByLocaleByField)
                                 return localized
@@ -184,11 +184,19 @@ abstract class EntityValueBase implements EntityValue {
                             if (localeStr.contains("_")) {
                                 lefFind.condition("locale", localeStr.substring(0, localeStr.indexOf("_")))
                                 lefValue = lefFind.useCache(true).one()
-                                if (lefValue) {
+                                if (lefValue != null) {
                                     String localized = (String) lefValue.localized
                                     StupidUtilities.addToMapInMap(name, localeStr, localized, localizedByLocaleByField)
                                     return localized
                                 }
+                            }
+                            // no result found, try "default" locale
+                            lefFind.condition("locale", "default")
+                            lefValue = lefFind.useCache(true).one()
+                            if (lefValue != null) {
+                                String localized = (String) lefValue.localized
+                                StupidUtilities.addToMapInMap(name, localeStr, localized, localizedByLocaleByField)
+                                return localized
                             }
                         }
                     }
@@ -197,7 +205,23 @@ abstract class EntityValueBase implements EntityValue {
                     EntityFind lmFind = getEntityFacadeImpl().find("moqui.basic.LocalizedMessage")
                     lmFind.condition([original:internalValue, locale:localeStr])
                     EntityValue lmValue = lmFind.useCache(true).one()
-                    if (lmValue) {
+                    if (lmValue != null) {
+                        String localized = lmValue.localized
+                        StupidUtilities.addToMapInMap(name, localeStr, localized, localizedByLocaleByField)
+                        return localized
+                    }
+                    if (localeStr.contains("_")) {
+                        lmFind.condition("locale", localeStr.substring(0, localeStr.indexOf("_")))
+                        lmValue = lmFind.useCache(true).one()
+                        if (lmValue != null) {
+                            String localized = lmValue.localized
+                            StupidUtilities.addToMapInMap(name, localeStr, localized, localizedByLocaleByField)
+                            return localized
+                        }
+                    }
+                    lmFind.condition("locale", "default")
+                    lmValue = lmFind.useCache(true).one()
+                    if (lmValue != null) {
                         String localized = lmValue.localized
                         StupidUtilities.addToMapInMap(name, localeStr, localized, localizedByLocaleByField)
                         return localized
