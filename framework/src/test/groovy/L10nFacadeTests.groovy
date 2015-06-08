@@ -36,7 +36,7 @@ class L10nFacadeTests extends Specification {
         // NOTE: this relies on a LocalizedMessage records in CommonL10nData.xml
         expect:
         ec.user.setLocale(new Locale(language, country))
-        localized == ec.l10n.getLocalizedMessage(original)
+        localized == ec.l10n.localize(original)
 
         cleanup:
         ec.user.setLocale(Locale.US)
@@ -85,7 +85,7 @@ class L10nFacadeTests extends Specification {
         // test localized message with variable expansion (ensure translate then expand)
         // NOTE: this relies on a LocalizedMessage record in ExampleL10nData.xml
         expect:
-        ec.l10n.getLocalizedMessage("Test expansion \${ec.user.locale} original") == "Test expansion \${ec.tenantId} localized"
+        ec.l10n.localize("Test expansion \${ec.user.locale} original") == "Test expansion \${ec.tenantId} localized"
         ec.resource.evaluateStringExpand("Test expansion \${ec.user.locale} original", "") == "Test expansion DEFAULT localized"
     }
 

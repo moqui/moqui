@@ -68,7 +68,7 @@ public interface ResourceFacade {
 
     /** Evaluate a Groovy expression as a GString to be expanded/interpolated into a simple String.
      *
-     * NOTE: the inputString is always run through the L10nFacade.getLocalizedMessage() method before evaluating the
+     * NOTE: the inputString is always run through the L10nFacade.localize() method before evaluating the
      * expression in order to implicitly internationalize string expansion.
      *
      * @return String representing localized and expanded inputString
