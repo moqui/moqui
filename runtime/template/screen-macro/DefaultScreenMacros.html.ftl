@@ -34,7 +34,7 @@ along with this software (see the LICENSE.md file). If not, see
         <#-- <ul id="${menuId}"<#if .node["@width"]?has_content> style="width: ${.node["@width"]};"</#if>> -->
             <#-- <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
                 <#assign urlInstance = sri.buildUrl(subscreensItem.name)>
-                <#if urlInstance?exists && urlInstance.inCurrentScreenPath><#assign currentItemName = ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)></#if>
+                <#if urlInstance?exists && urlInstance.inCurrentScreenPath><#assign currentItemName = ec.l10n.localize(subscreensItem.menuTitle)></#if>
             </#list> -->
             <li id="${menuId}" class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">${menuTitle} <i class="glyphicon glyphicon-chevron-right"></i></a>
@@ -42,7 +42,7 @@ along with this software (see the LICENSE.md file). If not, see
                     <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
                         <#assign urlInstance = sri.buildUrl(subscreensItem.name)>
                         <#if urlInstance.isPermitted()>
-                            <li class="<#if urlInstance.inCurrentScreenPath>active</#if>"><a href="<#if urlInstance.disableLink>#<#else>${urlInstance.minimalPathUrlWithParams}</#if>">${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}</a></li>
+                            <li class="<#if urlInstance.inCurrentScreenPath>active</#if>"><a href="<#if urlInstance.disableLink>#<#else>${urlInstance.minimalPathUrlWithParams}</#if>">${ec.l10n.localize(subscreensItem.menuTitle)}</a></li>
                         </#if>
                     </#list>
                 </ul>
@@ -53,7 +53,7 @@ along with this software (see the LICENSE.md file). If not, see
                     <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
                         <#assign urlInstance = sri.buildUrl(subscreensItem.name)>
                         <#if urlInstance.isPermitted()>
-                            <li class="<#if urlInstance.inCurrentScreenPath>ui-state-active</#if>"><a href="<#if urlInstance.disableLink>#<#else>${urlInstance.minimalPathUrlWithParams}</#if>">${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}</a></li>
+                            <li class="<#if urlInstance.inCurrentScreenPath>ui-state-active</#if>"><a href="<#if urlInstance.disableLink>#<#else>${urlInstance.minimalPathUrlWithParams}</#if>">${ec.l10n.localize(subscreensItem.menuTitle)}</a></li>
                         </#if>
                     </#list>
                 </ul>
@@ -72,7 +72,7 @@ along with this software (see the LICENSE.md file). If not, see
                 <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
                     <#assign urlInstance = sri.buildUrl(subscreensItem.name)>
                     <#if urlInstance.isPermitted()>
-                        <li class="<#if urlInstance.inCurrentScreenPath>active</#if><#if urlInstance.disableLink> disabled</#if>"><#if urlInstance.disableLink>${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}<#else><a href="${urlInstance.minimalPathUrlWithParams}">${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}</a></#if></li>
+                        <li class="<#if urlInstance.inCurrentScreenPath>active</#if><#if urlInstance.disableLink> disabled</#if>"><#if urlInstance.disableLink>${ec.l10n.localize(subscreensItem.menuTitle)}<#else><a href="${urlInstance.minimalPathUrlWithParams}">${ec.l10n.localize(subscreensItem.menuTitle)}</a></#if></li>
                     </#if>
                 </#list>
             </ul>
@@ -108,7 +108,7 @@ along with this software (see the LICENSE.md file). If not, see
         <#-- <ul id="${menuId}"<#if .node["@width"]?has_content> style="width: ${.node["@menu-width"]};"</#if>>  ->
             <#-- <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
                 <#assign urlInstance = sri.buildUrl(subscreensItem.name)>
-                <#if urlInstance.inCurrentScreenPath><#assign currentItemName = ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)></#if>
+                <#if urlInstance.inCurrentScreenPath><#assign currentItemName = ec.l10n.localize(subscreensItem.menuTitle)></#if>
             </#list> -->
             <li id="${menuId}" class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">${menuTitle} <i class="glyphicon glyphicon-chevron-right"></i></a>
@@ -116,7 +116,7 @@ along with this software (see the LICENSE.md file). If not, see
                     <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
                         <#assign urlInstance = sri.buildUrl(subscreensItem.name)>
                         <#if urlInstance.isPermitted()>
-                            <li class="<#if urlInstance.inCurrentScreenPath>active</#if>"><a href="<#if urlInstance.disableLink>#<#else>${urlInstance.minimalPathUrlWithParams}</#if>">${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}</a></li>
+                            <li class="<#if urlInstance.inCurrentScreenPath>active</#if>"><a href="<#if urlInstance.disableLink>#<#else>${urlInstance.minimalPathUrlWithParams}</#if>">${ec.l10n.localize(subscreensItem.menuTitle)}</a></li>
                         </#if>
                     </#list>
                 </ul>
@@ -127,7 +127,7 @@ along with this software (see the LICENSE.md file). If not, see
                     <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
                         <#assign urlInstance = sri.buildUrl(subscreensItem.name)>
                         <#if urlInstance.isPermitted()>
-                            <li class="<#if urlInstance.inCurrentScreenPath>ui-state-active</#if>"><a href="<#if urlInstance.disableLink>#<#else>${urlInstance.minimalPathUrlWithParams}</#if>">${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}</a></li>
+                            <li class="<#if urlInstance.inCurrentScreenPath>ui-state-active</#if>"><a href="<#if urlInstance.disableLink>#<#else>${urlInstance.minimalPathUrlWithParams}</#if>">${ec.l10n.localize(subscreensItem.menuTitle)}</a></li>
                         </#if>
                     </#list>
                 </ul>
@@ -524,7 +524,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
         <#assign labelType = .node["@type"]?default("span")/>
         <#assign labelValue = ec.resource.evaluateStringExpand(.node["@text"], "")/>
         <#assign divId><@nodeId .node/></#assign>
-        <#if (labelValue?has_content && labelValue?length < 255)><#assign labelValue = ec.l10n.getLocalizedMessage(labelValue)/></#if>
+        <#if (labelValue?has_content && labelValue?length < 255)><#assign labelValue = ec.l10n.localize(labelValue)/></#if>
         <#if labelValue?trim?has_content>
         <${labelType}<#if divId?has_content> id="${divId}"</#if><#if .node["@style"]?has_content> class="${ec.resource.evaluateStringExpand(.node["@style"], "")}"</#if>><#if !.node["@encode"]?has_content || .node["@encode"] == "true">${labelValue?html?replace("\n", "<br>")}<#else>${labelValue}</#if></${labelType}>
         </#if>
@@ -541,9 +541,9 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#if labelValue?trim?has_content>
         <${labelType} id="${divId}" class="editable-label"><#if .node["@encode"]! == "true">${labelValue?html?replace("\n", "<br>")}<#else>${labelValue}</#if></${labelType}>
         <#assign afterScreenScript>
-        $("#${divId}").editable("${urlInstance.url}", { indicator:"${ec.l10n.getLocalizedMessage("Saving")}",
-            tooltip:"${ec.l10n.getLocalizedMessage("Click to edit")}", cancel:"${ec.l10n.getLocalizedMessage("Cancel")}",
-            submit:"${ec.l10n.getLocalizedMessage("Save")}", name:"${parameterName}",
+        $("#${divId}").editable("${urlInstance.url}", { indicator:"${ec.l10n.localize("Saving")}",
+            tooltip:"${ec.l10n.localize("Click to edit")}", cancel:"${ec.l10n.localize("Cancel")}",
+            submit:"${ec.l10n.localize("Save")}", name:"${parameterName}",
             type:"${.node["@widget-type"]!"textarea"}", cssclass:"editable-form",
             submitdata:{<#list urlParms.keySet() as parameterKey>${parameterKey}:"${urlParms[parameterKey]}", </#list>parameterName:"${parameterName}"}
             <#if .node["editable-load"]?has_content>
@@ -1181,7 +1181,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
 
 <#macro fieldName widgetNode><#assign fieldNode=widgetNode?parent?parent/>${fieldNode["@name"]?html}<#if isMulti?exists && isMulti && listEntryIndex?has_content>_${listEntryIndex}</#if></#macro>
 <#macro fieldId widgetNode><#assign fieldNode=widgetNode?parent?parent/>${ec.resource.evaluateStringExpand(fieldNode?parent["@name"], "")}_${fieldNode["@name"]}<#if listEntryIndex?has_content>_${listEntryIndex}</#if><#if sectionEntryIndex?has_content>_${sectionEntryIndex}</#if></#macro>
-<#macro fieldTitle fieldSubNode><#assign titleValue><#if fieldSubNode["@title"]?has_content>${ec.resource.evaluateStringExpand(fieldSubNode["@title"], "")}<#else><#list fieldSubNode?parent["@name"]?split("(?=[A-Z])", "r") as nameWord>${nameWord?cap_first?replace("Id", "ID")}<#if nameWord_has_next> </#if></#list></#if></#assign>${ec.l10n.getLocalizedMessage(titleValue)}</#macro>
+<#macro fieldTitle fieldSubNode><#assign titleValue><#if fieldSubNode["@title"]?has_content>${ec.resource.evaluateStringExpand(fieldSubNode["@title"], "")}<#else><#list fieldSubNode?parent["@name"]?split("(?=[A-Z])", "r") as nameWord>${nameWord?cap_first?replace("Id", "ID")}<#if nameWord_has_next> </#if></#list></#if></#assign>${ec.l10n.localize(titleValue)}</#macro>
 
 <#macro field><#-- shouldn't be called directly, but just in case --><#recurse/></#macro>
 <#macro "conditional-field"><#-- shouldn't be called directly, but just in case --><#recurse/></#macro>
@@ -1215,7 +1215,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#assign id><@fieldId .node/></#assign>
 
     <span class="form-date-find">
-      <span>${ec.l10n.getLocalizedMessage("From")}&nbsp;</span>
+      <span>${ec.l10n.localize("From")}&nbsp;</span>
     <#if .node["@type"]! != "time">
         <#if .node["@type"]! == "date">
             <div class="input-group input-append date" id="${id}_from" data-date="${fieldValueFrom?html}" data-date-format="${datepickerFormat}">
@@ -1243,7 +1243,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     </span>
 
     <span class="form-date-find">
-      <span>${ec.l10n.getLocalizedMessage("Thru")}&nbsp;</span>
+      <span>${ec.l10n.localize("Thru")}&nbsp;</span>
     <#if .node["@type"]! != "time">
         <#if .node["@type"]! == "date">
             <div class="input-group input-append date" id="${id}_thru" data-date="${fieldValueThru?html}" data-date-format="${datepickerFormat}">
@@ -1532,10 +1532,10 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
     <#assign curFieldName><@fieldName .node/></#assign>
     <#assign id><@fieldId .node/></#assign>
 <span class="form-range-find">
-    <span>${ec.l10n.getLocalizedMessage("From")}&nbsp;</span><input type="text" class="form-control" name="${curFieldName}_from" value="${ec.web.parameters.get(curFieldName + "_from")!?default(.node["@default-value-from"]!"")?html}" size="${.node.@size!"10"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if> id="${id}_from"<#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
+    <span>${ec.l10n.localize("From")}&nbsp;</span><input type="text" class="form-control" name="${curFieldName}_from" value="${ec.web.parameters.get(curFieldName + "_from")!?default(.node["@default-value-from"]!"")?html}" size="${.node.@size!"10"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if> id="${id}_from"<#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
 </span>
 <span class="form-range-find">
-    <span>${ec.l10n.getLocalizedMessage("Thru")}&nbsp;</span><input type="text" class="form-control" name="${curFieldName}_thru" value="${ec.web.parameters.get(curFieldName + "_thru")!?default(.node["@default-value-thru"]!"")?html}" size="${.node.@size!"10"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if> id="${id}_thru"<#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
+    <span>${ec.l10n.localize("Thru")}&nbsp;</span><input type="text" class="form-control" name="${curFieldName}_thru" value="${ec.web.parameters.get(curFieldName + "_thru")!?default(.node["@default-value-thru"]!"")?html}" size="${.node.@size!"10"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if> id="${id}_thru"<#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
 </span>
 </#macro>
 
@@ -1625,13 +1625,13 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
     <#if .node["@hide-options"]! == "true" || .node["@hide-options"]! == "operator">
         <input type="hidden" name="${curFieldName}_op" value="${defaultOperator}">
     <#else>
-        <span><input type="checkbox" class="form-control" name="${curFieldName}_not" value="Y"<#if ec.web.parameters.get(curFieldName + "_not")! == "Y"> checked="checked"</#if>>&nbsp;${ec.l10n.getLocalizedMessage("Not")}</span>
+        <span><input type="checkbox" class="form-control" name="${curFieldName}_not" value="Y"<#if ec.web.parameters.get(curFieldName + "_not")! == "Y"> checked="checked"</#if>>&nbsp;${ec.l10n.localize("Not")}</span>
         <select name="${curFieldName}_op">
-            <option value="equals"<#if defaultOperator == "equals"> selected="selected"</#if>>${ec.l10n.getLocalizedMessage("Equals")}</option>
-            <option value="like"<#if defaultOperator == "like"> selected="selected"</#if>>${ec.l10n.getLocalizedMessage("Like")}</option>
-            <option value="contains"<#if defaultOperator == "contains"> selected="selected"</#if>>${ec.l10n.getLocalizedMessage("Contains")}</option>
-            <option value="begins"<#if defaultOperator == "begins"> selected="selected"</#if>>${ec.l10n.getLocalizedMessage("Begins With")}</option>
-            <option value="empty"<#rt/><#if defaultOperator == "empty"> selected="selected"</#if>>${ec.l10n.getLocalizedMessage("Empty")}</option>
+            <option value="equals"<#if defaultOperator == "equals"> selected="selected"</#if>>${ec.l10n.localize("Equals")}</option>
+            <option value="like"<#if defaultOperator == "like"> selected="selected"</#if>>${ec.l10n.localize("Like")}</option>
+            <option value="contains"<#if defaultOperator == "contains"> selected="selected"</#if>>${ec.l10n.localize("Contains")}</option>
+            <option value="begins"<#if defaultOperator == "begins"> selected="selected"</#if>>${ec.l10n.localize("Begins With")}</option>
+            <option value="empty"<#rt/><#if defaultOperator == "empty"> selected="selected"</#if>>${ec.l10n.localize("Empty")}</option>
         </select>
     </#if>
 
@@ -1641,7 +1641,7 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
     <#if .node["@hide-options"]! == "true" || .node["@hide-options"]! == "ignore-case">
         <input type="hidden" name="${curFieldName}_ic" value="Y"<#if ignoreCase> checked="checked"</#if>>
     <#else>
-        <span><input type="checkbox" class="form-control" name="${curFieldName}_ic" value="Y"<#if ignoreCase> checked="checked"</#if>>&nbsp;${ec.l10n.getLocalizedMessage("Ignore Case")}</span>
+        <span><input type="checkbox" class="form-control" name="${curFieldName}_ic" value="Y"<#if ignoreCase> checked="checked"</#if>>&nbsp;${ec.l10n.localize("Ignore Case")}</span>
     </#if>
 </span>
 </#macro>

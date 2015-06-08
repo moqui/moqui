@@ -35,7 +35,7 @@ along with this software (see the LICENSE.md file). If not, see
                             !currentScreenDef?.getParameterMap() &amp;&amp; currentUrlInfo?.isPermitted()</expression></condition>
                         <widgets>
                             <link url="${currentUrlInfo.url}" link-type="anchor-button" url-type="plain"
-                                    text="${ec.l10n.getLocalizedMessage(currentSubscreensItem.menuTitle)}" style="app-list-link"/>
+                                    text="${ec.l10n.localize(currentSubscreensItem.menuTitle)}" style="app-list-link"/>
                         </widgets>
                         <fail-widgets>
                             <render-mode><text type="html"><![CDATA[<!-- excluding screen at path ${currentScreenPath} -->]]></text></render-mode>
