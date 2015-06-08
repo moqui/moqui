@@ -27,6 +27,10 @@ New Features:
   a list of component names to load data from when loading by data type
 - The entity.@create-only attribute now only checked if fields are changed
 - If service-call.@ignore-error=true now logs and clears error messages
+- Added support for a 'default' locale value for LocalizedMessage and
+  LocalizedEntityField as a fallback if no locale or base locale record is
+  found; used to better support placeholder message keys meant to always
+  be localized
 
 Bug Fixes:
 
