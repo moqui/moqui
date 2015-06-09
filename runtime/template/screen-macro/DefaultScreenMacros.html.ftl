@@ -450,7 +450,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
         <#if linkNode["@entity-name"]?has_content>
             <#assign linkText = ""/><#assign linkText = sri.getFieldEntityValue(linkNode)/>
         <#else>
-            <#if .node["@text-map"]?has_content && linkNode["@text"]?has_content>
+            <#if linkNode["@text-map"]?has_content && linkNode["@text"]?has_content>
                 <#assign linkText = ec.resource.evaluateStringExpand(linkNode["@text"], "", ec.resource.evaluateContextField(linkNode["@text-map"], ""))/>
             <#else>
                 <#assign linkText = ec.resource.evaluateStringExpand(linkNode["@text"]!"", "")/>
@@ -529,7 +529,11 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#if .node["@condition"]?has_content><#assign conditionResult = ec.resource.evaluateCondition(.node["@condition"], "")><#else><#assign conditionResult = true></#if>
     <#if conditionResult>
         <#assign labelType = .node["@type"]?default("span")/>
-        <#assign labelValue = ec.resource.evaluateStringExpand(.node["@text"], "")/>
+        <#if .node["@text-map"]?has_content>
+            <#assign labelValue = ec.resource.evaluateStringExpand(.node["@text"], "", ec.resource.evaluateContextField(.node["@text-map"], ""))>
+        <#else>
+            <#assign labelValue = ec.resource.evaluateStringExpand(.node["@text"], "")/>
+        </#if>
         <#assign divId><@nodeId .node/></#assign>
         <#if (labelValue?has_content && labelValue?length < 255)><#assign labelValue = ec.l10n.localize(labelValue)/></#if>
         <#if labelValue?trim?has_content>
@@ -1173,7 +1177,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                     <#if linkNode["@entity-name"]?has_content>
                         <#assign linkText = ""/><#assign linkText = sri.getFieldEntityValue(linkNode)/>
                     <#else>
-                        <#if .node["@text-map"]?has_content && linkNode["@text"]?has_content>
+                        <#if linkNode["@text-map"]?has_content && linkNode["@text"]?has_content>
                             <#assign linkText = ec.resource.evaluateStringExpand(linkNode["@text"], "", ec.resource.evaluateContextField(linkNode["@text-map"], ""))/>
                         <#else>
                             <#assign linkText = ec.resource.evaluateStringExpand(linkNode["@text"]!"", "")/>
