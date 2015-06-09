@@ -447,8 +447,15 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#assign linkNode = .node>
     <#if linkNode["@condition"]?has_content><#assign conditionResult = ec.resource.evaluateCondition(linkNode["@condition"], "")><#else><#assign conditionResult = true></#if>
     <#if conditionResult>
-        <#if linkNode["@entity-name"]?has_content><#assign linkText = ""/><#assign linkText = sri.getFieldEntityValue(linkNode)/>
-            <#else><#assign linkText = ec.resource.evaluateStringExpand(linkNode["@text"]!"", "")/></#if>
+        <#if linkNode["@entity-name"]?has_content>
+            <#assign linkText = ""/><#assign linkText = sri.getFieldEntityValue(linkNode)/>
+        <#else>
+            <#if .node["@text-map"]?has_content && linkNode["@text"]?has_content>
+                <#assign linkText = ec.resource.evaluateStringExpand(linkNode["@text"], "", ec.resource.evaluateContextField(linkNode["@text-map"], ""))/>
+            <#else>
+                <#assign linkText = ec.resource.evaluateStringExpand(linkNode["@text"]!"", "")/>
+            </#if>
+        </#if>
         <#assign urlInstance = sri.makeUrlByType(.node["@url"], .node["@url-type"]!"transition", .node, .node["@expand-transition-url"]!"true")>
         <#assign divId><@nodeId .node/></#assign>
         <@linkFormForm linkNode divId linkText urlInstance/>
@@ -1163,8 +1170,15 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                 <#assign linkNode = widgetNode>
                 <#if linkNode["@condition"]?has_content><#assign conditionResult = ec.resource.evaluateCondition(linkNode["@condition"], "")><#else><#assign conditionResult = true></#if>
                 <#if conditionResult>
-                    <#if linkNode["@entity-name"]?has_content><#assign linkText = ""/><#assign linkText = sri.getFieldEntityValue(linkNode)/>
-                        <#else><#assign linkText = ec.resource.evaluateStringExpand(linkNode["@text"]!"", "")/></#if>
+                    <#if linkNode["@entity-name"]?has_content>
+                        <#assign linkText = ""/><#assign linkText = sri.getFieldEntityValue(linkNode)/>
+                    <#else>
+                        <#if .node["@text-map"]?has_content && linkNode["@text"]?has_content>
+                            <#assign linkText = ec.resource.evaluateStringExpand(linkNode["@text"], "", ec.resource.evaluateContextField(linkNode["@text-map"], ""))/>
+                        <#else>
+                            <#assign linkText = ec.resource.evaluateStringExpand(linkNode["@text"]!"", "")/>
+                        </#if>
+                    </#if>
                     <#assign linkUrlInfo = sri.makeUrlByType(linkNode["@url"], linkNode["@url-type"]!"transition", linkNode, linkNode["@expand-transition-url"]!"true")>
                     <#assign linkFormId><@fieldId linkNode/>_${linkNode["@url"]?replace(".", "_")}</#assign>
                     <#assign afterFormText><@linkFormForm linkNode linkFormId linkText linkUrlInfo/></#assign>
@@ -1391,7 +1405,11 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
 <#macro display>
     <#assign fieldValue = ""/>
     <#if .node["@text"]?has_content>
-        <#assign fieldValue = ec.resource.evaluateStringExpand(.node["@text"], "")>
+        <#if .node["@text-map"]?has_content>
+            <#assign fieldValue = ec.resource.evaluateStringExpand(.node["@text"], "", ec.resource.evaluateContextField(.node["@text-map"], ""))>
+        <#else>
+            <#assign fieldValue = ec.resource.evaluateStringExpand(.node["@text"], "")>
+        </#if>
         <#if .node["@currency-unit-field"]?has_content>
             <#assign fieldValue = ec.l10n.formatCurrency(fieldValue, ec.resource.evaluateContextField(.node["@currency-unit-field"], ""), 2)>
         </#if>
