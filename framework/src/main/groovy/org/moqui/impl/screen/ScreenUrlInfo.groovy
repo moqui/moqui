@@ -303,7 +303,7 @@ class ScreenUrlInfo {
 
         // TODO: use this in all calling code (expand url before creating/caching so that we have the full/unique one)
         // support string expansion if there is a "${"
-        // if (fromScreenPath.contains('${')) fromScreenPath = ec.getResource().evaluateStringExpand(fromScreenPath, "")
+        // if (fromScreenPath.contains('${')) fromScreenPath = ec.getResource().expand(fromScreenPath, "")
 
         if (fromScreenPath.startsWith("//")) {
             // find the screen by name
@@ -601,7 +601,7 @@ class ScreenUrlInfo {
 
                 // create a ScreenUrlInfo, then copy its info into this
                 String expandedUrl = ti.defaultResponse.url
-                if (expandedUrl.contains('${')) expandedUrl = ec.getResource().evaluateStringExpand(expandedUrl, "")
+                if (expandedUrl.contains('${')) expandedUrl = ec.getResource().expand(expandedUrl, "")
                 ScreenUrlInfo aliasUrlInfo = getScreenUrlInfo(sri.getSfi(), sui.rootSd, sui.fromSd,
                         sui.preTransitionPathNameList, expandedUrl,
                         (sui.lastStandalone || transitionAliasParameters.lastStandalone == "true"))

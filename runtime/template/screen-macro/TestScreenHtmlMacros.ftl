@@ -15,6 +15,6 @@ along with this software (see the LICENSE.md file). If not, see
 
 <#macro container>
     <#assign divId><@nodeId .node/></#assign>
-    <${.node["@type"]!"div"}<#if divId??> id="${divId}"</#if><#if .node["@style"]?has_content> class="${ec.resource.evaluateStringExpand(.node["@style"], "")}"</#if>><#recurse>
+    <${.node["@type"]!"div"}<#if divId??> id="${divId}"</#if><#if .node["@style"]?has_content> class="${ec.resource.expand(.node["@style"], "")}"</#if>><#recurse>
     </${.node["@type"]!"div"}><!-- CONTAINER OVERRIDE FOR THE Example.xml screen -->
 </#macro>

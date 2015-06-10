@@ -1285,7 +1285,7 @@ public class EntityDefinition {
             // NOTE: this doesn't do context expansion of the valid-date as it doesn't make sense for an entity def to depend on something being in the context
             condList.add((EntityConditionImplBase) this.efi.conditionFactory.makeConditionDate(
                     (String) dateFilter."@from-field-name", (String) dateFilter."@thru-field-name",
-                    dateFilter."@valid-date" ? efi.getEcfi().getResourceFacade().evaluateStringExpand((String) dateFilter."@valid-date", "") as Timestamp : null))
+                    dateFilter."@valid-date" ? efi.getEcfi().getResourceFacade().expand((String) dateFilter."@valid-date", "") as Timestamp : null))
         }
         for (Node econdition in conditionsParent."econdition") {
             EntityConditionImplBase cond;
@@ -1302,7 +1302,7 @@ public class EntityDefinition {
                 // NOTE: may need to convert value from String to object for field
                 String condValue = econdition."@value" ?: null
                 // NOTE: only expand if contains "${", expanding normal strings does l10n and messes up key values; hopefully this won't result in a similar issue
-                if (condValue && condValue.contains("\${")) condValue = efi.getEcfi().getResourceFacade().evaluateStringExpand(condValue, "")
+                if (condValue && condValue.contains("\${")) condValue = efi.getEcfi().getResourceFacade().expand(condValue, "")
                 cond = new FieldValueCondition((EntityConditionFactoryImpl) this.efi.conditionFactory, field,
                         EntityConditionFactoryImpl.getComparisonOperator((String) econdition."@operator"), condValue)
             } else {

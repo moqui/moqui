@@ -410,7 +410,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                         EntityList condList = efi.find('moqui.security.ArtifactAuthzRecordCond')
                                 .condition('artifactAuthzId', aacv.get('artifactAuthzId')).useCache(true).list()
                         for (EntityValue cond in condList) {
-                            String expCondValue = eci.resource.evaluateStringExpand((String) cond.get('condValue'),
+                            String expCondValue = eci.resource.expand((String) cond.get('condValue'),
                                     "moqui.security.ArtifactAuthzRecordCond.${cond.artifactAuthzId}.${cond.artifactAuthzCondSeqId}")
                             if (expCondValue) {
                                 ef.condition((String) cond.fieldName,

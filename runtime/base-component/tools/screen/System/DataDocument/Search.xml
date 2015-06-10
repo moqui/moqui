@@ -51,8 +51,8 @@ along with this software (see the LICENSE.md file). If not, see
                 <!-- this is a type=many relationship, but we just want one here: -->
                 <entity-find-related-one value-field="dataDocument" cache="true"
                         relationship-name="moqui.entity.document.DataDocumentLink" to-value-field="dataDocumentLink"/>
-                <set field="linkUrl" from="ec.resource.evaluateStringExpand(dataDocumentLink?.linkUrl, '')"/>
-                <set field="documentTitle" from="ec.resource.evaluateStringExpand(dataDocument?.documentTitle, '')"/>
+                <set field="linkUrl" from="ec.resource.expand(dataDocumentLink?.linkUrl, '')"/>
+                <set field="documentTitle" from="ec.resource.expand(dataDocument?.documentTitle, '')"/>
             </row-actions>
             <field name="type"><default-field><display text="${dataDocument.documentName} [${_type}]"/></default-field></field>
             <field name="id"><default-field><display text="${_id}"/></default-field></field>

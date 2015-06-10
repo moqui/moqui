@@ -88,10 +88,10 @@ along with this software (see the LICENSE.md file). If not, see
 <#macro text><#-- do nothing, is used only through "render-mode" --></#macro>
 
 <#-- ================== Standalone Fields ==================== -->
-<#macro link><#if .node?parent?node_name?contains("-field")>${ec.resource.evaluateStringExpand(.node["@text"], "")}</#if></#macro>
+<#macro link><#if .node?parent?node_name?contains("-field")>${ec.resource.expand(.node["@text"], "")}</#if></#macro>
 
 <#macro image><#-- do nothing for image, most likely part of screen and is funny in csv file: <@csvValue .node["@alt"]!"image"/> --></#macro>
-<#macro label><#-- do nothing for label, most likely part of screen and is funny in csv file: <#assign labelValue = ec.resource.evaluateStringExpand(.node["@text"], "")><@csvValue labelValue/> --></#macro>
+<#macro label><#-- do nothing for label, most likely part of screen and is funny in csv file: <#assign labelValue = ec.resource.expand(.node["@text"], "")><@csvValue labelValue/> --></#macro>
 <#macro parameter><#-- do nothing, used directly in other elements --></#macro>
 
 
@@ -221,7 +221,7 @@ on the same screen to increase reusability of those screens -->
 <#macro "display">
     <#assign fieldValue = ""/>
     <#if .node["@text"]?has_content>
-        <#assign fieldValue = ec.resource.evaluateStringExpand(.node["@text"], "")>
+        <#assign fieldValue = ec.resource.expand(.node["@text"], "")>
         <#if .node["@currency-unit-field"]?has_content>
             <#assign fieldValue = ec.l10n.formatCurrency(fieldValue, ec.resource.evaluateContextField(.node["@currency-unit-field"], ""), 2)>
         </#if>

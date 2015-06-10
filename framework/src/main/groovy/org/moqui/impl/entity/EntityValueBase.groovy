@@ -369,7 +369,7 @@ abstract class EntityValueBase implements EntityValue {
         // get the entity-specific prefix, support string expansion for it too
         String entityPrefix = ""
         String rawPrefix = ed.sequencePrimaryPrefix
-        if (rawPrefix) entityPrefix = localEfi.getEcfi().getResourceFacade().evaluateStringExpand(rawPrefix, null, valueMap)
+        if (rawPrefix) entityPrefix = localEfi.getEcfi().getResourceFacade().expand(rawPrefix, null, valueMap)
         String sequenceValue = localEfi.sequencedIdPrimary(getEntityName(), ed.sequencePrimaryStagger, ed.sequenceBankSize)
 
         set(pkFields.get(0), entityPrefix + sequenceValue)

@@ -86,7 +86,7 @@ class L10nFacadeTests extends Specification {
         // NOTE: this relies on a LocalizedMessage record in ExampleL10nData.xml
         expect:
         ec.l10n.localize("Test expansion \${ec.user.locale} original") == "Test expansion \${ec.tenantId} localized"
-        ec.resource.evaluateStringExpand("Test expansion \${ec.user.locale} original", "") == "Test expansion DEFAULT localized"
+        ec.resource.expand("Test expansion \${ec.user.locale} original", "") == "Test expansion DEFAULT localized"
     }
 
     def "format USD and GBP currency in US and UK locales"() {

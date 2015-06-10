@@ -39,7 +39,7 @@ along with this software (see the LICENSE.md file). If not, see
     <#if .node["panel-footer"]?has_content><#recurse .node["panel-footer"][0]></#if>
 </#macro>
 
-<#macro "container-dialog">${ec.resource.evaluateStringExpand(.node["@button-text"], "")} </#macro>
+<#macro "container-dialog">${ec.resource.expand(.node["@button-text"], "")} </#macro>
 
 <#-- ==================== Includes ==================== -->
 <#macro "include-screen">${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}</#macro>
@@ -84,10 +84,10 @@ along with this software (see the LICENSE.md file). If not, see
 <#macro text><#-- do nothing, is used only through "render-mode" --></#macro>
 
 <#-- ================== Standalone Fields ==================== -->
-<#macro link>${ec.resource.evaluateStringExpand(.node["@text"], "")} </#macro>
+<#macro link>${ec.resource.expand(.node["@text"], "")} </#macro>
 
 <#macro image>${.node["@alt"]!""}</#macro>
-<#macro label><#assign labelValue = ec.resource.evaluateStringExpand(.node["@text"], "")>${labelValue} </#macro>
+<#macro label><#assign labelValue = ec.resource.expand(.node["@text"], "")>${labelValue} </#macro>
 <#macro parameter><#-- do nothing, used directly in other elements --></#macro>
 
 <#-- ====================================================== -->
@@ -274,7 +274,7 @@ along with this software (see the LICENSE.md file). If not, see
 <#macro "display">
     <#assign fieldValue = ""/>
     <#if .node["@text"]?has_content>
-        <#assign fieldValue = ec.resource.evaluateStringExpand(.node["@text"], "")>
+        <#assign fieldValue = ec.resource.expand(.node["@text"], "")>
         <#if .node["@currency-unit-field"]?has_content>
             <#assign fieldValue = ec.l10n.formatCurrency(fieldValue, ec.resource.evaluateContextField(.node["@currency-unit-field"], ""), 2)>
         </#if>

@@ -132,7 +132,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#assign linkNode = .node>
     <@linkFormLink linkNode linkNode["@id"]?if_exists urlInfo/>
 </#macro>
-<#macro linkFormLink linkNode linkFormId urlInfo><fo:block>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}</fo:block></#macro>
+<#macro linkFormLink linkNode linkFormId urlInfo><fo:block>${ec.resource.expand(linkNode["@text"], "")}</fo:block></#macro>
 
 <#macro image>
     <#-- TODO: make real xsl-fo image -->
@@ -141,7 +141,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 <#macro label>
     <#-- TODO: handle label type somehow -->
     <#assign labelType = .node["@type"]?default("span")/>
-    <#assign labelValue = ec.resource.evaluateStringExpand(.node["@text"], "")/>
+    <#assign labelValue = ec.resource.expand(.node["@text"], "")/>
     <#if (labelValue?length < 255)><#assign labelValue = ec.l10n.localize(labelValue)/></#if>
     <fo:block><#if !.node["@encode"]?has_content || .node["@encode"] == "true">${labelValue?html?replace("\n", "<br>")}<#else/>${labelValue}</#if></fo:block>
 </#macro>
@@ -437,7 +437,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 <#macro display>
     <#assign fieldValue = ""/>
     <#if .node["@text"]?has_content>
-        <#assign fieldValue = ec.resource.evaluateStringExpand(.node["@text"], "")>
+        <#assign fieldValue = ec.resource.expand(.node["@text"], "")>
         <#if .node["@currency-unit-field"]?has_content>
             <#assign fieldValue = ec.l10n.formatCurrency(fieldValue, ec.resource.evaluateContextField(.node["@currency-unit-field"], ""), 2)>
         </#if>

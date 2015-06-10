@@ -367,8 +367,8 @@ public class ResourceFacadeImpl implements ResourceFacade {
     }
     @CompileStatic
     Object getValueFromContext(String from, String value, String defaultValue, String type) {
-        def tempValue = from ? evaluateContextField(from, "") : evaluateStringExpand(value, "")
-        if (!tempValue && defaultValue) tempValue = evaluateStringExpand(defaultValue, "")
+        def tempValue = from ? evaluateContextField(from, "") : expand(value, "")
+        if (!tempValue && defaultValue) tempValue = expand(defaultValue, "")
         if (type) tempValue = StupidUtilities.basicConvert(tempValue, type)
         return tempValue
     }

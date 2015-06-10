@@ -96,7 +96,7 @@ class ResourceFacadeTests extends Specification {
     @Unroll
     def "groovy evaluate String Expand (#inputString)"() {
         expect:
-        result == ec.resource.evaluateStringExpand(inputString, "")
+        result == ec.resource.expand(inputString, "")
 
         where:
         inputString | result

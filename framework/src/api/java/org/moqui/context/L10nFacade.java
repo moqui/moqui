@@ -19,7 +19,7 @@ public interface L10nFacade {
 
     /** Use the current locale (see ec.user.getLocale() method) to localize the message based on data in the
      * moqui.basic.LocalizedMessage entity. The localized message may have variables inserted using the ${} syntax that
-     * when this is called through ec.resource.evaluateStringExpand().
+     * when this is called through ec.resource.expand().
      *
      * The approach here is that original messages are actual messages in the primary language of the application. This
      * reduces issues with duplicated messages compared to the approach of explicit/artificial property keys. Longer

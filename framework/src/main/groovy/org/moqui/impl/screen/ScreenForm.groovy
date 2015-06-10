@@ -94,7 +94,7 @@ class ScreenForm {
         // if there is an extends, put that in first (everything else overrides it)
         if (baseFormNode."@extends") {
             String extendsForm = baseFormNode."@extends"
-            if (isDynamic) extendsForm = ecfi.resourceFacade.evaluateStringExpand(extendsForm, "")
+            if (isDynamic) extendsForm = ecfi.resourceFacade.expand(extendsForm, "")
 
             Node formNode
             if (extendsForm.contains("#")) {
@@ -131,7 +131,7 @@ class ScreenForm {
                 mergeFieldNode(newFormNode, nodeCopy, false)
             } else if (formSubNode.name() == "auto-fields-service") {
                 String serviceName = formSubNode."@service-name"
-                if (isDynamic) serviceName = ecfi.resourceFacade.evaluateStringExpand(serviceName, "")
+                if (isDynamic) serviceName = ecfi.resourceFacade.expand(serviceName, "")
                 ServiceDefinition serviceDef = ecfi.serviceFacade.getServiceDefinition(serviceName)
                 if (serviceDef != null) {
                     addServiceFields(serviceDef, formSubNode."@include"?:"in", formSubNode."@field-type"?:"edit", newFormNode, ecfi)
@@ -147,7 +147,7 @@ class ScreenForm {
                 throw new IllegalArgumentException("Cound not find service [${serviceName}] or entity noun referred to in auto-fields-service of form [${newFormNode."@name"}] of screen [${sd.location}]")
             } else if (formSubNode.name() == "auto-fields-entity") {
                 String entityName = formSubNode."@entity-name"
-                if (isDynamic) entityName = ecfi.resourceFacade.evaluateStringExpand(entityName, "")
+                if (isDynamic) entityName = ecfi.resourceFacade.expand(entityName, "")
                 EntityDefinition ed = ecfi.entityFacade.getEntityDefinition(entityName)
                 if (ed != null) {
                     addEntityFields(ed, formSubNode."@include"?:"all", formSubNode."@field-type"?:"find-display", null, newFormNode)
@@ -856,7 +856,7 @@ class ScreenForm {
 
     protected void addAutoWidgetServiceNode(Node baseFormNode, Node fieldNode, Node fieldSubNode, Node widgetNode) {
         String serviceName = widgetNode."@service-name"
-        if (isDynamic) serviceName = ecfi.resourceFacade.evaluateStringExpand(serviceName, "")
+        if (isDynamic) serviceName = ecfi.resourceFacade.expand(serviceName, "")
         ServiceDefinition serviceDef = ecfi.serviceFacade.getServiceDefinition(serviceName)
         if (serviceDef != null) {
             addAutoServiceField(serviceDef, (String) widgetNode."@parameter-name"?:fieldNode."@name",
@@ -890,7 +890,7 @@ class ScreenForm {
 
     protected void addAutoWidgetEntityNode(Node baseFormNode, Node fieldNode, Node fieldSubNode, Node widgetNode) {
         String entityName = widgetNode."@entity-name"
-        if (isDynamic) entityName = ecfi.resourceFacade.evaluateStringExpand(entityName, "")
+        if (isDynamic) entityName = ecfi.resourceFacade.expand(entityName, "")
         EntityDefinition ed = null
         try {
             ed = ecfi.entityFacade.getEntityDefinition(entityName)
@@ -1053,8 +1053,8 @@ class ScreenForm {
                     }
                 }
             } else if (childNode.name() == "option") {
-                String key = ec.resource.evaluateStringExpand((String) childNode.attributes().get('key'), null)
-                String text = ec.resource.evaluateStringExpand((String) childNode.attributes().get('text'), null)
+                String key = ec.resource.expand((String) childNode.attributes().get('key'), null)
+                String text = ec.resource.expand((String) childNode.attributes().get('text'), null)
                 options.put(key, text ?: key)
             }
         }
@@ -1071,7 +1071,7 @@ class ScreenForm {
             String key = null
             String keyAttr = (String) childNode.attributes().get('key')
             if (keyAttr) {
-                key = ec.resource.evaluateStringExpand(keyAttr, null)
+                key = ec.resource.expand(keyAttr, null)
                 // we just did a string expand, if it evaluates to a literal "null" then there was no value
                 if (key == "null") key = null
             } else if (listOptionEvb != null) {
@@ -1091,7 +1091,7 @@ class ScreenForm {
                 }
 
             } else {
-                String value = ec.resource.evaluateStringExpand(text, null)
+                String value = ec.resource.expand(text, null)
                 if (value == "null") value = key
                 options.put(key, value)
             }

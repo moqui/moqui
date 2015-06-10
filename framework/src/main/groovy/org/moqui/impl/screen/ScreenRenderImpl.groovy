@@ -975,7 +975,7 @@ class ScreenRenderImpl implements ScreenRender {
     }
 
     ScreenUrlInfo buildUrlInfo(String subscreenPathOrig) {
-        String subscreenPath = subscreenPathOrig?.contains("\${") ? ec.resource.evaluateStringExpand(subscreenPathOrig, "") : subscreenPathOrig
+        String subscreenPath = subscreenPathOrig?.contains("\${") ? ec.resource.expand(subscreenPathOrig, "") : subscreenPathOrig
 
         List<String> pathList = getActiveScreenPath()
         StringBuilder keyBuilder = new StringBuilder()
@@ -1000,7 +1000,7 @@ class ScreenRenderImpl implements ScreenRender {
     }
 
     UrlInstance buildUrl(ScreenDefinition fromSd, List<String> fromPathList, String subscreenPathOrig) {
-        String subscreenPath = subscreenPathOrig?.contains("\${") ? ec.resource.evaluateStringExpand(subscreenPathOrig, "") : subscreenPathOrig
+        String subscreenPath = subscreenPathOrig?.contains("\${") ? ec.resource.expand(subscreenPathOrig, "") : subscreenPathOrig
         ScreenUrlInfo ui = ScreenUrlInfo.getScreenUrlInfo(this, fromSd, fromPathList, subscreenPath, null)
         return ui.getInstance(this, null)
     }
@@ -1016,7 +1016,7 @@ class ScreenRenderImpl implements ScreenRender {
             A content location (without the content://). URL will be one that can access that content.
          */
         ScreenUrlInfo suInfo
-        String urlTypeExpanded = ec.resource.evaluateStringExpand(urlType, "")
+        String urlTypeExpanded = ec.resource.expand(urlType, "")
         switch (urlTypeExpanded) {
             // for transition we want a URL relative to the current screen, so just pass that to buildUrl
             case "transition": suInfo = buildUrlInfo(origUrl); break;
@@ -1024,7 +1024,7 @@ class ScreenRenderImpl implements ScreenRender {
             case "content": throw new IllegalArgumentException("The url-type of content is not yet supported"); break;
             case "plain":
             default:
-                String url = ec.resource.evaluateStringExpand(origUrl, "")
+                String url = ec.resource.expand(origUrl, "")
                 suInfo = ScreenUrlInfo.getScreenUrlInfo(this, url)
                 break
         }
@@ -1050,7 +1050,7 @@ class ScreenRenderImpl implements ScreenRender {
 
     Object getContextValue(String from, String value) {
         if (value) {
-            return ec.resource.evaluateStringExpand(value, getActiveScreenDef().location)
+            return ec.resource.expand(value, getActiveScreenDef().location)
         } else if (from) {
             return ec.resource.evaluateContextField(from, getActiveScreenDef().location)
         } else {
@@ -1081,12 +1081,12 @@ class ScreenRenderImpl implements ScreenRender {
         return strValue
     }
     String getFieldValuePlainString(FtlNodeWrapper fieldNodeWrapper, String defaultValue) {
-        // NOTE: defaultValue is handled below so that for a plain string it is not run through evaluateStringExpand
+        // NOTE: defaultValue is handled below so that for a plain string it is not run through expand
         Object obj = getFieldValue(fieldNodeWrapper, "")
         if (!obj && defaultValue) return defaultValue
         return StupidUtilities.toPlainString(obj)
         // NOTE: this approach causes problems with currency fields, but kills the string expand for default-value... a better approach?
-        //return obj ? obj.toString() : (defaultValue ? ec.getResource().evaluateStringExpand(defaultValue, null) : "")
+        //return obj ? obj.toString() : (defaultValue ? ec.getResource().expand(defaultValue, null) : "")
     }
 
     Object getFieldValue(FtlNodeWrapper fieldNodeWrapper, String defaultValue) {
@@ -1134,7 +1134,7 @@ class ScreenRenderImpl implements ScreenRender {
 
         if (!StupidUtilities.isEmpty(value)) return value
 
-        String defaultStr = ec.getResource().evaluateStringExpand(defaultValue, null)
+        String defaultStr = ec.getResource().expand(defaultValue, null)
         if (defaultStr) return defaultStr
         return value
     }
@@ -1191,7 +1191,7 @@ class ScreenRenderImpl implements ScreenRender {
             // push onto the context and then expand the text
             ec.context.push(ev.getMap())
             try {
-                value = ec.resource.evaluateStringExpand(text, null)
+                value = ec.resource.expand(text, null)
             } finally {
                 ec.context.pop()
             }
