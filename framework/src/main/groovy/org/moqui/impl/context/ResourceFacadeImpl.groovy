@@ -278,7 +278,10 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
     @Override
     @CompileStatic
-    void renderTemplateInCurrentContext(String location, Writer writer) {
+    void renderTemplateInCurrentContext(String location, Writer writer) { template(location, writer) }
+    @Override
+    @CompileStatic
+    void template(String location, Writer writer) {
         TemplateRenderer tr = getTemplateRendererByLocation(location)
         if (tr != null) {
             tr.render(location, writer)
@@ -309,7 +312,17 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
     @Override
     @CompileStatic
-    Object runScriptInCurrentContext(String location, String method) {
+    Object runScriptInCurrentContext(String location, String method) { return script(location, method) }
+
+    @Override
+    @CompileStatic
+    Object runScriptInCurrentContext(String location, String method, Map additionalContext) {
+        return script(location, method, additionalContext)
+    }
+
+    @Override
+    @CompileStatic
+    Object script(String location, String method) {
         ExecutionContext ec = ecfi.getExecutionContext()
         String extension = location.substring(location.lastIndexOf("."))
         ScriptRunner sr = this.scriptRunners.get(extension)
@@ -324,11 +337,11 @@ public class ResourceFacadeImpl implements ResourceFacade {
             return JavaxScriptRunner.bindAndRun(location, ec, engine,
                     ecfi.getCacheFacade().getCache("resource.script${extension}.location"))
         }
-    }
 
+    }
     @Override
     @CompileStatic
-    Object runScriptInCurrentContext(String location, String method, Map additionalContext) {
+    Object script(String location, String method, Map additionalContext) {
         ExecutionContext ec = ecfi.getExecutionContext()
         ContextStack cs = (ContextStack) ec.context
         try {
@@ -337,7 +350,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
                 cs.pushContext()
                 cs.push(additionalContext)
             }
-            return runScriptInCurrentContext(location, method)
+            return script(location, method)
         } finally {
             // pop the entire context to get back to where we were before isolating the context with pushContext
             if (additionalContext) cs.popContext()
@@ -362,7 +375,17 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
     @Override
     @CompileStatic
-    boolean evaluateCondition(String expression, String debugLocation) {
+    boolean evaluateCondition(String expression, String debugLocation) { return condition(expression, debugLocation) }
+
+    @Override
+    @CompileStatic
+    boolean evaluateCondition(String expression, String debugLocation, Map additionalContext) {
+        return condition(expression, debugLocation, additionalContext)
+    }
+
+    @Override
+    @CompileStatic
+    boolean condition(String expression, String debugLocation) {
         if (!expression) return false
         try {
             Script script = getGroovyScript(expression)
@@ -372,10 +395,9 @@ public class ResourceFacadeImpl implements ResourceFacade {
             throw new IllegalArgumentException("Error in condition [${expression}] from [${debugLocation}]", e)
         }
     }
-
     @Override
     @CompileStatic
-    boolean evaluateCondition(String expression, String debugLocation, Map additionalContext) {
+    boolean condition(String expression, String debugLocation, Map additionalContext) {
         ExecutionContext ec = ecfi.getExecutionContext()
         ContextStack cs = (ContextStack) ec.context
         try {
@@ -384,7 +406,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
                 cs.pushContext()
                 cs.push(additionalContext)
             }
-            return evaluateCondition(expression, debugLocation)
+            return condition(expression, debugLocation)
         } finally {
             // pop the entire context to get back to where we were before isolating the context with pushContext
             if (additionalContext) cs.popContext()
@@ -393,7 +415,15 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
     @Override
     @CompileStatic
-    Object evaluateContextField(String expression, String debugLocation) {
+    Object evaluateContextField(String expr, String debugLocation) { return expression(expr, debugLocation) }
+    @Override
+    @CompileStatic
+    Object evaluateContextField(String expr, String debugLocation, Map additionalContext) {
+        return expression(expr, debugLocation, additionalContext)
+    }
+    @Override
+    @CompileStatic
+    Object expression(String expression, String debugLocation) {
         if (!expression) return null
         try {
             Script script = getGroovyScript(expression)
@@ -405,7 +435,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
     }
     @Override
     @CompileStatic
-    Object evaluateContextField(String expression, String debugLocation, Map additionalContext) {
+    Object expression(String expr, String debugLocation, Map additionalContext) {
         ExecutionContext ec = ecfi.getExecutionContext()
         ContextStack cs = (ContextStack) ec.context
         try {
@@ -414,7 +444,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
                 cs.pushContext()
                 cs.push(additionalContext)
             }
-            return evaluateContextField(expression, debugLocation)
+            return expression(expr, debugLocation)
         } finally {
             // pop the entire context to get back to where we were before isolating the context with pushContext
             if (additionalContext) cs.popContext()
@@ -424,7 +454,15 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
     @Override
     @CompileStatic
-    String evaluateStringExpand(String inputString, String debugLocation) {
+    String evaluateStringExpand(String inputString, String debugLocation) { expand(inputString, debugLocation) }
+    @Override
+    @CompileStatic
+    String evaluateStringExpand(String inputString, String debugLocation, Map additionalContext) {
+        return expand(inputString, debugLocation, additionalContext)
+    }
+    @Override
+    @CompileStatic
+    String expand(String inputString, String debugLocation) {
         if (!inputString) return ""
 
         // always localize string before expanding
@@ -444,7 +482,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
     }
     @Override
     @CompileStatic
-    String evaluateStringExpand(String inputString, String debugLocation, Map additionalContext) {
+    String expand(String inputString, String debugLocation, Map additionalContext) {
         ExecutionContext ec = ecfi.getExecutionContext()
         ContextStack cs = (ContextStack) ec.context
         try {
@@ -453,7 +491,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
                 cs.pushContext()
                 cs.push(additionalContext)
             }
-            return evaluateStringExpand(inputString, debugLocation)
+            return expand(inputString, debugLocation)
         } finally {
             // pop the entire context to get back to where we were before isolating the context with pushContext
             if (additionalContext) cs.popContext()
