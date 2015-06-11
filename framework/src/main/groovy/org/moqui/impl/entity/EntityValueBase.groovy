@@ -954,7 +954,7 @@ abstract class EntityValueBase implements EntityValue {
         if (StupidUtilities.isEmpty(curVal)) {
             ec.getContext().push(valueMap)
             try {
-                Object newVal = ec.getResource().evaluateContextField(defaultStr, "")
+                Object newVal = ec.getResource().expression(defaultStr, "")
                 if (newVal != null) valueMap.put(fieldName, newVal)
             } finally {
                 ec.getContext().pop()

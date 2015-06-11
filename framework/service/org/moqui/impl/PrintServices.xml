@@ -135,7 +135,7 @@ along with this software (see the LICENSE.md file). If not, see
                 }
                 Map parmMap = [:]
                 if (screenParameters) parmMap.putAll(screenParameters)
-                if (screenParametersStr) parmMap.putAll(ec.resource.evaluateContextField(screenParametersStr, ""))
+                if (screenParametersStr) parmMap.putAll(ec.resource.expression(screenParametersStr, ""))
                 context.putAll(parmMap)
                 String xslFoText = ec.screen.makeRender().rootScreen(screenLocation).webappName(webappName).renderMode("xsl-fo").render()
                 ByteArrayOutputStream baos = new ByteArrayOutputStream()

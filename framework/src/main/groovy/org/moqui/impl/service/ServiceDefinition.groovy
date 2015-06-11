@@ -472,7 +472,7 @@ class ServiceDefinition {
         String defaultStr = (String) parameterNode.attributes().get('default')
         if (parameterIsEmpty && defaultStr) {
             ((ContextStack) eci.context).push(rootParameters)
-            parameterValue = eci.getResource().evaluateContextField(defaultStr, "${this.location}_${parameterName}_default")
+            parameterValue = eci.getResource().expression(defaultStr, "${this.location}_${parameterName}_default")
             // logger.warn("For parameter ${namePrefix}${parameterName} new value ${parameterValue} from default [${parameterNode.'@default'}] and context: ${eci.context}")
             ((ContextStack) eci.context).pop()
         }

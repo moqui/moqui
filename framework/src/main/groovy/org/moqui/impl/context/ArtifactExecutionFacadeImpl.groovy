@@ -385,7 +385,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                         continue
                     // check the filterMap
                     if (aacv.get('filterMap') && aeii.parameters) {
-                        Map<String, Object> filterMapObj = (Map<String, Object>) eci.getResource().evaluateContextField(aacv.getString('filterMap'), null)
+                        Map<String, Object> filterMapObj = (Map<String, Object>) eci.getResource().expression(aacv.getString('filterMap'), null)
                         boolean allMatches = true
                         for (Map.Entry<String, Object> filterEntry in filterMapObj.entrySet()) {
                             if (filterEntry.getValue() != aeii.parameters.get(filterEntry.getKey())) allMatches = false

@@ -445,13 +445,13 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
 <#-- ================== Standalone Fields ==================== -->
 <#macro link>
     <#assign linkNode = .node>
-    <#if linkNode["@condition"]?has_content><#assign conditionResult = ec.resource.evaluateCondition(linkNode["@condition"], "")><#else><#assign conditionResult = true></#if>
+    <#if linkNode["@condition"]?has_content><#assign conditionResult = ec.resource.condition(linkNode["@condition"], "")><#else><#assign conditionResult = true></#if>
     <#if conditionResult>
         <#if linkNode["@entity-name"]?has_content>
             <#assign linkText = ""/><#assign linkText = sri.getFieldEntityValue(linkNode)/>
         <#else>
             <#if linkNode["@text-map"]?has_content && linkNode["@text"]?has_content>
-                <#assign linkText = ec.resource.expand(linkNode["@text"], "", ec.resource.evaluateContextField(linkNode["@text-map"], ""))/>
+                <#assign linkText = ec.resource.expand(linkNode["@text"], "", ec.resource.expression(linkNode["@text-map"], ""))/>
             <#else>
                 <#assign linkText = ec.resource.expand(linkNode["@text"]!"", "")/>
             </#if>
@@ -526,11 +526,11 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
 
 <#macro image><img src="${sri.makeUrlByType(.node["@url"],.node["@url-type"]!"content",null,"true")}" alt="${.node["@alt"]!"image"}"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@width"]?has_content> width="${.node["@width"]}"</#if><#if .node["@height"]?has_content> height="${.node["@height"]}"</#if>/></#macro>
 <#macro label>
-    <#if .node["@condition"]?has_content><#assign conditionResult = ec.resource.evaluateCondition(.node["@condition"], "")><#else><#assign conditionResult = true></#if>
+    <#if .node["@condition"]?has_content><#assign conditionResult = ec.resource.condition(.node["@condition"], "")><#else><#assign conditionResult = true></#if>
     <#if conditionResult>
         <#assign labelType = .node["@type"]?default("span")/>
         <#if .node["@text-map"]?has_content>
-            <#assign labelValue = ec.resource.expand(.node["@text"], "", ec.resource.evaluateContextField(.node["@text-map"], ""))>
+            <#assign labelValue = ec.resource.expand(.node["@text"], "", ec.resource.expression(.node["@text-map"], ""))>
         <#else>
             <#assign labelValue = ec.resource.expand(.node["@text"], "")/>
         </#if>
@@ -788,7 +788,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
 </#macro>
 <#macro formSingleSubField fieldNode>
     <#list fieldNode["conditional-field"] as fieldSubNode>
-        <#if ec.resource.evaluateCondition(fieldSubNode["@condition"], "")>
+        <#if ec.resource.condition(fieldSubNode["@condition"], "")>
             <@formSingleWidget fieldSubNode/>
             <#return>
         </#if>
@@ -828,7 +828,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#list fieldSubNode?children as widgetNode>
         <#if widgetNode?node_name == "link">
             <#assign linkNode = widgetNode>
-            <#if linkNode["@condition"]?has_content><#assign conditionResult = ec.resource.evaluateCondition(linkNode["@condition"], "")><#else><#assign conditionResult = true></#if>
+            <#if linkNode["@condition"]?has_content><#assign conditionResult = ec.resource.condition(linkNode["@condition"], "")><#else><#assign conditionResult = true></#if>
             <#if conditionResult>
                 <#if linkNode["@entity-name"]?has_content><#assign linkText = ""/><#assign linkText = sri.getFieldEntityValue(linkNode)/>
                     <#else><#assign linkText = ec.resource.expand(linkNode["@text"]!"", "")/></#if>
@@ -871,7 +871,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#assign skipForm = (formNode["@skip-form"]! == "true")>
     <#assign formListUrlInfo = sri.makeUrlByType(formNode["@transition"], "transition", null, "false")>
     <#assign listName = formNode["@list"]>
-    <#assign listObject = ec.resource.evaluateContextField(listName, "")!>
+    <#assign listObject = ec.resource.expression(listName, "")!>
     <#assign formListColumnList = formNode["form-list-column"]!>
     <#if !(formNode["@paginate"]! == "false") && context[listName + "Count"]?exists &&
             (context[listName + "Count"]! > 0) &&
@@ -1146,7 +1146,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
 </#macro>
 <#macro formListSubField fieldNode skipCell=false>
     <#list fieldNode["conditional-field"] as fieldSubNode>
-        <#if ec.resource.evaluateCondition(fieldSubNode["@condition"], "")>
+        <#if ec.resource.condition(fieldSubNode["@condition"], "")>
             <@formListWidget fieldSubNode skipCell/>
             <#return>
         </#if>
@@ -1172,13 +1172,13 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
         <#list fieldSubNode?children as widgetNode>
             <#if widgetNode?node_name == "link">
                 <#assign linkNode = widgetNode>
-                <#if linkNode["@condition"]?has_content><#assign conditionResult = ec.resource.evaluateCondition(linkNode["@condition"], "")><#else><#assign conditionResult = true></#if>
+                <#if linkNode["@condition"]?has_content><#assign conditionResult = ec.resource.condition(linkNode["@condition"], "")><#else><#assign conditionResult = true></#if>
                 <#if conditionResult>
                     <#if linkNode["@entity-name"]?has_content>
                         <#assign linkText = ""/><#assign linkText = sri.getFieldEntityValue(linkNode)/>
                     <#else>
                         <#if linkNode["@text-map"]?has_content && linkNode["@text"]?has_content>
-                            <#assign linkText = ec.resource.expand(linkNode["@text"], "", ec.resource.evaluateContextField(linkNode["@text-map"], ""))/>
+                            <#assign linkText = ec.resource.expand(linkNode["@text"], "", ec.resource.expression(linkNode["@text-map"], ""))/>
                         <#else>
                             <#assign linkText = ec.resource.expand(linkNode["@text"]!"", "")/>
                         </#if>
@@ -1410,15 +1410,15 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
     <#assign fieldValue = ""/>
     <#if .node["@text"]?has_content>
         <#if .node["@text-map"]?has_content>
-            <#assign fieldValue = ec.resource.expand(.node["@text"], "", ec.resource.evaluateContextField(.node["@text-map"], ""))>
+            <#assign fieldValue = ec.resource.expand(.node["@text"], "", ec.resource.expression(.node["@text-map"], ""))>
         <#else>
             <#assign fieldValue = ec.resource.expand(.node["@text"], "")>
         </#if>
         <#if .node["@currency-unit-field"]?has_content>
-            <#assign fieldValue = ec.l10n.formatCurrency(fieldValue, ec.resource.evaluateContextField(.node["@currency-unit-field"], ""), 2)>
+            <#assign fieldValue = ec.l10n.formatCurrency(fieldValue, ec.resource.expression(.node["@currency-unit-field"], ""), 2)>
         </#if>
     <#elseif .node["@currency-unit-field"]?has_content>
-        <#assign fieldValue = ec.l10n.formatCurrency(sri.getFieldValue(.node?parent?parent, ""), ec.resource.evaluateContextField(.node["@currency-unit-field"], ""), 2)>
+        <#assign fieldValue = ec.l10n.formatCurrency(sri.getFieldValue(.node?parent?parent, ""), ec.resource.expression(.node["@currency-unit-field"], ""), 2)>
     <#else>
         <#assign fieldValue = sri.getFieldValueString(.node?parent?parent, "", .node["@format"]!)>
     </#if>
@@ -1525,7 +1525,7 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
     <#assign curFieldName = .node?parent?parent["@name"]?html/>
     <#assign curFormName = .node?parent?parent?parent["@name"]?html/>
     <#assign id><@fieldId .node/></#assign>
-    <input type="text" name="${curFieldName}" value="${sri.getFieldValueString(.node?parent?parent, .node["@default-value"]!"", null)?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.evaluateCondition(.node.@disabled!"false", "")> disabled="disabled"</#if> id="${id}">
+    <input type="text" name="${curFieldName}" value="${sri.getFieldValueString(.node?parent?parent, .node["@default-value"]!"", null)?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.condition(.node.@disabled!"false", "")> disabled="disabled"</#if> id="${id}">
     <#assign ajaxUrl = ""/><#- - LATER once the JSON service stuff is in place put something real here - ->
     <#- - LATER get lookup code in place, or not... - ->
     <script>
@@ -1595,7 +1595,7 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
         <#if .node["@ac-initial-text"]?has_content><#assign valueText = ec.resource.expand(.node["@ac-initial-text"]!, "")>
             <#else><#assign valueText = fieldValue>
         </#if>
-        <input id="${id}_ac" type="<#if validationClasses?contains("email")>email<#elseif validationClasses?contains("url")>url<#else>text</#if>" name="${name}_ac" value="${valueText?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.evaluateCondition(.node.@disabled!"false", "")> disabled="disabled"</#if> class="form-control<#if validationClasses?has_content> ${validationClasses}</#if>"<#if validationClasses?has_content> data-vv-validations="${validationClasses}"</#if><#if validationClasses?contains("required")> required</#if><#if regexpInfo?has_content> pattern="${regexpInfo.regexp}"</#if><#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
+        <input id="${id}_ac" type="<#if validationClasses?contains("email")>email<#elseif validationClasses?contains("url")>url<#else>text</#if>" name="${name}_ac" value="${valueText?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.condition(.node.@disabled!"false", "")> disabled="disabled"</#if> class="form-control<#if validationClasses?has_content> ${validationClasses}</#if>"<#if validationClasses?has_content> data-vv-validations="${validationClasses}"</#if><#if validationClasses?contains("required")> required</#if><#if regexpInfo?has_content> pattern="${regexpInfo.regexp}"</#if><#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
         <input id="${id}" type="hidden" name="${name}" value="${fieldValue?html}">
         <#if acShowValue>
         <span id="${id}_value" class="form-autocomplete-value"><#if valueText?has_content>${valueText?html}<#else>&nbsp;</#if></span>
@@ -1625,7 +1625,7 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
         </#assign>
         <#t>${sri.appendToScriptWriter(afterFormScript)}
     <#else>
-        <input id="${id}" type="<#if validationClasses?contains("email")>email<#elseif validationClasses?contains("url")>url<#else>text</#if>" name="${name}" value="${fieldValue?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.evaluateCondition(.node.@disabled!"false", "")> disabled="disabled"</#if> class="form-control<#if validationClasses?has_content> ${validationClasses}</#if>"<#if validationClasses?has_content> data-vv-validations="${validationClasses}"</#if><#if validationClasses?contains("required")> required</#if><#if regexpInfo?has_content> pattern="${regexpInfo.regexp}"</#if><#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
+        <input id="${id}" type="<#if validationClasses?contains("email")>email<#elseif validationClasses?contains("url")>url<#else>text</#if>" name="${name}" value="${fieldValue?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.condition(.node.@disabled!"false", "")> disabled="disabled"</#if> class="form-control<#if validationClasses?has_content> ${validationClasses}</#if>"<#if validationClasses?has_content> data-vv-validations="${validationClasses}"</#if><#if validationClasses?contains("required")> required</#if><#if regexpInfo?has_content> pattern="${regexpInfo.regexp}"</#if><#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
     </#if>
     <#-- OLD approach for validate() with regexp (with validVal just goes in pattern attribute):
     <#assign regexpInfo = sri.getFormFieldValidationRegexpInfo(.node?parent?parent?parent["@name"], .node?parent?parent["@name"])!>

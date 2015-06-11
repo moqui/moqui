@@ -88,7 +88,7 @@ class ScreenTree {
 
             // iterate over the list and add a response node for each entry
             String nodeListName = tsn.treeSubNodeNode."@list" ?: "nodeList"
-            List nodeList = (List) eci.getResource().evaluateContextField(nodeListName, "")
+            List nodeList = (List) eci.getResource().expression(nodeListName, "")
             // logger.warn("======= nodeList named [${nodeListName}]: ${nodeList}")
             Iterator i = nodeList?.iterator()
             int index = 0

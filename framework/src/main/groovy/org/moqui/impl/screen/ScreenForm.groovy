@@ -1024,7 +1024,7 @@ class ScreenForm {
                     for (Node df in (Collection<Node>) entityFindNode["date-filter"]) {
                         EntityCondition dateEc = ec.entity.conditionFactory.makeConditionDate((String) df["@from-field-name"] ?: "fromDate",
                                 (String) df["@thru-field-name"] ?: "thruDate",
-                                (df["@valid-date"] ? ec.resource.evaluateContextField((String) df["@valid-date"], null) as Timestamp : ec.user.nowTimestamp))
+                                (df["@valid-date"] ? ec.resource.expression((String) df["@valid-date"], null) as Timestamp : ec.user.nowTimestamp))
                         // logger.warn("TOREMOVE getFieldOptions cache=${ef.getUseCache()}, dateEc=${dateEc} list before=${eli}")
                         eli = eli.filterByCondition(dateEc, true)
                     }
@@ -1032,7 +1032,7 @@ class ScreenForm {
 
                 for (EntityValue ev in eli) addFieldOption(options, fieldNode, childNode, ev, ec)
             } else if (childNode.name() == "list-options") {
-                Object listObject = ec.resource.evaluateContextField((String) childNode.attributes().get('list'), null)
+                Object listObject = ec.resource.expression((String) childNode.attributes().get('list'), null)
                 if (listObject instanceof EntityListIterator) {
                     EntityListIterator eli
                     try {

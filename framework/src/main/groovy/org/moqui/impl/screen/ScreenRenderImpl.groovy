@@ -1034,7 +1034,7 @@ class ScreenRenderImpl implements ScreenRender {
         if (parameterParentNode != null) {
             String parameterMapStr = (String) parameterParentNode.attributes().get('parameter-map')
             if (parameterMapStr) {
-                def ctxParameterMap = ec.resource.evaluateContextField(parameterMapStr, "")
+                def ctxParameterMap = ec.resource.expression(parameterMapStr, "")
                 if (ctxParameterMap) urli.addParameters((Map) ctxParameterMap)
             }
             for (Object parameterObj in parameterParentNode.get("parameter")) {
@@ -1052,7 +1052,7 @@ class ScreenRenderImpl implements ScreenRender {
         if (value) {
             return ec.resource.expand(value, getActiveScreenDef().location)
         } else if (from) {
-            return ec.resource.evaluateContextField(from, getActiveScreenDef().location)
+            return ec.resource.expression(from, getActiveScreenDef().location)
         } else {
             return ""
         }
@@ -1092,7 +1092,7 @@ class ScreenRenderImpl implements ScreenRender {
     Object getFieldValue(FtlNodeWrapper fieldNodeWrapper, String defaultValue) {
         Node fieldNode = fieldNodeWrapper.getGroovyNode()
         String entryName = (String) fieldNode.attributes().get('entry-name')
-        if (entryName) return ec.getResource().evaluateContextField(entryName, null)
+        if (entryName) return ec.getResource().expression(entryName, null)
         String fieldName = (String) fieldNode.attributes().get('name')
         String mapName = (String) fieldNode.parent().attributes().get('map') ?: "fieldValues"
         Object value = null
@@ -1100,7 +1100,7 @@ class ScreenRenderImpl implements ScreenRender {
         if (ec.getWeb() != null && ec.getWeb().getErrorParameters() != null &&
                 (ec.getWeb().getErrorParameters().moquiFormName == fieldNode.parent().attributes().get('name')))
             value = ec.getWeb().getErrorParameters().get(fieldName)
-        Map valueMap = (Map) ec.resource.evaluateContextField(mapName, "")
+        Map valueMap = (Map) ec.resource.expression(mapName, "")
         if (StupidUtilities.isEmpty(value)) {
             Node formNode = fieldNode.parent()
             if (valueMap && formNode.name() == "form-single") {
@@ -1143,7 +1143,7 @@ class ScreenRenderImpl implements ScreenRender {
 
         Node fieldNode = fieldNodeWrapper.getGroovyNode()
         String entryName = (String) fieldNode.attributes().get('entry-name')
-        if (entryName) fieldValue = ec.getResource().evaluateContextField(entryName, null)
+        if (entryName) fieldValue = ec.getResource().expression(entryName, null)
         if (fieldValue == null) {
             String fieldName = (String) fieldNode.attributes().get('name')
             String mapName = (String) fieldNode.parent().attributes().get('map') ?: "fieldValues"

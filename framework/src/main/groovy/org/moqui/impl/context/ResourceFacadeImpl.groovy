@@ -361,13 +361,13 @@ public class ResourceFacadeImpl implements ResourceFacade {
     Object setInContext(String field, String from, String value, String defaultValue, String type, String setIfEmpty) {
         def tempValue = getValueFromContext(from, value, defaultValue, type)
         ecfi.getExecutionContext().getContext().put("_tempValue", tempValue)
-        if (tempValue || setIfEmpty) evaluateContextField("${field} = _tempValue", "")
+        if (tempValue || setIfEmpty) expression("${field} = _tempValue", "")
 
         return tempValue
     }
     @CompileStatic
     Object getValueFromContext(String from, String value, String defaultValue, String type) {
-        def tempValue = from ? evaluateContextField(from, "") : expand(value, "")
+        def tempValue = from ? expression(from, "") : expand(value, "")
         if (!tempValue && defaultValue) tempValue = expand(defaultValue, "")
         if (type) tempValue = StupidUtilities.basicConvert(tempValue, type)
         return tempValue

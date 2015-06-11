@@ -46,7 +46,7 @@ public class ScriptServiceRunner implements ServiceRunner {
             Map<String, Object> autoResult = new HashMap()
             ec.context.put("result", autoResult)
 
-            Object result = ec.resource.runScriptInCurrentContext((String) sd.serviceNode."@location", (String) sd.serviceNode."@method")
+            Object result = ec.resource.script((String) sd.serviceNode."@location", (String) sd.serviceNode."@method")
 
             if (result instanceof Map) {
                 return (Map<String, Object>) result

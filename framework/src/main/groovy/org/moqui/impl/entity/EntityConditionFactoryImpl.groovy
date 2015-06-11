@@ -133,13 +133,13 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
     }
 
     EntityCondition makeActionCondition(String fieldName, String operator, String fromExpr, String value, String toFieldName, boolean ignoreCase, boolean ignoreIfEmpty, boolean orNull, String ignore) {
-        Object from = fromExpr ? this.efi.ecfi.resourceFacade.evaluateContextField(fromExpr, "") : null
+        Object from = fromExpr ? this.efi.ecfi.resourceFacade.expression(fromExpr, "") : null
         return makeActionConditionDirect(fieldName, operator, from, value, toFieldName, ignoreCase, ignoreIfEmpty, orNull, ignore)
     }
     EntityCondition makeActionConditionDirect(String fieldName, String operator, Object fromObj, String value, String toFieldName, boolean ignoreCase, boolean ignoreIfEmpty, boolean orNull, String ignore) {
         // logger.info("TOREMOVE makeActionCondition(fieldName ${fieldName}, operator ${operator}, fromExpr ${fromExpr}, value ${value}, toFieldName ${toFieldName}, ignoreCase ${ignoreCase}, ignoreIfEmpty ${ignoreIfEmpty}, orNull ${orNull}, ignore ${ignore})")
 
-        if (efi.getEcfi().getResourceFacade().evaluateCondition(ignore, null)) return null
+        if (efi.getEcfi().getResourceFacade().condition(ignore, null)) return null
 
         if (toFieldName) {
             EntityCondition ec = makeConditionToField(fieldName, getComparisonOperator(operator), toFieldName)

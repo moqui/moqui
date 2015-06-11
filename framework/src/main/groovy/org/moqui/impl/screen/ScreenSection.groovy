@@ -66,7 +66,7 @@ class ScreenSection {
         ContextStack cs = (ContextStack) sri.ec.context
         if (sectionNode.name() == "section-iterate") {
             // if nothing to iterate over, all done
-            def list = sri.ec.resource.evaluateContextField(sectionNode["@list"] as String, null)
+            def list = sri.ec.resource.expression(sectionNode["@list"] as String, null)
             if (!list) {
                 if (logger.traceEnabled) logger.trace("Target list [${list}] is empty, not rendering section-iterate at [${location}]")
                 return

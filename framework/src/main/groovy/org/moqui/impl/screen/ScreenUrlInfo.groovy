@@ -429,13 +429,13 @@ class ScreenUrlInfo {
             // logger.warn("TOREMOVE lastSd ${minimalPathNameList} subscreens: ${lastSd.screenNode?.subscreens}, alwaysUseFullPath=${alwaysUseFullPath}, from ${lastSd.screenNode."subscreens"?."@always-use-full-path"?.getAt(0)}, subscreenName=${subscreenName}")
 
             // if any conditional-default.@condition eval to true, use that conditional-default.@item instead
-            // TODO: this does a ecfi.getResource().evaluateCondition() on condStr which may depend on current context making this SUI non-reusable
+            // TODO: this does a ecfi.getResource().condition() on condStr which may depend on current context making this SUI non-reusable
             NodeList condDefaultList = (NodeList) lastSd.getSubscreensNode()?.get("conditional-default")
             if (condDefaultList) for (Object conditionalDefaultObj in condDefaultList) {
                 Node conditionalDefaultNode = (Node) conditionalDefaultObj
                 String condStr = (String) conditionalDefaultNode.attributes().get('condition')
                 if (!condStr) continue
-                if (ecfi.getResource().evaluateCondition(condStr, null)) {
+                if (ecfi.getResource().condition(condStr, null)) {
                     subscreenName = conditionalDefaultNode.attributes().get('item')
                     break
                 }

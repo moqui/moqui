@@ -144,7 +144,7 @@ along with this software (see the LICENSE.md file). If not, see
 </#macro>
 <#macro formSingleSubField fieldNode>
     <#list fieldNode["conditional-field"] as fieldSubNode>
-        <#if ec.resource.evaluateCondition(fieldSubNode["@condition"], "")>
+        <#if ec.resource.condition(fieldSubNode["@condition"], "")>
             <#t><@formSingleWidget fieldSubNode/>
             <#return>
         </#if>
@@ -163,7 +163,7 @@ along with this software (see the LICENSE.md file). If not, see
     <#-- Use the formNode assembled based on other settings instead of the straight one from the file: -->
     <#assign formNode = sri.getFtlFormNode(.node["@name"])>
     <#assign listName = formNode["@list"]>
-    <#assign listObject = ec.resource.evaluateContextField(listName, "")?if_exists>
+    <#assign listObject = ec.resource.expression(listName, "")?if_exists>
     <#assign formListColumnList = formNode["form-list-column"]?if_exists>
     <#if formListColumnList?exists && (formListColumnList?size > 0)>
         <#list formListColumnList as fieldListColumn>
@@ -231,7 +231,7 @@ along with this software (see the LICENSE.md file). If not, see
 </#macro>
 <#macro formListSubField fieldNode>
     <#list fieldNode["conditional-field"] as fieldSubNode>
-        <#if ec.resource.evaluateCondition(fieldSubNode["@condition"], "")>
+        <#if ec.resource.condition(fieldSubNode["@condition"], "")>
             <#t><@formListWidget fieldSubNode/>
             <#return>
         </#if>
@@ -276,10 +276,10 @@ along with this software (see the LICENSE.md file). If not, see
     <#if .node["@text"]?has_content>
         <#assign fieldValue = ec.resource.expand(.node["@text"], "")>
         <#if .node["@currency-unit-field"]?has_content>
-            <#assign fieldValue = ec.l10n.formatCurrency(fieldValue, ec.resource.evaluateContextField(.node["@currency-unit-field"], ""), 2)>
+            <#assign fieldValue = ec.l10n.formatCurrency(fieldValue, ec.resource.expression(.node["@currency-unit-field"], ""), 2)>
         </#if>
     <#elseif .node["@currency-unit-field"]?has_content>
-        <#assign fieldValue = ec.l10n.formatCurrency(sri.getFieldValue(.node?parent?parent, ""), ec.resource.evaluateContextField(.node["@currency-unit-field"], ""), 2)>
+        <#assign fieldValue = ec.l10n.formatCurrency(sri.getFieldValue(.node?parent?parent, ""), ec.resource.expression(.node["@currency-unit-field"], ""), 2)>
     <#else>
         <#assign fieldValue = sri.getFieldValueString(.node?parent?parent, "", .node["@format"]?if_exists)>
     </#if>
