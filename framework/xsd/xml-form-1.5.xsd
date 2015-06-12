@@ -303,6 +303,14 @@ along with this software (see the LICENSE.md file). If not, see
                 <xs:annotation><xs:documentation>An expression that evaluates to a Map in the context that will be used
                     in addition to the context when expanding the @text value.</xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="encode" type="boolean" default="true">
+                <xs:annotation><xs:documentation>
+                    If true text will be encoded so that it does not interfere with markup of the target output.
+
+                    For example, if output is HTML then data presented will be HTML encoded so that all
+                    HTML-specific characters are escaped.
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
             <xs:attribute name="icon" type="xs:string"/>
             <xs:attribute name="tooltip" type="xs:string"/>
             <xs:attribute name="target-window" type="xs:string"/>
