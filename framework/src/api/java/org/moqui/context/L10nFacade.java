@@ -12,17 +12,23 @@
  */
 package org.moqui.context;
 
+import java.util.Map;
+
 /** For localization (l10n) functionality, like localizing messages. */
 public interface L10nFacade {
-    /** Use the current locale (see getLocale method) to localize the message based on data in the moqui.basic.LocalizedMessage
-     * entity. The localized message may have variables inserted using the ${} syntax and will be expanded with the
-     * current context (see the getContext() method).
+
+    /** Use the current locale (see ec.user.getLocale() method) to localize the message based on data in the
+     * moqui.basic.LocalizedMessage entity. The localized message may have variables inserted using the ${} syntax that
+     * when this is called through ec.resource.expand().
      *
      * The approach here is that original messages are actual messages in the primary language of the application. This
      * reduces issues with duplicated messages compared to the approach of explicit/artificial property keys. Longer
      * messages (over 255 characters) should use an artificial message key with the actual value always coming
      * from the database.
      */
+    String localize(String original);
+
+    /** Old method, still supported. See localize(). */
     String getLocalizedMessage(String original);
 
     /** Format currency amount for user to view.

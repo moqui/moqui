@@ -132,7 +132,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#assign linkNode = .node>
     <@linkFormLink linkNode linkNode["@id"]?if_exists urlInfo/>
 </#macro>
-<#macro linkFormLink linkNode linkFormId urlInfo><fo:block>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}</fo:block></#macro>
+<#macro linkFormLink linkNode linkFormId urlInfo><fo:block>${ec.resource.expand(linkNode["@text"], "")}</fo:block></#macro>
 
 <#macro image>
     <#-- TODO: make real xsl-fo image -->
@@ -141,8 +141,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 <#macro label>
     <#-- TODO: handle label type somehow -->
     <#assign labelType = .node["@type"]?default("span")/>
-    <#assign labelValue = ec.resource.evaluateStringExpand(.node["@text"], "")/>
-    <#if (labelValue?length < 255)><#assign labelValue = ec.l10n.getLocalizedMessage(labelValue)/></#if>
+    <#assign labelValue = ec.resource.expand(.node["@text"], "")/>
+    <#if (labelValue?length < 255)><#assign labelValue = ec.l10n.localize(labelValue)/></#if>
     <fo:block><#if !.node["@encode"]?has_content || .node["@encode"] == "true">${labelValue?html?replace("\n", "<br>")}<#else/>${labelValue}</#if></fo:block>
 </#macro>
 <#macro parameter><#-- do nothing, used directly in other elements --></#macro>
@@ -242,7 +242,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 </#macro>
 <#macro formSingleSubField fieldNode>
     <#list fieldNode["conditional-field"] as fieldSubNode>
-        <#if ec.resource.evaluateCondition(fieldSubNode["@condition"], "")>
+        <#if ec.resource.condition(fieldSubNode["@condition"], "")>
             <@formSingleWidget fieldSubNode/>
             <#return>
         </#if>
@@ -270,7 +270,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#assign isMultiFinalRow = false>
     <#assign urlInfo = sri.makeUrlByType(formNode["@transition"], "transition", null, "false")>
     <#assign listName = formNode["@list"]>
-    <#assign listObject = ec.resource.evaluateContextField(listName, "")?if_exists>
+    <#assign listObject = ec.resource.expression(listName, "")?if_exists>
     <#assign formListColumnList = formNode["form-list-column"]?if_exists>
 
     <#if !(formNode["@paginate"]?if_exists == "false") && context[listName + "Count"]?exists && (context[listName + "Count"]?if_exists > 0)>
@@ -376,7 +376,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 </#macro>
 <#macro formListSubField fieldNode>
     <#list fieldNode["conditional-field"] as fieldSubNode>
-        <#if ec.resource.evaluateCondition(fieldSubNode["@condition"], "")>
+        <#if ec.resource.condition(fieldSubNode["@condition"], "")>
             <@formListWidget fieldSubNode/>
             <#return>
         </#if>
@@ -411,7 +411,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 
 <#macro fieldName widgetNode><#assign fieldNode=widgetNode?parent?parent/>${fieldNode["@name"]?html}<#if isMulti?exists && isMulti && listEntryIndex?exists>_${listEntryIndex}</#if></#macro>
 <#macro fieldId widgetNode><#assign fieldNode=widgetNode?parent?parent/>${fieldNode?parent["@name"]}_${fieldNode["@name"]}<#if listEntryIndex?exists>_${listEntryIndex}</#if></#macro>
-<#macro fieldTitle fieldSubNode><#assign titleValue><#if fieldSubNode["@title"]?has_content>${fieldSubNode["@title"]}<#else/><#list fieldSubNode?parent["@name"]?split("(?=[A-Z])", "r") as nameWord>${nameWord?cap_first?replace("Id", "ID")}<#if nameWord_has_next> </#if></#list></#if></#assign>${ec.l10n.getLocalizedMessage(titleValue)}</#macro>
+<#macro fieldTitle fieldSubNode><#assign titleValue><#if fieldSubNode["@title"]?has_content>${fieldSubNode["@title"]}<#else/><#list fieldSubNode?parent["@name"]?split("(?=[A-Z])", "r") as nameWord>${nameWord?cap_first?replace("Id", "ID")}<#if nameWord_has_next> </#if></#list></#if></#assign>${ec.l10n.localize(titleValue)}</#macro>
 
 <#macro field><#-- shouldn't be called directly, but just in case --><#recurse/></#macro>
 <#macro "conditional-field"><#-- shouldn't be called directly, but just in case --><#recurse/></#macro>
@@ -437,12 +437,12 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 <#macro display>
     <#assign fieldValue = ""/>
     <#if .node["@text"]?has_content>
-        <#assign fieldValue = ec.resource.evaluateStringExpand(.node["@text"], "")>
+        <#assign fieldValue = ec.resource.expand(.node["@text"], "")>
         <#if .node["@currency-unit-field"]?has_content>
-            <#assign fieldValue = ec.l10n.formatCurrency(fieldValue, ec.resource.evaluateContextField(.node["@currency-unit-field"], ""), 2)>
+            <#assign fieldValue = ec.l10n.formatCurrency(fieldValue, ec.resource.expression(.node["@currency-unit-field"], ""), 2)>
         </#if>
     <#elseif .node["@currency-unit-field"]?has_content>
-        <#assign fieldValue = ec.l10n.formatCurrency(sri.getFieldValue(.node?parent?parent, ""), ec.resource.evaluateContextField(.node["@currency-unit-field"], ""), 2)>
+        <#assign fieldValue = ec.l10n.formatCurrency(sri.getFieldValue(.node?parent?parent, ""), ec.resource.expression(.node["@currency-unit-field"], ""), 2)>
     <#else>
         <#assign fieldValue = sri.getFieldValueString(.node?parent?parent, "", .node["@format"]?if_exists)>
     </#if>

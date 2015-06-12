@@ -49,7 +49,9 @@ public class L10nFacadeImpl implements L10nFacade {
     protected TimeZone getTimeZone() { return ecfi.getExecutionContext().getUser().getTimeZone() }
 
     @Override
-    public String getLocalizedMessage(String original) {
+    String getLocalizedMessage(String original) { return localize(original) }
+    @Override
+    String localize(String original) {
         if (!original) return ""
         if (original.length() > 255) {
             throw new IllegalArgumentException("Original String cannot be more than 255 characters long, passed in string was [${original.length()}] characters long")
@@ -67,6 +69,7 @@ public class L10nFacadeImpl implements L10nFacade {
         if (!localizedMessage && localeString.contains('_')) {
             localizedMessage = find.condition("locale", localeString.substring(0, localeString.indexOf('_'))).one()
         }
+        if (!localizedMessage) localizedMessage = find.condition("locale", "default").one()
 
         String result = localizedMessage ? localizedMessage.localized : original
         l10nMessage.put(cacheKey, result)

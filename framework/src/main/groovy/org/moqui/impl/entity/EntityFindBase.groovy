@@ -323,7 +323,7 @@ abstract class EntityFindBase implements EntityFind {
             for (Node df in (Collection<Node>) node["date-filter"])
                 this.condition(ec.entity.conditionFactory.makeConditionDate((String) df["@from-field-name"] ?: "fromDate",
                         (String) df["@thru-field-name"] ?: "thruDate",
-                        (df["@valid-date"] ? ec.resource.evaluateContextField((String) df["@valid-date"], null) as Timestamp : ec.user.nowTimestamp)))
+                        (df["@valid-date"] ? ec.resource.expression((String) df["@valid-date"], null) as Timestamp : ec.user.nowTimestamp)))
         }
 
         for (Node ecn in (Collection<Node>) node["econdition"]) {
@@ -333,7 +333,7 @@ abstract class EntityFindBase implements EntityFind {
         for (Node ecs in (Collection<Node>) node["econditions"])
             this.condition(((EntityConditionFactoryImpl) efi.conditionFactory).makeActionConditions(ecs))
         for (Node eco in (Collection<Node>) node["econdition-object"])
-            this.condition((EntityCondition) ec.resource.evaluateContextField((String) eco["@field"], null))
+            this.condition((EntityCondition) ec.resource.expression((String) eco["@field"], null))
 
         if (node["search-form-inputs"]) {
             Node sfiNode = (Node) node["search-form-inputs"].first()

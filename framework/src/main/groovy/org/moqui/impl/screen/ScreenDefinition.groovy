@@ -714,7 +714,7 @@ class ScreenDefinition {
         @CompileStatic
         String getType() { return type }
         @CompileStatic
-        String getUrl() { return parentScreen.sfi.ecfi.resourceFacade.evaluateStringExpand(url, "") }
+        String getUrl() { return parentScreen.sfi.ecfi.resourceFacade.expand(url, "") }
         @CompileStatic
         String getUrlType() { return urlType }
         // deferred for future version: boolean getSaveLastScreen() { return saveLastScreen }

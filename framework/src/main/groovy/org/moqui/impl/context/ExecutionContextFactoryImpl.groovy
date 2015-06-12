@@ -787,7 +787,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     boolean getSkipStats() {
         // NOTE: the results of this condition eval can't be cached because the expression can use any data in the ec
         ExecutionContextImpl eci = getEci()
-        return skipStatsCond ? eci.resource.evaluateCondition(skipStatsCond, null, [pathInfo:eci.web?.request?.pathInfo]) : false
+        return skipStatsCond ? eci.resource.condition(skipStatsCond, null, [pathInfo:eci.web?.request?.pathInfo]) : false
     }
 
     @CompileStatic

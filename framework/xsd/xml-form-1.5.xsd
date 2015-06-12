@@ -299,6 +299,18 @@ along with this software (see the LICENSE.md file). If not, see
                 The type for the url attribute. Defaults to transition (on this screen).
             </xs:documentation></xs:annotation></xs:attribute>
             <xs:attribute name="text" type="xs:string"/>
+            <xs:attribute name="text-map" type="xs:string">
+                <xs:annotation><xs:documentation>An expression that evaluates to a Map in the context that will be used
+                    in addition to the context when expanding the @text value.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="encode" type="boolean" default="true">
+                <xs:annotation><xs:documentation>
+                    If true text will be encoded so that it does not interfere with markup of the target output.
+
+                    For example, if output is HTML then data presented will be HTML encoded so that all
+                    HTML-specific characters are escaped.
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
             <xs:attribute name="icon" type="xs:string"/>
             <xs:attribute name="tooltip" type="xs:string"/>
             <xs:attribute name="target-window" type="xs:string"/>
@@ -339,6 +351,10 @@ along with this software (see the LICENSE.md file). If not, see
     <xs:element name="label" substitutionGroup="StandaloneFields">
         <xs:complexType>
             <xs:attribute name="text" type="xs:string" use="required"/>
+            <xs:attribute name="text-map" type="xs:string">
+                <xs:annotation><xs:documentation>An expression that evaluates to a Map in the context that will be used
+                    in addition to the context when expanding the @text value.</xs:documentation></xs:annotation>
+            </xs:attribute>
             <xs:attribute name="type" default="span">
                 <xs:simpleType><xs:restriction base="xs:token">
                     <xs:enumeration value="p"/>
@@ -502,6 +518,7 @@ along with this software (see the LICENSE.md file). If not, see
     <xs:element name="conditional-field">
         <xs:complexType>
             <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="StandaloneFields"/>
                 <xs:choice>
                     <xs:element minOccurs="0" ref="SubFields"/>
                     <xs:element minOccurs="0" maxOccurs="unbounded" ref="AllWidgets"/>
@@ -518,6 +535,7 @@ along with this software (see the LICENSE.md file). If not, see
     <xs:element name="default-field">
         <xs:complexType>
             <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="StandaloneFields"/>
                 <xs:choice>
                     <xs:element minOccurs="0" ref="SubFields"/>
                     <xs:element minOccurs="0" maxOccurs="unbounded" ref="AllWidgets"/>
@@ -662,6 +680,10 @@ along with this software (see the LICENSE.md file). If not, see
             <xs:attribute name="text" type="xs:string">
                 <xs:annotation><xs:documentation>Specifies the string to display, can use the ${} syntax to insert
                     context values; if empty the value of the field will be printed for a default.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="text-map" type="xs:string">
+                <xs:annotation><xs:documentation>An expression that evaluates to a Map in the context that will be used
+                    in addition to the context when expanding the @text value.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="currency-unit-field" type="xs:string">
                 <xs:annotation><xs:documentation>Specifies the currency uomId (ISO code) used to format the value.

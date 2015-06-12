@@ -67,12 +67,12 @@ class ResourceFacadeTests extends Specification {
         "classpath://shiro.ini" | "org.moqui.impl.MoquiShiroRealm"
     }
 
-    // TODO: add tests for renderTemplateInCurrentContext and runScriptInCurrentContext
+    // TODO: add tests for renderTemplateInCurrentContext and script
 
     @Unroll
     def "groovy evaluate Condition (#expression)"() {
         expect:
-        result == ec.resource.evaluateCondition(expression, "")
+        result == ec.resource.condition(expression, "")
 
         where:
         expression | result
@@ -84,7 +84,7 @@ class ResourceFacadeTests extends Specification {
     @Unroll
     def "groovy evaluate Context Field (#expression)"() {
         expect:
-        result == ec.resource.evaluateContextField(expression, "")
+        result == ec.resource.expression(expression, "")
 
         where:
         expression | result
@@ -96,7 +96,7 @@ class ResourceFacadeTests extends Specification {
     @Unroll
     def "groovy evaluate String Expand (#inputString)"() {
         expect:
-        result == ec.resource.evaluateStringExpand(inputString, "")
+        result == ec.resource.expand(inputString, "")
 
         where:
         inputString | result

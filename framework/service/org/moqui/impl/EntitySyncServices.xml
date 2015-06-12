@@ -300,7 +300,7 @@ along with this software (see the LICENSE.md file). If not, see
                     <set field="curMap" from="esad.applEnumId == 'EsaaExclude' ? excludeMap : (esad.applEnumId == 'EsaaAlways' ? alwaysMap : includeMap)"/>
                     <set field="curMapList" from="curMap.get(entityName) ?: []"/>
                     <if condition="esad.filterMap">
-                        <script>curMapList.add(ec.resource.evaluateContextField(esad.filterMap, null))</script></if>
+                        <script>curMapList.add(ec.resource.expression(esad.filterMap, null))</script></if>
                     <script>curMap.put(entityName, curMapList)</script>
                     <script>if (esad.dependents == 'Y') withDependentsSet.add(entityName)</script>
                 </iterate>
