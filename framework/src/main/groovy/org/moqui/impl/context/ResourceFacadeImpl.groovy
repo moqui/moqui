@@ -347,15 +347,15 @@ public class ResourceFacadeImpl implements ResourceFacade {
         ExecutionContext ec = ecfi.getExecutionContext()
         ContextStack cs = (ContextStack) ec.context
         try {
-            // push the entire context to isolate the context for the string expand
             if (additionalContext) {
                 if (additionalContext instanceof EntityValue) cs.push(((EntityValue) additionalContext).getMap())
                 else cs.push(additionalContext)
+                // do another push so writes to the context don't modify the passed in Map
+                cs.push()
             }
             return script(location, method)
         } finally {
-            // pop the entire context to get back to where we were before isolating the context with pushContext
-            if (additionalContext) cs.pop()
+            if (additionalContext) { cs.pop(); cs.pop(); }
         }
     }
 
@@ -403,15 +403,15 @@ public class ResourceFacadeImpl implements ResourceFacade {
         ExecutionContext ec = ecfi.getExecutionContext()
         ContextStack cs = (ContextStack) ec.context
         try {
-            // push the entire context to isolate the context for the string expand
             if (additionalContext) {
                 if (additionalContext instanceof EntityValue) cs.push(((EntityValue) additionalContext).getMap())
                 else cs.push(additionalContext)
+                // do another push so writes to the context don't modify the passed in Map
+                cs.push()
             }
             return condition(expression, debugLocation)
         } finally {
-            // pop the entire context to get back to where we were before isolating the context with pushContext
-            if (additionalContext) cs.pop()
+            if (additionalContext) { cs.pop(); cs.pop(); }
         }
     }
 
@@ -441,15 +441,15 @@ public class ResourceFacadeImpl implements ResourceFacade {
         ExecutionContext ec = ecfi.getExecutionContext()
         ContextStack cs = (ContextStack) ec.context
         try {
-            // push the entire context to isolate the context for the string expand
             if (additionalContext) {
                 if (additionalContext instanceof EntityValue) cs.push(((EntityValue) additionalContext).getMap())
                 else cs.push(additionalContext)
+                // do another push so writes to the context don't modify the passed in Map
+                cs.push()
             }
             return expression(expr, debugLocation)
         } finally {
-            // pop the entire context to get back to where we were before isolating the context with pushContext
-            if (additionalContext) cs.pop()
+            if (additionalContext) { cs.pop(); cs.pop(); }
         }
     }
 
@@ -488,15 +488,15 @@ public class ResourceFacadeImpl implements ResourceFacade {
         ExecutionContext ec = ecfi.getExecutionContext()
         ContextStack cs = (ContextStack) ec.context
         try {
-            // push the entire context to isolate the context for the string expand
             if (additionalContext) {
                 if (additionalContext instanceof EntityValue) cs.push(((EntityValue) additionalContext).getMap())
                 else cs.push(additionalContext)
+                // do another push so writes to the context don't modify the passed in Map
+                cs.push()
             }
             return expand(inputString, debugLocation)
         } finally {
-            // pop the entire context to get back to where we were before isolating the context with pushContext
-            if (additionalContext) cs.pop()
+            if (additionalContext) { cs.pop(); cs.pop(); }
         }
     }
 
