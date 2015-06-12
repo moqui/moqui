@@ -14,6 +14,8 @@ package org.moqui.impl.context
 
 import groovy.transform.CompileStatic
 import org.apache.avalon.framework.configuration.DefaultConfigurationBuilder
+import org.moqui.entity.EntityValue
+
 import javax.mail.util.ByteArrayDataSource
 import org.apache.fop.apps.FOUserAgent
 import org.apache.fop.apps.Fop
@@ -347,13 +349,13 @@ public class ResourceFacadeImpl implements ResourceFacade {
         try {
             // push the entire context to isolate the context for the string expand
             if (additionalContext) {
-                cs.pushContext()
-                cs.push(additionalContext)
+                if (additionalContext instanceof EntityValue) cs.push(((EntityValue) additionalContext).getMap())
+                else cs.push(additionalContext)
             }
             return script(location, method)
         } finally {
             // pop the entire context to get back to where we were before isolating the context with pushContext
-            if (additionalContext) cs.popContext()
+            if (additionalContext) cs.pop()
         }
     }
 
@@ -403,13 +405,13 @@ public class ResourceFacadeImpl implements ResourceFacade {
         try {
             // push the entire context to isolate the context for the string expand
             if (additionalContext) {
-                cs.pushContext()
-                cs.push(additionalContext)
+                if (additionalContext instanceof EntityValue) cs.push(((EntityValue) additionalContext).getMap())
+                else cs.push(additionalContext)
             }
             return condition(expression, debugLocation)
         } finally {
             // pop the entire context to get back to where we were before isolating the context with pushContext
-            if (additionalContext) cs.popContext()
+            if (additionalContext) cs.pop()
         }
     }
 
@@ -441,13 +443,13 @@ public class ResourceFacadeImpl implements ResourceFacade {
         try {
             // push the entire context to isolate the context for the string expand
             if (additionalContext) {
-                cs.pushContext()
-                cs.push(additionalContext)
+                if (additionalContext instanceof EntityValue) cs.push(((EntityValue) additionalContext).getMap())
+                else cs.push(additionalContext)
             }
             return expression(expr, debugLocation)
         } finally {
             // pop the entire context to get back to where we were before isolating the context with pushContext
-            if (additionalContext) cs.popContext()
+            if (additionalContext) cs.pop()
         }
     }
 
@@ -488,13 +490,13 @@ public class ResourceFacadeImpl implements ResourceFacade {
         try {
             // push the entire context to isolate the context for the string expand
             if (additionalContext) {
-                cs.pushContext()
-                cs.push(additionalContext)
+                if (additionalContext instanceof EntityValue) cs.push(((EntityValue) additionalContext).getMap())
+                else cs.push(additionalContext)
             }
             return expand(inputString, debugLocation)
         } finally {
             // pop the entire context to get back to where we were before isolating the context with pushContext
-            if (additionalContext) cs.popContext()
+            if (additionalContext) cs.pop()
         }
     }
 
