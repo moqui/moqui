@@ -830,8 +830,15 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
             <#assign linkNode = widgetNode>
             <#if linkNode["@condition"]?has_content><#assign conditionResult = ec.resource.condition(linkNode["@condition"], "")><#else><#assign conditionResult = true></#if>
             <#if conditionResult>
-                <#if linkNode["@entity-name"]?has_content><#assign linkText = ""/><#assign linkText = sri.getFieldEntityValue(linkNode)/>
-                    <#else><#assign linkText = ec.resource.expand(linkNode["@text"]!"", "")/></#if>
+                <#if linkNode["@entity-name"]?has_content>
+                    <#assign linkText = ""/><#assign linkText = sri.getFieldEntityValue(linkNode)/>
+                <#else>
+                    <#if linkNode["@text-map"]?has_content && linkNode["@text"]?has_content>
+                        <#assign linkText = ec.resource.expand(linkNode["@text"], "", ec.resource.expression(linkNode["@text-map"], ""))/>
+                    <#else>
+                        <#assign linkText = ec.resource.expand(linkNode["@text"]!"", "")/>
+                    </#if>
+                </#if>
                 <#assign linkUrlInfo = sri.makeUrlByType(linkNode["@url"], linkNode["@url-type"]!"transition", linkNode, linkNode["@expand-transition-url"]!"true")>
                 <#assign linkFormId><@fieldId linkNode/></#assign>
                 <#assign afterFormText><@linkFormForm linkNode linkFormId linkText linkUrlInfo/></#assign>
