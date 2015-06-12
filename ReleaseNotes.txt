@@ -31,6 +31,10 @@ New Features:
   LocalizedEntityField as a fallback if no locale or base locale record is
   found; used to better support placeholder message keys meant to always
   be localized
+- Added @text-map attribute to link, label, and display for expanded fields
+  in the @text attribute
+- Added shortened names for various methods in ResourceFacade (template,
+  script, expression, condition, expand) and localize in L10nFacade
 
 Bug Fixes:
 
