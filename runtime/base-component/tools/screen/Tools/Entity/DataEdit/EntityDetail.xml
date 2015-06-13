@@ -16,9 +16,19 @@ along with this software (see the LICENSE.md file). If not, see
         default-menu-title="Entity Detail">
 
     <parameter name="entityName" required="true"/>
+    <parameter name="refresh" required="false"/>
 
     <transition name="list"><default-response url="../EntityList"/></transition>
     <transition name="find"><default-response url="../EntityDataFind"/></transition>
+    <transition name="refresh">
+        <actions>
+            <log message="refresh-no var exec" level="warn"/>
+            <script>
+                ec.getEntity().getEntityDbMeta().forceCheckTableRuntime(ec.getEntity().getEntityDefinition(entityName))
+            </script>
+        </actions>
+        <default-response url="."/>
+    </transition>
 
     <actions>
         <set field="entityDefinition" from="ec.entity.getEntityDefinition(entityName)"/>
@@ -35,6 +45,7 @@ along with this software (see the LICENSE.md file). If not, see
         <container>
             <link url="list" text="Entity List"/>
             <link url="find" text="Find ${entityDefinition.entityName}"/>
+            <link url="refresh" text="Refresh" tooltip="Refresh entity definition from XML to Db"/>
         </container>
         <container><label text="Entity Detail for '${entityDefinition.fullEntityName}'" type="h3"/></container>
         <container-row>
