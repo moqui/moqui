@@ -56,7 +56,7 @@ if (emailServer.smtpStartTls) email.setTLS(emailServer.smtpStartTls == "Y")
 if (emailServer.smtpSsl) email.setSSL(emailServer.smtpSsl == "Y")
 
 email.setFrom((String) emailTemplate.fromAddress, (String) emailTemplate.fromName)
-String subject = ec.resource.evaluateStringExpand((String) emailTemplate.subject, "")
+String subject = ec.resource.expand((String) emailTemplate.subject, "")
 email.setSubject(subject)
 
 def toList = ((String) toAddresses).split(",")

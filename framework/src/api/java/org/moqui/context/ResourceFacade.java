@@ -42,39 +42,56 @@ public interface ResourceFacade {
 
     /** Render a template at the given location using the current context and write the output to the given writer. */
     void renderTemplateInCurrentContext(String location, Writer writer);
+    void template(String location, Writer writer);
 
+    @Deprecated
+    Object runScriptInCurrentContext(String location, String method);
+    @Deprecated
+    Object runScriptInCurrentContext(String location, String method, Map additionalContext);
     /** Run a script at the given location (optionally with the given method, like in a groovy class) using the current
      * context for its variable space.
      *
      * @return The value returned by the script, if any.
      */
-    Object runScriptInCurrentContext(String location, String method);
-    Object runScriptInCurrentContext(String location, String method, Map additionalContext);
+    Object script(String location, String method);
+    Object script(String location, String method, Map additionalContext);
 
+    @Deprecated
+    boolean evaluateCondition(String expression, String debugLocation);
+    @Deprecated
+    boolean evaluateCondition(String expression, String debugLocation, Map additionalContext);
     /** Evaluate a Groovy expression as a condition.
      *
      * @return boolean representing the result of evaluating the expression
      */
-    boolean evaluateCondition(String expression, String debugLocation);
-    boolean evaluateCondition(String expression, String debugLocation, Map additionalContext);
+    boolean condition(String expression, String debugLocation);
+    boolean condition(String expression, String debugLocation, Map additionalContext);
 
+    @Deprecated
+    Object evaluateContextField(String expression, String debugLocation);
+    @Deprecated
+    Object evaluateContextField(String expression, String debugLocation, Map additionalContext);
     /** Evaluate a Groovy expression as a context field, or more generally as an expression that evaluates to an Object
      * reference. This can be used to get a value from an expression or to run any general expression or script.
      *
      * @return Object reference representing result of evaluating the expression
      */
-    Object evaluateContextField(String expression, String debugLocation);
-    Object evaluateContextField(String expression, String debugLocation, Map additionalContext);
+    Object expression(String expr, String debugLocation);
+    Object expression(String expr, String debugLocation, Map additionalContext);
 
+    @Deprecated
+    String evaluateStringExpand(String inputString, String debugLocation);
+    @Deprecated
+    String evaluateStringExpand(String inputString, String debugLocation, Map additionalContext);
     /** Evaluate a Groovy expression as a GString to be expanded/interpolated into a simple String.
      *
-     * NOTE: the inputString is always run through the L10nFacade.getLocalizedMessage() method before evaluating the
+     * NOTE: the inputString is always run through the L10nFacade.localize() method before evaluating the
      * expression in order to implicitly internationalize string expansion.
      *
      * @return String representing localized and expanded inputString
      */
-    String evaluateStringExpand(String inputString, String debugLocation);
-    String evaluateStringExpand(String inputString, String debugLocation, Map additionalContext);
+    String expand(String inputString, String debugLocation);
+    String expand(String inputString, String debugLocation, Map additionalContext);
 
     void xslFoTransform(StreamSource xslFoSrc, StreamSource xsltSrc, OutputStream out, String contentType);
 }

@@ -385,7 +385,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                         continue
                     // check the filterMap
                     if (aacv.get('filterMap') && aeii.parameters) {
-                        Map<String, Object> filterMapObj = (Map<String, Object>) eci.getResource().evaluateContextField(aacv.getString('filterMap'), null)
+                        Map<String, Object> filterMapObj = (Map<String, Object>) eci.getResource().expression(aacv.getString('filterMap'), null)
                         boolean allMatches = true
                         for (Map.Entry<String, Object> filterEntry in filterMapObj.entrySet()) {
                             if (filterEntry.getValue() != aeii.parameters.get(filterEntry.getKey())) allMatches = false
@@ -410,7 +410,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                         EntityList condList = efi.find('moqui.security.ArtifactAuthzRecordCond')
                                 .condition('artifactAuthzId', aacv.get('artifactAuthzId')).useCache(true).list()
                         for (EntityValue cond in condList) {
-                            String expCondValue = eci.resource.evaluateStringExpand((String) cond.get('condValue'),
+                            String expCondValue = eci.resource.expand((String) cond.get('condValue'),
                                     "moqui.security.ArtifactAuthzRecordCond.${cond.artifactAuthzId}.${cond.artifactAuthzCondSeqId}")
                             if (expCondValue) {
                                 ef.condition((String) cond.fieldName,

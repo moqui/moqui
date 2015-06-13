@@ -33,7 +33,7 @@ along with this software (see the LICENSE.md file). If not, see
                 if (dependentLevels) edw.dependentLevels(dependentLevels as int)
                 if (fromDate) edw.fromDate(ec.l10n.parseTimestamp(fromDate, null))
                 if (thruDate) edw.thruDate(ec.l10n.parseTimestamp(thruDate, null))
-                if (filterMap) edw.filterMap(ec.resource.evaluateContextField(filterMap, null))
+                if (filterMap) edw.filterMap(ec.resource.expression(filterMap, null))
                 if (orderBy) edw.orderBy([orderBy])
                 edw.fileType(fileType == 'JSON' ? EntityDataWriter.JSON : EntityDataWriter.XML)
 

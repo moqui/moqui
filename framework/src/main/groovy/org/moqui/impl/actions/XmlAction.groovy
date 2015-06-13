@@ -44,7 +44,7 @@ class XmlAction {
             groovyClass = new GroovyClassLoader(Thread.currentThread().getContextClassLoader())
                     .parseClass(groovyString, StupidUtilities.cleanStringForJavaName(location))
         } catch (Throwable t) {
-            logger.error("Error parsing groovy String at [${location}]: ${groovyString}")
+            logger.error("Error parsing groovy String at [${location}]:\n${writeGroovyWithLines()}\n")
             throw t
         }
     }
@@ -61,15 +61,14 @@ class XmlAction {
         try {
             groovyClass = new GroovyClassLoader().parseClass(groovyString, StupidUtilities.cleanStringForJavaName(location))
         } catch (Throwable t) {
-            logger.error("Error parsing groovy String at [${location}]: ${groovyString}")
+            logger.error("Error parsing groovy String at [${location}]:\n${writeGroovyWithLines()}\n")
             throw t
         }
     }
 
     protected static String makeGroovyString(ExecutionContextFactoryImpl ecfi, FtlNodeWrapper ftlNode, String location) {
         // transform XML to groovy
-        String groovyText = null
-        InputStream xmlStream = null
+        String groovyText
         try {
             Map root = ["xmlActionsRoot":ftlNode]
 
@@ -82,8 +81,6 @@ class XmlAction {
         } catch (Exception e) {
             logger.error("Error reading XML actions from [${location}], text: ${ftlNode.toString()}")
             throw new BaseException("Error reading XML actions from [${location}]", e)
-        } finally {
-            if (xmlStream) xmlStream.close()
         }
 
         if (logger.traceEnabled) logger.trace("xml-actions at [${location}] produced groovy script:\n${groovyText}\nFrom ftlNode:${ftlNode}")

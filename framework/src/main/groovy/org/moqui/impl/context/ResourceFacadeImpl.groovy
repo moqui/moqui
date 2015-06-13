@@ -14,6 +14,8 @@ package org.moqui.impl.context
 
 import groovy.transform.CompileStatic
 import org.apache.avalon.framework.configuration.DefaultConfigurationBuilder
+import org.moqui.entity.EntityValue
+
 import javax.mail.util.ByteArrayDataSource
 import org.apache.fop.apps.FOUserAgent
 import org.apache.fop.apps.Fop
@@ -278,7 +280,10 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
     @Override
     @CompileStatic
-    void renderTemplateInCurrentContext(String location, Writer writer) {
+    void renderTemplateInCurrentContext(String location, Writer writer) { template(location, writer) }
+    @Override
+    @CompileStatic
+    void template(String location, Writer writer) {
         TemplateRenderer tr = getTemplateRendererByLocation(location)
         if (tr != null) {
             tr.render(location, writer)
@@ -309,7 +314,17 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
     @Override
     @CompileStatic
-    Object runScriptInCurrentContext(String location, String method) {
+    Object runScriptInCurrentContext(String location, String method) { return script(location, method) }
+
+    @Override
+    @CompileStatic
+    Object runScriptInCurrentContext(String location, String method, Map additionalContext) {
+        return script(location, method, additionalContext)
+    }
+
+    @Override
+    @CompileStatic
+    Object script(String location, String method) {
         ExecutionContext ec = ecfi.getExecutionContext()
         String extension = location.substring(location.lastIndexOf("."))
         ScriptRunner sr = this.scriptRunners.get(extension)
@@ -324,23 +339,23 @@ public class ResourceFacadeImpl implements ResourceFacade {
             return JavaxScriptRunner.bindAndRun(location, ec, engine,
                     ecfi.getCacheFacade().getCache("resource.script${extension}.location"))
         }
-    }
 
+    }
     @Override
     @CompileStatic
-    Object runScriptInCurrentContext(String location, String method, Map additionalContext) {
+    Object script(String location, String method, Map additionalContext) {
         ExecutionContext ec = ecfi.getExecutionContext()
         ContextStack cs = (ContextStack) ec.context
         try {
-            // push the entire context to isolate the context for the string expand
             if (additionalContext) {
-                cs.pushContext()
-                cs.push(additionalContext)
+                if (additionalContext instanceof EntityValue) cs.push(((EntityValue) additionalContext).getMap())
+                else cs.push(additionalContext)
+                // do another push so writes to the context don't modify the passed in Map
+                cs.push()
             }
-            return runScriptInCurrentContext(location, method)
+            return script(location, method)
         } finally {
-            // pop the entire context to get back to where we were before isolating the context with pushContext
-            if (additionalContext) cs.popContext()
+            if (additionalContext) { cs.pop(); cs.pop(); }
         }
     }
 
@@ -348,21 +363,31 @@ public class ResourceFacadeImpl implements ResourceFacade {
     Object setInContext(String field, String from, String value, String defaultValue, String type, String setIfEmpty) {
         def tempValue = getValueFromContext(from, value, defaultValue, type)
         ecfi.getExecutionContext().getContext().put("_tempValue", tempValue)
-        if (tempValue || setIfEmpty) evaluateContextField("${field} = _tempValue", "")
+        if (tempValue || setIfEmpty) expression("${field} = _tempValue", "")
 
         return tempValue
     }
     @CompileStatic
     Object getValueFromContext(String from, String value, String defaultValue, String type) {
-        def tempValue = from ? evaluateContextField(from, "") : evaluateStringExpand(value, "")
-        if (!tempValue && defaultValue) tempValue = evaluateStringExpand(defaultValue, "")
+        def tempValue = from ? expression(from, "") : expand(value, "")
+        if (!tempValue && defaultValue) tempValue = expand(defaultValue, "")
         if (type) tempValue = StupidUtilities.basicConvert(tempValue, type)
         return tempValue
     }
 
     @Override
     @CompileStatic
-    boolean evaluateCondition(String expression, String debugLocation) {
+    boolean evaluateCondition(String expression, String debugLocation) { return condition(expression, debugLocation) }
+
+    @Override
+    @CompileStatic
+    boolean evaluateCondition(String expression, String debugLocation, Map additionalContext) {
+        return condition(expression, debugLocation, additionalContext)
+    }
+
+    @Override
+    @CompileStatic
+    boolean condition(String expression, String debugLocation) {
         if (!expression) return false
         try {
             Script script = getGroovyScript(expression)
@@ -372,28 +397,35 @@ public class ResourceFacadeImpl implements ResourceFacade {
             throw new IllegalArgumentException("Error in condition [${expression}] from [${debugLocation}]", e)
         }
     }
-
     @Override
     @CompileStatic
-    boolean evaluateCondition(String expression, String debugLocation, Map additionalContext) {
+    boolean condition(String expression, String debugLocation, Map additionalContext) {
         ExecutionContext ec = ecfi.getExecutionContext()
         ContextStack cs = (ContextStack) ec.context
         try {
-            // push the entire context to isolate the context for the string expand
             if (additionalContext) {
-                cs.pushContext()
-                cs.push(additionalContext)
+                if (additionalContext instanceof EntityValue) cs.push(((EntityValue) additionalContext).getMap())
+                else cs.push(additionalContext)
+                // do another push so writes to the context don't modify the passed in Map
+                cs.push()
             }
-            return evaluateCondition(expression, debugLocation)
+            return condition(expression, debugLocation)
         } finally {
-            // pop the entire context to get back to where we were before isolating the context with pushContext
-            if (additionalContext) cs.popContext()
+            if (additionalContext) { cs.pop(); cs.pop(); }
         }
     }
 
     @Override
     @CompileStatic
-    Object evaluateContextField(String expression, String debugLocation) {
+    Object evaluateContextField(String expr, String debugLocation) { return expression(expr, debugLocation) }
+    @Override
+    @CompileStatic
+    Object evaluateContextField(String expr, String debugLocation, Map additionalContext) {
+        return expression(expr, debugLocation, additionalContext)
+    }
+    @Override
+    @CompileStatic
+    Object expression(String expression, String debugLocation) {
         if (!expression) return null
         try {
             Script script = getGroovyScript(expression)
@@ -405,30 +437,38 @@ public class ResourceFacadeImpl implements ResourceFacade {
     }
     @Override
     @CompileStatic
-    Object evaluateContextField(String expression, String debugLocation, Map additionalContext) {
+    Object expression(String expr, String debugLocation, Map additionalContext) {
         ExecutionContext ec = ecfi.getExecutionContext()
         ContextStack cs = (ContextStack) ec.context
         try {
-            // push the entire context to isolate the context for the string expand
             if (additionalContext) {
-                cs.pushContext()
-                cs.push(additionalContext)
+                if (additionalContext instanceof EntityValue) cs.push(((EntityValue) additionalContext).getMap())
+                else cs.push(additionalContext)
+                // do another push so writes to the context don't modify the passed in Map
+                cs.push()
             }
-            return evaluateContextField(expression, debugLocation)
+            return expression(expr, debugLocation)
         } finally {
-            // pop the entire context to get back to where we were before isolating the context with pushContext
-            if (additionalContext) cs.popContext()
+            if (additionalContext) { cs.pop(); cs.pop(); }
         }
     }
 
 
     @Override
     @CompileStatic
-    String evaluateStringExpand(String inputString, String debugLocation) {
+    String evaluateStringExpand(String inputString, String debugLocation) { expand(inputString, debugLocation) }
+    @Override
+    @CompileStatic
+    String evaluateStringExpand(String inputString, String debugLocation, Map additionalContext) {
+        return expand(inputString, debugLocation, additionalContext)
+    }
+    @Override
+    @CompileStatic
+    String expand(String inputString, String debugLocation) {
         if (!inputString) return ""
 
         // always localize string before expanding
-        if (inputString.length() < 256) inputString = ecfi.l10nFacade.getLocalizedMessage(inputString)
+        if (inputString.length() < 256) inputString = ecfi.l10nFacade.localize(inputString)
         // if no $ then it's a plain String, just return it
         if (!inputString.contains("\$")) return inputString
 
@@ -444,19 +484,19 @@ public class ResourceFacadeImpl implements ResourceFacade {
     }
     @Override
     @CompileStatic
-    String evaluateStringExpand(String inputString, String debugLocation, Map additionalContext) {
+    String expand(String inputString, String debugLocation, Map additionalContext) {
         ExecutionContext ec = ecfi.getExecutionContext()
         ContextStack cs = (ContextStack) ec.context
         try {
-            // push the entire context to isolate the context for the string expand
             if (additionalContext) {
-                cs.pushContext()
-                cs.push(additionalContext)
+                if (additionalContext instanceof EntityValue) cs.push(((EntityValue) additionalContext).getMap())
+                else cs.push(additionalContext)
+                // do another push so writes to the context don't modify the passed in Map
+                cs.push()
             }
-            return evaluateStringExpand(inputString, debugLocation)
+            return expand(inputString, debugLocation)
         } finally {
-            // pop the entire context to get back to where we were before isolating the context with pushContext
-            if (additionalContext) cs.popContext()
+            if (additionalContext) { cs.pop(); cs.pop(); }
         }
     }
 
