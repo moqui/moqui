@@ -47,14 +47,6 @@ class EntityDbMeta {
     }
 
     @CompileStatic
-    void forceCheckTableRuntime(EntityDefinition ed) {
-        if (entityTablesChecked.containsKey(ed.getFullEntityName())) {
-            entityTablesChecked.remove(ed.getFullEntityName())
-        }
-        checkTableRuntime(ed)
-    }
-
-    @CompileStatic
     void checkTableRuntime(EntityDefinition ed) {
         String groupName = ed.getEntityGroupName()
         Boolean runtimeAddMissing = runtimeAddMissingMap.get(groupName)
@@ -88,6 +80,13 @@ class EntityDbMeta {
             internalCheckTable(ed, true)
         }
     }
+
+    @CompileStatic
+    void forceCheckTableRuntime(EntityDefinition ed) {
+        entityTablesChecked.remove(ed.getFullEntityName())
+        checkTableRuntime(ed)
+    }
+
     @CompileStatic
     synchronized void internalCheckTable(EntityDefinition ed, boolean startup) {
         // if it's in this table we've already checked it

@@ -20,13 +20,8 @@ along with this software (see the LICENSE.md file). If not, see
 
     <transition name="list"><default-response url="../EntityList"/></transition>
     <transition name="find"><default-response url="../EntityDataFind"/></transition>
-    <transition name="refresh">
-        <actions>
-            <log message="refresh-no var exec" level="warn"/>
-            <script>
-                ec.getEntity().getEntityDbMeta().forceCheckTableRuntime(ec.getEntity().getEntityDefinition(entityName))
-            </script>
-        </actions>
+    <transition name="checkTable">
+        <actions><script>ec.entity.entityDbMeta.forceCheckTableRuntime(ec.entity.getEntityDefinition(entityName))</script></actions>
         <default-response url="."/>
     </transition>
 
@@ -45,7 +40,7 @@ along with this software (see the LICENSE.md file). If not, see
         <container>
             <link url="list" text="Entity List"/>
             <link url="find" text="Find ${entityDefinition.entityName}"/>
-            <link url="refresh" text="Refresh" tooltip="Refresh entity definition from XML to Db"/>
+            <link url="checkTable" text="Check/Update Table" tooltip="Check and update DB table from entity definition"/>
         </container>
         <container><label text="Entity Detail for '${entityDefinition.fullEntityName}'" type="h3"/></container>
         <container-row>
