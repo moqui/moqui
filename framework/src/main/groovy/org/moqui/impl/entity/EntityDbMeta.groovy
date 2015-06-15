@@ -87,6 +87,14 @@ class EntityDbMeta {
         checkTableRuntime(ed)
     }
 
+    void forceCheckExistingTables() {
+        entityTablesChecked.clear()
+        for (String entityName in efi.getAllEntityNames()) {
+            EntityDefinition ed = efi.getEntityDefinition(entityName)
+            if (tableExists(ed)) checkTableRuntime(ed)
+        }
+    }
+
     @CompileStatic
     synchronized void internalCheckTable(EntityDefinition ed, boolean startup) {
         // if it's in this table we've already checked it

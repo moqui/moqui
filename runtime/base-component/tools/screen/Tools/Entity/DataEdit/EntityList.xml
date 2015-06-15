@@ -17,6 +17,10 @@ along with this software (see the LICENSE.md file). If not, see
 
     <transition name="find"><default-response url="../EntityDataFind"/></transition>
     <transition name="detail"><default-response url="../EntityDetail"/></transition>
+    <transition name="checkTables">
+        <actions><script>ec.entity.entityDbMeta.forceCheckExistingTables()</script></actions>
+        <default-response url="."/>
+    </transition>
 
     <actions>
         <set field="pageSize" from="pageSize ?: 60"/>
@@ -24,6 +28,8 @@ along with this software (see the LICENSE.md file). If not, see
         <script>StupidUtilities.paginateList("entityList", null, context)</script>
     </actions>
     <widgets>
+        <link url="checkTables" text="Check/Update All Tables"/>
+
         <form-single name="FilterForm" transition=".">
             <field name="filterRegexp"><default-field><text-line size="30"/></default-field></field>
             <field name="submitButton"><default-field title="Filter"><submit/></default-field></field>
