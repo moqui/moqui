@@ -593,9 +593,9 @@ class StupidUtilities {
     }
 
     private static final String[] SCALES = ["", "thousand", "million", "billion", "trillion", "quadrillion", "quintillion", "sextillion"]
-    private static final String[] SUBTWENTY = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
+    private static final String[] SUBTWENTY = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
         "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"]
-    private static final String[] DECADES = ["zero", "ten", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"]
+    private static final String[] DECADES = ["", "ten", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"]
     private static final String NEG_NAME = "negative"
 
     /** Convert any value from 0 to 999 inclusive, to a string. */
@@ -611,7 +611,7 @@ class StupidUtilities {
         if (subhun > 0) {
             if (hun > 0) sb.append(useAnd ? " and " : " ")
             if (subhun < SUBTWENTY.length) {
-                sb.append(SUBTWENTY[subhun])
+                sb.append(" ").append(SUBTWENTY[subhun])
             } else {
                 int tens = (subhun / 10) as int
                 int units = subhun % 10
