@@ -1578,7 +1578,7 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
     <#assign buttonText><@fieldTitle .node?parent/></#assign>
     <#assign iconClass = .node["@icon"]!>
     <#if !iconClass?has_content && .node?parent["@title"]?has_content><#assign iconClass = sri.getThemeIconClass(.node?parent["@title"])!></#if>
-    <button type="submit" name="<@fieldName .node/>" id="<@fieldId .node/>"<#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}');"</#if><#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if> class="btn btn-primary btn-sm"><#if iconClass?has_content><i class="${iconClass}"></i> </#if>
+    <button type="submit" name="<@fieldName .node/>" value="<@fieldName .node/>" id="<@fieldId .node/>"<#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}');"</#if><#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if> class="btn btn-primary btn-sm"><#if iconClass?has_content><i class="${iconClass}"></i> </#if>
     <#if .node["image"]?has_content><#assign imageNode = .node["image"][0]>
         <img src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"]!"content",null,"true")}" alt="<#if imageNode["@alt"]?has_content>${imageNode["@alt"]}<#else><@fieldTitle .node?parent/></#if>"<#if imageNode["@width"]?has_content> width="${imageNode["@width"]}"</#if><#if imageNode["@height"]?has_content> height="${imageNode["@height"]}"</#if>>
     <#else>
