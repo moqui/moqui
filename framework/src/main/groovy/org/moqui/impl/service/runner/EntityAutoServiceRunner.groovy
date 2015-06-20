@@ -190,8 +190,9 @@ public class EntityAutoServiceRunner implements ServiceRunner {
                 ArrayList<Long> bank = (ArrayList<Long>) efi.entitySequenceBankCache.get(ed.getFullEntityName())
                 EntityValue svi = efi.makeFind("moqui.entity.SequenceValueItem").condition("seqName", ed.getFullEntityName())
                         .useCache(false).one()
-                logger.warn("======= Got PK violation, current bank is ${bank}, PK is ${newEntityValue.getPrimaryKeys()}, current SequenceValueItem: ${svi}")
+                logger.warn("Got PK violation, current bank is ${bank}, PK is ${newEntityValue.getPrimaryKeys()}, current SequenceValueItem: ${svi}")
             }
+            throw e
         }
 
         // NOTE: keep a separate Map of parent PK values to pass down, can't just be current record's PK fields because
