@@ -1492,7 +1492,7 @@ class EntityFacadeImpl implements EntityFacade {
             "number-decimal":"java.math.BigDecimal", "currency-amount":"java.math.BigDecimal", "currency-precise":"java.math.BigDecimal",
             "binary-very-long":"java.sql.Blob" ]
     protected static final Map<String, Integer> javaIntTypeMap = [
-            "java.lang.String":1, "String":1, "org.codehaus.groovy.runtime.GStringImpl":1,
+            "java.lang.String":1, "String":1, "org.codehaus.groovy.runtime.GStringImpl":1, "char[]":1,
             "java.sql.Timestamp":2, "Timestamp":2,
             "java.sql.Time":3, "Time":3,
             "java.sql.Date":4, "Date":4,
