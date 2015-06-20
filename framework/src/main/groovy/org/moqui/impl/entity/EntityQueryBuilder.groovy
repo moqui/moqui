@@ -386,6 +386,8 @@ class EntityQueryBuilder {
                 String fieldClassName = value.getClass().getName()
                 if (value instanceof byte[]) {
                     fieldClassName = "byte[]"
+                } else if (value instanceof char[]) {
+                    fieldClassName = "char[]"
                 }
 
                 if (logger.isTraceEnabled()) logger.trace((String) "Type of field " + entityName + "." + fieldName +
@@ -400,7 +402,7 @@ class EntityQueryBuilder {
             // if field is to be encrypted, do it now
             if (fieldInfo.encrypt) {
                 if (typeValue != 1) throw new IllegalArgumentException("The encrypt attribute was set to true on non-String field [${fieldName}] of entity [${entityName}]")
-                String original = value.toString()
+                String original = value as String
                 value = enDeCrypt(original, true, efi)
             }
         }
