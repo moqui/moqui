@@ -89,7 +89,7 @@ class EntityValueImpl extends EntityValueBase {
                 for (int i = 0; i < size; i++) {
                     EntityDefinition.FieldInfo fieldInfo = fieldInfoList.get(i)
                     String fieldName = fieldInfo.name
-                    eqb.setPreparedStatementValue(i+1, getValueMap().get(fieldName), fieldInfo)
+                    eqb.setPreparedStatementValue(i+1I, getValueMap().get(fieldName), fieldInfo)
                 }
                 eqb.executeUpdate()
                 setSyncedWithDb()
