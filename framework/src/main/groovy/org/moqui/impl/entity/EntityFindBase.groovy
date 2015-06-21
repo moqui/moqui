@@ -547,6 +547,8 @@ abstract class EntityFindBase implements EntityFind {
         // try the TX cache before the entity cache, may be more up-to-date
         EntityValueBase txcValue = txCache != null ? txCache.oneGet(this) : null
 
+        // if (txcValue != null && ed.getEntityName() == "foo") logger.warn("========= TX cache one value: ${txcValue}")
+
         boolean doCache = this.shouldCache()
         CacheImpl entityOneCache = doCache ? efi.getEntityCache().getCacheOne(getEntityDef().getFullEntityName()) : null
         EntityValueBase cacheHit = null

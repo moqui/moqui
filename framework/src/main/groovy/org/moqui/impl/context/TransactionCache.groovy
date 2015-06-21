@@ -160,7 +160,7 @@ class TransactionCache implements Synchronization {
         }
 
         // add to readCache
-        readOneCache.put(key, evb)
+        if (evb.getIsFromDb()) readOneCache.put(key, evb)
         // update any matching list cache entries, add to list cache if not there (though generally should be, depending on the condition)
         Map<EntityCondition, EntityListImpl> entityListCache = readListCache.get(evb.getEntityName())
         if (entityListCache != null) {
