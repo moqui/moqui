@@ -91,7 +91,9 @@ class MoquiShiroRealm implements Realm {
             }
 
             // no account found?
-            if (!newUserAccount) throw new UnknownAccountException("Username [${username}] and/or password incorrect.")
+            if (newUserAccount == null) throw new UnknownAccountException("Username [${username}] and/or password incorrect.")
+
+            userId = newUserAccount.userId
 
             // check for disabled account before checking password (otherwise even after disable could determine if
             //    password is correct or not
@@ -150,8 +152,6 @@ class MoquiShiroRealm implements Realm {
             //     be done at this point
             alreadyDisabled = ecfi.executionContext.artifactExecution.disableAuthz()
             try {
-                userId = newUserAccount.userId
-
                 // no more auth failures? record the various account state updates, hasLoggedOut=N
                 if (newUserAccount.successiveFailedLogins != 0 || newUserAccount.disabled != "N" ||
                         newUserAccount.disabledDateTime != null || newUserAccount.hasLoggedOut != "N") {
