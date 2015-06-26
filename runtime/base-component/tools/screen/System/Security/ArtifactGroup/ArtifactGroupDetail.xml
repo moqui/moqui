@@ -119,7 +119,7 @@ along with this software (see the LICENSE.md file). If not, see
                         <field name="artifactGroupId"><default-field><hidden/></default-field></field>
                         <field name="userGroupId"><default-field title="User Group">
                             <drop-down style="chosen-wider">
-                                <entity-options key="${userGroupId}" text="${description} [${userGroupId}]">
+                                <entity-options key="${userGroupId}" text="UserGroupNameTemplate">
                                     <entity-find entity-name="moqui.security.UserGroup">
                                         <order-by field-name="description"/></entity-find>
                                 </entity-options>
@@ -192,7 +192,7 @@ along with this software (see the LICENSE.md file). If not, see
                         <field name="artifactGroupId"><default-field><hidden/></default-field></field>
                         <field name="userGroupId"><default-field title="User Group">
                             <drop-down style="chosen-wider">
-                                <entity-options key="${userGroupId}" text="${description} [${userGroupId}]">
+                                <entity-options key="${userGroupId}" text="UserGroupNameTemplate">
                                     <entity-find entity-name="moqui.security.UserGroup">
                                         <order-by field-name="description"/></entity-find>
                                 </entity-options>

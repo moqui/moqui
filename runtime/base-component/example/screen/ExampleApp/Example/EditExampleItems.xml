@@ -39,7 +39,7 @@ along with this software (see the LICENSE.md file). If not, see
                 <field name="exampleItemSeqId"><default-field><ignored/><!-- this will be auto-sequenced --></default-field></field>
                 <field name="amountUomId">
                     <default-field title="UOM"><drop-down allow-empty="true">
-                        <list-options list="allUomAndTypeList" key="${uomId}" text="${typeDescription}: ${description} (${abbreviation})"/>
+                        <list-options list="allUomAndTypeList" key="${uomId}" text="${typeDescription} - ${ec.resource.expand('UomNameTemplate','')}"/>
                     </drop-down></default-field>
                 </field>
                 <field name="submitButton"><default-field title="Add"><submit confirmation="Really Add?"/></default-field></field>
