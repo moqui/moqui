@@ -152,15 +152,31 @@ class TransactionCache implements Synchronization {
                 // TODO: if new value sets a field with an FK to a field created already in this TX create another
                 //  update record (how to do with key strategy!?! maybe add a dummy Map entry...) to avoid FK issues
                 currentEwi.evb.setFields(evb, true, null, false)
+                evb = currentEwi.evb
             } else {
                 throw new EntityException("Tried to update a value that has been deleted, entity [${evb.getEntityName()}], PK ${evb.getPrimaryKeys()}")
             }
         } else {
+            if (!evb.getIsFromDb()) {
+                EntityValueBase cacheEvb = readOneCache.get(key)
+                if (cacheEvb != null) {
+                    cacheEvb.setFields(evb, true, null, false)
+                    evb = cacheEvb
+                } else {
+                    EntityValueBase dbEvb = (EntityValueBase) evb.cloneValue()
+                    dbEvb.refresh()
+                    dbEvb.setFields(evb, true, null, false)
+                    evb = dbEvb
+                    logger.warn("====== tx cache update not from db\nevb: ${evb}\ndbEvb: ${dbEvb}")
+                }
+            }
+
             writeInfoList.put(key, new EntityWriteInfo(evb, WriteMode.UPDATE))
         }
 
         // add to readCache
         readOneCache.put(key, evb)
+
         // update any matching list cache entries, add to list cache if not there (though generally should be, depending on the condition)
         Map<EntityCondition, EntityListImpl> entityListCache = readListCache.get(evb.getEntityName())
         if (entityListCache != null) {

@@ -68,7 +68,7 @@ along with this software (see the LICENSE.md file). If not, see
                 <default-field><display also-hidden="false"/></default-field>
             </field>
             <field name="clear">
-                <default-field><link text="Clear" url="clearCacheElement" link-type="anchor"><parameter name="key"/></link></default-field>
+                <default-field><link text="Clear" url="clearCacheElement" link-type="hidden-form-link"><parameter name="key"/></link></default-field>
             </field>
         </form-list>
     </widgets>
