@@ -325,7 +325,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
         }
 
         lookedUpValue.setFields(parameters, true, null, false)
-        // logger.info("In auto updateEntity lookedUpValue final [${lookedUpValue}] for parameters [${parameters}]")
+        // logger.info("In auto updateEntity lookedUpValue final [${((EntityValueBase) lookedUpValue).getValueMap()}] for parameters [${parameters}]")
         lookedUpValue.update()
 
         storeRelated(ecfi, (EntityValueBase) lookedUpValue, parameters, result, null)

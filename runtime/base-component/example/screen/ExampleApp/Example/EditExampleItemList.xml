@@ -59,12 +59,12 @@ along with this software (see the LICENSE.md file). If not, see
             <field name="amountUomId">
                 <header-field>
                     <drop-down allow-empty="true" combo-box="true">
-                        <list-options list="allUomAndTypeList" key="${uomId}" text="${typeDescription}: ${description} (${abbreviation})"/>
+                        <list-options list="allUomAndTypeList" key="${uomId}" text="${typeDescription} - ${ec.resource.expand('UomNameTemplate','')}"/>
                     </drop-down>
                 </header-field>
                 <default-field title="UOM">
                     <drop-down allow-empty="true">
-                        <list-options list="allUomAndTypeList" key="${uomId}" text="${typeDescription}: ${description} (${abbreviation})"/>
+                        <list-options list="allUomAndTypeList" key="${uomId}" text="${typeDescription} - ${ec.resource.expand('UomNameTemplate','')}"/>
                     </drop-down>
                 </default-field>
             </field>

@@ -43,7 +43,7 @@ along with this software (see the LICENSE.md file). If not, see
             <field name="userId">
                 <header-field show-order-by="true"><text-find hide-options="true" size="6"/></header-field>
                 <default-field>
-                    <display-entity entity-name="moqui.security.UserAccount" text="${userFullName} [${username}]"/>
+                    <display-entity entity-name="moqui.security.UserAccount" text="UsernameTemplate"/>
                     <link url="userAccountDetail" text="${userId}" link-type="anchor" condition="userId"/>
                 </default-field>
             </field>

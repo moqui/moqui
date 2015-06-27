@@ -204,6 +204,8 @@ return;
 
 <#macro break>    break
 </#macro>
+<#macro continue>    continue
+</#macro>
 <#macro iterate>
     <#if .node["@key"]?has_content>
     if (${.node["@list"]} instanceof Map) {

@@ -56,6 +56,8 @@ class MoquiFopServlet extends HttpServlet {
         ec.initWebFacade(moquiWebappName, request, response)
         ec.web.requestAttributes.put("moquiRequestStartTime", startTime)
 
+        String filename = ec.web.parameters.get("filename")
+
         String xslFoText = null
         try {
             ScreenRender sr = ec.screen.makeRender().webappName(moquiWebappName).renderMode("xsl-fo")
@@ -67,6 +69,9 @@ class MoquiFopServlet extends HttpServlet {
 
             String contentType = ec.web.requestParameters."contentType" ?: "application/pdf"
             response.setContentType(contentType)
+
+            if (filename) response.addHeader("Content-Disposition", "attachment; filename=\"${filename}\"")
+            else response.addHeader("Content-Disposition", "inline")
 
             ec.resource.xslFoTransform(new StreamSource(new StringReader(xslFoText)), null,
                     response.getOutputStream(), contentType)
