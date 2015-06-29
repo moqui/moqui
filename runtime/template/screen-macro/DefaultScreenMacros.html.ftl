@@ -450,6 +450,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
         <#if linkNode["@entity-name"]?has_content>
             <#assign linkText = ""><#assign linkText = sri.getFieldEntityValue(linkNode)>
         <#else>
+            <#assign textMap = "">
             <#if linkNode["@text-map"]?has_content><#assign textMap = ec.resource.expression(linkNode["@text-map"], "")!></#if>
             <#if textMap?has_content>
                 <#assign linkText = ec.resource.expand(linkNode["@text"], "", textMap)>
@@ -531,6 +532,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#if .node["@condition"]?has_content><#assign conditionResult = ec.resource.condition(.node["@condition"], "")><#else><#assign conditionResult = true></#if>
     <#if conditionResult>
         <#assign labelType = .node["@type"]?default("span")/>
+        <#assign textMap = "">
         <#if .node["@text-map"]?has_content><#assign textMap = ec.resource.expression(.node["@text-map"], "")!></#if>
         <#if textMap?has_content>
             <#assign labelValue = ec.resource.expand(.node["@text"], "", textMap)>
@@ -836,6 +838,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                 <#if linkNode["@entity-name"]?has_content>
                     <#assign linkText = ""><#assign linkText = sri.getFieldEntityValue(linkNode)>
                 <#else>
+                    <#assign textMap = "">
                     <#if linkNode["@text-map"]?has_content><#assign textMap = ec.resource.expression(linkNode["@text-map"], "")!></#if>
                     <#if textMap?has_content>
                         <#assign linkText = ec.resource.expand(linkNode["@text"], "", textMap)>
@@ -1189,6 +1192,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                     <#if linkNode["@entity-name"]?has_content>
                         <#assign linkText = ""><#assign linkText = sri.getFieldEntityValue(linkNode)>
                     <#else>
+                        <#assign textMap = "">
                         <#if linkNode["@text-map"]?has_content><#assign textMap = ec.resource.expression(linkNode["@text-map"], "")!></#if>
                         <#if textMap?has_content>
                             <#assign linkText = ec.resource.expand(linkNode["@text"], "", textMap)>
@@ -1423,6 +1427,7 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
 <#macro display>
     <#assign fieldValue = ""/>
     <#if .node["@text"]?has_content>
+        <#assign textMap = "">
         <#if .node["@text-map"]?has_content><#assign textMap = ec.resource.expression(.node["@text-map"], "")!></#if>
         <#if textMap?has_content>
             <#assign fieldValue = ec.resource.expand(.node["@text"], "", textMap)>
