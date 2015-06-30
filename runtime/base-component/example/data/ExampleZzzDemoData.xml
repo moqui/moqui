@@ -79,9 +79,11 @@ along with this software (see the LICENSE.md file). If not, see
     <moqui.tenant.TenantDataSource tenantId="EXAMPLE1" entityGroupName="transactional" jndiName="" jdbcUri=""
             jdbcUsername="" jdbcPassword=""/>
     <moqui.tenant.TenantDataSourceXaProp tenantId="EXAMPLE1" entityGroupName="transactional"
-            propName="databaseName" propValue="${moqui.runtime}/db/derby/EXAMPLE1"/>
+            propName="url" propValue="jdbc:h2:${moqui.runtime}/db/h2/EXAMPLE1"/>
     <moqui.tenant.TenantDataSourceXaProp tenantId="EXAMPLE1" entityGroupName="transactional"
-            propName="createDatabase" propValue="create"/>
+            propName="user" propValue="sa"/>
+    <moqui.tenant.TenantDataSourceXaProp tenantId="EXAMPLE1" entityGroupName="transactional"
+            propName="password" propValue="sa"/>
 
     <!-- ========== EntitySync Example ========== -->
     <moqui.entity.sync.EntitySync entitySyncId="EXAMPLE" description="Example sync to EXAMPLE1 tenant"
