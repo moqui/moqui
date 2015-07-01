@@ -884,6 +884,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#assign skipStart = (formNode["@skip-start"]! == "true")>
     <#assign skipEnd = (formNode["@skip-end"]! == "true")>
     <#assign skipForm = (formNode["@skip-form"]! == "true")>
+    <#assign skipHeader = (formNode["@skip-header"]! == "true")>
     <#assign formListUrlInfo = sri.makeUrlByType(formNode["@transition"], "transition", null, "false")>
     <#assign listName = formNode["@list"]>
     <#assign listObject = ec.resource.expression(listName, "")!>
@@ -917,6 +918,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#if formListColumnList?? && (formListColumnList?size > 0)>
         <#if !skipStart>
         <table class="table table-striped table-hover table-condensed" id="${formId}-table">
+            <#if !skipHeader>
             <thead>
                 <#assign needHeaderForm = sri.isFormHeaderForm(formNode["@name"])>
                 <#if needHeaderForm>
@@ -962,6 +964,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                 </tr>
                 </#if>
             </thead>
+            </#if>
             <#if isMulti && !skipForm>
                 <tbody>
                 <form name="${formId}" id="${formId}" method="post" action="${formListUrlInfo.url}">
@@ -1035,6 +1038,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
         <#assign fieldNodeList = formNode["field"]>
         <#if !skipStart>
         <table class="table table-striped table-hover table-condensed" id="${formId}-table">
+            <#if !skipHeader>
             <thead>
                 <#assign needHeaderForm = sri.isFormHeaderForm(formNode["@name"])>
                 <#if needHeaderForm && !skipStart>
@@ -1066,6 +1070,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                     </tr>
                 </#if>
             </thead>
+            </#if>
             <#if isMulti && !skipForm>
                 <tbody>
                 <form name="${formId}" id="${formId}" class="form-body" method="post" action="${formListUrlInfo.url}">

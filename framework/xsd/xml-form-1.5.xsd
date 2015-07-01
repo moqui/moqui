@@ -91,6 +91,9 @@ along with this software (see the LICENSE.md file). If not, see
                 <xs:annotation><xs:documentation>Skip the ending rendered elements of the form. Use this to leave a form
                     open so that additional forms can be combined with it.</xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="skip-header" type="boolean" default="false">
+                <xs:annotation><xs:documentation>Skip the table header element.</xs:documentation></xs:annotation>
+            </xs:attribute>
             <xs:attribute name="dynamic" type="boolean" default="false">
                 <xs:annotation><xs:documentation>If true this form will be considered dynamic and the internal
                     definition will be built up each time it is used instead of only when first referred to. This is
@@ -173,6 +176,9 @@ along with this software (see the LICENSE.md file). If not, see
             <xs:attribute name="skip-form" type="boolean" default="false">
                 <xs:annotation><xs:documentation>Make the output a plain table, not submittable (in HTML don't generate
                     'form' elements). Useful for view-only list forms to minimize output.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="skip-header" type="boolean" default="false">
+                <xs:annotation><xs:documentation>Skip the table header element.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="dynamic" type="boolean" default="false">
                 <xs:annotation><xs:documentation>If true then this form will be considered dynamic and the internal
