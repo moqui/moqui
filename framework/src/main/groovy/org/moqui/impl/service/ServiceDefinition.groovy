@@ -512,7 +512,7 @@ class ServiceDefinition {
                     case "java.math.BigInteger":
                         BigDecimal bdVal = eci.l10n.parseNumber((String) parameterValue, format)
                         if (bdVal == null) {
-                            eci.message.addValidationError(null, "${namePrefix}${parameterName}", getServiceName(), "Value [${parameterValue}] could not be converted to a ${type}" + (format ? " using format [${format}]": ""), null)
+                            eci.message.addValidationError(null, "${namePrefix}${parameterName}", getServiceName(), "Value entered (${parameterValue}) could not be converted to a ${type}" + (format ? " using format [${format}]": ""), null)
                         } else {
                             converted = StupidUtilities.basicConvert(bdVal, type)
                         }
@@ -521,21 +521,21 @@ class ServiceDefinition {
                     case "java.sql.Time":
                         converted = eci.l10n.parseTime((String) parameterValue, format)
                         if (converted == null) {
-                            eci.message.addValidationError(null, "${namePrefix}${parameterName}", getServiceName(), "Value [${parameterValue}] could not be converted to a ${type}" + (format ? " using format [${format}]": ""), null)
+                            eci.message.addValidationError(null, "${namePrefix}${parameterName}", getServiceName(), "Value entered (${parameterValue}) could not be converted to a ${type}" + (format ? " using format [${format}]": ""), null)
                         }
                         break
                     case "Date":
                     case "java.sql.Date":
                         converted = eci.l10n.parseDate((String) parameterValue, format)
                         if (converted == null) {
-                            eci.message.addValidationError(null, "${namePrefix}${parameterName}", getServiceName(), "Value [${parameterValue}] could not be converted to a ${type}" + (format ? " using format [${format}]": ""), null)
+                            eci.message.addValidationError(null, "${namePrefix}${parameterName}", getServiceName(), "Value entered (${parameterValue}) could not be converted to a ${type}" + (format ? " using format [${format}]": ""), null)
                         }
                         break
                     case "Timestamp":
                     case "java.sql.Timestamp":
                         converted = eci.l10n.parseTimestamp((String) parameterValue, format)
                         if ((Object) converted == null) {
-                            eci.message.addValidationError(null, "${namePrefix}${parameterName}", getServiceName(), "Value [${parameterValue}] could not be converted to a ${type}" + (format ? " using format [${format}]": ""), null)
+                            eci.message.addValidationError(null, "${namePrefix}${parameterName}", getServiceName(), "Value entered (${parameterValue}) could not be converted to a ${type}" + (format ? " using format [${format}]": ""), null)
                         }
                         break
                     case "Collection":
@@ -612,7 +612,7 @@ class ServiceDefinition {
                 if (!validateParameterSingle(child, parameterName, pv, eci)) allPass = false
             } catch (Throwable t) {
                 logger.error("Error in validation", t)
-                eci.message.addValidationError(null, parameterName, getServiceName(), "Value [${pv}] failed [${child.name()}] validation (${t.message})", null)
+                eci.message.addValidationError(null, parameterName, getServiceName(), "Value entered (${pv}) failed ${child.name()} validation: ${t.message}", null)
             }
         }
         return allPass
@@ -636,14 +636,14 @@ class ServiceDefinition {
             return !allPass
         case "matches":
             if (!(pv instanceof CharSequence)) {
-                eci.message.addValidationError(null, parameterName, getServiceName(), "Value [${pv}] is not a String, cannot do matches validation.", null)
+                eci.message.addValidationError(null, parameterName, getServiceName(), "Value entered (${pv}) is not a string, cannot do matches validation.", null)
                 return false
             }
             String pvString = pv.toString()
             String regexp = (String) valNode.attributes().get('regexp')
             if (regexp && !pvString.matches(regexp)) {
                 // a message attribute should always be there, but just in case we'll have a default
-                eci.message.addValidationError(null, parameterName, getServiceName(), (String) valNode.attributes().get('message') ?: "Value [${pv}] did not match expression [${regexp}]", null)
+                eci.message.addValidationError(null, parameterName, getServiceName(), (String) valNode.attributes().get('message') ?: "Value entered (${pv}) did not match expression: ${regexp}", null)
                 return false
             }
             return true
@@ -655,12 +655,12 @@ class ServiceDefinition {
                 BigDecimal min = new BigDecimal(minStr)
                 if (valNode.attributes().get('min-include-equals') == "false") {
                     if (bdVal <= min) {
-                        eci.message.addValidationError(null, parameterName, getServiceName(), "Value [${pv}] must be greater than ${min}.", null)
+                        eci.message.addValidationError(null, parameterName, getServiceName(), "Value entered (${pv}) is less than or equal to ${min} must be greater than.", null)
                         return false
                     }
                 } else {
                     if (bdVal < min) {
-                        eci.message.addValidationError(null, parameterName, getServiceName(), "Value [${pv}] must be greater than or equal to ${min}.", null)
+                        eci.message.addValidationError(null, parameterName, getServiceName(), "Value entered (${pv}) is less than ${min} and must be greater than or equal to.", null)
                         return false
                     }
                 }
@@ -669,13 +669,13 @@ class ServiceDefinition {
             if (maxStr) {
                 BigDecimal max = new BigDecimal(maxStr)
                 if (valNode.attributes().get('max-include-equals') == "true") {
-                    if (max > bdVal) {
-                        eci.message.addValidationError(null, parameterName, getServiceName(), "Value [${pv}] must be less than or equal to ${max}.", null)
+                    if (bdVal > max) {
+                        eci.message.addValidationError(null, parameterName, getServiceName(), "Value entered (${pv}) is greater than ${max} and must be less than or equal to.", null)
                         return false
                     }
                 } else {
-                    if (max >= bdVal) {
-                        eci.message.addValidationError(null, parameterName, getServiceName(), "Value [${pv}] must be less than ${max}.", null)
+                    if (bdVal >= max) {
+                        eci.message.addValidationError(null, parameterName, getServiceName(), "Value entered (${pv}) is greater than or equal to ${max} and must be less than.", null)
                         return false
                     }
                 }
@@ -705,7 +705,7 @@ class ServiceDefinition {
             if (minStr) {
                 int min = minStr as int
                 if (str.length() < min) {
-                    eci.message.addValidationError(null, parameterName, getServiceName(), "Value [${pv}], length ${str.length()}, is shorter than ${minStr} characters.", null)
+                    eci.message.addValidationError(null, parameterName, getServiceName(), "Value entered (${pv}), length ${str.length()}, is shorter than ${minStr} characters.", null)
                     return false
                 }
             }
@@ -713,7 +713,7 @@ class ServiceDefinition {
             if (maxStr) {
                 int max = maxStr as int
                 if (str.length() > max) {
-                    eci.message.addValidationError(null, parameterName, getServiceName(), "Value: [${pv}] length ${str.length()}, is longer than ${maxStr} characters.", null)
+                    eci.message.addValidationError(null, parameterName, getServiceName(), "Value entered (${pv}), length ${str.length()}, is longer than ${maxStr} characters.", null)
                     return false
                 }
             }
@@ -721,14 +721,14 @@ class ServiceDefinition {
         case "text-email":
             String str = pv as String
             if (!emailValidator.isValid(str)) {
-                eci.message.addValidationError(null, parameterName, getServiceName(), "Value [${str}] is not a valid email address.", null)
+                eci.message.addValidationError(null, parameterName, getServiceName(), "Value entered (${str}) is not a valid email address.", null)
                 return false
             }
             return true
         case "text-url":
             String str = pv as String
             if (!urlValidator.isValid(str)) {
-                eci.message.addValidationError(null, parameterName, getServiceName(), "Value [${str}] is not a valid URL.", null)
+                eci.message.addValidationError(null, parameterName, getServiceName(), "Value entered (${str}) is not a valid URL.", null)
                 return false
             }
             return true
@@ -736,7 +736,7 @@ class ServiceDefinition {
             String str = pv as String
             for (char c in str.getChars()) {
                 if (!Character.isLetter(c)) {
-                    eci.message.addValidationError(null, parameterName, getServiceName(), "Value [${str}] must have only letters.", null)
+                    eci.message.addValidationError(null, parameterName, getServiceName(), "Value entered (${str}) must have only letters.", null)
                     return false
                 }
             }
@@ -772,7 +772,7 @@ class ServiceDefinition {
                     compareCal = eci.l10n.parseDateTime(after, format)
                 }
                 if (!cal.after(compareCal)) {
-                    eci.message.addValidationError(null, parameterName, getServiceName(), "Value [${pv}] is before ${after}.", null)
+                    eci.message.addValidationError(null, parameterName, getServiceName(), "Value entered (${pv}) is before ${after}.", null)
                     return false
                 }
             }
@@ -787,7 +787,7 @@ class ServiceDefinition {
                     compareCal = eci.l10n.parseDateTime(before, format)
                 }
                 if (!cal.before(compareCal)) {
-                    eci.message.addValidationError(null, parameterName, getServiceName(), "Value [${pv}] is after ${before}.", null)
+                    eci.message.addValidationError(null, parameterName, getServiceName(), "Value entered (${pv}) is after ${before}.", null)
                     return false
                 }
             }
@@ -804,7 +804,7 @@ class ServiceDefinition {
             CreditCardValidator ccv = new CreditCardValidator(creditCardTypes)
             String str = pv as String
             if (!ccv.isValid(str)) {
-                eci.message.addValidationError(null, parameterName, getServiceName(), "Value [${str}] is not a valid credit card number.", null)
+                eci.message.addValidationError(null, parameterName, getServiceName(), "Value entered (${str}) is not a valid credit card number.", null)
                 return false
             }
             return true
