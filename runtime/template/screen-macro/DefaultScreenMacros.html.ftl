@@ -450,6 +450,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
         <#if linkNode["@entity-name"]?has_content>
             <#assign linkText = ""><#assign linkText = sri.getFieldEntityValue(linkNode)>
         <#else>
+            <#assign textMap = "">
             <#if linkNode["@text-map"]?has_content><#assign textMap = ec.resource.expression(linkNode["@text-map"], "")!></#if>
             <#if textMap?has_content>
                 <#assign linkText = ec.resource.expand(linkNode["@text"], "", textMap)>
@@ -531,6 +532,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#if .node["@condition"]?has_content><#assign conditionResult = ec.resource.condition(.node["@condition"], "")><#else><#assign conditionResult = true></#if>
     <#if conditionResult>
         <#assign labelType = .node["@type"]?default("span")/>
+        <#assign textMap = "">
         <#if .node["@text-map"]?has_content><#assign textMap = ec.resource.expression(.node["@text-map"], "")!></#if>
         <#if textMap?has_content>
             <#assign labelValue = ec.resource.expand(.node["@text"], "", textMap)>
@@ -836,6 +838,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                 <#if linkNode["@entity-name"]?has_content>
                     <#assign linkText = ""><#assign linkText = sri.getFieldEntityValue(linkNode)>
                 <#else>
+                    <#assign textMap = "">
                     <#if linkNode["@text-map"]?has_content><#assign textMap = ec.resource.expression(linkNode["@text-map"], "")!></#if>
                     <#if textMap?has_content>
                         <#assign linkText = ec.resource.expand(linkNode["@text"], "", textMap)>
@@ -881,6 +884,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#assign skipStart = (formNode["@skip-start"]! == "true")>
     <#assign skipEnd = (formNode["@skip-end"]! == "true")>
     <#assign skipForm = (formNode["@skip-form"]! == "true")>
+    <#assign skipHeader = (formNode["@skip-header"]! == "true")>
     <#assign formListUrlInfo = sri.makeUrlByType(formNode["@transition"], "transition", null, "false")>
     <#assign listName = formNode["@list"]>
     <#assign listObject = ec.resource.expression(listName, "")!>
@@ -914,6 +918,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#if formListColumnList?? && (formListColumnList?size > 0)>
         <#if !skipStart>
         <table class="table table-striped table-hover table-condensed" id="${formId}-table">
+            <#if !skipHeader>
             <thead>
                 <#assign needHeaderForm = sri.isFormHeaderForm(formNode["@name"])>
                 <#if needHeaderForm>
@@ -959,6 +964,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                 </tr>
                 </#if>
             </thead>
+            </#if>
             <#if isMulti && !skipForm>
                 <tbody>
                 <form name="${formId}" id="${formId}" method="post" action="${formListUrlInfo.url}">
@@ -1032,6 +1038,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
         <#assign fieldNodeList = formNode["field"]>
         <#if !skipStart>
         <table class="table table-striped table-hover table-condensed" id="${formId}-table">
+            <#if !skipHeader>
             <thead>
                 <#assign needHeaderForm = sri.isFormHeaderForm(formNode["@name"])>
                 <#if needHeaderForm && !skipStart>
@@ -1063,6 +1070,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                     </tr>
                 </#if>
             </thead>
+            </#if>
             <#if isMulti && !skipForm>
                 <tbody>
                 <form name="${formId}" id="${formId}" class="form-body" method="post" action="${formListUrlInfo.url}">
@@ -1189,6 +1197,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                     <#if linkNode["@entity-name"]?has_content>
                         <#assign linkText = ""><#assign linkText = sri.getFieldEntityValue(linkNode)>
                     <#else>
+                        <#assign textMap = "">
                         <#if linkNode["@text-map"]?has_content><#assign textMap = ec.resource.expression(linkNode["@text-map"], "")!></#if>
                         <#if textMap?has_content>
                             <#assign linkText = ec.resource.expand(linkNode["@text"], "", textMap)>
@@ -1423,6 +1432,7 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
 <#macro display>
     <#assign fieldValue = ""/>
     <#if .node["@text"]?has_content>
+        <#assign textMap = "">
         <#if .node["@text-map"]?has_content><#assign textMap = ec.resource.expression(.node["@text-map"], "")!></#if>
         <#if textMap?has_content>
             <#assign fieldValue = ec.resource.expand(.node["@text"], "", textMap)>

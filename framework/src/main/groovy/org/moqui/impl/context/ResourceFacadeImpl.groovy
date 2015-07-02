@@ -487,16 +487,17 @@ public class ResourceFacadeImpl implements ResourceFacade {
     String expand(String inputString, String debugLocation, Map additionalContext) {
         ExecutionContext ec = ecfi.getExecutionContext()
         ContextStack cs = (ContextStack) ec.context
+        boolean doPushPop = additionalContext as boolean
         try {
-            if (additionalContext) {
-                if (additionalContext instanceof EntityValue) cs.push(((EntityValue) additionalContext).getMap())
-                else cs.push(additionalContext)
+            if (doPushPop) {
+                if (additionalContext instanceof EntityValue) { cs.push(((EntityValue) additionalContext).getMap()) }
+                else { cs.push(additionalContext) }
                 // do another push so writes to the context don't modify the passed in Map
                 cs.push()
             }
             return expand(inputString, debugLocation)
         } finally {
-            if (additionalContext) { cs.pop(); cs.pop(); }
+            if (doPushPop) { cs.pop(); cs.pop(); }
         }
     }
 
