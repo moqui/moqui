@@ -36,8 +36,8 @@ task cleanOrientDb(type: Delete) { delete file(moquiRuntime+'/db/orientdb/databa
 task cleanElasticSearch(type: Delete) { delete file(moquiRuntime+'/elasticsearch/data') }
 task cleanLog(type: Delete) { delete fileTree(dir: moquiRuntime+'/log', include: '*') }
 task cleanTxLog(type: Delete) { delete fileTree(dir: moquiRuntime+'/txlog', include: '*') }
-task cleanLoadSave(type: Delete) { delete file('SaveDEFAULT.zip'); delete file('SaveTenant.zip'); delete file('SaveTransactional.zip');
-    delete file('SaveAnalytical.zip'); delete file('SaveOrientDb.zip'); delete file('SaveElasticSearch.zip') }
+task cleanLoadSave(type: Delete) { delete file('SaveH2.zip'); delete file('SaveDEFAULT.zip'); delete file('SaveTenant.zip');
+    delete file('SaveTransactional.zip'); delete file('SaveAnalytical.zip'); delete file('SaveOrientDb.zip'); delete file('SaveElasticSearch.zip') }
 task cleanPlusRuntime(type: Delete) { delete file(plusRuntimeName) }
 task cleanOther(type: Delete) { delete fileTree(dir: '.', includes: ['**/.nbattrs', '**/*~', '**/.#*', '**/.DS_Store', '**/*.rej', '**/*.orig']) }
 
