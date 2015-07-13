@@ -80,7 +80,7 @@ return;
 </#macro>
 
 <#macro "order-map-list">
-    StupidUtilities.orderMapList(${.node["@list"]}, [<#list .node["order-by"] as ob>'${ob["@field-name"]}'<#if ob_has_next>, </#if></#list>])
+    StupidUtilities.orderMapList(${.node["@list"]}, [<#list .node["order-by"] as ob>"${ob["@field-name"]}"<#if ob_has_next>, </#if></#list>])
 </#macro>
 <#macro "filter-map-list">
     if (${.node["@list"]}) {

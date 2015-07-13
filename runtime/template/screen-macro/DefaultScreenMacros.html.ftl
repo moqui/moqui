@@ -933,7 +933,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                 <tr>
                 </#if>
                     <#list formListColumnList as fieldListColumn>
-                        <th>
+                        <th<#if fieldListColumn["@style"]?has_content> class="${fieldListColumn["@style"]}"</#if>>
                         <#list fieldListColumn["field-ref"] as fieldRef>
                             <#assign fieldRefName = fieldRef["@name"]>
                             <#assign fieldNode = "invalid">
@@ -986,8 +986,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
             </#if>
             <#assign nonReferencedFieldList = sri.getFtlFormListColumnNonReferencedHiddenFieldList(.node["@name"])>
             <#list nonReferencedFieldList as nonReferencedField><@formListSubField nonReferencedField/></#list>
-            <#list formNode["form-list-column"] as fieldListColumn>
-                <td>
+            <#list formListColumnList as fieldListColumn>
+                <td<#if fieldListColumn["@style"]?has_content> class="${fieldListColumn["@style"]}"</#if>>
                 <#list fieldListColumn["field-ref"] as fieldRef>
                     <#assign fieldRefName = fieldRef["@name"]>
                     <#assign fieldNode = "invalid">
