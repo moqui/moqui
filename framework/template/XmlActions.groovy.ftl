@@ -230,7 +230,7 @@ return;
         _${.node["@entry"]}Iterator = ${.node["@list"]}.iterator()
         while (_${.node["@entry"]}Iterator.hasNext()) {
             def ${.node["@entry"]} = _${.node["@entry"]}Iterator.next()
-            boolean ${.node["@entry"]}_hasNext = _${.node["@entry"]}Iterator.hasNext()
+            boolean ${.node["@entry"]}_has_next = _${.node["@entry"]}Iterator.hasNext()
             <#recurse/>
             ${.node["@entry"]}_index++
         }
