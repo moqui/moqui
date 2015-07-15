@@ -124,6 +124,7 @@ along with this software (see the LICENSE.md file). If not, see
     </view-entity>
     <entity entity-name="GeoPoint" package-name="moqui.basic" short-alias="geoPoints">
         <field name="geoPointId" type="id" is-pk="true"/>
+        <field name="description" type="text-medium"/>
         <field name="dataSourceId" type="id"/>
         <field name="latitude" type="number-float"/>
         <field name="longitude" type="number-float"/>
