@@ -69,11 +69,14 @@ along with this software (see the LICENSE.md file). If not, see
     <moqui.basic.UomConversion uomConversionId="TIME_FREQ_hr_min" uomId="TF_hr" toUomId="TF_min" conversionFactor="60"/>
     <moqui.basic.UomConversion uomConversionId="TIME_FREQ_day_hr" uomId="TF_day" toUomId="TF_hr" conversionFactor="24"/>
     <moqui.basic.UomConversion uomConversionId="TIME_FREQ_wk_day" uomId="TF_wk" toUomId="TF_day" conversionFactor="7"/>
-    <moqui.basic.UomConversion uomConversionId="TIME_FREQ_yr_day" uomId="TF_yr" toUomId="TF_day" conversionFactor="365"/>
+    <moqui.basic.UomConversion uomConversionId="TIME_FREQ_yr_mon" uomId="TF_yr" toUomId="TF_mon" conversionFactor="12"/>
     <moqui.basic.UomConversion uomConversionId="TIME_FREQ_decade_yr" uomId="TF_decade" toUomId="TF_yr" conversionFactor="10"/>
     <moqui.basic.UomConversion uomConversionId="TIME_FREQ_score_yr" uomId="TF_score" toUomId="TF_yr" conversionFactor="20"/>
     <moqui.basic.UomConversion uomConversionId="TIME_FREQ_century_yr" uomId="TF_century" toUomId="TF_yr" conversionFactor="100"/>
     <moqui.basic.UomConversion uomConversionId="TIME_FREQ_mill_yr" uomId="TF_millenium" toUomId="TF_yr" conversionFactor="1000"/>
+    <!-- these should really be dynamic for current year from Calendar class or something -->
+    <moqui.basic.UomConversion uomConversionId="TIME_FREQ_yr_day" uomId="TF_yr" toUomId="TF_day" conversionFactor="365"/>
+    <moqui.basic.UomConversion uomConversionId="TIME_FREQ_yr_wk" uomId="TF_yr" toUomId="TF_wk" conversionFactor="52.14"/>
 
     <!-- =============== Length =============== -->
     <moqui.basic.Uom abbreviation="A" description="Angstrom" uomId="LEN_A" uomTypeEnumId="UT_LENGTH_MEASURE"/>

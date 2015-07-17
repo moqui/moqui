@@ -1295,7 +1295,11 @@ abstract class EntityValueBase implements EntityValue {
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "find-one", true)
 
         List<String> pkFieldList = ed.getPkFieldNames()
-        if (pkFieldList.size() == 0) throw new EntityException("Entity ${getEntityName()} has no primary key fields, cannot do refresh.")
+        if (pkFieldList.size() == 0) {
+            // throw new EntityException("Entity ${getEntityName()} has no primary key fields, cannot do refresh.")
+            if (logger.isTraceEnabled()) logger.trace("Entity ${getEntityName()} has no primary key fields, cannot do refresh.")
+            return false
+        }
 
         // if there is not a txCache or the txCache doesn't handle the refresh, call the abstract method to refresh
         boolean retVal = false

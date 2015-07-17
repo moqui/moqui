@@ -55,6 +55,9 @@ Bug Fixes:
   member-entity and the fields of that view member-entity were aliased with
   an alias-all with a @prefix or other name not matching the field were
   trimmed because no matching field was in the fields to select
+- XML Actions ${iterate.@entry}_hasNext is now _has_next to be more
+  consistent with section-iterate and others using this FTL inspired name
+
 
 ===========================================================================
 Release 1.5.2 - 2 May 2015
