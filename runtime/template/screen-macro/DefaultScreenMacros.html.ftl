@@ -1159,7 +1159,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     </div>
     <#if fieldNode["header-field"]?has_content && fieldNode["header-field"][0]?children?has_content>
     <div class="form-header-field<#if containerStyle?has_content> ${containerStyle}</#if>">
-        <@formListWidget fieldNode["header-field"][0] true/>
+        <@formListWidget fieldNode["header-field"][0] true true/>
         <#-- <#recurse fieldNode["header-field"][0]/> -->
     </div>
     </#if>
