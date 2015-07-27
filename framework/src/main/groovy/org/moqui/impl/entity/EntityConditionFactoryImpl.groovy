@@ -66,7 +66,7 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
         Iterator<EntityCondition> conditionIter = conditionList.iterator()
         while (conditionIter.hasNext()) {
             EntityCondition curCond = conditionIter.next()
-            if (curCond == null) conditionIter.remove()
+            if (curCond == null) { conditionIter.remove(); continue }
             // this is all they could be, all that is supported right now
             if (curCond instanceof EntityConditionImplBase) newList.add((EntityConditionImplBase) curCond)
             else throw new IllegalArgumentException("EntityCondition of type [${curCond.getClass().getName()}] not supported")
