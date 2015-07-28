@@ -335,8 +335,7 @@ along with this software (see the LICENSE.md file). If not, see
                 If specified URL will be loaded into the dynamic-container with this ID.
             </xs:documentation></xs:annotation></xs:attribute>
             <xs:attribute name="condition" type="xs:string"><xs:annotation><xs:documentation>
-                If specified and evaluates to false link is not rendered.
-            </xs:documentation></xs:annotation></xs:attribute>
+                If specified and evaluates to false link is not rendered.</xs:documentation></xs:annotation></xs:attribute>
             <xs:attribute name="entity-name" type="xs:string"/>
             <xs:attribute name="entity-key-name" type="xs:string"/>
             <xs:attribute name="entity-use-cache" default="true" type="boolean"/>
@@ -357,6 +356,8 @@ along with this software (see the LICENSE.md file). If not, see
             <xs:attribute name="parameter-map" type="xs:string"><xs:annotation><xs:documentation>
                 A Map to get parameter names and values from in addition to the parameter sub-elements.
             </xs:documentation></xs:annotation></xs:attribute>
+            <xs:attribute name="condition" type="xs:string"><xs:annotation><xs:documentation>
+                If specified and evaluates to false image is not rendered.</xs:documentation></xs:annotation></xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="label" substitutionGroup="StandaloneFields">
