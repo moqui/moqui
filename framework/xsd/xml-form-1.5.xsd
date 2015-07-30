@@ -335,8 +335,7 @@ along with this software (see the LICENSE.md file). If not, see
                 If specified URL will be loaded into the dynamic-container with this ID.
             </xs:documentation></xs:annotation></xs:attribute>
             <xs:attribute name="condition" type="xs:string"><xs:annotation><xs:documentation>
-                If specified and evaluates to false link is not rendered.
-            </xs:documentation></xs:annotation></xs:attribute>
+                If specified and evaluates to false link is not rendered.</xs:documentation></xs:annotation></xs:attribute>
             <xs:attribute name="entity-name" type="xs:string"/>
             <xs:attribute name="entity-key-name" type="xs:string"/>
             <xs:attribute name="entity-use-cache" default="true" type="boolean"/>
@@ -344,12 +343,21 @@ along with this software (see the LICENSE.md file). If not, see
     </xs:element>
     <xs:element name="image" substitutionGroup="StandaloneFields">
         <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="parameter"/>
+            </xs:sequence>
             <xs:attribute name="id" type="xs:string"/>
             <xs:attribute name="url" type="xs:string" use="required"/>
             <xs:attribute name="url-type" type="url-type" default="content"/>
             <xs:attribute name="width" type="xs:string"/>
             <xs:attribute name="height" type="xs:string"/>
             <xs:attribute name="alt" type="xs:string"/>
+            <xs:attribute name="style" type="xs:string"/>
+            <xs:attribute name="parameter-map" type="xs:string"><xs:annotation><xs:documentation>
+                A Map to get parameter names and values from in addition to the parameter sub-elements.
+            </xs:documentation></xs:annotation></xs:attribute>
+            <xs:attribute name="condition" type="xs:string"><xs:annotation><xs:documentation>
+                If specified and evaluates to false image is not rendered.</xs:documentation></xs:annotation></xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="label" substitutionGroup="StandaloneFields">

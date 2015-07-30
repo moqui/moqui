@@ -37,6 +37,8 @@ New Features:
   script, expression, condition, expand) and localize in L10nFacade
 - Added link.@encode attribute like that on other elements, encodes link
   text by default (avoid HTML injection based attacks)
+- Added image.@condition, @style, and @parameter-map attributes and
+  parameter sub-element like those on label, etc
 
 Bug Fixes:
 
