@@ -558,6 +558,9 @@ abstract class EntityFindBase implements EntityFind {
         if (!this.fieldsToSelect || (txCache != null && txcValue == null) || (doCache && cacheHit == null))
             this.selectFields(ed.getFieldNames(true, true, false))
 
+
+        // if (ed.getEntityName() == "Asset") logger.warn("=========== find one of Asset ${this.simpleAndMap.get('assetId')}", new Exception("Location"))
+
         // call the abstract method
         EntityValueBase newEntityValue = null
         if (txcValue != null) {
@@ -568,7 +571,10 @@ abstract class EntityFindBase implements EntityFind {
             } else {
                 // if forUpdate unless this was a TX CREATE it'll be in the DB and should be locked, so do the query
                 //     anyway, but ignore the result
-                if (forUpdate && !txCache.isTxCreate(txcValue)) oneExtended(getConditionForQuery(ed, whereCondition))
+                if (forUpdate && !txCache.isTxCreate(txcValue)) {
+                    oneExtended(getConditionForQuery(ed, whereCondition))
+                    // if (ed.getEntityName() == "Asset") logger.warn("======== doing find and ignoring result to pass through for update, for: ${txcValue}")
+                }
                 newEntityValue = txcValue
             }
         } else if (cacheHit != null) {
