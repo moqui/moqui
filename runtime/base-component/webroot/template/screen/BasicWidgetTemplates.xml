@@ -60,7 +60,7 @@ along with this software (see the LICENSE.md file). If not, see
             <entity-options key="${toStatusId}" text="TransitionNameTemplate">
                 <entity-find entity-name="moqui.basic.StatusFlowTransitionToDetail">
                     <econdition field-name="statusId"/>
-                    <econdition field-name="statusFlowId"/>
+                    <econdition field-name="statusFlowId" from="statusFlowId ?: 'Default'"/>
                 </entity-find>
             </entity-options>
         </drop-down>
