@@ -73,8 +73,14 @@ class MoquiFopServlet extends HttpServlet {
             if (filename) response.addHeader("Content-Disposition", "attachment; filename=\"${filename}\"")
             else response.addHeader("Content-Disposition", "inline")
 
-            ec.resource.xslFoTransform(new StreamSource(new StringReader(xslFoText)), null,
-                    response.getOutputStream(), contentType)
+            // special case disable authz for resource access
+            boolean enableAuthz = !ecfi.getExecutionContext().getArtifactExecution().disableAuthz()
+            try {
+                ec.resource.xslFoTransform(new StreamSource(new StringReader(xslFoText)), null,
+                        response.getOutputStream(), contentType)
+            } finally {
+                if (enableAuthz) ecfi.getExecutionContext().getArtifactExecution().enableAuthz()
+            }
         } catch (ArtifactAuthorizationException e) {
             // SC_UNAUTHORIZED 401 used when authc/login fails, use SC_FORBIDDEN 403 for authz failures
             // See ScreenRenderImpl.checkWebappSettings for authc and SC_UNAUTHORIZED handling
