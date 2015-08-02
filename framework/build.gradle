@@ -1,11 +1,11 @@
 /*
  * This software is in the public domain under CC0 1.0 Universal.
- * 
+ *
  * To the extent possible under law, the author(s) have dedicated all
  * copyright and related and neighboring rights to this software to the
  * public domain worldwide. This software is distributed without any
  * warranty.
- * 
+ *
  * You should have received a copy of the CC0 Public Domain Dedication
  * along with this software (see the LICENSE.md file). If not, see
  * <http://creativecommons.org/publicdomain/zero/1.0/>.
@@ -49,14 +49,14 @@ repositories {
 
 dependencies {
     // needs update: org.owasp.antisamy:antisamy:1.5.3
-    compile name: 'antisamy', version: '1.4' // New BSD
+    compile group: 'org.owasp.antisamy', name: 'antisamy', version: '1.4' // New BSD
 
-    compile module(group: 'com.atomikos', name: 'atomikos-transactions', version: '4.0.0M4') { // Apache 2.0
+    compile module(group: 'com.atomikos', name: 'transactions', version: '4.0.0M4') { // Apache 2.0
         dependencies module(group: 'com.atomikos', name: 'atomikos-util', version: '4.0.0M4') } // Apache 2.0
-    compile group: 'com.atomikos', name: 'atomikos-transactions-api', version: '4.0.0M4' // Apache 2.0
-    compile group: 'com.atomikos', name: 'atomikos-transactions-jdbc', version: '4.0.0M4' // Apache 2.0
-    // may use in the future: runtime group: 'com.atomikos', name: 'atomikos-transactions-jms', version: '4.0.0M4' // Apache 2.0
-    compile group: 'com.atomikos', name: 'atomikos-transactions-jta', version: '4.0.0M4' // Apache 2.0
+    compile group: 'com.atomikos', name: 'transactions-api', version: '4.0.0M4' // Apache 2.0
+    compile group: 'com.atomikos', name: 'transactions-jdbc', version: '4.0.0M4' // Apache 2.0
+    // may use in the future: runtime group: 'com.atomikos', name: 'transactions-jms', version: '4.0.0M4' // Apache 2.0
+    compile group: 'com.atomikos', name: 'transactions-jta', version: '4.0.0M4' // Apache 2.0
 
     // this is an optional alternative to Atomikos
     compile group: 'org.codehaus.btm', name: 'btm', version: '3.0.0-SNAPSHOT' // Apache 2.0
@@ -81,12 +81,12 @@ dependencies {
     compile group: 'org.owasp.esapi', name: 'esapi', version: '2.0.1' // New BSD
     compile group: 'org.freemarker', name: 'freemarker', version: '2.3.22' // Apache 2.0
 
-    compile name: 'geronimo-j2ee-connector_1.5_spec', version: '' // Apache 2.0
-    compile name: 'geronimo-jms_1.1_spec', version: '1.0' // Apache 2.0
-    apiCompile name: 'geronimo-jta_1.1_spec', version: '1.1.1' // Apache 2.0
-    compile name: 'geronimo-jta_1.1_spec', version: '1.1.1' // Apache 2.0
-    apiCompile name: 'geronimo-servlet_2.5_spec', version: '1.2' // Apache 2.0
-    providedCompile name: 'geronimo-servlet_2.5_spec', version: '1.2' // Apache 2.0
+    compile group: 'org.apache.geronimo.specs', name: 'geronimo-j2ee-connector_1.5_spec', version: '' // Apache 2.0
+    compile group: 'org.apache.geronimo.specs', name: 'geronimo-jms_1.1_spec', version: '1.0' // Apache 2.0
+    apiCompile group: 'org.apache.geronimo.specs', name: 'geronimo-jta_1.1_spec', version: '1.1.1' // Apache 2.0
+    compile group: 'org.apache.geronimo.specs', name: 'geronimo-jta_1.1_spec', version: '1.1.1' // Apache 2.0
+    apiCompile group: 'org.apache.geronimo.specs', name: 'geronimo-servlet_2.5_spec', version: '1.2' // Apache 2.0
+    providedCompile group: 'org.apache.geronimo.specs', name: 'geronimo-servlet_2.5_spec', version: '1.2' // Apache 2.0
 
     apiCompile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.4.3-indy' // Apache 2.0
     compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.4.3-indy' // Apache 2.0
@@ -97,7 +97,7 @@ dependencies {
     compile group: 'org.apache.jackrabbit', name: 'jackrabbit-jcr-rmi', version: '2.8.0' // Apache 2.0
     compile group: 'org.apache.jackrabbit', name: 'jackrabbit-spi', version: '2.8.0' // Apache 2.0
     compile group: 'org.apache.jackrabbit', name: 'jackrabbit-jcr2spi', version: '2.8.0' // Apache 2.0
-    compile name: 'jcr', version: '2.0' // Apache 2.0???
+    compile group: 'javax.jcr', name: 'jcr', version: '2.0' // Apache 2.0???
 
     compile name: 'jsr173_1.0_api', version: '' // ???
     compile group: 'org.liquibase', name: 'liquibase', version: '3.3.2' // Apache 2.0
@@ -159,7 +159,7 @@ dependencies {
     // ElasticSearch Libraries, including Lucene
     apiCompile group: 'org.elasticsearch', name: 'elasticsearch', version: '1.5.0' // Apache 2.0
     compile group: 'org.elasticsearch', name: 'elasticsearch', version: '1.5.0' // Apache 2.0
-    compile name: 'elasticsearch-groovy', version: '1.4.4' // Apache 2.0
+    compile group: 'org.elasticsearch', name: 'elasticsearch-groovy', version: '1.4.4' // Apache 2.0
     compile group: 'org.apache.lucene', name: 'lucene-analyzers-common', version: '4.10.4' // Apache 2.0
     compile group: 'org.apache.lucene', name: 'lucene-core', version: '4.10.4' // Apache 2.0
     compile group: 'org.apache.lucene', name: 'lucene-grouping', version: '4.10.4' // Apache 2.0
