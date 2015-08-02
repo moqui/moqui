@@ -1,11 +1,11 @@
 /*
  * This software is in the public domain under CC0 1.0 Universal.
- * 
+ *
  * To the extent possible under law, the author(s) have dedicated all
  * copyright and related and neighboring rights to this software to the
  * public domain worldwide. This software is distributed without any
  * warranty.
- * 
+ *
  * You should have received a copy of the CC0 Public Domain Dedication
  * along with this software (see the LICENSE.md file). If not, see
  * <http://creativecommons.org/publicdomain/zero/1.0/>.
@@ -51,12 +51,12 @@ dependencies {
     // needs update: org.owasp.antisamy:antisamy:1.5.3
     compile name: 'antisamy', version: '1.4' // New BSD
 
-    compile module(group: 'com.atomikos', name: 'atomikos-transactions', version: '4.0.0M4') { // Apache 2.0
+    compile module(group: 'com.atomikos', name: 'transactions', version: '4.0.0M4') { // Apache 2.0
         dependencies module(group: 'com.atomikos', name: 'atomikos-util', version: '4.0.0M4') } // Apache 2.0
-    compile group: 'com.atomikos', name: 'atomikos-transactions-api', version: '4.0.0M4' // Apache 2.0
-    compile group: 'com.atomikos', name: 'atomikos-transactions-jdbc', version: '4.0.0M4' // Apache 2.0
-    // may use in the future: runtime group: 'com.atomikos', name: 'atomikos-transactions-jms', version: '4.0.0M4' // Apache 2.0
-    compile group: 'com.atomikos', name: 'atomikos-transactions-jta', version: '4.0.0M4' // Apache 2.0
+    compile group: 'com.atomikos', name: 'transactions-api', version: '4.0.0M4' // Apache 2.0
+    compile group: 'com.atomikos', name: 'transactions-jdbc', version: '4.0.0M4' // Apache 2.0
+    // may use in the future: runtime group: 'com.atomikos', name: 'transactions-jms', version: '4.0.0M4' // Apache 2.0
+    compile group: 'com.atomikos', name: 'transactions-jta', version: '4.0.0M4' // Apache 2.0
 
     // this is an optional alternative to Atomikos
     compile group: 'org.codehaus.btm', name: 'btm', version: '3.0.0-SNAPSHOT' // Apache 2.0
