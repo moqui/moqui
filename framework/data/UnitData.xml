@@ -13,18 +13,18 @@ along with this software (see the LICENSE.md file). If not, see
 -->
 <entity-facade-xml type="seed">
     <!-- =============== Data Size =============== -->
-    <moqui.basic.Uom abbreviation="b" description="Bit of Data" uomId="DATA_b" uomTypeEnumId="UT_DATA_MEASURE"/>
-    <moqui.basic.Uom abbreviation="Kb" description="Kilobit of Data" uomId="DATA_Kb" uomTypeEnumId="UT_DATA_MEASURE"/>
-    <moqui.basic.Uom abbreviation="Mb" description="Megabit of Data" uomId="DATA_Mb" uomTypeEnumId="UT_DATA_MEASURE"/>
-    <moqui.basic.Uom abbreviation="Gb" description="Gigabit of Data" uomId="DATA_Gb" uomTypeEnumId="UT_DATA_MEASURE"/>
-    <moqui.basic.Uom abbreviation="Tb" description="Terabit of Data" uomId="DATA_Tb" uomTypeEnumId="UT_DATA_MEASURE"/>
+    <moqui.basic.Uom abbreviation="b" description="Bit" uomId="DATA_b" uomTypeEnumId="UT_DATA_MEASURE"/>
+    <moqui.basic.Uom abbreviation="Kb" description="Kilobit" uomId="DATA_Kb" uomTypeEnumId="UT_DATA_MEASURE"/>
+    <moqui.basic.Uom abbreviation="Mb" description="Megabit" uomId="DATA_Mb" uomTypeEnumId="UT_DATA_MEASURE"/>
+    <moqui.basic.Uom abbreviation="Gb" description="Gigabit" uomId="DATA_Gb" uomTypeEnumId="UT_DATA_MEASURE"/>
+    <moqui.basic.Uom abbreviation="Tb" description="Terabit" uomId="DATA_Tb" uomTypeEnumId="UT_DATA_MEASURE"/>
 
-    <moqui.basic.Uom abbreviation="B" description="Byte of Data" uomId="DATA_B" uomTypeEnumId="UT_DATA_MEASURE"/>
-    <moqui.basic.Uom abbreviation="KB" description="Kilobyte of Data" uomId="DATA_KB" uomTypeEnumId="UT_DATA_MEASURE"/>
-    <moqui.basic.Uom abbreviation="MB" description="Megabyte of Data" uomId="DATA_MB" uomTypeEnumId="UT_DATA_MEASURE"/>
-    <moqui.basic.Uom abbreviation="GB" description="Gigabyte of Data" uomId="DATA_GB" uomTypeEnumId="UT_DATA_MEASURE"/>
-    <moqui.basic.Uom abbreviation="TB" description="Terabyte of Data" uomId="DATA_TB" uomTypeEnumId="UT_DATA_MEASURE"/>
-    <moqui.basic.Uom abbreviation="PB" description="Petabyte of Data" uomId="DATA_PB" uomTypeEnumId="UT_DATA_MEASURE"/>
+    <moqui.basic.Uom abbreviation="B" description="Byte" uomId="DATA_B" uomTypeEnumId="UT_DATA_MEASURE"/>
+    <moqui.basic.Uom abbreviation="KB" description="Kilobyte" uomId="DATA_KB" uomTypeEnumId="UT_DATA_MEASURE"/>
+    <moqui.basic.Uom abbreviation="MB" description="Megabyte" uomId="DATA_MB" uomTypeEnumId="UT_DATA_MEASURE"/>
+    <moqui.basic.Uom abbreviation="GB" description="Gigabyte" uomId="DATA_GB" uomTypeEnumId="UT_DATA_MEASURE"/>
+    <moqui.basic.Uom abbreviation="TB" description="Terabyte" uomId="DATA_TB" uomTypeEnumId="UT_DATA_MEASURE"/>
+    <moqui.basic.Uom abbreviation="PB" description="Petabyte" uomId="DATA_PB" uomTypeEnumId="UT_DATA_MEASURE"/>
 
     <moqui.basic.UomConversion uomConversionId="DATA_SIZE_Kb_b" uomId="DATA_Kb" toUomId="DATA_b" conversionFactor="1024"/>
     <moqui.basic.UomConversion uomConversionId="DATA_SIZE_Mb_Kb" uomId="DATA_Mb" toUomId="DATA_Kb" conversionFactor="1024"/>
@@ -39,11 +39,11 @@ along with this software (see the LICENSE.md file). If not, see
     <moqui.basic.UomConversion uomConversionId="DATA_SIZE_PB_TB" uomId="DATA_PB" toUomId="DATA_TB" conversionFactor="1024"/>
 
     <!-- =============== Data Speed =============== -->
-    <moqui.basic.Uom abbreviation="bps" description="Bit-per-second of Data" uomId="DATASPD_bps" uomTypeEnumId="UT_DATASPD_MEASURE"/>
-    <moqui.basic.Uom abbreviation="Kbps" description="Kilobit-per-second of Data" uomId="DATASPD_Kbps" uomTypeEnumId="UT_DATASPD_MEASURE"/>
-    <moqui.basic.Uom abbreviation="Mbps" description="Megabit-per-second of Data" uomId="DATASPD_Mbps" uomTypeEnumId="UT_DATASPD_MEASURE"/>
-    <moqui.basic.Uom abbreviation="Gbps" description="Gigabit-per-second of Data" uomId="DATASPD_Gbps" uomTypeEnumId="UT_DATASPD_MEASURE"/>
-    <moqui.basic.Uom abbreviation="Tbps" description="Terabit-per-second of Data" uomId="DATASPD_Tbps" uomTypeEnumId="UT_DATASPD_MEASURE"/>
+    <moqui.basic.Uom abbreviation="bps" description="Bit-per-second" uomId="DATASPD_bps" uomTypeEnumId="UT_DATASPD_MEASURE"/>
+    <moqui.basic.Uom abbreviation="Kbps" description="Kilobit-per-second" uomId="DATASPD_Kbps" uomTypeEnumId="UT_DATASPD_MEASURE"/>
+    <moqui.basic.Uom abbreviation="Mbps" description="Megabit-per-second" uomId="DATASPD_Mbps" uomTypeEnumId="UT_DATASPD_MEASURE"/>
+    <moqui.basic.Uom abbreviation="Gbps" description="Gigabit-per-second" uomId="DATASPD_Gbps" uomTypeEnumId="UT_DATASPD_MEASURE"/>
+    <moqui.basic.Uom abbreviation="Tbps" description="Terabit-per-second" uomId="DATASPD_Tbps" uomTypeEnumId="UT_DATASPD_MEASURE"/>
 
     <moqui.basic.UomConversion uomConversionId="DATA_SPD_Kbps_bps" uomId="DATASPD_Kbps" toUomId="DATASPD_bps" conversionFactor="1000"/>
     <moqui.basic.UomConversion uomConversionId="DATA_SPD_Mbps_Kbps" uomId="DATASPD_Mbps" toUomId="DATASPD_Kbps" conversionFactor="1000"/>
@@ -51,18 +51,18 @@ along with this software (see the LICENSE.md file). If not, see
     <moqui.basic.UomConversion uomConversionId="DATA_SPD_Tbps_Gbps" uomId="DATASPD_Tbps" toUomId="DATASPD_Gbps" conversionFactor="1000"/>
 
     <!-- =============== Time/Frequency =============== -->
-    <moqui.basic.Uom abbreviation="ms" description="Time in Milli-Seconds" uomId="TF_ms" uomTypeEnumId="UT_TIME_FREQ_MEASURE"/>
-    <moqui.basic.Uom abbreviation="s" description="Time in Seconds" uomId="TF_s" uomTypeEnumId="UT_TIME_FREQ_MEASURE"/>
-    <moqui.basic.Uom abbreviation="min" description="Time in Minutes" uomId="TF_min" uomTypeEnumId="UT_TIME_FREQ_MEASURE"/>
-    <moqui.basic.Uom abbreviation="hr" description="Time in Hours" uomId="TF_hr" uomTypeEnumId="UT_TIME_FREQ_MEASURE"/>
-    <moqui.basic.Uom abbreviation="day" description="Time in Days" uomId="TF_day" uomTypeEnumId="UT_TIME_FREQ_MEASURE"/>
-    <moqui.basic.Uom abbreviation="wk" description="Time in Weeks" uomId="TF_wk" uomTypeEnumId="UT_TIME_FREQ_MEASURE"/>
-    <moqui.basic.Uom abbreviation="mon" description="Time in Months" uomId="TF_mon" uomTypeEnumId="UT_TIME_FREQ_MEASURE"/>
-    <moqui.basic.Uom abbreviation="yr" description="Time in Years" uomId="TF_yr" uomTypeEnumId="UT_TIME_FREQ_MEASURE"/>
-    <moqui.basic.Uom abbreviation="decade" description="Time in Decades" uomId="TF_decade" uomTypeEnumId="UT_TIME_FREQ_MEASURE"/>
-    <moqui.basic.Uom abbreviation="score" description="Time in Scores" uomId="TF_score" uomTypeEnumId="UT_TIME_FREQ_MEASURE"/>
-    <moqui.basic.Uom abbreviation="century" description="Time in Centuries" uomId="TF_century" uomTypeEnumId="UT_TIME_FREQ_MEASURE"/>
-    <moqui.basic.Uom abbreviation="millenium" description="Time in Millenia" uomId="TF_millenium" uomTypeEnumId="UT_TIME_FREQ_MEASURE"/>
+    <moqui.basic.Uom abbreviation="ms" description="Milli-Second" uomId="TF_ms" uomTypeEnumId="UT_TIME_FREQ_MEASURE"/>
+    <moqui.basic.Uom abbreviation="s" description="Second" uomId="TF_s" uomTypeEnumId="UT_TIME_FREQ_MEASURE"/>
+    <moqui.basic.Uom abbreviation="min" description="Minute" uomId="TF_min" uomTypeEnumId="UT_TIME_FREQ_MEASURE"/>
+    <moqui.basic.Uom abbreviation="hr" description="Hour" uomId="TF_hr" uomTypeEnumId="UT_TIME_FREQ_MEASURE"/>
+    <moqui.basic.Uom abbreviation="day" description="Day" uomId="TF_day" uomTypeEnumId="UT_TIME_FREQ_MEASURE"/>
+    <moqui.basic.Uom abbreviation="wk" description="Week" uomId="TF_wk" uomTypeEnumId="UT_TIME_FREQ_MEASURE"/>
+    <moqui.basic.Uom abbreviation="mon" description="Month" uomId="TF_mon" uomTypeEnumId="UT_TIME_FREQ_MEASURE"/>
+    <moqui.basic.Uom abbreviation="yr" description="Year" uomId="TF_yr" uomTypeEnumId="UT_TIME_FREQ_MEASURE"/>
+    <moqui.basic.Uom abbreviation="decade" description="Decade" uomId="TF_decade" uomTypeEnumId="UT_TIME_FREQ_MEASURE"/>
+    <moqui.basic.Uom abbreviation="score" description="Score" uomId="TF_score" uomTypeEnumId="UT_TIME_FREQ_MEASURE"/>
+    <moqui.basic.Uom abbreviation="century" description="Century" uomId="TF_century" uomTypeEnumId="UT_TIME_FREQ_MEASURE"/>
+    <moqui.basic.Uom abbreviation="millenium" description="Millenium" uomId="TF_millenium" uomTypeEnumId="UT_TIME_FREQ_MEASURE"/>
 
     <moqui.basic.UomConversion uomConversionId="TIME_FREQ_s_ms" uomId="TF_s" toUomId="TF_ms" conversionFactor="1000"/>
     <moqui.basic.UomConversion uomConversionId="TIME_FREQ_min_s" uomId="TF_min" toUomId="TF_s" conversionFactor="60"/>
