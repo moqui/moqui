@@ -247,6 +247,7 @@ along with this software (see the LICENSE.md file). If not, see
             <moqui.basic.Enumeration description="Data Speed" enumId="UT_DATASPD_MEASURE" enumTypeId="UomType"/>
             <moqui.basic.Enumeration description="Time/Frequency" enumId="UT_TIME_FREQ_MEASURE" enumTypeId="UomType"/>
             <moqui.basic.Enumeration description="Length" enumId="UT_LENGTH_MEASURE" enumTypeId="UomType"/>
+            <moqui.basic.Enumeration description="Speed" enumId="UT_SPEED_MEASURE" enumTypeId="UomType"/>
             <moqui.basic.Enumeration description="Area" enumId="UT_AREA_MEASURE" enumTypeId="UomType"/>
             <moqui.basic.Enumeration description="Liquid Volume" enumId="UT_VOLUME_LIQ_MEAS" enumTypeId="UomType"/>
             <moqui.basic.Enumeration description="Dry Volume" enumId="UT_VOLUME_DRY_MEAS" enumTypeId="UomType"/>

@@ -156,6 +156,46 @@ along with this software (see the LICENSE.md file). If not, see
     <moqui.basic.UomConversion uomConversionId="LEN_rd_ft" uomId="LEN_rd" toUomId="LEN_ft" conversionFactor="16.5"/>
     <moqui.basic.UomConversion uomConversionId="LEN_yd_ft" uomId="LEN_yd" toUomId="LEN_ft" conversionFactor="3"/>
 
+    <!-- =============== Speed =============== -->
+    <moqui.basic.Uom abbreviation="m/h" description="Meters per hour" uomId="SPD_m_hr" uomTypeEnumId="UT_SPEED_MEASURE"/>
+    <moqui.basic.Uom abbreviation="m/min" description="Meters per minute" uomId="SPD_m_min" uomTypeEnumId="UT_SPEED_MEASURE"/>
+    <moqui.basic.Uom abbreviation="m/s" description="Meters per second" uomId="SPD_m_s" uomTypeEnumId="UT_SPEED_MEASURE"/>
+    <moqui.basic.Uom abbreviation="ft/hr" description="Feet per hour" uomId="SPD_ft_hr" uomTypeEnumId="UT_SPEED_MEASURE"/>
+    <moqui.basic.Uom abbreviation="ft/min" description="Feet per minute" uomId="SPD_ft_min" uomTypeEnumId="UT_SPEED_MEASURE"/>
+    <moqui.basic.Uom abbreviation="ft/s" description="Feet per second" uomId="SPD_ft_s" uomTypeEnumId="UT_SPEED_MEASURE"/>
+    <moqui.basic.Uom abbreviation="fur/hr" description="Furlongs per hour" uomId="SPD_fur_hr" uomTypeEnumId="UT_SPEED_MEASURE"/>
+    <moqui.basic.Uom abbreviation="fur/min" description="Furlongs per minute" uomId="SPD_fur_min" uomTypeEnumId="UT_SPEED_MEASURE"/>
+    <moqui.basic.Uom abbreviation="fur/s" description="Furlongs per second" uomId="SPD_fur_s" uomTypeEnumId="UT_SPEED_MEASURE"/>
+    <moqui.basic.Uom abbreviation="in/hr" description="Inches per hour" uomId="SPD_in_hr" uomTypeEnumId="UT_SPEED_MEASURE"/>
+    <moqui.basic.Uom abbreviation="in/min" description="Inches per minute" uomId="SPD_in_min" uomTypeEnumId="UT_SPEED_MEASURE"/>
+    <moqui.basic.Uom abbreviation="in/s" description="Inches per second" uomId="SPD_in_s" uomTypeEnumId="UT_SPEED_MEASURE"/>
+    <moqui.basic.Uom abbreviation="kn" description="Knots" uomId="SPD_kn" uomTypeEnumId="UT_SPEED_MEASURE"/>
+    <moqui.basic.Uom abbreviation="M" description="Mach" uomId="SPD_M" uomTypeEnumId="UT_SPEED_MEASURE"/>
+    <moqui.basic.Uom abbreviation="MPH" description="Miles per hour" uomId="SPD_MPH" uomTypeEnumId="UT_SPEED_MEASURE"/>
+    <moqui.basic.Uom abbreviation="mi/min" description="Miles per minute" uomId="SPD_mi_min" uomTypeEnumId="UT_SPEED_MEASURE"/>
+    <moqui.basic.Uom abbreviation="mi/s" description="Miles per second" uomId="SPD_mi_s" uomTypeEnumId="UT_SPEED_MEASURE"/>
+    <moqui.basic.Uom abbreviation="KPH" description="Kilometers per hour" uomId="SPD_KPH" uomTypeEnumId="UT_SPEED_MEASURE"/>
+    <moqui.basic.Uom abbreviation="km/min" description="Kilometers per minute" uomId="SPD_km_min" uomTypeEnumId="UT_SPEED_MEASURE"/>
+    <moqui.basic.Uom abbreviation="km/s" description="Kilometers per second" uomId="SPD_km_s" uomTypeEnumId="UT_SPEED_MEASURE"/>
+
+    <moqui.basic.UomConversion uomConversionId="SPD_m_hr_m_s" uomId="SPD_m_hr" toUomId="SPD_m_s" conversionFactor="0.0002777778"/>
+    <moqui.basic.UomConversion uomConversionId="SPD_m_min_m_s" uomId="SPD_m_min" toUomId="SPD_m_s" conversionFactor="0.0166666666666667"/>
+    <!-- <moqui.basic.UomConversion uomConversionId="SPD_m_s_m_s" uomId="SPD_m_s" toUomId="SPD_m_s" conversionFactor="1"/> -->
+    <moqui.basic.UomConversion uomConversionId="SPD_ft_hr_m_s" uomId="SPD_ft_hr" toUomId="SPD_m_s" conversionFactor="0.00008466667"/>
+    <moqui.basic.UomConversion uomConversionId="SPD_ft_min_m_s" uomId="SPD_ft_min" toUomId="SPD_m_s" conversionFactor="0.00508"/>
+    <moqui.basic.UomConversion uomConversionId="SPD_ft_s_m_s" uomId="SPD_ft_s" toUomId="SPD_m_s" conversionFactor="0.3048"/>
+    <moqui.basic.UomConversion uomConversionId="SPD_fur_hr_m_s" uomId="SPD_fur_hr" toUomId="SPD_m_s" conversionFactor="0.05588"/>
+    <moqui.basic.UomConversion uomConversionId="SPD_fur_min_m_s" uomId="SPD_fur_min" toUomId="SPD_m_s" conversionFactor="3.3528"/>
+    <moqui.basic.UomConversion uomConversionId="SPD_fur_s_m_s" uomId="SPD_fur_s" toUomId="SPD_m_s" conversionFactor="201.168"/>
+    <moqui.basic.UomConversion uomConversionId="SPD_kn_m_s" uomId="SPD_kn" toUomId="SPD_m_s" conversionFactor="0.514444444444444"/>
+    <moqui.basic.UomConversion uomConversionId="SPD_M_m_s" uomId="SPD_M" toUomId="SPD_m_s" conversionFactor="0.514444444444444"/>
+    <moqui.basic.UomConversion uomConversionId="SPD_MPH_m_s" uomId="SPD_MPH" toUomId="SPD_m_s" conversionFactor="0.44704"/>
+    <moqui.basic.UomConversion uomConversionId="SPD_mi_min_m_s" uomId="SPD_mi_min" toUomId="SPD_m_s" conversionFactor="26.8224"/>
+    <moqui.basic.UomConversion uomConversionId="SPD_mi_s_m_s" uomId="SPD_mi_s" toUomId="SPD_m_s" conversionFactor="1609.344"/>
+    <moqui.basic.UomConversion uomConversionId="SPD_KPH_m_s" uomId="SPD_KPH" toUomId="SPD_m_s" conversionFactor="0.2777777777777778"/>
+    <moqui.basic.UomConversion uomConversionId="SPD_km_min_m_s" uomId="SPD_km_min" toUomId="SPD_m_s" conversionFactor="16.666666666666668"/>
+    <moqui.basic.UomConversion uomConversionId="SPD_km_s_m_s" uomId="SPD_km_s" toUomId="SPD_m_s" conversionFactor="1000"/>
+
     <!-- =============== Area =============== -->
     <moqui.basic.Uom abbreviation="A" description="Acre" uomId="AREA_A" uomTypeEnumId="UT_AREA_MEASURE"/>
     <moqui.basic.Uom abbreviation="a" description="Are" uomId="AREA_a" uomTypeEnumId="UT_AREA_MEASURE"/>
