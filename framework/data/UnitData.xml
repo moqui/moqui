@@ -341,6 +341,37 @@ along with this software (see the LICENSE.md file). If not, see
     <moqui.basic.UomConversion uomConversionId="EN_kw_h_kcal" uomId="EN_kw_h" toUomId="EN_kcal" conversionFactor="859.845228"/>
     <moqui.basic.UomConversion uomConversionId="EN_kw_h_ft_lbf" uomId="EN_kw_h" toUomId="EN_ft_lbf" conversionFactor="2655223.73748"/>
 
+    <!-- =============== Pressure =============== -->
+    <moqui.basic.Uom abbreviation="atm" description="Atmosphere" uomId="PRES_atm" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="atm_tech" description="Atmosphere (Technical)" uomId="PRES_atm_tech" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="b" description="Bar" uomId="PRES_b" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="hPa" description="Hectopascal" uomId="PRES_hPa" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="inHg" description="Inches of mercury" uomId="PRES_inHg" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="kgf/cm2" description="Kilogram force per square centimeter" uomId="PRES_kgfcm2" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="kgf/m2" description="Kilogram force per square meter" uomId="PRES_kgfm2" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="kPa" description="Kilopascal" uomId="PRES_kPa" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="mb" description="Millibar" uomId="PRES_mb" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="mmHg" description="Millimeter of mercury" uomId="PRES_mmHg" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="Pa" description="Pascal" uomId="PRES_Pa" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="psf" description="Pound force per square foot" uomId="PRES_psf" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="psi" description="Pounds force per square inch" uomId="PRES_psi" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="torr" description="Torr" uomId="PRES_torr" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+
+    <moqui.basic.UomConversion uomConversionId="PRES_atm_Pa" uomId="PRES_atm" toUomId="PRES_Pa" conversionFactor="101325"/>
+    <moqui.basic.UomConversion uomConversionId="PRES_atm_tech_Pa" uomId="PRES_atm_tech" toUomId="PRES_Pa" conversionFactor="98066.49999787736"/>
+    <moqui.basic.UomConversion uomConversionId="PRES_b_Pa" uomId="PRES_b" toUomId="PRES_Pa" conversionFactor="100000"/>
+    <moqui.basic.UomConversion uomConversionId="PRES_hPa_Pa" uomId="PRES_hPa" toUomId="PRES_Pa" conversionFactor="100"/>
+    <moqui.basic.UomConversion uomConversionId="PRES_inHg_Pa" uomId="PRES_inHg" toUomId="PRES_Pa" conversionFactor="3386.39"/>
+    <moqui.basic.UomConversion uomConversionId="PRES_kgfcm2_Pa" uomId="PRES_kgfcm2" toUomId="PRES_Pa" conversionFactor="98066.5"/>
+    <moqui.basic.UomConversion uomConversionId="PRES_kgfm2_Pa" uomId="PRES_kgfm2" toUomId="PRES_Pa" conversionFactor="9.80665"/>
+    <moqui.basic.UomConversion uomConversionId="PRES_kPa_Pa" uomId="PRES_kPa" toUomId="PRES_Pa" conversionFactor="1000"/>
+    <moqui.basic.UomConversion uomConversionId="PRES_mb_Pa" uomId="PRES_mb" toUomId="PRES_Pa" conversionFactor="100"/>
+    <moqui.basic.UomConversion uomConversionId="PRES_mmHg_Pa" uomId="PRES_mmHg" toUomId="PRES_Pa" conversionFactor="133.3223684211"/>
+    <!--<moqui.basic.UomConversion uomConversionId="PRES_Pa_Pa" uomId="PRES_Pa" toUomId="PRES_Pa" conversionFactor="1"/>-->
+    <moqui.basic.UomConversion uomConversionId="PRES_psf_Pa" uomId="PRES_psf" toUomId="PRES_Pa" conversionFactor="47.88020833333"/>
+    <moqui.basic.UomConversion uomConversionId="PRES_psi_Pa" uomId="PRES_psi" toUomId="PRES_Pa" conversionFactor="6894.75"/>
+    <moqui.basic.UomConversion uomConversionId="PRES_torr_Pa" uomId="PRES_torr" toUomId="PRES_Pa" conversionFactor="133.3223684211"/>
+
     <!-- =============== Temperature =============== -->
     <moqui.basic.Uom abbreviation="K" description="Kelvin" uomId="TEMP_K" uomTypeEnumId="UT_TEMP_MEASURE"/>
     <moqui.basic.Uom abbreviation="C" description="Degrees Celsius" uomId="TEMP_C" uomTypeEnumId="UT_TEMP_MEASURE"/>
