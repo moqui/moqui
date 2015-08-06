@@ -236,6 +236,11 @@ along with this software (see the LICENSE.md file). If not, see
     <moqui.basic.UomConversion uomConversionId="VDRY_m3_yd3" uomId="VDRY_m3" toUomId="VDRY_yd3" conversionFactor="1.3"/>
     <moqui.basic.UomConversion uomConversionId="VDRY_yd3_ft3" uomId="VDRY_yd3" toUomId="VDRY_ft3" conversionFactor="27"/>
 
+    <!-- =============== Velocity =============== -->
+    <moqui.basic.Uom abbreviation="mph" description="Mile per Hour" uomId="VEL_mph" uomTypeEnumId="UT_VELOCITY_MEASURE"/>
+    <moqui.basic.Uom abbreviation="kph" description="Kilometer per Hour" uomId="VEL_kph" uomTypeEnumId="UT_VELOCITY_MEASURE"/>
+    <moqui.basic.Uom abbreviation="mps" description="Meter per Second" uomId="VEL_mps" uomTypeEnumId="UT_VELOCITY_MEASURE"/>
+
     <!-- =============== Weight =============== -->
     <moqui.basic.Uom abbreviation="dr avdp" description="Dram (avdp)" uomId="WT_dr_avdp" uomTypeEnumId="UT_WEIGHT_MEASURE"/>
     <moqui.basic.Uom abbreviation="gr" description="Grain" uomId="WT_gr" uomTypeEnumId="UT_WEIGHT_MEASURE"/>
@@ -308,6 +313,17 @@ along with this software (see the LICENSE.md file). If not, see
 
     <moqui.basic.UomConversion uomConversionId="TEMP_C_K" uomId="TEMP_C" toUomId="TEMP_K" conversionFactor="1" conversionOffset="273.15"/>
     <moqui.basic.UomConversion uomConversionId="TEMP_C_F" uomId="TEMP_C" toUomId="TEMP_F" conversionFactor="1.8" conversionOffset="32"/>
+
+    <!-- =============== Pressure =============== -->
+    <moqui.basic.Uom abbreviation="Pa" description="Pascal" uomId="PRES_Pa" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="psi" description="Pound per Square Inch" uomId="PRES_psi" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="ksi" description="Kilogram per Square Inch" uomId="PRES_ksi" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="bar" description="Bar" uomId="PRES_bar" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="mbar" description="Millibar" uomId="PRES_mbar" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="mmhg" description="Millimeters of Mercury" uomId="PRES_mmhg" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="inhg" description="Inches of Mercury" uomId="PRES_inhg" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="at" description="Technical Atmosphere" uomId="PRES_at" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="atm" description="Standard Atmosphere" uomId="PRES_atm" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
 
     <!-- =============== Other =============== -->
     <moqui.basic.Uom abbreviation="A" description="Amphere - Electric current" uomId="OTH_A" uomTypeEnumId="UT_OTHER_MEASURE"/>
