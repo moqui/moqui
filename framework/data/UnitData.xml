@@ -348,18 +348,18 @@ along with this software (see the LICENSE.md file). If not, see
 
     <!-- =============== Pressure =============== -->
     <moqui.basic.Uom abbreviation="atm" description="Atmosphere" uomId="PRES_atm" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
-    <moqui.basic.Uom abbreviation="atm_tech" description="Atmosphere (Technical)" uomId="PRES_atm_tech" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
-    <moqui.basic.Uom abbreviation="b" description="Bar" uomId="PRES_b" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="at" description="Atmosphere (Technical)" uomId="PRES_at" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="bar" description="Bar" uomId="PRES_bar" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="mbar" description="Millibar" uomId="PRES_mbar" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
     <moqui.basic.Uom abbreviation="hPa" description="Hectopascal" uomId="PRES_hPa" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
-    <moqui.basic.Uom abbreviation="inHg" description="Inches of mercury" uomId="PRES_inHg" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
-    <moqui.basic.Uom abbreviation="kgf/cm2" description="Kilogram force per square centimeter" uomId="PRES_kgfcm2" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
-    <moqui.basic.Uom abbreviation="kgf/m2" description="Kilogram force per square meter" uomId="PRES_kgfm2" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
-    <moqui.basic.Uom abbreviation="kPa" description="Kilopascal" uomId="PRES_kPa" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
-    <moqui.basic.Uom abbreviation="mb" description="Millibar" uomId="PRES_mb" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="inHg" description="Inch of mercury" uomId="PRES_inHg" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
     <moqui.basic.Uom abbreviation="mmHg" description="Millimeter of mercury" uomId="PRES_mmHg" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="kgCm2" description="Kilogram per square centimeter" uomId="PRES_kgfcm2" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="kgM2" description="Kilogram per square meter" uomId="PRES_kgfm2" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="kPa" description="Kilopascal" uomId="PRES_kPa" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
     <moqui.basic.Uom abbreviation="Pa" description="Pascal" uomId="PRES_Pa" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
-    <moqui.basic.Uom abbreviation="psf" description="Pound force per square foot" uomId="PRES_psf" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
-    <moqui.basic.Uom abbreviation="psi" description="Pounds force per square inch" uomId="PRES_psi" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="psf" description="Pound per square foot" uomId="PRES_psf" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="psi" description="Pound per square inch" uomId="PRES_psi" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
     <moqui.basic.Uom abbreviation="torr" description="Torr" uomId="PRES_torr" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
 
     <moqui.basic.UomConversion uomConversionId="PRES_atm_Pa" uomId="PRES_atm" toUomId="PRES_Pa" conversionFactor="101325"/>
@@ -384,17 +384,6 @@ along with this software (see the LICENSE.md file). If not, see
 
     <moqui.basic.UomConversion uomConversionId="TEMP_C_K" uomId="TEMP_C" toUomId="TEMP_K" conversionFactor="1" conversionOffset="273.15"/>
     <moqui.basic.UomConversion uomConversionId="TEMP_C_F" uomId="TEMP_C" toUomId="TEMP_F" conversionFactor="1.8" conversionOffset="32"/>
-
-    <!-- =============== Pressure =============== -->
-    <moqui.basic.Uom abbreviation="Pa" description="Pascal" uomId="PRES_Pa" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
-    <moqui.basic.Uom abbreviation="psi" description="Pound per Square Inch" uomId="PRES_psi" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
-    <moqui.basic.Uom abbreviation="ksi" description="Kilogram per Square Inch" uomId="PRES_ksi" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
-    <moqui.basic.Uom abbreviation="bar" description="Bar" uomId="PRES_bar" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
-    <moqui.basic.Uom abbreviation="mbar" description="Millibar" uomId="PRES_mbar" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
-    <moqui.basic.Uom abbreviation="mmhg" description="Millimeters of Mercury" uomId="PRES_mmhg" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
-    <moqui.basic.Uom abbreviation="inhg" description="Inches of Mercury" uomId="PRES_inhg" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
-    <moqui.basic.Uom abbreviation="at" description="Technical Atmosphere" uomId="PRES_at" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
-    <moqui.basic.Uom abbreviation="atm" description="Standard Atmosphere" uomId="PRES_atm" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
 
     <!-- =============== Other =============== -->
     <moqui.basic.Uom abbreviation="A" description="Amphere - Electric current" uomId="OTH_A" uomTypeEnumId="UT_OTHER_MEASURE"/>
