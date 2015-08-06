@@ -156,6 +156,46 @@ along with this software (see the LICENSE.md file). If not, see
     <moqui.basic.UomConversion uomConversionId="LEN_rd_ft" uomId="LEN_rd" toUomId="LEN_ft" conversionFactor="16.5"/>
     <moqui.basic.UomConversion uomConversionId="LEN_yd_ft" uomId="LEN_yd" toUomId="LEN_ft" conversionFactor="3"/>
 
+    <!-- =============== Speed =============== -->
+    <moqui.basic.Uom abbreviation="m/h" description="Meters per hour" uomId="SPD_m_hr" uomTypeEnumId="UT_SPEED_MEASURE"/>
+    <moqui.basic.Uom abbreviation="m/min" description="Meters per minute" uomId="SPD_m_min" uomTypeEnumId="UT_SPEED_MEASURE"/>
+    <moqui.basic.Uom abbreviation="m/s" description="Meters per second" uomId="SPD_m_s" uomTypeEnumId="UT_SPEED_MEASURE"/>
+    <moqui.basic.Uom abbreviation="ft/hr" description="Feet per hour" uomId="SPD_ft_hr" uomTypeEnumId="UT_SPEED_MEASURE"/>
+    <moqui.basic.Uom abbreviation="ft/min" description="Feet per minute" uomId="SPD_ft_min" uomTypeEnumId="UT_SPEED_MEASURE"/>
+    <moqui.basic.Uom abbreviation="ft/s" description="Feet per second" uomId="SPD_ft_s" uomTypeEnumId="UT_SPEED_MEASURE"/>
+    <moqui.basic.Uom abbreviation="fur/hr" description="Furlongs per hour" uomId="SPD_fur_hr" uomTypeEnumId="UT_SPEED_MEASURE"/>
+    <moqui.basic.Uom abbreviation="fur/min" description="Furlongs per minute" uomId="SPD_fur_min" uomTypeEnumId="UT_SPEED_MEASURE"/>
+    <moqui.basic.Uom abbreviation="fur/s" description="Furlongs per second" uomId="SPD_fur_s" uomTypeEnumId="UT_SPEED_MEASURE"/>
+    <moqui.basic.Uom abbreviation="in/hr" description="Inches per hour" uomId="SPD_in_hr" uomTypeEnumId="UT_SPEED_MEASURE"/>
+    <moqui.basic.Uom abbreviation="in/min" description="Inches per minute" uomId="SPD_in_min" uomTypeEnumId="UT_SPEED_MEASURE"/>
+    <moqui.basic.Uom abbreviation="in/s" description="Inches per second" uomId="SPD_in_s" uomTypeEnumId="UT_SPEED_MEASURE"/>
+    <moqui.basic.Uom abbreviation="kn" description="Knots" uomId="SPD_kn" uomTypeEnumId="UT_SPEED_MEASURE"/>
+    <moqui.basic.Uom abbreviation="M" description="Mach" uomId="SPD_M" uomTypeEnumId="UT_SPEED_MEASURE"/>
+    <moqui.basic.Uom abbreviation="MPH" description="Miles per hour" uomId="SPD_MPH" uomTypeEnumId="UT_SPEED_MEASURE"/>
+    <moqui.basic.Uom abbreviation="mi/min" description="Miles per minute" uomId="SPD_mi_min" uomTypeEnumId="UT_SPEED_MEASURE"/>
+    <moqui.basic.Uom abbreviation="mi/s" description="Miles per second" uomId="SPD_mi_s" uomTypeEnumId="UT_SPEED_MEASURE"/>
+    <moqui.basic.Uom abbreviation="KPH" description="Kilometers per hour" uomId="SPD_KPH" uomTypeEnumId="UT_SPEED_MEASURE"/>
+    <moqui.basic.Uom abbreviation="km/min" description="Kilometers per minute" uomId="SPD_km_min" uomTypeEnumId="UT_SPEED_MEASURE"/>
+    <moqui.basic.Uom abbreviation="km/s" description="Kilometers per second" uomId="SPD_km_s" uomTypeEnumId="UT_SPEED_MEASURE"/>
+
+    <moqui.basic.UomConversion uomConversionId="SPD_m_hr_m_s" uomId="SPD_m_hr" toUomId="SPD_m_s" conversionFactor="0.0002777778"/>
+    <moqui.basic.UomConversion uomConversionId="SPD_m_min_m_s" uomId="SPD_m_min" toUomId="SPD_m_s" conversionFactor="0.0166666666666667"/>
+    <!-- <moqui.basic.UomConversion uomConversionId="SPD_m_s_m_s" uomId="SPD_m_s" toUomId="SPD_m_s" conversionFactor="1"/> -->
+    <moqui.basic.UomConversion uomConversionId="SPD_ft_hr_m_s" uomId="SPD_ft_hr" toUomId="SPD_m_s" conversionFactor="0.00008466667"/>
+    <moqui.basic.UomConversion uomConversionId="SPD_ft_min_m_s" uomId="SPD_ft_min" toUomId="SPD_m_s" conversionFactor="0.00508"/>
+    <moqui.basic.UomConversion uomConversionId="SPD_ft_s_m_s" uomId="SPD_ft_s" toUomId="SPD_m_s" conversionFactor="0.3048"/>
+    <moqui.basic.UomConversion uomConversionId="SPD_fur_hr_m_s" uomId="SPD_fur_hr" toUomId="SPD_m_s" conversionFactor="0.05588"/>
+    <moqui.basic.UomConversion uomConversionId="SPD_fur_min_m_s" uomId="SPD_fur_min" toUomId="SPD_m_s" conversionFactor="3.3528"/>
+    <moqui.basic.UomConversion uomConversionId="SPD_fur_s_m_s" uomId="SPD_fur_s" toUomId="SPD_m_s" conversionFactor="201.168"/>
+    <moqui.basic.UomConversion uomConversionId="SPD_kn_m_s" uomId="SPD_kn" toUomId="SPD_m_s" conversionFactor="0.514444444444444"/>
+    <moqui.basic.UomConversion uomConversionId="SPD_M_m_s" uomId="SPD_M" toUomId="SPD_m_s" conversionFactor="0.514444444444444"/>
+    <moqui.basic.UomConversion uomConversionId="SPD_MPH_m_s" uomId="SPD_MPH" toUomId="SPD_m_s" conversionFactor="0.44704"/>
+    <moqui.basic.UomConversion uomConversionId="SPD_mi_min_m_s" uomId="SPD_mi_min" toUomId="SPD_m_s" conversionFactor="26.8224"/>
+    <moqui.basic.UomConversion uomConversionId="SPD_mi_s_m_s" uomId="SPD_mi_s" toUomId="SPD_m_s" conversionFactor="1609.344"/>
+    <moqui.basic.UomConversion uomConversionId="SPD_KPH_m_s" uomId="SPD_KPH" toUomId="SPD_m_s" conversionFactor="0.2777777777777778"/>
+    <moqui.basic.UomConversion uomConversionId="SPD_km_min_m_s" uomId="SPD_km_min" toUomId="SPD_m_s" conversionFactor="16.666666666666668"/>
+    <moqui.basic.UomConversion uomConversionId="SPD_km_s_m_s" uomId="SPD_km_s" toUomId="SPD_m_s" conversionFactor="1000"/>
+
     <!-- =============== Area =============== -->
     <moqui.basic.Uom abbreviation="A" description="Acre" uomId="AREA_A" uomTypeEnumId="UT_AREA_MEASURE"/>
     <moqui.basic.Uom abbreviation="a" description="Are" uomId="AREA_a" uomTypeEnumId="UT_AREA_MEASURE"/>
@@ -305,6 +345,37 @@ along with this software (see the LICENSE.md file). If not, see
     <moqui.basic.UomConversion uomConversionId="EN_kw_h_J" uomId="EN_kw_h" toUomId="EN_J" conversionFactor="3600000"/>
     <moqui.basic.UomConversion uomConversionId="EN_kw_h_kcal" uomId="EN_kw_h" toUomId="EN_kcal" conversionFactor="859.845228"/>
     <moqui.basic.UomConversion uomConversionId="EN_kw_h_ft_lbf" uomId="EN_kw_h" toUomId="EN_ft_lbf" conversionFactor="2655223.73748"/>
+
+    <!-- =============== Pressure =============== -->
+    <moqui.basic.Uom abbreviation="atm" description="Atmosphere" uomId="PRES_atm" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="atm_tech" description="Atmosphere (Technical)" uomId="PRES_atm_tech" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="b" description="Bar" uomId="PRES_b" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="hPa" description="Hectopascal" uomId="PRES_hPa" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="inHg" description="Inches of mercury" uomId="PRES_inHg" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="kgf/cm2" description="Kilogram force per square centimeter" uomId="PRES_kgfcm2" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="kgf/m2" description="Kilogram force per square meter" uomId="PRES_kgfm2" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="kPa" description="Kilopascal" uomId="PRES_kPa" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="mb" description="Millibar" uomId="PRES_mb" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="mmHg" description="Millimeter of mercury" uomId="PRES_mmHg" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="Pa" description="Pascal" uomId="PRES_Pa" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="psf" description="Pound force per square foot" uomId="PRES_psf" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="psi" description="Pounds force per square inch" uomId="PRES_psi" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+    <moqui.basic.Uom abbreviation="torr" description="Torr" uomId="PRES_torr" uomTypeEnumId="UT_PRESSURE_MEASURE"/>
+
+    <moqui.basic.UomConversion uomConversionId="PRES_atm_Pa" uomId="PRES_atm" toUomId="PRES_Pa" conversionFactor="101325"/>
+    <moqui.basic.UomConversion uomConversionId="PRES_atm_tech_Pa" uomId="PRES_atm_tech" toUomId="PRES_Pa" conversionFactor="98066.49999787736"/>
+    <moqui.basic.UomConversion uomConversionId="PRES_b_Pa" uomId="PRES_b" toUomId="PRES_Pa" conversionFactor="100000"/>
+    <moqui.basic.UomConversion uomConversionId="PRES_hPa_Pa" uomId="PRES_hPa" toUomId="PRES_Pa" conversionFactor="100"/>
+    <moqui.basic.UomConversion uomConversionId="PRES_inHg_Pa" uomId="PRES_inHg" toUomId="PRES_Pa" conversionFactor="3386.39"/>
+    <moqui.basic.UomConversion uomConversionId="PRES_kgfcm2_Pa" uomId="PRES_kgfcm2" toUomId="PRES_Pa" conversionFactor="98066.5"/>
+    <moqui.basic.UomConversion uomConversionId="PRES_kgfm2_Pa" uomId="PRES_kgfm2" toUomId="PRES_Pa" conversionFactor="9.80665"/>
+    <moqui.basic.UomConversion uomConversionId="PRES_kPa_Pa" uomId="PRES_kPa" toUomId="PRES_Pa" conversionFactor="1000"/>
+    <moqui.basic.UomConversion uomConversionId="PRES_mb_Pa" uomId="PRES_mb" toUomId="PRES_Pa" conversionFactor="100"/>
+    <moqui.basic.UomConversion uomConversionId="PRES_mmHg_Pa" uomId="PRES_mmHg" toUomId="PRES_Pa" conversionFactor="133.3223684211"/>
+    <!--<moqui.basic.UomConversion uomConversionId="PRES_Pa_Pa" uomId="PRES_Pa" toUomId="PRES_Pa" conversionFactor="1"/>-->
+    <moqui.basic.UomConversion uomConversionId="PRES_psf_Pa" uomId="PRES_psf" toUomId="PRES_Pa" conversionFactor="47.88020833333"/>
+    <moqui.basic.UomConversion uomConversionId="PRES_psi_Pa" uomId="PRES_psi" toUomId="PRES_Pa" conversionFactor="6894.75"/>
+    <moqui.basic.UomConversion uomConversionId="PRES_torr_Pa" uomId="PRES_torr" toUomId="PRES_Pa" conversionFactor="133.3223684211"/>
 
     <!-- =============== Temperature =============== -->
     <moqui.basic.Uom abbreviation="K" description="Kelvin" uomId="TEMP_K" uomTypeEnumId="UT_TEMP_MEASURE"/>
