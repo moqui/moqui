@@ -114,6 +114,7 @@ abstract class EntityValueBase implements EntityValue {
 
     @Override
     boolean isMutable() { return mutable }
+    void setFromCache() { mutable = false }
 
     @Override
     Map getMap() { return new HashMap(valueMap) }
@@ -840,12 +841,12 @@ abstract class EntityValueBase implements EntityValue {
     @Override
     Object put(String name, Object value) {
         Node fieldNode = getEntityDefinition().getFieldNode(name)
-        if (!mutable) throw new EntityException("Cannot set field [${name}], this entity value is not mutable (it is read-only)")
         if (fieldNode == null) throw new EntityException("The name [${name}] is not a valid field name for entity [${entityName}]")
         return putNoCheck(name, value)
     }
 
     Object putNoCheck(String name, Object value) {
+        if (!mutable) throw new EntityException("Cannot set field [${name}], this entity value is not mutable (it is read-only)")
         Object curValue = valueMap.get(name)
         if (curValue != value) {
             modified = true
