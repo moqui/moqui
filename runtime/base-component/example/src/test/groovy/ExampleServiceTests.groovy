@@ -76,7 +76,7 @@ class ExampleServiceTests extends Specification {
         Map result = ec.service.sync().name("org.moqui.example.ExampleServices.send#ExampleMessage")
                 .parameters([exampleId:'TEST2', systemMessageRemoteId:'Example1Direct']).call()
         // message is sent async so wait 0.5 second, should be more than plenty for Quartz to pick it up, etc
-        sleep(500)
+        sleep(1500)
         EntityValue sentMessage = ec.entity.find("moqui.service.message.SystemMessage").condition("systemMessageId", result.systemMessageId).one()
         EntityValue receivedMessage = ec.entity.find("moqui.service.message.SystemMessage").condition("systemMessageId", sentMessage.remoteMessageId).one()
 
