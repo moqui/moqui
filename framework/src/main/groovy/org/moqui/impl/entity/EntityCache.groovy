@@ -91,7 +91,7 @@ class EntityCache {
         if (entityListCache == null) entityListCache = getCacheList(ed.getFullEntityName())
 
         EntityList elToCache = el ?: EntityListImpl.EMPTY
-        elToCache.setFromCache(true)
+        elToCache.setFromCache()
         entityListCache.put(whereCondition, elToCache)
         efi.getEntityCache().registerCacheListRa(ed.getFullEntityName(), whereCondition, elToCache)
     }
