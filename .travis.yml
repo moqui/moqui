@@ -8,4 +8,4 @@ jdk:
 script:
   - gradle cleanAll load
   - gradle check
-  - gradle test
+  - gradle test --info
