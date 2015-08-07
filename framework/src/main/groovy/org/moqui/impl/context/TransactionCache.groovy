@@ -152,15 +152,31 @@ class TransactionCache implements Synchronization {
                 // TODO: if new value sets a field with an FK to a field created already in this TX create another
                 //  update record (how to do with key strategy!?! maybe add a dummy Map entry...) to avoid FK issues
                 currentEwi.evb.setFields(evb, true, null, false)
+                evb = currentEwi.evb
             } else {
                 throw new EntityException("Tried to update a value that has been deleted, entity [${evb.getEntityName()}], PK ${evb.getPrimaryKeys()}")
             }
         } else {
+            if (!evb.getIsFromDb()) {
+                EntityValueBase cacheEvb = readOneCache.get(key)
+                if (cacheEvb != null) {
+                    cacheEvb.setFields(evb, true, null, false)
+                    evb = cacheEvb
+                } else {
+                    EntityValueBase dbEvb = (EntityValueBase) evb.cloneValue()
+                    dbEvb.refresh()
+                    dbEvb.setFields(evb, true, null, false)
+                    evb = dbEvb
+                    logger.warn("====== tx cache update not from db\nevb: ${evb}\ndbEvb: ${dbEvb}")
+                }
+            }
+
             writeInfoList.put(key, new EntityWriteInfo(evb, WriteMode.UPDATE))
         }
 
         // add to readCache
         readOneCache.put(key, evb)
+
         // update any matching list cache entries, add to list cache if not there (though generally should be, depending on the condition)
         Map<EntityCondition, EntityListImpl> entityListCache = readListCache.get(evb.getEntityName())
         if (entityListCache != null) {
@@ -267,7 +283,9 @@ class TransactionCache implements Synchronization {
         // if this has been deleted we don't want to add it, but in general if we have a ewi then it's already in the
         //     cache and we don't want to update from this (generally from DB and may be older than value already there)
         // clone the value before putting it into the cache so that the caller can't change it later with an update call
-        if (currentEwi == null) readOneCache.put(key, (EntityValueBase) evb.cloneValue())
+        if (currentEwi == null || currentEwi.writeMode != WriteMode.DELETE) readOneCache.put(key, (EntityValueBase) evb.cloneValue())
+
+        // if (evb.getEntityDefinition().getEntityName() == "Asset") logger.warn("=========== onePut of Asset ${evb.get('assetId')}", new Exception("Location"))
     }
 
     EntityListImpl listGet(EntityDefinition ed, EntityCondition whereCondition, List<String> orderByExpanded) {

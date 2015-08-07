@@ -404,6 +404,11 @@ class EntityFacadeImpl implements EntityFacade {
                 String packageName = (String) entity."@package-name"
                 String shortAlias = (String) entity."@short-alias"
 
+                if (!entityName) {
+                    logger.warn("Skipping entity XML file [${entityRr.getLocation()}] element with no @entity-name: ${entity}")
+                    continue
+                }
+
                 if (packageName) {
                     List pkgList = (List) this.entityLocationCache.get(packageName + "." + entityName)
                     if (!pkgList) {

@@ -83,9 +83,9 @@ along with this software (see the LICENSE.md file). If not, see
             <field name="type"><default-field><display/></default-field></field>
             <field name="keyMap"><default-field><display/></default-field></field>
             <field name="link">
-                <default-field>
-                    <link text="Detail" url="." link-type="anchor"><parameter name="entityName" from="relatedEntityName"/></link>
-                    <link text="Find" url="find" link-type="anchor"><parameter name="entityName" from="relatedEntityName"/></link>
+                <default-field title="">
+                    <link text="Detail" url="." link-type="anchor"><parameter name="entityName" from="relInfo.relatedEntityName"/></link>
+                    <link text="Find" url="find" link-type="anchor"><parameter name="entityName" from="relInfo.relatedEntityName"/></link>
                 </default-field>
             </field>
         </form-list>

@@ -487,16 +487,17 @@ public class ResourceFacadeImpl implements ResourceFacade {
     String expand(String inputString, String debugLocation, Map additionalContext) {
         ExecutionContext ec = ecfi.getExecutionContext()
         ContextStack cs = (ContextStack) ec.context
+        boolean doPushPop = additionalContext as boolean
         try {
-            if (additionalContext) {
-                if (additionalContext instanceof EntityValue) cs.push(((EntityValue) additionalContext).getMap())
-                else cs.push(additionalContext)
+            if (doPushPop) {
+                if (additionalContext instanceof EntityValue) { cs.push(((EntityValue) additionalContext).getMap()) }
+                else { cs.push(additionalContext) }
                 // do another push so writes to the context don't modify the passed in Map
                 cs.push()
             }
             return expand(inputString, debugLocation)
         } finally {
-            if (additionalContext) { cs.pop(); cs.pop(); }
+            if (doPushPop) { cs.pop(); cs.pop(); }
         }
     }
 
@@ -567,13 +568,17 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
     @CompileStatic
     void xslFoTransform(StreamSource xslFoSrc, StreamSource xsltSrc, OutputStream out, String contentType) {
-        FopFactory ff = getFopFactory()
-        FOUserAgent foUserAgent = ff.newFOUserAgent()
-        Fop fop = ff.newFop(contentType, foUserAgent, out)
-
         TransformerFactory factory = TransformerFactory.newInstance()
+        factory.setURIResolver(new LocalResolver(ecfi, factory.getURIResolver()))
+
         Transformer transformer = xsltSrc == null ? factory.newTransformer() : factory.newTransformer(xsltSrc)
         transformer.setURIResolver(new LocalResolver(ecfi, transformer.getURIResolver()))
+
+        FopFactory ff = getFopFactory()
+        FOUserAgent foUserAgent = ff.newFOUserAgent()
+        foUserAgent.setURIResolver(new LocalResolver(ecfi, foUserAgent.getURIResolver()))
+        Fop fop = ff.newFop(contentType, foUserAgent, out)
+
         transformer.transform(xslFoSrc, new SAXResult(fop.getDefaultHandler()))
     }
 
@@ -588,6 +593,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
         DefaultConfigurationBuilder cfgBuilder = new DefaultConfigurationBuilder()
         internalFopFactory.setUserConfig(cfgBuilder.build(ecfi.resourceFacade.getLocationStream("classpath://fop.xconf")))
         internalFopFactory.getFontManager().setFontBaseURL((String) ecfi.runtimePath + "/conf")
+        internalFopFactory.setURIResolver(new LocalResolver(ecfi, internalFopFactory.getURIResolver()))
 
         return internalFopFactory
     }
@@ -605,8 +611,24 @@ public class ResourceFacadeImpl implements ResourceFacade {
         }
 
         public Source resolve(String href, String base) {
-            InputStream is = ecfi.resourceFacade.getLocationStream(href)
-            if (is != null) return new StreamSource(is)
+            // try plain href
+            ResourceReference rr = ecfi.getResourceFacade().getLocationReference(href)
+
+            // if href has no colon try base + href
+            if (rr == null && href.indexOf(':') < 0) rr = ecfi.getResourceFacade().getLocationReference(base + href)
+
+            if (rr != null) {
+                URL url = rr.getUrl()
+                InputStream is = rr.openStream()
+                if (is != null) {
+                    if (url != null) {
+                        return new StreamSource(is, url.toExternalForm())
+                    } else {
+                        return new StreamSource(is)
+                    }
+                }
+            }
+
             return defaultResolver.resolve(href, base)
         }
     }

@@ -248,8 +248,10 @@ class UserFacadeImpl implements UserFacade {
             boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
             boolean beganTransaction = eci.transaction.begin(null)
             try {
-                userAccount.set("locale", locale.toString())
-                userAccount.update()
+                EntityValue userAccountClone = userAccount.cloneValue()
+                userAccountClone.set("locale", locale.toString())
+                userAccountClone.update()
+                internalUserAccount = userAccountClone
             } catch (Throwable t) {
                 eci.transaction.rollback(beganTransaction, "Error saving timeZone", t)
             } finally {
@@ -296,8 +298,10 @@ class UserFacadeImpl implements UserFacade {
             boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
             boolean beganTransaction = eci.transaction.begin(null)
             try {
-                userAccount.set("timeZone", tz.getID())
-                userAccount.update()
+                EntityValue userAccountClone = userAccount.cloneValue()
+                userAccountClone.set("timeZone", tz.getID())
+                userAccountClone.update()
+                internalUserAccount = userAccountClone
             } catch (Throwable t) {
                 eci.transaction.rollback(beganTransaction, "Error saving timeZone", t)
             } finally {
@@ -319,8 +323,10 @@ class UserFacadeImpl implements UserFacade {
             boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
             boolean beganTransaction = eci.transaction.begin(null)
             try {
-                userAccount.set("currencyUomId", uomId)
-                userAccount.update()
+                EntityValue userAccountClone = userAccount.cloneValue()
+                userAccountClone.set("currencyUomId", uomId)
+                userAccountClone.update()
+                internalUserAccount = userAccountClone
             } catch (Throwable t) {
                 eci.transaction.rollback(beganTransaction, "Error saving currencyUomId", t)
             } finally {

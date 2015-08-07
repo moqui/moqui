@@ -11,6 +11,8 @@
  * <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
+
+import org.moqui.entity.EntityException
 import spock.lang.*
 
 import org.moqui.context.ExecutionContext
@@ -58,6 +60,20 @@ class EntityCrud extends Specification {
         then:
         EntityValue exampleCheck = ec.entity.find("example.Example").condition([exampleId:"CRDTST1"]).one()
         exampleCheck.exampleName == "Test Name 2"
+    }
+
+    def "update Example CRDTST1 through cache"() {
+        when:
+        Exception immutableError = null
+        EntityValue example = ec.entity.find("example.Example").condition("exampleId", "CRDTST1").useCache(true).one()
+        try {
+            example.exampleName = "Test Name Cache"
+        } catch (EntityException e) {
+            immutableError = e
+        }
+
+        then:
+        immutableError != null
     }
 
     def "delete Example CRDTST1"() {

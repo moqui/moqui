@@ -375,8 +375,12 @@ public class ScreenFacadeImpl implements ScreenFacade {
                         logger.info("While getting ScreenInfo screen not found for ${curSsi.getName()} at: ${curSsi.getLocation()}")
                         continue
                     }
-                    ScreenInfo newSi = new ScreenInfo(ssSd, curSsi, this, level+1)
-                    subscreenInfoByName.put(ssEntry.getKey(), newSi)
+                    try {
+                        ScreenInfo newSi = new ScreenInfo(ssSd, curSsi, this, level+1)
+                        subscreenInfoByName.put(ssEntry.getKey(), newSi)
+                    } catch (Exception e) {
+                        logger.warn("Error loading subscreen ${curSsi.getLocation()}", e)
+                    }
                 }
             }
 

@@ -1083,7 +1083,7 @@ class ScreenRenderImpl implements ScreenRender {
     String getFieldValuePlainString(FtlNodeWrapper fieldNodeWrapper, String defaultValue) {
         // NOTE: defaultValue is handled below so that for a plain string it is not run through expand
         Object obj = getFieldValue(fieldNodeWrapper, "")
-        if (!obj && defaultValue) return defaultValue
+        if (!obj && defaultValue) return ec.getResource().expand(defaultValue, "")
         return StupidUtilities.toPlainString(obj)
         // NOTE: this approach causes problems with currency fields, but kills the string expand for default-value... a better approach?
         //return obj ? obj.toString() : (defaultValue ? ec.getResource().expand(defaultValue, null) : "")

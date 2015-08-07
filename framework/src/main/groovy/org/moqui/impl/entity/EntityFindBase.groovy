@@ -547,6 +547,8 @@ abstract class EntityFindBase implements EntityFind {
         // try the TX cache before the entity cache, may be more up-to-date
         EntityValueBase txcValue = txCache != null ? txCache.oneGet(this) : null
 
+        // if (txcValue != null && ed.getEntityName() == "foo") logger.warn("========= TX cache one value: ${txcValue}")
+
         boolean doCache = this.shouldCache()
         CacheImpl entityOneCache = doCache ? efi.getEntityCache().getCacheOne(getEntityDef().getFullEntityName()) : null
         EntityValueBase cacheHit = null
@@ -555,6 +557,9 @@ abstract class EntityFindBase implements EntityFind {
         // we always want fieldsToSelect populated so that we know the order of the results coming back
         if (!this.fieldsToSelect || (txCache != null && txcValue == null) || (doCache && cacheHit == null))
             this.selectFields(ed.getFieldNames(true, true, false))
+
+
+        // if (ed.getEntityName() == "Asset") logger.warn("=========== find one of Asset ${this.simpleAndMap.get('assetId')}", new Exception("Location"))
 
         // call the abstract method
         EntityValueBase newEntityValue = null
@@ -566,7 +571,10 @@ abstract class EntityFindBase implements EntityFind {
             } else {
                 // if forUpdate unless this was a TX CREATE it'll be in the DB and should be locked, so do the query
                 //     anyway, but ignore the result
-                if (forUpdate && !txCache.isTxCreate(txcValue)) oneExtended(getConditionForQuery(ed, whereCondition))
+                if (forUpdate && !txCache.isTxCreate(txcValue)) {
+                    oneExtended(getConditionForQuery(ed, whereCondition))
+                    // if (ed.getEntityName() == "Asset") logger.warn("======== doing find and ignoring result to pass through for update, for: ${txcValue}")
+                }
                 newEntityValue = txcValue
             }
         } else if (cacheHit != null) {

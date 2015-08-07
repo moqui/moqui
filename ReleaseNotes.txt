@@ -37,11 +37,15 @@ New Features:
   script, expression, condition, expand) and localize in L10nFacade
 - Added link.@encode attribute like that on other elements, encodes link
   text by default (avoid HTML injection based attacks)
+- Added image.@condition, @style, and @parameter-map attributes and
+  parameter sub-element like those on label, etc
 
 Bug Fixes:
 
 - Fixed issues with adding missing columns to database
 - The Gradle loadSave and reloadSave tasks now handle H2 files as well
+- The EXAMPLE1 tenant is now setup for H2 instead of Derby, fixing issues
+  with testing of tenant and related functionality
 - Fixed issue with form field options in certain cases where an EntityValue
   was pushed onto the context (which should never be done)
 - Fixed issue when a drop-down with dynamic-options depends on a field with
@@ -53,6 +57,9 @@ Bug Fixes:
   member-entity and the fields of that view member-entity were aliased with
   an alias-all with a @prefix or other name not matching the field were
   trimmed because no matching field was in the fields to select
+- XML Actions ${iterate.@entry}_hasNext is now _has_next to be more
+  consistent with section-iterate and others using this FTL inspired name
+
 
 ===========================================================================
 Release 1.5.2 - 2 May 2015

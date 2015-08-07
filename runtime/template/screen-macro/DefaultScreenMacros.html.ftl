@@ -450,8 +450,10 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
         <#if linkNode["@entity-name"]?has_content>
             <#assign linkText = ""><#assign linkText = sri.getFieldEntityValue(linkNode)>
         <#else>
-            <#if linkNode["@text-map"]?has_content && linkNode["@text"]?has_content>
-                <#assign linkText = ec.resource.expand(linkNode["@text"], "", ec.resource.expression(linkNode["@text-map"], ""))>
+            <#assign textMap = "">
+            <#if linkNode["@text-map"]?has_content><#assign textMap = ec.resource.expression(linkNode["@text-map"], "")!></#if>
+            <#if textMap?has_content>
+                <#assign linkText = ec.resource.expand(linkNode["@text"], "", textMap)>
             <#else>
                 <#assign linkText = ec.resource.expand(linkNode["@text"]!"", "")>
             </#if>
@@ -525,13 +527,18 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     </#if>
 </#macro>
 
-<#macro image><img src="${sri.makeUrlByType(.node["@url"],.node["@url-type"]!"content",null,"true")}" alt="${.node["@alt"]!"image"}"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@width"]?has_content> width="${.node["@width"]}"</#if><#if .node["@height"]?has_content> height="${.node["@height"]}"</#if>/></#macro>
+<#macro image>
+    <#if .node["@condition"]?has_content><#assign conditionResult = ec.resource.condition(.node["@condition"], "")><#else><#assign conditionResult = true></#if>
+    <#if conditionResult><img src="${sri.makeUrlByType(.node["@url"], .node["@url-type"]!"content", .node, "true").getUrlWithParams()}" alt="${.node["@alt"]!"image"}"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@width"]?has_content> width="${.node["@width"]}"</#if><#if .node["@height"]?has_content> height="${.node["@height"]}"</#if><#if .node["@style"]?has_content> class="${ec.resource.expand(.node["@style"], "")}"</#if>/></#if>
+</#macro>
 <#macro label>
     <#if .node["@condition"]?has_content><#assign conditionResult = ec.resource.condition(.node["@condition"], "")><#else><#assign conditionResult = true></#if>
     <#if conditionResult>
         <#assign labelType = .node["@type"]?default("span")/>
-        <#if .node["@text-map"]?has_content>
-            <#assign labelValue = ec.resource.expand(.node["@text"], "", ec.resource.expression(.node["@text-map"], ""))>
+        <#assign textMap = "">
+        <#if .node["@text-map"]?has_content><#assign textMap = ec.resource.expression(.node["@text-map"], "")!></#if>
+        <#if textMap?has_content>
+            <#assign labelValue = ec.resource.expand(.node["@text"], "", textMap)>
         <#else>
             <#assign labelValue = ec.resource.expand(.node["@text"], "")/>
         </#if>
@@ -834,8 +841,10 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                 <#if linkNode["@entity-name"]?has_content>
                     <#assign linkText = ""><#assign linkText = sri.getFieldEntityValue(linkNode)>
                 <#else>
-                    <#if linkNode["@text-map"]?has_content && linkNode["@text"]?has_content>
-                        <#assign linkText = ec.resource.expand(linkNode["@text"], "", ec.resource.expression(linkNode["@text-map"], ""))>
+                    <#assign textMap = "">
+                    <#if linkNode["@text-map"]?has_content><#assign textMap = ec.resource.expression(linkNode["@text-map"], "")!></#if>
+                    <#if textMap?has_content>
+                        <#assign linkText = ec.resource.expand(linkNode["@text"], "", textMap)>
                     <#else>
                         <#assign linkText = ec.resource.expand(linkNode["@text"]!"", "")>
                     </#if>
@@ -878,6 +887,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#assign skipStart = (formNode["@skip-start"]! == "true")>
     <#assign skipEnd = (formNode["@skip-end"]! == "true")>
     <#assign skipForm = (formNode["@skip-form"]! == "true")>
+    <#assign skipHeader = (formNode["@skip-header"]! == "true")>
     <#assign formListUrlInfo = sri.makeUrlByType(formNode["@transition"], "transition", null, "false")>
     <#assign listName = formNode["@list"]>
     <#assign listObject = ec.resource.expression(listName, "")!>
@@ -911,6 +921,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#if formListColumnList?? && (formListColumnList?size > 0)>
         <#if !skipStart>
         <table class="table table-striped table-hover table-condensed" id="${formId}-table">
+            <#if !skipHeader>
             <thead>
                 <#assign needHeaderForm = sri.isFormHeaderForm(formNode["@name"])>
                 <#if needHeaderForm>
@@ -925,7 +936,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                 <tr>
                 </#if>
                     <#list formListColumnList as fieldListColumn>
-                        <th>
+                        <th<#if fieldListColumn["@style"]?has_content> class="${fieldListColumn["@style"]}"</#if>>
                         <#list fieldListColumn["field-ref"] as fieldRef>
                             <#assign fieldRefName = fieldRef["@name"]>
                             <#assign fieldNode = "invalid">
@@ -956,6 +967,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                 </tr>
                 </#if>
             </thead>
+            </#if>
             <#if isMulti && !skipForm>
                 <tbody>
                 <form name="${formId}" id="${formId}" method="post" action="${formListUrlInfo.url}">
@@ -977,8 +989,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
             </#if>
             <#assign nonReferencedFieldList = sri.getFtlFormListColumnNonReferencedHiddenFieldList(.node["@name"])>
             <#list nonReferencedFieldList as nonReferencedField><@formListSubField nonReferencedField/></#list>
-            <#list formNode["form-list-column"] as fieldListColumn>
-                <td>
+            <#list formListColumnList as fieldListColumn>
+                <td<#if fieldListColumn["@style"]?has_content> class="${fieldListColumn["@style"]}"</#if>>
                 <#list fieldListColumn["field-ref"] as fieldRef>
                     <#assign fieldRefName = fieldRef["@name"]>
                     <#assign fieldNode = "invalid">
@@ -1029,6 +1041,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
         <#assign fieldNodeList = formNode["field"]>
         <#if !skipStart>
         <table class="table table-striped table-hover table-condensed" id="${formId}-table">
+            <#if !skipHeader>
             <thead>
                 <#assign needHeaderForm = sri.isFormHeaderForm(formNode["@name"])>
                 <#if needHeaderForm && !skipStart>
@@ -1060,6 +1073,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                     </tr>
                 </#if>
             </thead>
+            </#if>
             <#if isMulti && !skipForm>
                 <tbody>
                 <form name="${formId}" id="${formId}" class="form-body" method="post" action="${formListUrlInfo.url}">
@@ -1148,7 +1162,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     </div>
     <#if fieldNode["header-field"]?has_content && fieldNode["header-field"][0]?children?has_content>
     <div class="form-header-field<#if containerStyle?has_content> ${containerStyle}</#if>">
-        <@formListWidget fieldNode["header-field"][0] true/>
+        <@formListWidget fieldNode["header-field"][0] true true/>
         <#-- <#recurse fieldNode["header-field"][0]/> -->
     </div>
     </#if>
@@ -1186,8 +1200,10 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                     <#if linkNode["@entity-name"]?has_content>
                         <#assign linkText = ""><#assign linkText = sri.getFieldEntityValue(linkNode)>
                     <#else>
-                        <#if linkNode["@text-map"]?has_content && linkNode["@text"]?has_content>
-                            <#assign linkText = ec.resource.expand(linkNode["@text"], "", ec.resource.expression(linkNode["@text-map"], ""))>
+                        <#assign textMap = "">
+                        <#if linkNode["@text-map"]?has_content><#assign textMap = ec.resource.expression(linkNode["@text-map"], "")!></#if>
+                        <#if textMap?has_content>
+                            <#assign linkText = ec.resource.expand(linkNode["@text"], "", textMap)>
                         <#else>
                             <#assign linkText = ec.resource.expand(linkNode["@text"]!"", "")>
                         </#if>
@@ -1419,8 +1435,10 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
 <#macro display>
     <#assign fieldValue = ""/>
     <#if .node["@text"]?has_content>
-        <#if .node["@text-map"]?has_content>
-            <#assign fieldValue = ec.resource.expand(.node["@text"], "", ec.resource.expression(.node["@text-map"], ""))>
+        <#assign textMap = "">
+        <#if .node["@text-map"]?has_content><#assign textMap = ec.resource.expression(.node["@text-map"], "")!></#if>
+        <#if textMap?has_content>
+            <#assign fieldValue = ec.resource.expand(.node["@text"], "", textMap)>
         <#else>
             <#assign fieldValue = ec.resource.expand(.node["@text"], "")>
         </#if>
@@ -1487,12 +1505,14 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
         <#assign doNode = .node["dynamic-options"][0]>
         <#assign depNodeList = doNode["depends-on"]>
         <#assign formName = ec.resource.expand(formNode["@name"], "")>
+        <#assign doUrlInfo = sri.makeUrlByType(doNode["@transition"], "transition", .node, "false")>
+        <#assign doUrlParameterMap = doUrlInfo.getParameterMap()>
         <#assign afterFormScript>
             function populate_${id}() {
                 var hasAllParms = true;
                 <#list depNodeList as depNode>if (!$('#${formName}_${depNode["@field"]}<#if listEntryIndex?has_content>_${listEntryIndex}</#if><#if sectionEntryIndex?has_content>_${sectionEntryIndex}</#if>').val()) { hasAllParms = false; } </#list>
                 if (!hasAllParms) { $('#${id}').html(""); $("#${id}").trigger("chosen:updated"); <#-- alert("not has all"); --> return; }
-                $.ajax({ type:'POST', url:'${sri.screenUrlInstance.url}/${doNode["@transition"]}', data:{ <#list depNodeList as depNode>'${depNode["@field"]}': $('#${formName}_${depNode["@field"]}<#if listEntryIndex?has_content>_${listEntryIndex}</#if><#if sectionEntryIndex?has_content>_${sectionEntryIndex}</#if>').val()<#if depNode_has_next>, </#if></#list> }, dataType:'json' }).done(
+                $.ajax({ type:'POST', url:'${doUrlInfo.url}', data:{ <#list depNodeList as depNode>'${depNode["@field"]}': $('#${formName}_${depNode["@field"]}<#if listEntryIndex?has_content>_${listEntryIndex}</#if><#if sectionEntryIndex?has_content>_${sectionEntryIndex}</#if>').val()<#if depNode_has_next>, </#if></#list><#list doUrlParameterMap?keys as parameterKey><#if doUrlParameterMap.get(parameterKey)?has_content>, "${parameterKey}":"${doUrlParameterMap.get(parameterKey)}"</#if></#list> }, dataType:'json' }).done(
                     function(list) {
                         if (list) {
                             $('#${id}').html(""); /* clear out the drop-down */
@@ -1578,7 +1598,7 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
     <#assign buttonText><@fieldTitle .node?parent/></#assign>
     <#assign iconClass = .node["@icon"]!>
     <#if !iconClass?has_content && .node?parent["@title"]?has_content><#assign iconClass = sri.getThemeIconClass(.node?parent["@title"])!></#if>
-    <button type="submit" name="<@fieldName .node/>" id="<@fieldId .node/>"<#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}');"</#if><#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if> class="btn btn-primary btn-sm"><#if iconClass?has_content><i class="${iconClass}"></i> </#if>
+    <button type="submit" name="<@fieldName .node/>" value="<@fieldName .node/>" id="<@fieldId .node/>"<#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}');"</#if><#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if> class="btn btn-primary btn-sm"><#if iconClass?has_content><i class="${iconClass}"></i> </#if>
     <#if .node["image"]?has_content><#assign imageNode = .node["image"][0]>
         <img src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"]!"content",null,"true")}" alt="<#if imageNode["@alt"]?has_content>${imageNode["@alt"]}<#else><@fieldTitle .node?parent/></#if>"<#if imageNode["@width"]?has_content> width="${imageNode["@width"]}"</#if><#if imageNode["@height"]?has_content> height="${imageNode["@height"]}"</#if>>
     <#else>

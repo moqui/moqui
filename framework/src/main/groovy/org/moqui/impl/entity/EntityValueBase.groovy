@@ -114,6 +114,7 @@ abstract class EntityValueBase implements EntityValue {
 
     @Override
     boolean isMutable() { return mutable }
+    void setFromCache() { mutable = false }
 
     @Override
     Map getMap() { return new HashMap(valueMap) }
@@ -840,12 +841,12 @@ abstract class EntityValueBase implements EntityValue {
     @Override
     Object put(String name, Object value) {
         Node fieldNode = getEntityDefinition().getFieldNode(name)
-        if (!mutable) throw new EntityException("Cannot set field [${name}], this entity value is not mutable (it is read-only)")
         if (fieldNode == null) throw new EntityException("The name [${name}] is not a valid field name for entity [${entityName}]")
         return putNoCheck(name, value)
     }
 
     Object putNoCheck(String name, Object value) {
+        if (!mutable) throw new EntityException("Cannot set field [${name}], this entity value is not mutable (it is read-only)")
         Object curValue = valueMap.get(name)
         if (curValue != value) {
             modified = true
@@ -1098,7 +1099,7 @@ abstract class EntityValueBase implements EntityValue {
             if (valueMap.containsKey(fieldName) && (!oldValues.containsKey(fieldName) || valueMap.get(fieldName) != oldValues.get(fieldName)))
                 nonPkFieldList.add(fieldName)
         }
-        // logger.warn("================ evb.update() ${getEntityName()} nonPkFieldList=${nonPkFieldList};\nvalueMap=${valueMap};\noldValues=${oldValues}")
+        // if (ed.getEntityName() == "foo") logger.warn("================ evb.update() ${getEntityName()} nonPkFieldList=${nonPkFieldList};\nvalueMap=${valueMap};\noldValues=${oldValues}")
         if (!nonPkFieldList) {
             if (logger.isTraceEnabled()) logger.trace((String) "Not doing update on entity with no populated non-PK fields; entity=" + this.toString())
             return this
@@ -1295,7 +1296,11 @@ abstract class EntityValueBase implements EntityValue {
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "find-one", true)
 
         List<String> pkFieldList = ed.getPkFieldNames()
-        if (pkFieldList.size() == 0) throw new EntityException("Entity ${getEntityName()} has no primary key fields, cannot do refresh.")
+        if (pkFieldList.size() == 0) {
+            // throw new EntityException("Entity ${getEntityName()} has no primary key fields, cannot do refresh.")
+            if (logger.isTraceEnabled()) logger.trace("Entity ${getEntityName()} has no primary key fields, cannot do refresh.")
+            return false
+        }
 
         // if there is not a txCache or the txCache doesn't handle the refresh, call the abstract method to refresh
         boolean retVal = false

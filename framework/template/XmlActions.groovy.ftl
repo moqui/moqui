@@ -80,7 +80,7 @@ return;
 </#macro>
 
 <#macro "order-map-list">
-    StupidUtilities.orderMapList(${.node["@list"]}, [<#list .node["order-by"] as ob>'${ob["@field-name"]}'<#if ob_has_next>, </#if></#list>])
+    StupidUtilities.orderMapList(${.node["@list"]}, [<#list .node["order-by"] as ob>"${ob["@field-name"]}"<#if ob_has_next>, </#if></#list>])
 </#macro>
 <#macro "filter-map-list">
     if (${.node["@list"]}) {
@@ -204,6 +204,8 @@ return;
 
 <#macro break>    break
 </#macro>
+<#macro continue>    continue
+</#macro>
 <#macro iterate>
     <#if .node["@key"]?has_content>
     if (${.node["@list"]} instanceof Map) {
@@ -228,7 +230,7 @@ return;
         _${.node["@entry"]}Iterator = ${.node["@list"]}.iterator()
         while (_${.node["@entry"]}Iterator.hasNext()) {
             def ${.node["@entry"]} = _${.node["@entry"]}Iterator.next()
-            boolean ${.node["@entry"]}_hasNext = _${.node["@entry"]}Iterator.hasNext()
+            boolean ${.node["@entry"]}_has_next = _${.node["@entry"]}Iterator.hasNext()
             <#recurse/>
             ${.node["@entry"]}_index++
         }

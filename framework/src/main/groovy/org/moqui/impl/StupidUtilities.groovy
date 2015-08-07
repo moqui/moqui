@@ -591,4 +591,79 @@ class StupidUtilities {
         context.put(pageListName + "PageRangeLow", pageRangeLow)
         context.put(pageListName + "PageRangeHigh", pageRangeHigh)
     }
+
+    private static final String[] SCALES = ["", "thousand", "million", "billion", "trillion", "quadrillion", "quintillion", "sextillion"]
+    private static final String[] SUBTWENTY = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
+        "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"]
+    private static final String[] DECADES = ["", "ten", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"]
+    private static final String NEG_NAME = "negative"
+
+    /** Convert any value from 0 to 999 inclusive, to a string. */
+    private static final String tripleAsWords(int value, boolean useAnd) {
+        if (value < 0 || value >= 1000) throw new IllegalArgumentException("Illegal triple-value " + value)
+
+        if (value < SUBTWENTY.length) return SUBTWENTY[value]
+
+        int subhun = value % 100
+        int hun = (value / 100) as int
+        StringBuilder sb = new StringBuilder(50)
+        if (hun > 0) sb.append(SUBTWENTY[hun]).append(" hundred")
+        if (subhun > 0) {
+            if (hun > 0) sb.append(useAnd ? " and " : " ")
+            if (subhun < SUBTWENTY.length) {
+                sb.append(" ").append(SUBTWENTY[subhun])
+            } else {
+                int tens = (subhun / 10) as int
+                int units = subhun % 10
+                if (tens > 0) sb.append(DECADES[tens])
+                if (units > 0) sb.append(" ").append(SUBTWENTY[units])
+            }
+        }
+
+        return sb.toString()
+    }
+
+    /**
+     * Convert any long input value to a text representation
+     * @param value The value to convert
+     * @param useAnd true if you want to use the word 'and' in the text (eleven thousand and thirteen)
+     * @return
+     */
+    public static final String numberToWords(long value, boolean useAnd) {
+        if (value == 0L) return SUBTWENTY[0]
+
+        // break the value down in to sets of three digits (thousands)
+        int[] thous = new int[SCALES.length]
+        boolean neg = value < 0
+        // do not make negative numbers positive, to handle Long.MIN_VALUE
+        int scale = 0
+        while (value != 0) {
+            // use abs to convert thousand-groups to positive, if needed.
+            thous[scale] = Math.abs((int)(value % 1000))
+            value = (value / 1000) as int
+            scale++
+        }
+
+        StringBuilder sb = new StringBuilder(scale * 40)
+        if (neg) sb.append(NEG_NAME).append(" ")
+        boolean first = true
+        while (--scale > 0) {
+            if (!first) sb.append(", ")
+            first = false
+            if (thous[scale] > 0) sb.append(tripleAsWords(thous[scale], useAnd)).append(" ").append(SCALES[scale])
+        }
+
+        if (!first && thous[0] != 0) { if (useAnd) sb.append(" and ") else sb.append(" ") }
+        sb.append(tripleAsWords(thous[0], useAnd))
+
+        sb.setCharAt(0, (sb.charAt(0) as Character).toUpperCase())
+        return sb.toString()
+    }
+
+    public static final String numberToWordsWithDecimal(BigDecimal value) {
+        String integerText = numberToWords(value.longValue(), false)
+        String decimalText = value.setScale(2, BigDecimal.ROUND_HALF_UP).toPlainString()
+        decimalText = decimalText.substring(decimalText.indexOf('.') + 1)
+        return "${integerText} and ${decimalText}/100"
+    }
 }
