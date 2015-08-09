@@ -1,0 +1,11 @@
+language: groovy
+
+jdk:
+  - oraclejdk7
+  - oraclejdk8
+  - openjdk7
+
+script:
+  - gradle cleanAll load
+  - gradle check
+  - gradle test --info

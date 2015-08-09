@@ -65,6 +65,7 @@ class EntityCache {
     void putInOneCache(EntityDefinition ed, EntityCondition whereCondition, EntityValueBase newEntityValue, CacheImpl entityOneCache) {
         if (entityOneCache == null) entityOneCache = getCacheOne(ed.getFullEntityName())
 
+        if (newEntityValue != null) newEntityValue.setFromCache()
         entityOneCache.put(whereCondition, newEntityValue)
         // need to register an RA just in case the condition was not actually a primary key
         efi.getEntityCache().registerCacheOneRa(ed.getFullEntityName(), whereCondition, newEntityValue)
@@ -90,7 +91,7 @@ class EntityCache {
         if (entityListCache == null) entityListCache = getCacheList(ed.getFullEntityName())
 
         EntityList elToCache = el ?: EntityListImpl.EMPTY
-        elToCache.setFromCache(true)
+        elToCache.setFromCache()
         entityListCache.put(whereCondition, elToCache)
         efi.getEntityCache().registerCacheListRa(ed.getFullEntityName(), whereCondition, elToCache)
     }

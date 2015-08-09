@@ -117,6 +117,6 @@ public interface EntityList extends List<EntityValue>, Iterable<EntityValue>, Cl
 
     EntityList cloneList();
 
-    void setFromCache(boolean fc);
+    void setFromCache();
     boolean isFromCache();
 }

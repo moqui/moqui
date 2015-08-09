@@ -43,6 +43,7 @@ New Features:
 Bug Fixes:
 
 - Fixed issues with adding missing columns to database
+- Fixed issues where EntityValue objects from cache were mutable
 - The Gradle loadSave and reloadSave tasks now handle H2 files as well
 - The EXAMPLE1 tenant is now setup for H2 instead of Derby, fixing issues
   with testing of tenant and related functionality
