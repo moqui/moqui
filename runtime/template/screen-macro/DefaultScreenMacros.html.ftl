@@ -1168,12 +1168,14 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     </#if>
 </#macro>
 <#macro formListSubField fieldNode skipCell=false>
-    <#list fieldNode["conditional-field"] as fieldSubNode>
-        <#if ec.resource.condition(fieldSubNode["@condition"], "")>
-            <@formListWidget fieldSubNode skipCell/>
-            <#return>
-        </#if>
-    </#list>
+    <#if !isMultiFinalRow>
+        <#list fieldNode["conditional-field"] as fieldSubNode>
+            <#if ec.resource.condition(fieldSubNode["@condition"], "")>
+                <@formListWidget fieldSubNode skipCell/>
+                <#return>
+            </#if>
+        </#list>
+    </#if>
     <#if fieldNode["default-field"]?has_content>
         <#assign isHeaderField=false>
         <@formListWidget fieldNode["default-field"][0] skipCell/>
