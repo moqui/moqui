@@ -346,8 +346,8 @@ class WebFacadeImpl implements WebFacade {
                     }
                 }
                 String httpPort = webappNode."@http-port"
-                // try the local port; this won't work when switching from https to http, conf required for that
-                if (!httpPort && webFacade && !webFacade.getRequest().isSecure()) httpPort = webFacade.getRequest().getLocalPort() as String
+                // try the server port; this won't work when switching from https to http, conf required for that
+                if (!httpPort && webFacade && !webFacade.getRequest().isSecure()) httpPort = webFacade.getRequest().getServerPort() as String
                 if (httpPort && httpPort != "80") urlBuilder.append(":").append(httpPort)
             }
             urlBuilder.append("/")
