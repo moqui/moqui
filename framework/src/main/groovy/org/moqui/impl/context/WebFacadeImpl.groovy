@@ -337,13 +337,22 @@ class WebFacadeImpl implements WebFacade {
                 } else {
                     if (webFacade) {
                         String hostName = null
-                        try { hostName = new URL(webFacade.getRequest().getRequestURL().toString()).getHost() }
-                        catch (Exception e) { /* ignore it, default to getServerName() result */ }
-                        if (!hostName) hostName = webFacade.getRequest().getServerName()
+                        try {
+                            hostName = new URL(webFacade.getRequest().getRequestURL().toString()).getHost()
+                            logger.info("Got hostName [${hostName}] from getRequestURL [${webFacade.getRequest().getRequestURL()}]")
+                        } catch (Exception e) {
+                            /* ignore it, default to getServerName() result */
+                            logger.warn("Error getting hostName from getRequestURL: ", e)
+                        }
+                        if (!hostName) {
+                            hostName = webFacade.getRequest().getServerName()
+                            logger.info("Got hostName [${hostName}] from getServerName")
+                        }
                         urlBuilder.append(hostName)
                     } else {
                         // uh-oh, no web context, default to localhost
                         urlBuilder.append("localhost")
+                        logger.warn("No webFacade in place, defaulting to localhost for hostName")
                     }
                 }
                 String httpPort = webappNode."@http-port"
