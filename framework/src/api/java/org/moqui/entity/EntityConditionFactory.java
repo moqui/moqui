@@ -34,7 +34,8 @@ public interface EntityConditionFactory {
     EntityCondition makeCondition(List<EntityCondition> conditionList);
     EntityCondition makeCondition(List<EntityCondition> conditionList, EntityCondition.JoinOperator operator);
 
-    EntityCondition makeCondition(List<Map> conditionList, String listOperator, String mapComparisonOperator, String mapJoinOperator);
+    /** More convenient for scripts, etc. The conditionList parameter may contain Map or EntityCondition objects. */
+    EntityCondition makeCondition(List<Object> conditionList, String listOperator, String mapComparisonOperator, String mapJoinOperator);
 
     EntityCondition makeCondition(Map<String, Object> fieldMap, EntityCondition.ComparisonOperator comparisonOperator, EntityCondition.JoinOperator joinOperator);
 
