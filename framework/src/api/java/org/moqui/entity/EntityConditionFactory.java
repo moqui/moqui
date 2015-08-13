@@ -30,10 +30,11 @@ public interface EntityConditionFactory {
 
     EntityCondition makeConditionToField(String fieldName, EntityCondition.ComparisonOperator operator, String toFieldName);
 
-    EntityCondition makeCondition(List<EntityCondition> conditionList, EntityCondition.JoinOperator operator);
-
     /** Default to JoinOperator of AND */
     EntityCondition makeCondition(List<EntityCondition> conditionList);
+    EntityCondition makeCondition(List<EntityCondition> conditionList, EntityCondition.JoinOperator operator);
+
+    EntityCondition makeCondition(List<Map> conditionList, String listOperator, String mapComparisonOperator, String mapJoinOperator);
 
     EntityCondition makeCondition(Map<String, Object> fieldMap, EntityCondition.ComparisonOperator comparisonOperator, EntityCondition.JoinOperator joinOperator);
 
