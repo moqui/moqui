@@ -46,7 +46,8 @@ import org.slf4j.LoggerFactory
 class WebFacadeImpl implements WebFacade {
     protected final static Logger logger = LoggerFactory.getLogger(WebFacadeImpl.class)
 
-    protected static final Map<String, String> webappRootUrlByParms = new HashMap()
+    // Not using shared root URL cache because causes issues when requests come to server through different hosts/etc:
+    // protected static final Map<String, String> webappRootUrlByParms = new HashMap()
 
     protected ExecutionContextImpl eci
     protected String webappMoquiName
@@ -294,12 +295,26 @@ class WebFacadeImpl implements WebFacade {
         boolean needFullUrl = requireFullUrl || request == null ||
                 (requireEncryption && !request.isSecure()) || (!requireEncryption && request.isSecure())
 
+        /* Not using shared root URL cache because causes issues when requests come to server through different hosts/etc:
         String cacheKey = webappName + servletContextPath + needFullUrl.toString() + requireEncryption.toString()
         String cachedRootUrl = webappRootUrlByParms.get(cacheKey)
         if (cachedRootUrl != null) return cachedRootUrl
 
         String urlValue = makeWebappRootUrl(webappName, servletContextPath, eci, webFacade, requireEncryption, needFullUrl)
         webappRootUrlByParms.put(cacheKey, urlValue)
+        return urlValue
+         */
+
+        // cache the root URLs just within the request, common to generate various URLs in a single request
+        String cacheKey = null
+        if (request != null) {
+            cacheKey = webappName + servletContextPath + needFullUrl.toString() + requireEncryption.toString()
+            String cachedRootUrl = request.getAttribute(cacheKey)
+            if (cachedRootUrl != null) return cachedRootUrl
+        }
+
+        String urlValue = makeWebappRootUrl(webappName, servletContextPath, eci, webFacade, requireEncryption, needFullUrl)
+        if (cacheKey) request.setAttribute(cacheKey, urlValue)
         return urlValue
     }
     static String makeWebappRootUrl(String webappName, String servletContextPath, ExecutionContextImpl eci, WebFacade webFacade,
@@ -327,7 +342,8 @@ class WebFacadeImpl implements WebFacade {
                 }
                 String httpsPort = webappNode."@https-port"
                 // try the local port; this won't work when switching from http to https, conf required for that
-                if (!httpsPort && webFacade && webFacade.request.isSecure()) httpsPort = webFacade.request.getLocalPort() as String
+                if (!httpsPort && webFacade != null && webFacade.getRequest().isSecure())
+                    httpsPort = webFacade.getRequest().getServerPort() as String
                 if (httpsPort && httpsPort != "443") urlBuilder.append(":").append(httpsPort)
             } else {
                 urlBuilder.append("http://")
@@ -336,18 +352,28 @@ class WebFacadeImpl implements WebFacade {
                 } else {
                     if (webFacade) {
                         String hostName = null
-                        try { hostName = new URL(webFacade.getRequest().getRequestURL().toString()).getHost() }
-                        catch (Exception e) { /* ignore it, default to getServerName() result */ }
-                        if (!hostName) hostName = webFacade.getRequest().getServerName()
+                        try {
+                            hostName = new URL(webFacade.getRequest().getRequestURL().toString()).getHost()
+                            // logger.info("Got hostName [${hostName}] from getRequestURL [${webFacade.getRequest().getRequestURL()}]")
+                        } catch (Exception e) {
+                            /* ignore it, default to getServerName() result */
+                            logger.trace("Error getting hostName from getRequestURL: ", e)
+                        }
+                        if (!hostName) {
+                            hostName = webFacade.getRequest().getServerName()
+                            // logger.info("Got hostName [${hostName}] from getServerName")
+                        }
                         urlBuilder.append(hostName)
                     } else {
                         // uh-oh, no web context, default to localhost
                         urlBuilder.append("localhost")
+                        logger.warn("No webFacade in place, defaulting to localhost for hostName")
                     }
                 }
                 String httpPort = webappNode."@http-port"
-                // try the local port; this won't work when switching from https to http, conf required for that
-                if (!httpPort && webFacade && !webFacade.getRequest().isSecure()) httpPort = webFacade.getRequest().getLocalPort() as String
+                // try the server port; this won't work when switching from https to http, conf required for that
+                if (!httpPort && webFacade != null && !webFacade.getRequest().isSecure())
+                    httpPort = webFacade.getRequest().getServerPort() as String
                 if (httpPort && httpPort != "80") urlBuilder.append(":").append(httpPort)
             }
             urlBuilder.append("/")
