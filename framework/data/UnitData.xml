@@ -276,6 +276,31 @@ along with this software (see the LICENSE.md file). If not, see
     <moqui.basic.UomConversion uomConversionId="VDRY_m3_yd3" uomId="VDRY_m3" toUomId="VDRY_yd3" conversionFactor="1.3"/>
     <moqui.basic.UomConversion uomConversionId="VDRY_yd3_ft3" uomId="VDRY_yd3" toUomId="VDRY_ft3" conversionFactor="27"/>
 
+    <!-- =============== Density =============== -->
+    <moqui.basic.Uom abbreviation="kg/m3" description="Kilogram per cubic meter" uomId="DENS_kg_m3" uomTypeEnumId="UT_DENSITY_MEAS"/>
+    <moqui.basic.Uom abbreviation="g/cm3" description="Gram per cubic centimeter " uomId="DENS_g_cm3" uomTypeEnumId="UT_DENSITY_MEAS"/>
+    <moqui.basic.Uom abbreviation="oz/in3" description="Ounce per cubic inch " uomId="DENS_oz_in3" uomTypeEnumId="UT_DENSITY_MEAS"/>
+    <moqui.basic.Uom abbreviation="oz/gal (UK)" description="Ounce per gallon (UK)" uomId="DENS_oz_galUK" uomTypeEnumId="UT_DENSITY_MEAS"/>
+    <moqui.basic.Uom abbreviation="oz/gal (US)" description="Ounce per gallon (US)" uomId="DENS_oz_galUS" uomTypeEnumId="UT_DENSITY_MEAS"/>
+    <moqui.basic.Uom abbreviation="lb/ft3" description="Pound per cubic foot" uomId="DENS_lb_ft3" uomTypeEnumId="UT_DENSITY_MEAS"/>
+    <moqui.basic.Uom abbreviation="lb/in3" description="Pound per cubic inch" uomId="DENS_lb_in3" uomTypeEnumId="UT_DENSITY_MEAS"/>
+    <moqui.basic.Uom abbreviation="lb/yd3" description="Pound per cubic yard" uomId="DENS_lb_yd3" uomTypeEnumId="UT_DENSITY_MEAS"/>
+    <moqui.basic.Uom abbreviation="lb/gal (UK)" description="Pound per gallon (UK)" uomId="DENS_lb_galUK" uomTypeEnumId="UT_DENSITY_MEAS"/>
+    <moqui.basic.Uom abbreviation="lb/gal (US)" description="Pound per gallon (US)" uomId="DENS_lb_galUS" uomTypeEnumId="UT_DENSITY_MEAS"/>
+    <moqui.basic.Uom abbreviation="ton/yd3" description="Ton, long, per cubic yard" uomId="DENS_ton_yd3" uomTypeEnumId="UT_DENSITY_MEAS"/>
+
+    <!--<moqui.basic.UomConversion uomConversionId="DENS_kg_m3_kg_m3" uomId="DENS_kg_m3" toUomId="DENS_kg_m3" conversionFactor="1"/>-->
+    <moqui.basic.UomConversion uomConversionId="DENS_g_cm3_kg_m3" uomId="DENS_g_cm3" toUomId="DENS_kg_m3" conversionFactor="1000"/>
+    <moqui.basic.UomConversion uomConversionId="DENS_oz_in3_kg_m3" uomId="DENS_oz_in3" toUomId="DENS_kg_m3" conversionFactor="1730"/>
+    <moqui.basic.UomConversion uomConversionId="DENS_oz_galUK_kg_m3" uomId="DENS_oz_galUK" toUomId="DENS_kg_m3" conversionFactor="6.24"/>
+    <moqui.basic.UomConversion uomConversionId="DENS_oz_galUS_kg_m3" uomId="DENS_oz_galUS" toUomId="DENS_kg_m3" conversionFactor="7.49"/>
+    <moqui.basic.UomConversion uomConversionId="DENS_lb_ft3_kg_m3" uomId="DENS_lb_ft3" toUomId="DENS_kg_m3" conversionFactor="16.02"/>
+    <moqui.basic.UomConversion uomConversionId="DENS_lb_in3_kg_m3" uomId="DENS_lb_in3" toUomId="DENS_kg_m3" conversionFactor="27680"/>
+    <moqui.basic.UomConversion uomConversionId="DENS_lb_yd3_kg_m3" uomId="DENS_lb_yd3" toUomId="DENS_kg_m3" conversionFactor="0.593"/>
+    <moqui.basic.UomConversion uomConversionId="DENS_lb_galUK_kg_m3" uomId="DENS_lb_galUK" toUomId="DENS_kg_m3" conversionFactor="99.78"/>
+    <moqui.basic.UomConversion uomConversionId="DENS_lb_galUS_kg_m3" uomId="DENS_lb_galUS" toUomId="DENS_kg_m3" conversionFactor="119.8"/>
+    <moqui.basic.UomConversion uomConversionId="DENS_ton_yd3_kg_m3" uomId="DENS_ton_yd3" toUomId="DENS_kg_m3" conversionFactor="1328.9"/>
+
     <!-- =============== Weight =============== -->
     <moqui.basic.Uom abbreviation="dr avdp" description="Dram (avdp)" uomId="WT_dr_avdp" uomTypeEnumId="UT_WEIGHT_MEASURE"/>
     <moqui.basic.Uom abbreviation="gr" description="Grain" uomId="WT_gr" uomTypeEnumId="UT_WEIGHT_MEASURE"/>
