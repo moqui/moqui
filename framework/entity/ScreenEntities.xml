@@ -20,8 +20,9 @@ along with this software (see the LICENSE.md file). If not, see
     <entity entity-name="SubscreensItem" package-name="moqui.screen" authorize-skip="view" cache="true">
         <field name="screenLocation" type="text-medium" is-pk="true"/>
         <field name="subscreenName" type="text-medium" is-pk="true"/>
-        <field name="userGroupId" type="id" is-pk="true">
-            <description>These settings are for a UserGroup. To apply to all users just use the ALL_USERS UserGroup.</description></field>
+        <field name="userGroupId" type="id" is-pk="true" default="'ALL_USERS'">
+            <description>DEPRECATED. While still supported, to control access to subscreens use ArtifactAuthz and
+                related records instead.</description></field>
         <field name="subscreenLocation" type="text-medium"/>
         <field name="menuTitle" type="text-medium">
             <description>The title to show for this subscreen in the menu. Can be used to override subscreen titles in the
