@@ -106,13 +106,16 @@ public class EntityAutoServiceRunner implements ServiceRunner {
     protected static boolean checkAllPkFields(EntityDefinition ed, Map<String, Object> parameters, Map<String, Object> tempResult,
                                     EntityValue newEntityValue, Set<String> outParamNames) {
         ArrayList<String> pkFieldNames = ed.getPkFieldNames()
+        ArrayList<EntityDefinition.FieldInfo> pkFieldInfos = new ArrayList<>(pkFieldNames.size())
 
         // see if all PK fields were passed in
         boolean allPksIn = true
         int size = pkFieldNames.size()
         for (int i = 0; i < size; i++) {
             String pkFieldName = pkFieldNames.get(i)
-            if (!parameters.get(pkFieldName)) { allPksIn = false; break }
+            EntityDefinition.FieldInfo fieldInfo = ed.getFieldInfo(pkFieldName)
+            pkFieldInfos.add(fieldInfo)
+            if (!parameters.get(pkFieldName) && !fieldInfo.defaultStr) { allPksIn = false }
         }
         boolean isSinglePk = pkFieldNames.size() == 1
         boolean isDoublePk = pkFieldNames.size() == 2
@@ -122,8 +125,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
         if (isSinglePk) {
             /* **** primary sequenced primary key **** */
             /* **** primary sequenced key with optional override passed in **** */
-            String singlePkParamName = pkFieldNames.get(0)
-            EntityDefinition.FieldInfo singlePkField = ed.getFieldInfo(singlePkParamName)
+            EntityDefinition.FieldInfo singlePkField = pkFieldInfos.get(0)
 
             Object pkValue = parameters.get(singlePkField.name)
             if (pkValue) {
@@ -135,19 +137,18 @@ public class EntityAutoServiceRunner implements ServiceRunner {
                     pkValue = newEntityValue.get(singlePkField.name)
                 }
             }
-            if (outParamNames == null || outParamNames.contains(singlePkParamName))
-                tempResult.put(singlePkParamName, pkValue)
+            if (outParamNames == null || outParamNames.contains(singlePkField.name))
+                tempResult.put(singlePkField.name, pkValue)
         } else if (isDoublePk && !allPksIn) {
             /* **** secondary sequenced primary key **** */
             // don't do it this way, currently only supports second pk fields: String doublePkSecondaryName = parameters.get(pkFieldNames.get(0)) ? pkFieldNames.get(1) : pkFieldNames.get(0)
-            String doublePkSecondaryName = pkFieldNames.get(1)
+            EntityDefinition.FieldInfo doublePkSecondary = pkFieldInfos.get(1)
             newEntityValue.setFields(parameters, true, null, true)
             // if it has a default value don't sequence the PK
-            EntityDefinition.FieldInfo doublePkSecondary = ed.getFieldInfo(doublePkSecondaryName)
             if (!doublePkSecondary.defaultStr) {
                 newEntityValue.setSequencedIdSecondary()
-                if (outParamNames == null || outParamNames.contains(doublePkSecondaryName))
-                    tempResult.put(doublePkSecondaryName, newEntityValue.get(doublePkSecondaryName))
+                if (outParamNames == null || outParamNames.contains(doublePkSecondary.name))
+                    tempResult.put(doublePkSecondary.name, newEntityValue.get(doublePkSecondary.name))
             }
         } else if (allPksIn) {
             /* **** plain specified primary key **** */
