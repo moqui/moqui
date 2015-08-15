@@ -87,6 +87,10 @@ along with this software (see the LICENSE.md file). If not, see
                 <xs:annotation><xs:documentation>Optional name in the method environment to use for the output (results)
                     map. If empty then the output map will be ignored.</xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="out-map-add-to-existing" type="boolean" default="true">
+                <xs:annotation><xs:documentation>If true (default) out-map is added to an existing Map with the same
+                    name. If false replaces existing Map in the context.</xs:documentation></xs:annotation>
+            </xs:attribute>
             <xs:attribute name="async" default="false">
                 <xs:annotation><xs:documentation>If true runs the service asynchronously. Use persist to run async
                     through a database record.</xs:documentation></xs:annotation>

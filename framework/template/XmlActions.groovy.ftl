@@ -38,15 +38,20 @@ return;
 <#-- NOTE should we handle out-map?has_content and async!=false with a ServiceResultWaiter? -->
 <#macro "service-call">
     <#assign handleResult = (.node["@out-map"]?has_content && (!.node["@async"]?has_content || .node["@async"] == "false"))>
+    <#assign outAapAddToExisting = !.node["@out-map-add-to-existing"]?has_content || .node["@out-map-add-to-existing"] == "true">
     if (true) {
         <#if handleResult>def call_service_result = </#if>ec.service.<#if .node.@async?has_content && .node.@async != "false">async()<#else>sync()</#if>.name("${.node.@name}")<#if .node["@async"]?if_exists == "persist">.persist(true)</#if><#if .node["@multi"]?if_exists == "true">.multi(true)</#if><#if .node["@multi"]?if_exists == "parameter">.multi(ec.web?.requestParameters?._isMulti == "true")</#if><#if .node["@transaction"]?exists><#if .node["@transaction"] == "ignore">.ignoreTransaction(true)<#elseif .node["@transaction"] == "force-new" || .node["@transaction"] == "force-cache">.requireNewTransaction(true)<#elseif .node["@transaction"] == "cache" || .node["@transaction"] == "force-cache">.useTransactionCache(true)</#if></#if>
             <#if .node["@in-map"]?if_exists == "true">.parameters(context)<#elseif .node["@in-map"]?has_content && .node["@in-map"] != "false">.parameters(${.node["@in-map"]})</#if><#list .node["field-map"] as fieldMap>.parameter("${fieldMap["@field-name"]}",<#if fieldMap["@from"]?has_content>${fieldMap["@from"]}<#elseif fieldMap["@value"]?has_content>"""${fieldMap["@value"]}"""<#else>${fieldMap["@field-name"]}</#if>)</#list>.call()
         <#if handleResult>
-        if (${.node["@out-map"]} != null) {
-            if (call_service_result) ${.node["@out-map"]}.putAll(call_service_result)
-        } else {
-            ${.node["@out-map"]} = call_service_result
-        }
+            <#if outAapAddToExisting>
+            if (${.node["@out-map"]} != null) {
+                if (call_service_result) ${.node["@out-map"]}.putAll(call_service_result)
+            } else {
+            </#if>
+                ${.node["@out-map"]} = call_service_result
+            <#if outAapAddToExisting>
+            }
+            </#if>
         </#if>
         <#if (.node["@web-send-json-response"]?if_exists == "true")>
         ec.web.sendJsonResponse(call_service_result)
