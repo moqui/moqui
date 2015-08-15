@@ -474,6 +474,9 @@ abstract class EntityValueBase implements EntityValue {
         boolean pkModified = false
         if (isFromDb) {
             pkModified = (getEntityDefinition().getPrimaryKeys(this.valueMap) == getEntityDefinition().getPrimaryKeys(this.dbValueMap))
+        } else {
+            // make sure PK fields with defaults are filled in BEFORE doing the refresh to see if it exists
+            checkSetFieldDefaults(getEntityDefinition(), getEntityFacadeImpl().getEcfi().getExecutionContext())
         }
         if ((isFromDb && !pkModified) || this.cloneValue().refresh()) {
             return update()
@@ -940,15 +943,14 @@ abstract class EntityValueBase implements EntityValue {
         return this.getEntityDefinition().getFullEntityName() != "moqui.server.ArtifactHitBin"
     }
 
-    void checkSetFieldDefaults(boolean isCreate, EntityDefinition ed, ExecutionContext ec) {
+    void checkSetFieldDefaults(EntityDefinition ed, ExecutionContext ec) {
         Map<String, String> nonPkDefaults = ed.getNonPkFieldDefaults()
         if (nonPkDefaults.size() > 0) for (Map.Entry<String, String> entry in nonPkDefaults.entrySet())
             checkSetDefault(entry.getKey(), entry.getValue(), ec)
-        if (isCreate) {
-            Map<String, String> pkDefaults = ed.getPkFieldDefaults()
-            if (pkDefaults.size() > 0) for (Map.Entry<String, String> entry in pkDefaults.entrySet())
-                checkSetDefault(entry.getKey(), entry.getValue(), ec)
-        }
+        // allow updating a record without specifying default PK fields, so don't check this: if (isCreate) {
+        Map<String, String> pkDefaults = ed.getPkFieldDefaults()
+        if (pkDefaults.size() > 0) for (Map.Entry<String, String> entry in pkDefaults.entrySet())
+            checkSetDefault(entry.getKey(), entry.getValue(), ec)
     }
     protected void checkSetDefault(String fieldName, String defaultStr, ExecutionContext ec) {
         Object curVal = valueMap.get(fieldName)
@@ -983,7 +985,7 @@ abstract class EntityValueBase implements EntityValue {
             this.set("lastUpdatedStamp", new Timestamp(lastUpdatedLong))
 
         // check/set defaults
-        checkSetFieldDefaults(true, ed, ec)
+        checkSetFieldDefaults(ed, ec)
 
         // do this before the db change so modified flag isn't cleared
         if (doDataFeed()) getEntityFacadeImpl().getEntityDataFeed().dataFeedCheckAndRegister(this, false, valueMap, null)
@@ -1074,7 +1076,7 @@ abstract class EntityValueBase implements EntityValue {
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "update", true)
 
         // check/set defaults
-        checkSetFieldDefaults(false, ed, ec)
+        checkSetFieldDefaults(ed, ec)
 
         boolean dbValueMapFromDb = false
         // it may be that the oldValues map is full of null values because the EntityValue didn't come from the db
