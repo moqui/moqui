@@ -11,6 +11,8 @@ TODO
 
 New Features:
 
+- Added Travis CI configuration for continuous integration testing, now
+  setup for the moqui/moqui project with a badge reporting status
 - Changed form-list macros to use HTML table elements instead of div with
   table styles
 - ArtifactHit and ArtifactHitBin timing fields are now number-decimal

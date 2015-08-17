@@ -19,7 +19,7 @@ body {margin-bottom: 56px;}
 
 .form-date-time span {
     display: inline-table !important;
-    padding: 9px 12px 8px !important;
+    padding: 8px 12px 8px !important;
 }
 .login {
   min-height: calc(100vh - 57px);
