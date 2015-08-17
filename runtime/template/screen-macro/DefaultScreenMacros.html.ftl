@@ -37,7 +37,7 @@ along with this software (see the LICENSE.md file). If not, see
                 <#if urlInstance?exists && urlInstance.inCurrentScreenPath><#assign currentItemName = ec.l10n.localize(subscreensItem.menuTitle)></#if>
             </#list> -->
             <li id="${menuId}" class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown">${menuTitle} <i class="glyphicon glyphicon-chevron-right"></i></a>
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">${ec.l10n.localize(menuTitle)} <i class="glyphicon glyphicon-chevron-right"></i></a>
                 <ul class="dropdown-menu">
                     <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
                         <#assign urlInstance = sri.buildUrl(subscreensItem.name)>
@@ -111,7 +111,7 @@ along with this software (see the LICENSE.md file). If not, see
                 <#if urlInstance.inCurrentScreenPath><#assign currentItemName = ec.l10n.localize(subscreensItem.menuTitle)></#if>
             </#list> -->
             <li id="${menuId}" class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown">${menuTitle} <i class="glyphicon glyphicon-chevron-right"></i></a>
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">${ec.l10n.localize(menuTitle)} <i class="glyphicon glyphicon-chevron-right"></i></a>
                 <ul class="dropdown-menu">
                     <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
                         <#assign urlInstance = sri.buildUrl(subscreensItem.name)>
