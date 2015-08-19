@@ -216,16 +216,16 @@ return;
     if (${.node["@list"]} instanceof Map) {
         ${.node["@entry"]}_index = 0
         for (def ${.node["@entry"]}Entry in ${.node["@list"]}.entrySet()) {
-            def ${.node["@entry"]} = ${.node["@entry"]}Entry.getValue()
-            def ${.node["@key"]} = ${.node["@entry"]}Entry.getKey()
+            ${.node["@entry"]} = ${.node["@entry"]}Entry.getValue()
+            ${.node["@key"]} = ${.node["@entry"]}Entry.getKey()
             <#recurse/>
             ${.node["@entry"]}_index++
         }
     } else if (${.node["@list"]} instanceof Collection<Map.Entry>) {
         ${.node["@entry"]}_index = 0
         for (def ${.node["@entry"]}Entry in ${.node["@list"]}) {
-            def ${.node["@entry"]} = ${.node["@entry"]}Entry.getValue()
-            def ${.node["@key"]} = ${.node["@entry"]}Entry.getKey()
+            ${.node["@entry"]} = ${.node["@entry"]}Entry.getValue()
+            ${.node["@key"]} = ${.node["@entry"]}Entry.getKey()
             <#recurse/>
             ${.node["@entry"]}_index++
         }
@@ -234,8 +234,8 @@ return;
         ${.node["@entry"]}_index = 0
         _${.node["@entry"]}Iterator = ${.node["@list"]}.iterator()
         while (_${.node["@entry"]}Iterator.hasNext()) {
-            def ${.node["@entry"]} = _${.node["@entry"]}Iterator.next()
-            boolean ${.node["@entry"]}_has_next = _${.node["@entry"]}Iterator.hasNext()
+            ${.node["@entry"]} = _${.node["@entry"]}Iterator.next()
+            ${.node["@entry"]}_has_next = _${.node["@entry"]}Iterator.hasNext()
             <#recurse/>
             ${.node["@entry"]}_index++
         }
