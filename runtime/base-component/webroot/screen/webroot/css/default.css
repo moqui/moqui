@@ -146,6 +146,7 @@ td span.form-display { display: inline-block; width: 100%; }
 fieldset span.form-display,
 fieldset div>a:not(.btn),
 fieldset div>span { display: inline-block; padding-top: 6px; }
+fieldset div>span.form-date-time { display: inline-block; padding-top: 0px; } /* exclude date/time widget from top padding */
 
 /* This is the +/- in the header, use fixed width font for consistent sizing, Courier New has the best vertical alignment with + and - */
 a.form-order-by { margin: 0; padding: 0; font-family: "Courier New", monospace; font-weight: bold; font-size: 1.0em; padding-left: 0.25em; vertical-align: top; }
