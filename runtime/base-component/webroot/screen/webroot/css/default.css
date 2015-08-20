@@ -236,6 +236,7 @@ input[type="text"].ui-autocomplete-input { width: auto; }
 .progress { margin-bottom: 8px; }
 
 .form-group { margin-bottom: 8px; }
+.form-group .field-row-item > .form-group { margin-bottom: 0px; }
 .input-group .form-control, .form-control { width: auto; }
 /* .form-horizontal .control-label { padding-top: 0; } */
 .form-horizontal, .form-horizontal .col-lg-12, .form-horizontal .col-lg-10, .form-horizontal .field-row-item { vertical-align: middle; }
