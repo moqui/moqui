@@ -139,6 +139,7 @@ td span.form-display { display: inline-block; width: 100%; }
 .input-group-addon, .input-group-btn, .input-group .form-control { display: inline; }
 .form-date-find .input-group-addon { line-height: 34px; padding: 8px 12px 8px 12px; }
 .form-date-find .input-group { display: inline-block; }
+.form-date-time .input-group-addon {line-height: 14.6px;} /* Make Calendar widget align with box it is added on to */
 
 .form-text-find input, .form-range-find input { display: inline-block; }
 
