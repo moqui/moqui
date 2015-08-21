@@ -90,6 +90,7 @@ div.panel-right { float: right; width: 180px; margin-left: 10px; }
 
 /* these are still used when a row has more than 2 fields in it */
 .field-row-item { display: inline-block; margin-left: 17px; margin-right: 17px; }
+.form-group .field-row-item { margin-left: 15px; margin-right: 15px; }
 .field-row-item input, .field-row-item select { display: inline-block; }
 
 /* Deprecated, now using Bootstrap table styles
@@ -138,6 +139,7 @@ td span.form-display { display: inline-block; width: 100%; }
 .input-group-addon, .input-group-btn, .input-group .form-control { display: inline; }
 .form-date-find .input-group-addon { line-height: 34px; padding: 8px 12px 8px 12px; }
 .form-date-find .input-group { display: inline-block; }
+.form-date-time .input-group-addon {line-height: 14.6px;} /* Make Calendar widget align with box it is added on to */
 
 .form-text-find input, .form-range-find input { display: inline-block; }
 
@@ -145,6 +147,7 @@ td span.form-display { display: inline-block; width: 100%; }
 fieldset span.form-display,
 fieldset div>a:not(.btn),
 fieldset div>span { display: inline-block; padding-top: 6px; }
+fieldset div>span.form-date-time { display: inline-block; padding-top: 0px; } /* exclude date/time widget from top padding */
 
 /* This is the +/- in the header, use fixed width font for consistent sizing, Courier New has the best vertical alignment with + and - */
 a.form-order-by { margin: 0; padding: 0; font-family: "Courier New", monospace; font-weight: bold; font-size: 1.0em; padding-left: 0.25em; vertical-align: top; }
@@ -236,6 +239,7 @@ input[type="text"].ui-autocomplete-input { width: auto; }
 .progress { margin-bottom: 8px; }
 
 .form-group { margin-bottom: 8px; }
+.form-group .field-row-item > .form-group { margin-bottom: 0px; }
 .input-group .form-control, .form-control { width: auto; }
 /* .form-horizontal .control-label { padding-top: 0; } */
 .form-horizontal, .form-horizontal .col-lg-12, .form-horizontal .col-lg-10, .form-horizontal .field-row-item { vertical-align: middle; }
