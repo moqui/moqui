@@ -43,7 +43,7 @@ along with this software (see the LICENSE.md file). If not, see
 
         <!-- TODO: limit to locales for tenant -->
         <set field="localeStringList" from="[]"/>
-        <iterate list="Locale.getAvailableLocales()" entry="lcl"><script>localeStringList.add([locale:lcl.toString(), name:lcl.getDisplayName()])</script></iterate>
+        <iterate list="Locale.getAvailableLocales()" entry="lcl"><script>localeStringList.add([locale:lcl.toString(), name:lcl.getDisplayName(ec.user.locale)])</script></iterate>
         <order-map-list list="localeStringList"><order-by field-name="name"/></order-map-list>
 
         <entity-find entity-name="moqui.security.UserGroupMember" list="ugmList">
