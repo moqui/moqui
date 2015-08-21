@@ -92,6 +92,13 @@ along with this software (see the LICENSE.md file). If not, see
             <moqui.basic.Enumeration description="Territory" enumId="GEOT_TERRITORY" enumTypeId="GeoType"/>
         </seed-data>
     </entity>
+    <view-entity entity-name="GeoAndType" package-name="moqui.basic">
+        <member-entity entity-alias="GEO" entity-name="moqui.basic.Geo"/>
+        <member-entity entity-alias="GTE" entity-name="moqui.basic.Enumeration" join-from-alias="GEO">
+            <key-map field-name="geoTypeEnumId" related-field-name="enumId"/></member-entity>
+        <alias-all entity-alias="GEO"/>
+        <alias-all entity-alias="GTE" prefix="type"/>
+    </view-entity>
     <entity entity-name="GeoAssoc" package-name="moqui.basic" cache="true">
         <field name="geoId" type="id" is-pk="true"/>
         <field name="toGeoId" type="id" is-pk="true"/>
