@@ -226,7 +226,7 @@ dependencies {
     // runtime name: 'shiro-quartz', version: '1.2.4' // Apache 2.0
 
     // ========== test dependencies ==========
-    testCompile group: 'org.spockframework', name: 'spock-core', version: '0.7-groovy-2.0' // Apache 2.0
+    testCompile group: 'org.spockframework', name: 'spock-core', version: '1.0-groovy-2.4' // Apache 2.0
     testCompile group: 'junit', name: 'junit', version: '4.12' // Apache 2.0
 }
 
