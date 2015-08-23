@@ -227,7 +227,7 @@ dependencies {
 
     // ========== test dependencies ==========
     testCompile group: 'org.spockframework', name: 'spock-core', version: '0.7-groovy-2.0' // Apache 2.0
-    testCompile group: 'junit', name: 'junit', version: '4.10' // Apache 2.0
+    testCompile group: 'junit', name: 'junit', version: '4.12' // Apache 2.0
 }
 
 task apiJavadoc(type: Javadoc) {
