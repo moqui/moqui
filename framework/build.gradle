@@ -110,16 +110,16 @@ dependencies {
     compile name: 'org.eclipse.mylyn.wikitext.tracwiki.core_1.8.0.I20121130-0624', version: '' // EPL
     compile name: 'org.eclipse.mylyn.wikitext.twiki.core_1.8.0.I20121130-0624', version: '' // EPL
 
-    compile group: 'com.orientechnologies', name: 'orientdb-client', version: '2.0.8' // Apache 2.0
-    compile group: 'com.orientechnologies', name: 'orientdb-core', version: '2.0.8' // Apache 2.0
-    compile group: 'com.orientechnologies', name: 'orientdb-enterprise', version: '2.0.8' // Apache 2.0
-    compile group: 'com.orientechnologies', name: 'orientdb-graphdb', version: '2.0.8' // Apache 2.0
-    compile group: 'com.orientechnologies', name: 'orientdb-server', version: '2.0.8' // Apache 2.0
-    runtime group: 'com.orientechnologies', name: 'orientdb-jdbc', version: '2.0.8' // Apache 2.0
-    compile group: 'org.xerial.snappy', name: 'snappy-java', version: '1.1.0.1' // ???
+    compile group: 'com.orientechnologies', name: 'orientdb-client', version: '2.1.0' // Apache 2.0
+    compile group: 'com.orientechnologies', name: 'orientdb-core', version: '2.1.0' // Apache 2.0
+    compile group: 'com.orientechnologies', name: 'orientdb-enterprise', version: '2.1.0' // Apache 2.0
+    compile group: 'com.orientechnologies', name: 'orientdb-graphdb', version: '2.1.0' // Apache 2.0
+    compile group: 'com.orientechnologies', name: 'orientdb-server', version: '2.1.0' // Apache 2.0
+    runtime group: 'com.orientechnologies', name: 'orientdb-jdbc', version: '2.1.0' // Apache 2.0
+    compile group: 'org.xerial.snappy', name: 'snappy-java', version: '1.1.1.7' // ???
     compile group: 'com.tinkerpop.blueprints', name: 'blueprints-core', version: '2.6.0' // BSD
     // compile group: 'com.tinkerpop.blueprints', name: 'blueprints-orient-graph', version: '2.6.0' // BSD
-    compile group: 'com.googlecode.concurrentlinkedhashmap', name: 'concurrentlinkedhashmap-lru', version: '1.4.1' // Apache 2.0
+    compile group: 'com.googlecode.concurrentlinkedhashmap', name: 'concurrentlinkedhashmap-lru', version: '1.4.2' // Apache 2.0
     compile group: 'com.tinkerpop.gremlin', name: 'gremlin-java', version: '2.6.0' // BSD
     compile group: 'com.tinkerpop.gremlin', name: 'gremlin-groovy', version: '2.6.0' // BSD
     compile group: 'net.java.dev.jna', name: 'jna', version: '4.1.0' // Apache 2.0
