@@ -1181,8 +1181,8 @@ class EntityFacadeImpl implements EntityFacade {
     @CompileStatic
     void addValuesFromPlainMapRecursive(EntityDefinition ed, Map value, EntityList valueList) {
         EntityValue newEntityValue = makeValue(ed.getFullEntityName())
-
         newEntityValue.setFields(value, true, null, null)
+        valueList.add(newEntityValue)
 
         Map pkMap = newEntityValue.getPrimaryKeys()
 

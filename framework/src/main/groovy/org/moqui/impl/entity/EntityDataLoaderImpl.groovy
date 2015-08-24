@@ -340,6 +340,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
         void handleValue(EntityValue value) { value.checkAgainstDatabase(messageList) }
         void handlePlainMap(String entityName, Map value) {
             EntityList el = edli.getEfi().getValueListFromPlainMap(value, entityName)
+            // logger.warn("=========== Check value: ${value}\nel: ${el}")
             for (EntityValue ev in el) ev.checkAgainstDatabase(messageList)
         }
         void handleService(ServiceCallSync scs) { messageList.add("Doing check only so not calling service [${scs.getServiceName()}] with parameters ${scs.getCurrentParameters()}") }
