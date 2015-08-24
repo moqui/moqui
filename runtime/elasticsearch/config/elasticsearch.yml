@@ -178,7 +178,9 @@ cluster.name: ElasticSearchMoqui
 
 #################################### Script ###################################
 
-script.disable_dynamic: sandbox
+script.inline: sandbox
+script.indexed: sandbox
+script.file: on
 script.default_lang: groovy
 script.groovy.sandbox.enabled: true
 
