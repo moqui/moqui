@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="keywords" content="${html_keywords?if_exists}">
     <meta name="description" content="${html_description?if_exists}">
-    <title>${html_title!(((ec.tenant.tenantName)!'Moqui') + " - " + (sri.screenUrlInfo.targetScreen.getDefaultMenuName())!"Page")}</title>
+    <title>${html_title!(ec.l10n.localize((ec.tenant.tenantName)!'Moqui') + " - " + ec.l10n.localize((sri.screenUrlInfo.targetScreen.getDefaultMenuName())!"Page"))}</title>
     <link rel="apple-touch-icon" href="/MoquiLogo100.png"/>
 <#-- Style Sheets -->
 <#list sri.getThemeValues("STRT_STYLESHEET") as styleSheetLocation>
