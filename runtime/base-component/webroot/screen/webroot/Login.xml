@@ -91,7 +91,8 @@ along with this software (see the LICENSE.md file). If not, see
                     <#assign footerItemList = sri.getThemeValues("STRT_FOOTER_ITEM")>
                     <div id="apps-footer-content">
                         <#list footerItemList! as footerItem>
-                            ${footerItem}
+                            <#assign footerItemTemplate = footerItem?interpret>
+                            <@footerItemTemplate/>
                         </#list>
                     </div>
                 ]]></text></render-mode>
