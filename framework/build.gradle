@@ -193,6 +193,7 @@ dependencies {
     // really necessary? nearly 5MB file: runtime group: 'org.apache.poi', name: 'poi-ooxml-schemas', version: '3.12' // Apache 2.0
     runtime group: 'org.codehaus.janino', name: 'janino', version: '2.7.8' // New BSD
     runtime group: 'org.codehaus.janino', name: 'commons-compiler', version: '2.7.8' // New BSD
+    runtime group: 'org.eclipse.jdt.core.compiler', name: 'ecj', version: '4.3.1' // New BSD
 
     // ========== runtime-only dependencies ==========
     runtime group: 'org.apache.camel', name: 'camel-csv', version: '2.15.3' // Apache 2.0

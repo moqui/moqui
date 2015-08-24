@@ -563,7 +563,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     // =============== KIE Methods ===============
     protected void initKie() {
-        if (!System.getProperty("drools.dialect.java.compiler")) System.setProperty("drools.dialect.java.compiler", "JANINO")
+        // if (!System.getProperty("drools.dialect.java.compiler")) System.setProperty("drools.dialect.java.compiler", "JANINO")
+        if (!System.getProperty("drools.dialect.java.compiler")) System.setProperty("drools.dialect.java.compiler", "ECLIPSE")
 
         KieServices services = KieServices.Factory.get()
         for (String componentName in componentBaseLocations.keySet()) {
