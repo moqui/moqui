@@ -16,6 +16,7 @@ along with this software (see the LICENSE.md file). If not, see
     <service verb="create" noun="FormResponse">
         <in-parameters>
             <parameter name="formLocation" required="true"/>
+            <parameter name="formId"/>
             <parameter name="userId" default="ec.user.userId"/>
             <parameter name="responseDate" type="Timestamp" default="ec.user.nowTimestamp"/>
             <parameter name="responseMap" type="Map" required="true"/>
@@ -29,7 +30,7 @@ along with this software (see the LICENSE.md file). If not, see
                 <set field="fieldName" from="fieldNode.'@name'"/>
                 <if condition="responseMap.containsKey(fieldName)">
                     <service-call name="create#moqui.screen.form.FormResponseAnswer"
-                            in-map="[formResponseId:formResponseId, fieldName:fieldName,
+                            in-map="[formResponseId:formResponseId, formId:formId, fieldName:fieldName,
                                 valueText:StupidUtilities.toPlainString(responseMap.get(fieldName))]"/>
                 </if>
             </iterate>
