@@ -72,9 +72,19 @@ along with this software (see the LICENSE.md file). If not, see
         <out-parameters>
             <auto-parameters entity-name="moqui.screen.form.FormResponse"/>
             <parameter name="responseMap" type="Map"/>
+            <parameter name="dbForm" type="Map"/>
+            <parameter name="dbFormFieldList" type="List"/>
         </out-parameters>
         <actions>
             <entity-find-one entity-name="moqui.screen.form.FormResponse" value-field="formResponse"/>
+            <if condition="formResponse.formId">
+                <entity-find-one entity-name="moqui.screen.form.DbForm" value-field="dbForm">
+                    <field-map field-name="formId" from="formResponse.formId"/></entity-find-one>
+                <entity-find entity-name="moqui.screen.form.DbFormField" list="dbFormFieldList">
+                    <econdition field-name="formId" from="formResponse.formId"/>
+                    <order-by field-name="layoutSequenceNum"/>
+                </entity-find>
+            </if>
             <script>context.putAll(formResponse)</script>
             <entity-find entity-name="moqui.screen.form.FormResponseAnswer" list="answerList">
                 <econdition field-name="formResponseId"/></entity-find>
