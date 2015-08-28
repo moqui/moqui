@@ -1057,7 +1057,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                         <#assign hasSubmit = false>
                         <#list fieldNode?children as fieldSubNode>
                             <#if !(fieldSubNode["hidden"]?has_content || fieldSubNode["ignored"]?has_content)><#assign allHidden = false></#if>
-                            <#if fieldSubNode?node_name != "header-field" && !(fieldSubNode["submit"]?has_content)><#assign hasSubmit = true></#if>
+                            <#if fieldSubNode?node_name != "header-field" && fieldSubNode["submit"]?has_content><#assign hasSubmit = true></#if>
                         </#list>
                         <#if !(fieldNode["@hide"]! == "true" || allHidden ||
                                 ((!fieldNode["@hide"]?has_content) && fieldNode?children?size == 1 &&
