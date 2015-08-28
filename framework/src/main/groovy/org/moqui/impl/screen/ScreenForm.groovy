@@ -1065,8 +1065,11 @@ class ScreenForm {
     static void addFieldOption(ListOrderedMap options, Node fieldNode, Node childNode, Map listOption,
                                ExecutionContext ec) {
         EntityValueBase listOptionEvb = listOption instanceof EntityValueImpl ? listOption : null
-        if (listOptionEvb != null) ec.context.push(listOptionEvb.getValueMap())
-        else ec.context.push(listOption)
+        if (listOptionEvb != null) {
+            ec.context.push(listOptionEvb.getMap())
+        } else {
+            ec.context.push(listOption)
+        }
         try {
             String key = null
             String keyAttr = (String) childNode.attributes().get('key')

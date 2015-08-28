@@ -117,7 +117,17 @@ abstract class EntityValueBase implements EntityValue {
     void setFromCache() { mutable = false }
 
     @Override
-    Map getMap() { return new HashMap(valueMap) }
+    Map getMap() {
+        // call get() for each field for localization, etc
+        Map theMap = [:]
+        ArrayList<String> allFieldNames = getEntityDefinition().getAllFieldNames()
+        for (int i = 0; i < allFieldNames.size(); i++) {
+            String fieldName = allFieldNames.get(i)
+            Object fieldValue = get(fieldName)
+            if (fieldValue != null) theMap.put(fieldName, fieldValue)
+        }
+        return theMap
+    }
 
     @Override
     Object get(String name) {
