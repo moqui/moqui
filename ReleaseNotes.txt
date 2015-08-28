@@ -23,6 +23,7 @@ New Features:
   setup for the moqui/moqui project with a badge reporting status
 - Changed form-list macros to use HTML table elements instead of div with
   table styles
+- Various localization improvements
 - ArtifactHit and ArtifactHitBin timing fields are now number-decimal
   instead of number-integer to record sub-millisecond timing; internal
   changes for more precise timing, also calc of standard deviation, etc;
