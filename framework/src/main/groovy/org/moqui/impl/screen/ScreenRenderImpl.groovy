@@ -18,6 +18,7 @@ import groovy.transform.TypeChecked
 import groovy.transform.TypeCheckingMode
 import org.moqui.context.ArtifactAuthorizationException
 import org.moqui.context.ArtifactTarpitException
+import org.moqui.context.WebFacade
 import org.moqui.impl.context.ResourceFacadeImpl
 import org.moqui.impl.context.UserFacadeImpl
 import org.moqui.impl.entity.EntityValueBase
@@ -623,11 +624,18 @@ class ScreenRenderImpl implements ScreenRender {
             sfi.ecfi.transactionFacade.rollback(beganTransaction, errMsg, t)
             throw new RuntimeException(errMsg, t)
         } finally {
+            WebFacade webFacade = ec.getWeb()
+            // if we began a tx commit it
             if (beganTransaction && sfi.ecfi.transactionFacade.isTransactionInPlace()) sfi.ecfi.transactionFacade.commit()
+            // track the screen artifact hit
             if (screenUrlInfo.targetScreen.screenNode.attributes().get('track-artifact-hit') != "false") {
                 sfi.ecfi.countArtifactHit("screen", this.outputContentType, screenUrlInfo.screenRenderDefList.last().getLocation(),
-                        (ec.getWeb() ? ec.getWeb().requestParameters : null), screenStartTime,
+                        (webFacade ? webFacade.requestParameters : null), screenStartTime,
                         (System.nanoTime() - startTimeNanos)/1E6, null)
+            }
+            // save the screen history
+            if (webFacade != null && webFacade instanceof WebFacadeImpl) {
+                ((WebFacadeImpl) ec.getWeb()).saveScreenHistory(screenUrlInstance, screenUrlInfo.screenRenderDefList)
             }
         }
     }

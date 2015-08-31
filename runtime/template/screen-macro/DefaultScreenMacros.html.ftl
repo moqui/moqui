@@ -1054,11 +1054,15 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                 </#if>
                     <#list fieldNodeList as fieldNode>
                         <#assign allHidden = true>
-                        <#list fieldNode?children as fieldSubNode><#if !(fieldSubNode["hidden"]?has_content || fieldSubNode["ignored"]?has_content)><#assign allHidden = false></#if></#list>
+                        <#assign hasSubmit = false>
+                        <#list fieldNode?children as fieldSubNode>
+                            <#if !(fieldSubNode["hidden"]?has_content || fieldSubNode["ignored"]?has_content)><#assign allHidden = false></#if>
+                            <#if fieldSubNode?node_name != "header-field" && fieldSubNode["submit"]?has_content><#assign hasSubmit = true></#if>
+                        </#list>
                         <#if !(fieldNode["@hide"]! == "true" || allHidden ||
                                 ((!fieldNode["@hide"]?has_content) && fieldNode?children?size == 1 &&
                                 (fieldNode["header-field"][0]?if_exists["hidden"]?has_content || fieldNode["header-field"][0]?if_exists["ignored"]?has_content))) &&
-                                !(isMulti && fieldNode["default-field"]?has_content && fieldNode["default-field"][0]["submit"]?has_content)>
+                                !(isMulti && hasSubmit)>
                             <th>
                                 <@formListHeaderField fieldNode/>
                             </th>
@@ -1168,14 +1172,12 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     </#if>
 </#macro>
 <#macro formListSubField fieldNode skipCell=false>
-    <#if !isMultiFinalRow>
-        <#list fieldNode["conditional-field"] as fieldSubNode>
-            <#if ec.resource.condition(fieldSubNode["@condition"], "")>
-                <@formListWidget fieldSubNode skipCell/>
-                <#return>
-            </#if>
-        </#list>
-    </#if>
+    <#list fieldNode["conditional-field"] as fieldSubNode>
+        <#if ec.resource.condition(fieldSubNode["@condition"], "")>
+            <@formListWidget fieldSubNode skipCell/>
+            <#return>
+        </#if>
+    </#list>
     <#if fieldNode["default-field"]?has_content>
         <#assign isHeaderField=false>
         <@formListWidget fieldNode["default-field"][0] skipCell/>

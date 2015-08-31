@@ -58,13 +58,13 @@ class ScreenUrlInfo {
     boolean beginTransaction = false
 
     /** The full path name list for the URL, including extraPathNameList */
-    List<String> fullPathNameList = null
+    ArrayList<String> fullPathNameList = null
 
     /** The minimal path name list for the URL, basically without following the defaults */
-    List<String> minimalPathNameList = null
+    ArrayList<String> minimalPathNameList = null
 
     /** Everything in the path after the screen or transition, may be used to pass additional info */
-    List<String> extraPathNameList = null
+    ArrayList<String> extraPathNameList = null
 
     /** The path for a file resource (template or static), relative to the targetScreen.location */
     List<String> fileResourcePathList = null
@@ -74,9 +74,9 @@ class ScreenUrlInfo {
     String fileResourceContentType = null
 
     /** All screens found in the path list */
-    List<ScreenDefinition> screenPathDefList = new ArrayList<ScreenDefinition>()
+    ArrayList<ScreenDefinition> screenPathDefList = new ArrayList<ScreenDefinition>()
     /** The list of screens to render, starting with the root screen OR the last standalone screen if applicable */
-    List<ScreenDefinition> screenRenderDefList = new ArrayList<ScreenDefinition>()
+    ArrayList<ScreenDefinition> screenRenderDefList = new ArrayList<ScreenDefinition>()
     int renderPathDifference = 0
     boolean lastStandalone = false
 
@@ -249,7 +249,13 @@ class ScreenUrlInfo {
 
     String getUrlWithBase(String baseUrl) {
         StringBuilder urlBuilder = new StringBuilder(baseUrl)
-        if (fullPathNameList) for (String pathName in fullPathNameList) urlBuilder.append('/').append(pathName)
+        if (fullPathNameList) {
+            int listSize = fullPathNameList.size()
+            for (int i = 0; i < listSize; i++) {
+                String pathName = fullPathNameList.get(i)
+                urlBuilder.append('/').append(pathName)
+            }
+        }
         return urlBuilder.toString()
     }
 
@@ -257,9 +263,21 @@ class ScreenUrlInfo {
         StringBuilder urlBuilder = new StringBuilder(baseUrl)
         if (alwaysUseFullPath) {
             // really get the full path instead of minimal
-            if (fullPathNameList) for (String pathName in fullPathNameList) urlBuilder.append('/').append(pathName)
+            if (fullPathNameList) {
+                int listSize = fullPathNameList.size()
+                for (int i = 0; i < listSize; i++) {
+                    String pathName = fullPathNameList.get(i)
+                    urlBuilder.append('/').append(pathName)
+                }
+            }
         } else {
-            if (minimalPathNameList) for (String pathName in minimalPathNameList) urlBuilder.append('/').append(pathName)
+            if (minimalPathNameList) {
+                int listSize = minimalPathNameList.size()
+                for (int i = 0; i < listSize; i++) {
+                    String pathName = minimalPathNameList.get(i)
+                    urlBuilder.append('/').append(pathName)
+                }
+            }
         }
         return urlBuilder.toString()
     }
@@ -311,11 +329,11 @@ class ScreenUrlInfo {
             fromPathList = []
 
             String trimmedFromPath = fromScreenPath.substring(2)
-            List<String> originalPathNameList = trimmedFromPath.split("/") as List
+            ArrayList<String> originalPathNameList = new ArrayList<String>(trimmedFromPath.split("/") as List)
             originalPathNameList = cleanupPathNameList(originalPathNameList, pathParameterMap)
 
             if (sfi.screenFindPathCache.containsKey(fromScreenPath)) {
-                List<String> cachedPathList = (List<String>) sfi.screenFindPathCache.get(fromScreenPath)
+                ArrayList<String> cachedPathList = (ArrayList<String>) sfi.screenFindPathCache.get(fromScreenPath)
                 if (cachedPathList) {
                     fromPathList = cachedPathList
                     fullPathNameList = cachedPathList
@@ -324,7 +342,7 @@ class ScreenUrlInfo {
                             new Exception("Could not find screen, transition or content matching path"))
                 }
             } else {
-                List<String> expandedPathNameList = rootSd.findSubscreenPath(originalPathNameList)
+                ArrayList<String> expandedPathNameList = rootSd.findSubscreenPath(originalPathNameList)
                 sfi.screenFindPathCache.put(fromScreenPath, expandedPathNameList)
                 if (expandedPathNameList) {
                     fromPathList = expandedPathNameList
@@ -337,10 +355,10 @@ class ScreenUrlInfo {
         } else {
             if (this.fromScreenPath.startsWith("/")) {
                 this.fromSd = rootSd
-                this.fromPathList = []
+                this.fromPathList = new ArrayList<String>()
             }
 
-            List<String> tempPathNameList = []
+            ArrayList<String> tempPathNameList = new ArrayList<String>()
             tempPathNameList.addAll(fromPathList)
             if (fromScreenPath) tempPathNameList.addAll(fromScreenPath.split("/") as List)
             fullPathNameList = cleanupPathNameList(tempPathNameList, pathParameterMap)
@@ -404,7 +422,7 @@ class ScreenUrlInfo {
             if (nextSd.getSubscreensNode()?.attributes()?.get('always-use-full-path') == "true") alwaysUseFullPath = true
 
             // if standalone, clear out screenRenderDefList before adding this to it
-            if (nextSd.screenNode?.attributes()?.get('standalone') == "true" || this.lastStandalone) {
+            if (nextSd.isStandalone() || this.lastStandalone) {
                 renderPathDifference += screenRenderDefList.size()
                 screenRenderDefList.clear()
             }
@@ -420,7 +438,7 @@ class ScreenUrlInfo {
         }
 
         // save the path so far for minimal URLs
-        minimalPathNameList = new ArrayList(fullPathNameList)
+        minimalPathNameList = new ArrayList<String>(fullPathNameList)
 
         // beyond the last screenPathName, see if there are any screen.default-item values (keep following until none found)
         while (targetTransitionActualName == null && fileResourceRef == null && (String) lastSd.getSubscreensNode()?.attributes()?.get('default-item')) {
@@ -473,7 +491,7 @@ class ScreenUrlInfo {
             if (nextSd.screenNode?.attributes()?.get('begin-transaction') == "true") this.beginTransaction = true
 
             // if standalone, clear out screenRenderDefList before adding this to it
-            if (nextSd.screenNode?.attributes()?.get('standalone') == "true" || this.lastStandalone) {
+            if (nextSd.isStandalone() || this.lastStandalone) {
                 renderPathDifference += screenRenderDefList.size()
                 screenRenderDefList.clear()
             }
@@ -511,23 +529,23 @@ class ScreenUrlInfo {
         sui.pathParameterMap = this.pathParameterMap!=null ? new HashMap(this.pathParameterMap) : null
         sui.requireEncryption = this.requireEncryption
         sui.beginTransaction = this.beginTransaction
-        sui.fullPathNameList = this.fullPathNameList!=null ? new ArrayList(this.fullPathNameList) : null
-        sui.minimalPathNameList = this.minimalPathNameList!=null ? new ArrayList(this.minimalPathNameList) : null
-        sui.fileResourcePathList = this.fileResourcePathList!=null ? new ArrayList(this.fileResourcePathList) : null
+        sui.fullPathNameList = this.fullPathNameList!=null ? new ArrayList<String>(this.fullPathNameList) : null
+        sui.minimalPathNameList = this.minimalPathNameList!=null ? new ArrayList<String>(this.minimalPathNameList) : null
+        sui.fileResourcePathList = this.fileResourcePathList!=null ? new ArrayList<String>(this.fileResourcePathList) : null
         sui.fileResourceRef = this.fileResourceRef
         sui.fileResourceContentType = this.fileResourceContentType
-        sui.screenPathDefList = this.screenPathDefList!=null ? new ArrayList(this.screenPathDefList) : null
-        sui.screenRenderDefList = this.screenRenderDefList!=null ? new ArrayList(this.screenRenderDefList) : null
+        sui.screenPathDefList = this.screenPathDefList!=null ? new ArrayList<ScreenDefinition>(this.screenPathDefList) : null
+        sui.screenRenderDefList = this.screenRenderDefList!=null ? new ArrayList<ScreenDefinition>(this.screenRenderDefList) : null
         sui.renderPathDifference = this.renderPathDifference
         sui.lastStandalone = this.lastStandalone
         sui.targetScreen = this.targetScreen
         sui.targetTransitionActualName = this.targetTransitionActualName
-        sui.preTransitionPathNameList = this.preTransitionPathNameList!=null ? new ArrayList(this.preTransitionPathNameList) : null
+        sui.preTransitionPathNameList = this.preTransitionPathNameList!=null ? new ArrayList<String>(this.preTransitionPathNameList) : null
     }
 
-    static List<String> cleanupPathNameList(List<String> inputPathNameList, Map inlineParameters) {
+    static ArrayList<String> cleanupPathNameList(ArrayList<String> inputPathNameList, Map inlineParameters) {
         // filter the list: remove empty, remove ".", remove ".." and previous
-        List<String> cleanList = new ArrayList<String>(inputPathNameList.size())
+        ArrayList<String> cleanList = new ArrayList<String>(inputPathNameList.size())
         for (String pathName in inputPathNameList) {
             if (!pathName) continue
             if (pathName == ".") continue
@@ -580,7 +598,7 @@ class ScreenUrlInfo {
         boolean getDisableLink() { return (getTargetTransition() && !getTargetTransition().checkCondition(ec)) || !sui.isPermitted(ec) }
         boolean isPermitted() { return sui.isPermitted(ec) }
         boolean getInCurrentScreenPath() {
-            List<String> currentPathNameList = new ArrayList(sri.screenUrlInfo.fullPathNameList)
+            List<String> currentPathNameList = new ArrayList<String>(sri.screenUrlInfo.fullPathNameList)
             return sui.getInCurrentScreenPath(currentPathNameList)
         }
 

@@ -207,8 +207,9 @@ abstract class EntityFindBase implements EntityFind {
                 switch (op) {
                     case "equals":
                         if (value) {
+                            Object convertedValue = value instanceof String ? ed.convertFieldString(fn, (String) value) : value
                             cond = efi.conditionFactory.makeCondition(fn,
-                                    not ? EntityCondition.NOT_EQUAL : EntityCondition.EQUALS, value)
+                                    not ? EntityCondition.NOT_EQUAL : EntityCondition.EQUALS, convertedValue)
                             if (ic) cond.ignoreCase()
                         }
                         break;

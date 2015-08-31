@@ -182,9 +182,6 @@ span.shaded-area { display: inline-block; white-space: normal; }
 
 .app-list-link { font-size: 1.5em; display: block; width: 400px; margin: 8px auto 8px auto; }
 
-.navbar-inverse .navbar-nav > li > a { font-size: 1.1em; color: #BBB; }
-.navbar-inverse .navbar-nav > li > a:hover, .navbar-inverse .navbar-nav > li > a:focus { color: #fff; background-color: transparent; }
-
 #ArtifactHitBins-table tbody tr td, #ArtifactHitBins-table thead tr th, #ArtifactHitBins-table thead tr th div select,
 #ArtifactHitBins-table thead tr th div input { font-size: .8em; }
 
@@ -249,6 +246,11 @@ input[type="text"].ui-autocomplete-input { width: auto; }
 .input-append.date .add-on { margin-left: -39px; }
 
 .nav.nav-tabs { margin-bottom: 8px; }
+
+.navbar-inverse .navbar-nav > li > a { font-size: 1.1em; color: #BBB; }
+.navbar-inverse .navbar-nav > li > a:hover, .navbar-inverse .navbar-nav > li > a:focus { color: #fff; background-color: transparent; }
+
+.nav>li>a.btn-sm { padding: 5px 10px; }
 
 /* ================ Other, Fix Styles =============== */
 
