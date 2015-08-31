@@ -50,6 +50,7 @@ New Features:
   text by default (avoid HTML injection based attacks)
 - Added image.@condition, @style, and @parameter-map attributes and
   parameter sub-element like those on label, etc
+- Added screen history drop-down to navbar, WebFacade code to keep history
 
 Bug Fixes:
 
