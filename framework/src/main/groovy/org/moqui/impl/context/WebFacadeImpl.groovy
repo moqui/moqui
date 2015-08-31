@@ -23,6 +23,8 @@ import org.moqui.context.ValidationError
 import org.moqui.entity.EntityNotFoundException
 import org.moqui.entity.EntityValueNotFoundException
 import org.moqui.impl.StupidUtilities
+import org.moqui.impl.screen.ScreenDefinition
+import org.moqui.impl.screen.ScreenUrlInfo
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -186,6 +188,68 @@ class WebFacadeImpl implements WebFacade {
         WebappInfo wi = eci.ecfi.getWebappInfo(webappMoquiName)
         if (wi.beforeLogoutActions) wi.beforeLogoutActions.run(eci)
     }
+
+    @CompileStatic
+    void saveScreenHistory(ScreenUrlInfo.UrlInstance urlInstance, ArrayList<ScreenDefinition> screenRenderDefList) {
+        ScreenUrlInfo sui = urlInstance.sui
+        ScreenDefinition targetScreen = urlInstance.sui.targetScreen
+        // don't save standalone screens
+        if (sui.lastStandalone || targetScreen.isStandalone()) return
+        // don't save transition requests, just screens
+        if (urlInstance.getTargetTransition() != null) return
+
+        LinkedList<Map> screenHistoryList = (LinkedList<Map>) session.getAttribute("moqui.screen.history")
+        if (screenHistoryList == null) {
+            screenHistoryList = new LinkedList<Map>()
+            session.setAttribute("moqui.screen.history", screenHistoryList)
+        }
+
+        String urlWithParams = urlInstance.getUrlWithParams()
+
+        // if is the same as last screen skip it
+        Map firstItem = screenHistoryList.size() > 0 ? screenHistoryList.get(0) : null
+        if (firstItem != null && firstItem.url == urlWithParams) return
+
+        String targetMenuName = targetScreen.getDefaultMenuName()
+        // may need a better way to identify login screens, for now just look for "Login"
+        if (targetMenuName == "Login") return
+
+
+        StringBuilder nameBuilder = new StringBuilder()
+        // append parent screen name
+        if (screenRenderDefList.size() > 1) {
+            ScreenDefinition parentScreen = screenRenderDefList.get(screenRenderDefList.size() - 2)
+            if (parentScreen.getLocation() != sui.rootSd.getLocation())
+                nameBuilder.append(parentScreen.getDefaultMenuName()).append(' - ')
+        }
+        // append target screen name
+        nameBuilder.append(targetMenuName)
+        // append parameter values
+        Map parameters = urlInstance.getParameterMap()
+        if (parameters) {
+            nameBuilder.append(' (')
+            int pCount = 0
+            Iterator<String> valueIter = parameters.values().iterator()
+            while (valueIter.hasNext() && pCount < 2) {
+                pCount++
+                String pv = valueIter.next()
+                nameBuilder.append(pv)
+                if (valueIter.hasNext() && pCount < 2) nameBuilder.append(', ')
+            }
+            nameBuilder.append(')')
+        }
+
+        // add to history list
+        screenHistoryList.addFirst([name:nameBuilder.toString(), url:urlInstance.getUrlWithParams(), screenLocation:targetScreen.getLocation()])
+
+        // trim the list if needed; keep 40, whatever uses it may display less
+        while (screenHistoryList.size() > 40) screenHistoryList.removeLast()
+    }
+
+    @Override
+    @CompileStatic
+    List<Map> getScreenHistory() { return (LinkedList<Map>) session.getAttribute("moqui.screen.history") }
+
 
     @Override
     @CompileStatic

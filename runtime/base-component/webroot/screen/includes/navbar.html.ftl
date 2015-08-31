@@ -93,17 +93,34 @@
         </ul><!-- /.nav -->
         <div id="navbar-menu-crumbs"></div>
         <div class="navbar-text">${html_title!(ec.l10n.localize(sri.screenUrlInfo.targetScreen.getDefaultMenuName()!"Page"))}</div>
+        <#-- logout button -->
         <a href="/Login/logout" data-toggle="tooltip" data-original-title="Logout ${(ec.getUser().getUserAccount().userFullName)!}" data-placement="bottom" class="btn btn-danger btn-sm navbar-btn navbar-right">
             <i class="glyphicon glyphicon-off"></i>
         </a>
+        <#-- dark/light switch -->
         <a href="#" onclick="switchDarkLight();" data-toggle="tooltip" data-original-title="Switch Dark/Light" data-placement="bottom" class="btn btn-default btn-sm navbar-btn navbar-right">
             <i class="glyphicon glyphicon-adjust"></i>
         </a>
+        <#-- header navbar items from the theme -->
         <#assign navbarItemList = sri.getThemeValues("STRT_HEADER_NAVBAR_ITEM")>
         <#list navbarItemList! as navbarItem>
             <#assign navbarItemTemplate = navbarItem?interpret>
             <@navbarItemTemplate/>
         </#list>
+        <#-- screen history menu -->
+        <#assign screenHistoryList = ec.web.getScreenHistory()>
+        <ul id="history-menus" class="nav navbar-right">
+            <li id="history-menu" class="dropdown">
+                <a href="#" class="dropdown-toggle btn btn-default btn-sm navbar-btn" data-toggle="dropdown">
+                    <i class="glyphicon glyphicon-list"></i></a>
+                <ul class="dropdown-menu">
+                    <#list screenHistoryList as screenHistory><#if (screenHistory_index >= 25)><#break></#if>
+                        <li><a href="${screenHistory.url}">${screenHistory.name}</a></li>
+                    </#list>
+                </ul>
+            </li>
+        </ul>
+        <#-- dark/light switch JS method -->
         <script>
             function switchDarkLight() {
                 $("body").toggleClass("bg-dark dk");
