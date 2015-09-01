@@ -42,7 +42,20 @@ along with this software (see the LICENSE.md file). If not, see
                     <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
                         <#assign urlInstance = sri.buildUrl(subscreensItem.name)>
                         <#if urlInstance.isPermitted()>
-                            <li class="<#if urlInstance.inCurrentScreenPath>active</#if>"><a href="<#if urlInstance.disableLink>#<#else>${urlInstance.minimalPathUrlWithParams}</#if>">${ec.resource.expand(subscreensItem.menuTitle, "")}</a></li>
+                            <li class="<#if urlInstance.inCurrentScreenPath>active</#if>"><a href="<#if urlInstance.disableLink>#<#else>${urlInstance.minimalPathUrlWithParams}</#if>">
+                                <#if urlInstance.sui.menuImage?has_content>
+                                    <#if urlInstance.sui.menuImageType == "icon">
+                                        <i class="${urlInstance.sui.menuImage}" style="padding-right: 8px;"></i>
+                                    <#elseif urlInstance.sui.menuImageType == "url-plain">
+                                        <img src="${urlInstance.sui.menuImage}" width="18" style="padding-right: 4px;"/>
+                                    <#else>
+                                        <img src="${sri.buildUrl(urlInstance.sui.menuImage).url}" height="18" style="padding-right: 4px;"/>
+                                    </#if>
+                                <#else>
+                                    <i class="glyphicon glyphicon-link" style="padding-right: 8px;"></i>
+                                </#if>
+                                ${ec.resource.expand(subscreensItem.menuTitle, "")}
+                            </a></li>
                         </#if>
                     </#list>
                 </ul>
@@ -116,7 +129,20 @@ along with this software (see the LICENSE.md file). If not, see
                     <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
                         <#assign urlInstance = sri.buildUrl(subscreensItem.name)>
                         <#if urlInstance.isPermitted()>
-                            <li class="<#if urlInstance.inCurrentScreenPath>active</#if>"><a href="<#if urlInstance.disableLink>#<#else>${urlInstance.minimalPathUrlWithParams}</#if>">${ec.resource.expand(subscreensItem.menuTitle, "")}</a></li>
+                            <li class="<#if urlInstance.inCurrentScreenPath>active</#if>"><a href="<#if urlInstance.disableLink>#<#else>${urlInstance.minimalPathUrlWithParams}</#if>">
+                                <#if urlInstance.sui.menuImage?has_content>
+                                    <#if urlInstance.sui.menuImageType == "icon">
+                                        <i class="${urlInstance.sui.menuImage}" style="padding-right: 8px;"></i>
+                                    <#elseif urlInstance.sui.menuImageType == "url-plain">
+                                        <img src="${urlInstance.sui.menuImage}" width="18" style="padding-right: 4px;"/>
+                                    <#else>
+                                        <img src="${sri.buildUrl(urlInstance.sui.menuImage).url}" height="18" style="padding-right: 4px;"/>
+                                    </#if>
+                                <#else>
+                                    <i class="glyphicon glyphicon-link" style="padding-right: 8px;"></i>
+                                </#if>
+                                ${ec.resource.expand(subscreensItem.menuTitle, "")}
+                            </a></li>
                         </#if>
                     </#list>
                 </ul>
