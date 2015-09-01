@@ -239,8 +239,15 @@ class WebFacadeImpl implements WebFacade {
             nameBuilder.append(')')
         }
 
+        // remove existing item(s) from list with same URL
+        Iterator<Map> screenHistoryIter = screenHistoryList.iterator()
+        while (screenHistoryIter.hasNext()) {
+            Map screenHistory = screenHistoryIter.next()
+            if (screenHistory.url == urlWithParams) screenHistoryIter.remove()
+        }
+
         // add to history list
-        screenHistoryList.addFirst([name:nameBuilder.toString(), url:urlInstance.getUrlWithParams(), screenLocation:targetScreen.getLocation()])
+        screenHistoryList.addFirst([name:nameBuilder.toString(), url:urlWithParams, screenLocation:targetScreen.getLocation()])
 
         // trim the list if needed; keep 40, whatever uses it may display less
         while (screenHistoryList.size() > 40) screenHistoryList.removeLast()

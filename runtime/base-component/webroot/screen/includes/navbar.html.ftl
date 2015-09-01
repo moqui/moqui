@@ -111,17 +111,18 @@
         <#assign screenHistoryList = ec.web.getScreenHistory()>
         <ul id="history-menus" class="nav navbar-right">
             <li id="history-menu" class="dropdown">
-                <a href="#" class="dropdown-toggle btn btn-default btn-sm navbar-btn" data-toggle="dropdown">
+                <a id="history-menu-link" href="#" class="dropdown-toggle btn btn-default btn-sm navbar-btn" data-toggle="dropdown" title="History">
                     <i class="glyphicon glyphicon-list"></i></a>
                 <ul class="dropdown-menu">
                     <#list screenHistoryList as screenHistory><#if (screenHistory_index >= 25)><#break></#if>
-                        <li><a href="${screenHistory.url}">${screenHistory.name}</a></li>
+                        <li><a href="${screenHistory.url}"><i class="glyphicon glyphicon-link" style="padding-right: 8px;"></i>${screenHistory.name}</a></li>
                     </#list>
                 </ul>
             </li>
         </ul>
         <#-- dark/light switch JS method -->
         <script>
+            $('#history-menu-link').tooltip({ placement:'bottom', trigger:'hover' });
             function switchDarkLight() {
                 $("body").toggleClass("bg-dark dk");
                 $("body").toggleClass("bg-light lter");
