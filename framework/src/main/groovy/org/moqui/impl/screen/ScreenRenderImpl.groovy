@@ -635,7 +635,7 @@ class ScreenRenderImpl implements ScreenRender {
             }
             // save the screen history
             if (webFacade != null && webFacade instanceof WebFacadeImpl) {
-                ((WebFacadeImpl) ec.getWeb()).saveScreenHistory(screenUrlInstance, screenUrlInfo.screenRenderDefList)
+                ((WebFacadeImpl) ec.getWeb()).saveScreenHistory(screenUrlInstance)
             }
         }
     }

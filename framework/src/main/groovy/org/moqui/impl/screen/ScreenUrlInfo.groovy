@@ -184,6 +184,14 @@ class ScreenUrlInfo {
         return true
     }
 
+    ScreenDefinition getParentScreen() {
+        if (screenRenderDefList.size() > 1) {
+            return screenRenderDefList.get(screenRenderDefList.size() - 2)
+        } else {
+            return null
+        }
+    }
+
     boolean isPermitted(ExecutionContext ec) {
         ArtifactExecutionFacadeImpl aefi = (ArtifactExecutionFacadeImpl) ec.getArtifactExecution()
         String username = ec.getUser().getUsername()

@@ -190,9 +190,10 @@ class WebFacadeImpl implements WebFacade {
     }
 
     @CompileStatic
-    void saveScreenHistory(ScreenUrlInfo.UrlInstance urlInstance, ArrayList<ScreenDefinition> screenRenderDefList) {
+    void saveScreenHistory(ScreenUrlInfo.UrlInstance urlInstance) {
         ScreenUrlInfo sui = urlInstance.sui
         ScreenDefinition targetScreen = urlInstance.sui.targetScreen
+
         // don't save standalone screens
         if (sui.lastStandalone || targetScreen.isStandalone()) return
         // don't save transition requests, just screens
@@ -217,8 +218,8 @@ class WebFacadeImpl implements WebFacade {
 
         StringBuilder nameBuilder = new StringBuilder()
         // append parent screen name
-        if (screenRenderDefList.size() > 1) {
-            ScreenDefinition parentScreen = screenRenderDefList.get(screenRenderDefList.size() - 2)
+        ScreenDefinition parentScreen = sui.getParentScreen()
+        if (parentScreen != null) {
             if (parentScreen.getLocation() != sui.rootSd.getLocation())
                 nameBuilder.append(parentScreen.getDefaultMenuName()).append(' - ')
         }
