@@ -17,25 +17,14 @@ along with this software (see the LICENSE.md file). If not, see
 
     <parameter name="exampleId"/>
 
-    <transition name="newExample">
-        <default-response url=".">
-            <parameter name="exampleId" value=""/>
-        </default-response>
-    </transition>
-    <transition name="createExample">
-        <service-call name="org.moqui.example.ExampleServices.createExample"/>
-        <default-response url="."/>
-    </transition>
-    <transition name="updateExample">
-        <service-call name="org.moqui.example.ExampleServices.updateExample"/>
-        <default-response url="."/>
-    </transition>
-    <transition name="edit">
-        <path-parameter name="exampleId"/>
-        <default-response url="."><parameter name="exampleId" from="exampleId"/></default-response>
-    </transition>
-    <transition name="features">
-        <path-parameter name="exampleId"/>
+    <transition name="newExample"><default-response url="."><parameter name="exampleId" value=""/></default-response></transition>
+    <transition name="createExample"><service-call name="org.moqui.example.ExampleServices.createExample"/>
+        <default-response url="."/></transition>
+    <transition name="updateExample"><service-call name="org.moqui.example.ExampleServices.updateExample"/>
+        <default-response url="."/></transition>
+    <transition name="edit"><path-parameter name="exampleId"/><default-response url=".">
+        <parameter name="exampleId" from="exampleId"/></default-response></transition>
+    <transition name="features"><path-parameter name="exampleId"/>
         <default-response url="../EditExampleFeatureAppls">
             <parameter name="exampleId" from="exampleId"/>
             <parameter name="test" value="foo"/>
@@ -55,7 +44,7 @@ along with this software (see the LICENSE.md file). If not, see
     </transition>
 
     <actions>
-        <entity-find-one entity-name="Example" value-field="example"/>
+        <entity-find-one entity-name="example.Example" value-field="example"/>
         <log message="EditExample exampleId [${exampleId}] example [${example}]"/>
     </actions>
     <widgets>

@@ -34,7 +34,7 @@ along with this software (see the LICENSE.md file). If not, see
         <container-dialog id="AddItemDialog" button-text="Add Item">
             <form-single name="AddExampleItem" transition="createExampleItem" background-submit="true"
                     background-reload-id="EditExampleItemListContainer" background-message="Example item added">
-                <auto-fields-service service-name="create#ExampleItem"/>
+                <auto-fields-service service-name="create#example.ExampleItem"/>
                 <field name="exampleId"><default-field><hidden/></default-field></field>
                 <field name="exampleItemSeqId"><default-field><ignored/><!-- this will be auto-sequenced --></default-field></field>
                 <field name="amountUomId">

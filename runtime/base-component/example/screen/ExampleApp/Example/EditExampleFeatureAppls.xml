@@ -18,21 +18,15 @@ along with this software (see the LICENSE.md file). If not, see
     <parameter name="exampleId" required="true"/>
 
     <transition name="editExampleFeature"><default-response url="../../Feature/EditExampleFeature"/></transition>
-    <transition name="createExampleFeatureAppl">
-        <service-call name="org.moqui.example.ExampleServices.create#ExampleFeatureAppl"/>
-        <default-response url="."/>
-    </transition>
-    <transition name="updateExampleFeatureAppl">
-        <service-call name="update#ExampleFeatureAppl"/>
-        <default-response url="."/>
-    </transition>
-    <transition name="deleteExampleFeatureAppl">
-        <service-call name="delete#ExampleFeatureAppl"/>
-        <default-response url="."/>
-    </transition>
+    <transition name="createExampleFeatureAppl"><service-call name="org.moqui.example.ExampleServices.create#ExampleFeatureAppl"/>
+        <default-response url="."/></transition>
+    <transition name="updateExampleFeatureAppl"><service-call name="update#example.ExampleFeatureAppl"/>
+        <default-response url="."/></transition>
+    <transition name="deleteExampleFeatureAppl"><service-call name="delete#example.ExampleFeatureAppl"/>
+        <default-response url="."/></transition>
 
     <actions>
-        <entity-find entity-name="ExampleFeatureAppl" list="exampleFeatureApplList">
+        <entity-find entity-name="example.ExampleFeatureAppl" list="exampleFeatureApplList">
             <econdition field-name="exampleId" from="exampleId"/>
             <order-by field-name="sequenceNum"/>
         </entity-find>
@@ -57,7 +51,7 @@ along with this software (see the LICENSE.md file). If not, see
     <widgets>
         <!-- for pagination testing: <label text="PageRangeHigh = ${exampleFeatureApplListPageRangeHigh}, PageRangeLow=${exampleFeatureApplListPageRangeLow}, PageMaxIndex=${exampleFeatureApplListPageMaxIndex}, Count=${exampleFeatureApplListCount}, size=${exampleFeatureApplList.size()}, where=${exampleFeatureApplList_xafind.getWhereEntityCondition()}"/> -->
         <form-list name="ListExampleFeatureAppls" transition="updateExampleFeatureAppl" list="exampleFeatureApplList" paginate="true">
-            <auto-fields-service service-name="update#ExampleFeatureAppl"/>
+            <auto-fields-service service-name="update#example.ExampleFeatureAppl"/>
             <field name="exampleId"><default-field><hidden/></default-field></field>
             <field name="exampleFeatureId">
                 <default-field title="Feature">
@@ -85,7 +79,7 @@ along with this software (see the LICENSE.md file). If not, see
         </form-list>
 
         <form-single name="AddExampleFeatureAppl" transition="createExampleFeatureAppl">
-            <auto-fields-service service-name="create#ExampleFeatureAppl"/>
+            <auto-fields-service service-name="create#example.ExampleFeatureAppl"/>
             <field name="exampleId"><default-field><hidden/></default-field></field>
 
             <field name="exampleFeatureId">
