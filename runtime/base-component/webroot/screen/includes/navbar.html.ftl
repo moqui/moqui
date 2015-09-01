@@ -11,7 +11,7 @@
             <span class="icon-bar"></span>
         </button>
         <#assign headerLogoList = sri.getThemeValues("STRT_HEADER_LOGO")>
-        <#if headerLogoList?has_content><a href="/" class="navbar-brand"><img src="${headerLogoList?first}" alt="Home" height="50"></a></#if>
+        <#if headerLogoList?has_content><a href="${sri.buildUrl("/").getUrl()}" class="navbar-brand"><img src="${sri.buildUrl(headerLogoList?first).getUrl()}" alt="Home" height="50"></a></#if>
         <#assign headerTitleList = sri.getThemeValues("STRT_HEADER_TITLE")>
         <#if headerTitleList?has_content><div class="navbar-text">${ec.l10n.localize(headerTitleList?first)}</div></#if>
     </header>
@@ -94,7 +94,7 @@
         <div id="navbar-menu-crumbs"></div>
         <div class="navbar-text">${html_title!(ec.l10n.localize(sri.screenUrlInfo.targetScreen.getDefaultMenuName()!"Page"))}</div>
         <#-- logout button -->
-        <a href="/Login/logout" data-toggle="tooltip" data-original-title="Logout ${(ec.getUser().getUserAccount().userFullName)!}" data-placement="bottom" class="btn btn-danger btn-sm navbar-btn navbar-right">
+        <a href="${sri.buildUrl("/Login/logout").url}" data-toggle="tooltip" data-original-title="Logout ${(ec.getUser().getUserAccount().userFullName)!}" data-placement="bottom" class="btn btn-danger btn-sm navbar-btn navbar-right">
             <i class="glyphicon glyphicon-off"></i>
         </a>
         <#-- dark/light switch -->
