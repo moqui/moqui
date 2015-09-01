@@ -223,20 +223,24 @@ class WebFacadeImpl implements WebFacade {
                 nameBuilder.append(parentScreen.getDefaultMenuName()).append(' - ')
         }
         // append target screen name
-        nameBuilder.append(targetMenuName)
-        // append parameter values
-        Map parameters = urlInstance.getParameterMap()
-        if (parameters) {
-            nameBuilder.append(' (')
-            int pCount = 0
-            Iterator<String> valueIter = parameters.values().iterator()
-            while (valueIter.hasNext() && pCount < 2) {
-                pCount++
-                String pv = valueIter.next()
-                nameBuilder.append(pv)
-                if (valueIter.hasNext() && pCount < 2) nameBuilder.append(', ')
+        if (targetMenuName.contains('${')) {
+            nameBuilder.append(eci.getResource().expand(targetMenuName, targetScreen.getLocation()))
+        } else {
+            nameBuilder.append(targetMenuName)
+            // append parameter values
+            Map parameters = urlInstance.getParameterMap()
+            if (parameters) {
+                nameBuilder.append(' (')
+                int pCount = 0
+                Iterator<String> valueIter = parameters.values().iterator()
+                while (valueIter.hasNext() && pCount < 2) {
+                    pCount++
+                    String pv = valueIter.next()
+                    nameBuilder.append(pv)
+                    if (valueIter.hasNext() && pCount < 2) nameBuilder.append(', ')
+                }
+                nameBuilder.append(')')
             }
-            nameBuilder.append(')')
         }
 
         // remove existing item(s) from list with same URL
@@ -247,7 +251,8 @@ class WebFacadeImpl implements WebFacade {
         }
 
         // add to history list
-        screenHistoryList.addFirst([name:nameBuilder.toString(), url:urlWithParams, screenLocation:targetScreen.getLocation()])
+        screenHistoryList.addFirst([name:nameBuilder.toString(), url:urlWithParams, image:sui.menuImage,
+                                    imageType:sui.menuImageType, screenLocation:targetScreen.getLocation()])
 
         // trim the list if needed; keep 40, whatever uses it may display less
         while (screenHistoryList.size() > 40) screenHistoryList.removeLast()

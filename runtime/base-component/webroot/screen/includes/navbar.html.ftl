@@ -13,7 +13,7 @@
         <#assign headerLogoList = sri.getThemeValues("STRT_HEADER_LOGO")>
         <#if headerLogoList?has_content><a href="/" class="navbar-brand"><img src="${headerLogoList?first}" alt="Home" height="50"></a></#if>
         <#assign headerTitleList = sri.getThemeValues("STRT_HEADER_TITLE")>
-        <#if headerTitleList?has_content><div class="navbar-text">${ec.l10n.localize(headerTitleList?first)}</div></#if>
+        <#if headerTitleList?has_content><div class="navbar-text">${ec.resource.expand(headerTitleList?first, "")}</div></#if>
     </header>
     <#--
     <div class="topnav">
@@ -92,7 +92,7 @@
             -->
         </ul><!-- /.nav -->
         <div id="navbar-menu-crumbs"></div>
-        <div class="navbar-text">${html_title!(ec.l10n.localize(sri.screenUrlInfo.targetScreen.getDefaultMenuName()!"Page"))}</div>
+        <div class="navbar-text">${html_title!(ec.resource.expand(sri.screenUrlInfo.targetScreen.getDefaultMenuName()!"Page", ""))}</div>
         <#-- logout button -->
         <a href="/Login/logout" data-toggle="tooltip" data-original-title="Logout ${(ec.getUser().getUserAccount().userFullName)!}" data-placement="bottom" class="btn btn-danger btn-sm navbar-btn navbar-right">
             <i class="glyphicon glyphicon-off"></i>
@@ -115,7 +115,20 @@
                     <i class="glyphicon glyphicon-list"></i></a>
                 <ul class="dropdown-menu">
                     <#list screenHistoryList as screenHistory><#if (screenHistory_index >= 25)><#break></#if>
-                        <li><a href="${screenHistory.url}"><i class="glyphicon glyphicon-link" style="padding-right: 8px;"></i>${screenHistory.name}</a></li>
+                        <li><a href="${screenHistory.url}">
+                            <#if screenHistory.image?has_content>
+                                <#if screenHistory.imageType == "icon">
+                                    <i class="${screenHistory.image}" style="padding-right: 8px;"></i>
+                                <#elseif screenHistory.imageType == "url-plain">
+                                    <img src="${screenHistory.image}" width="18" style="padding-right: 4px;"/>
+                                <#else>
+                                    <img src="${sri.buildUrl(screenHistory.image).url}" height="18" style="padding-right: 4px;"/>
+                                </#if>
+                            <#else>
+                                <i class="glyphicon glyphicon-link" style="padding-right: 8px;"></i>
+                            </#if>
+                            ${screenHistory.name}
+                        </a></li>
                     </#list>
                 </ul>
             </li>

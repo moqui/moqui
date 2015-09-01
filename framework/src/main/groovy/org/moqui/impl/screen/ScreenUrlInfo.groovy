@@ -57,6 +57,9 @@ class ScreenUrlInfo {
     boolean alwaysUseFullPath = false
     boolean beginTransaction = false
 
+    String menuImage = null
+    String menuImageType = null
+
     /** The full path name list for the URL, including extraPathNameList */
     ArrayList<String> fullPathNameList = null
 
@@ -506,6 +509,17 @@ class ScreenUrlInfo {
         }
 
         this.targetScreen = lastSd
+
+        // screenRenderDefList now in place, look for menu-image and menu-image-type of last in list
+        int renderListSize = screenRenderDefList.size()
+        for (int i = 0; i < renderListSize; i++) {
+            ScreenDefinition curSd = screenRenderDefList.get(i)
+            String curMenuImage = curSd.getScreenNode().attribute("menu-image")
+            if (curMenuImage) {
+                menuImage = curMenuImage
+                menuImageType = curSd.getScreenNode().attribute("menu-image-type") ?: 'url-screen'
+            }
+        }
     }
 
     @Override

@@ -69,7 +69,7 @@ class ScreenDefinition {
         String filename = location.contains("/") ? location.substring(location.lastIndexOf("/")+1) : location
         screenName = filename.contains(".") ? filename.substring(0, filename.indexOf(".")) : filename
 
-        standalone = screenNode?.attributes()?.get('standalone') == "true"
+        standalone = screenNode.attributes().get('standalone') == "true"
 
         // parameter
         for (Node parameterNode in screenNode."parameter")

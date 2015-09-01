@@ -51,6 +51,10 @@ New Features:
 - Added image.@condition, @style, and @parameter-map attributes and
   parameter sub-element like those on label, etc
 - Added screen history drop-down to navbar, WebFacade code to keep history
+- Screen menu names are now expanded (put data prep in pre-actions)
+- Added screen.@menu-image and @menu-image-type attributes; when rendering
+  a screen gets the last menu-image in the screen render path (available
+  from ScreenUrlInfo)
 
 Bug Fixes:
 

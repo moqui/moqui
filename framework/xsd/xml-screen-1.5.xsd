@@ -80,6 +80,18 @@ along with this software (see the LICENSE.md file). If not, see
                     it is in. If true this screen will automatically be included in the parent's subscreens menu.
                 </xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="menu-image" type="xs:string"/>
+            <xs:attribute name="menu-image-type" default="url-screen">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="url-screen"/>
+                        <xs:enumeration value="url-plain"/>
+                        <xs:enumeration value="icon"><xs:annotation><xs:documentation>Icon name, actually an icon
+                            style used in an 'i' element in HTML output.</xs:documentation></xs:annotation></xs:enumeration>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+
             <xs:attribute name="require-authentication" default="true">
                 <xs:simpleType>
                     <xs:restriction base="xs:token">
