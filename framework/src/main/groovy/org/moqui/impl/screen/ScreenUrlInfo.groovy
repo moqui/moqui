@@ -444,8 +444,9 @@ class ScreenUrlInfo {
         minimalPathNameList = new ArrayList<String>(fullPathNameList)
 
         // beyond the last screenPathName, see if there are any screen.default-item values (keep following until none found)
-        while (targetTransitionActualName == null && fileResourceRef == null && (String) lastSd.getSubscreensNode()?.attributes()?.get('default-item')) {
-            String subscreenName = (String) lastSd.getSubscreensNode()?.attributes()?.get('default-item')
+        int defaultSubScreenCount = 0
+        while (targetTransitionActualName == null && fileResourceRef == null && (String) lastSd.getSubscreensNode()?.attribute('default-item')) {
+            String subscreenName = (String) lastSd.getSubscreensNode()?.attribute('default-item')
             if (lastSd.getSubscreensNode()?.attributes()?.get('always-use-full-path') == "true") alwaysUseFullPath = true
             // logger.warn("TOREMOVE lastSd ${minimalPathNameList} subscreens: ${lastSd.screenNode?.subscreens}, alwaysUseFullPath=${alwaysUseFullPath}, from ${lastSd.screenNode."subscreens"?."@always-use-full-path"?.getAt(0)}, subscreenName=${subscreenName}")
 
@@ -506,19 +507,24 @@ class ScreenUrlInfo {
             fullPathNameList.add(subscreenName)
             // add this to the list of path names to use for transition redirect, just in case a default is a transition
             preTransitionPathNameList.add(subscreenName)
+
+            defaultSubScreenCount++
         }
 
         this.targetScreen = lastSd
 
         // screenRenderDefList now in place, look for menu-image and menu-image-type of last in list
         int renderListSize = screenRenderDefList.size()
+        int defaultSubScreenLimit = renderListSize - defaultSubScreenCount - 1
         for (int i = 0; i < renderListSize; i++) {
+            // only use explicit path to find icon, don't want default subscreens overriding it
             ScreenDefinition curSd = screenRenderDefList.get(i)
             String curMenuImage = curSd.getScreenNode().attribute("menu-image")
             if (curMenuImage) {
                 menuImage = curMenuImage
                 menuImageType = curSd.getScreenNode().attribute("menu-image-type") ?: 'url-screen'
             }
+            if (i >= defaultSubScreenLimit && menuImage) break
         }
     }
 
