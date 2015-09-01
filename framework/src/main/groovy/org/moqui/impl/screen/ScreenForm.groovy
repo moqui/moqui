@@ -433,9 +433,9 @@ class ScreenForm {
 
         if (widgetNode.name() == "link") {
             // if it goes to a transition with service-call or actions then remove it, otherwise leave it
-            String urlType = (String) widgetNode.attributes().get('url-type')
+            String urlType = (String) widgetNode.attribute('url-type')
             if ((!urlType || urlType == "transition") &&
-                    sd.getTransitionItem((String) widgetNode.attributes().get('url'), null).hasActionsOrSingleService()) {
+                    sd.getTransitionItem((String) widgetNode.attribute('url'), null).hasActionsOrSingleService()) {
                 fieldSubNode.remove(widgetNode)
             }
             return
@@ -502,19 +502,19 @@ class ScreenForm {
     @CompileStatic
     Node getFieldValidateNode(String fieldName, Node cachedFormNode) {
         Node formNodeToUse = cachedFormNode ?: getFormNode()
-        Node fieldNode = (Node) formNodeToUse.get("field").find({ ((Node) it).attributes().get('name') == fieldName })
+        Node fieldNode = (Node) formNodeToUse.get("field").find({ ((Node) it).attribute('name') == fieldName })
         if (fieldNode == null) throw new IllegalArgumentException("Tried to get in-parameter node for field [${fieldName}] that doesn't exist in form [${location}]")
-        String validateService = (String) fieldNode.attributes().get('validate-service')
-        String validateEntity = (String) fieldNode.attributes().get('validate-entity')
+        String validateService = (String) fieldNode.attribute('validate-service')
+        String validateEntity = (String) fieldNode.attribute('validate-entity')
         if (validateService) {
             ServiceDefinition sd = ecfi.getServiceFacade().getServiceDefinition(validateService)
             if (sd == null) throw new IllegalArgumentException("Invalid validate-service name [${validateService}] in field [${fieldName}] of form [${location}]")
-            Node parameterNode = sd.getInParameter((String) fieldNode.attributes().get('validate-parameter') ?: fieldName)
+            Node parameterNode = sd.getInParameter((String) fieldNode.attribute('validate-parameter') ?: fieldName)
             return parameterNode
         } else if (validateEntity) {
             EntityDefinition ed = ecfi.getEntityFacade().getEntityDefinition(validateEntity)
             if (ed == null) throw new IllegalArgumentException("Invalid validate-entity name [${validateEntity}] in field [${fieldName}] of form [${location}]")
-            Node efNode = ed.getFieldNode((String) fieldNode.attributes().get('validate-field') ?: fieldName)
+            Node efNode = ed.getFieldNode((String) fieldNode.attribute('validate-field') ?: fieldName)
             return efNode
         }
         return null
@@ -989,7 +989,7 @@ class ScreenForm {
     void runFormListRowActions(ScreenRenderImpl sri, Object listEntry, int index, boolean hasNext) {
         // NOTE: this runs in a pushed-/sub-context, so just drop it in and it'll get cleaned up automatically
         Node localFormNode = getFormNode()
-        String listEntryStr = (String) localFormNode.attributes().get('list-entry')
+        String listEntryStr = (String) localFormNode.attribute('list-entry')
         if (listEntryStr) {
             sri.ec.context.put(listEntryStr, listEntry)
             sri.ec.context.put(listEntryStr + "_index", index)
@@ -1000,7 +1000,7 @@ class ScreenForm {
             } else {
                 sri.ec.context.put("listEntry", listEntry)
             }
-            String listStr = (String) localFormNode.attributes().get('list')
+            String listStr = (String) localFormNode.attribute('list')
             sri.ec.context.put(listStr + "_index", index)
             sri.ec.context.put(listStr + "_has_next", hasNext)
             sri.ec.context.put(listStr + "_entry", listEntry)
@@ -1015,7 +1015,7 @@ class ScreenForm {
         for (Node childNode in (Collection<Node>) widgetNode.children()) {
             if (childNode.name() == "entity-options") {
                 Node entityFindNode = (Node) ((NodeList) childNode.get("entity-find"))[0]
-                EntityFindImpl ef = (EntityFindImpl) ec.entity.find((String) entityFindNode.attributes().get('entity-name'))
+                EntityFindImpl ef = (EntityFindImpl) ec.entity.find((String) entityFindNode.attribute('entity-name'))
                 ef.findNode(entityFindNode)
 
                 EntityList eli = ef.list()
@@ -1033,7 +1033,7 @@ class ScreenForm {
 
                 for (EntityValue ev in eli) addFieldOption(options, fieldNode, childNode, ev, ec)
             } else if (childNode.name() == "list-options") {
-                Object listObject = ec.resource.expression((String) childNode.attributes().get('list'), null)
+                Object listObject = ec.resource.expression((String) childNode.attribute('list'), null)
                 if (listObject instanceof EntityListIterator) {
                     EntityListIterator eli
                     try {
@@ -1054,8 +1054,8 @@ class ScreenForm {
                     }
                 }
             } else if (childNode.name() == "option") {
-                String key = ec.resource.expand((String) childNode.attributes().get('key'), null)
-                String text = ec.resource.expand((String) childNode.attributes().get('text'), null)
+                String key = ec.resource.expand((String) childNode.attribute('key'), null)
+                String text = ec.resource.expand((String) childNode.attribute('text'), null)
                 options.put(key, text ?: key)
             }
         }
@@ -1073,7 +1073,7 @@ class ScreenForm {
         }
         try {
             String key = null
-            String keyAttr = (String) childNode.attributes().get('key')
+            String keyAttr = (String) childNode.attribute('key')
             if (keyAttr) {
                 key = ec.resource.expand(keyAttr, null)
                 // we just did a string expand, if it evaluates to a literal "null" then there was no value
@@ -1082,10 +1082,10 @@ class ScreenForm {
                 String keyFieldName = listOptionEvb.getEntityDefinition().getPkFieldNames().get(0)
                 if (keyFieldName) key = ec.context.get(keyFieldName)
             }
-            if (key == null) key = ec.context.get(fieldNode.attributes().get('name'))
+            if (key == null) key = ec.context.get(fieldNode.attribute('name'))
             if (key == null) return
 
-            String text = childNode.attributes().get('text')
+            String text = childNode.attribute('text')
             if (!text) {
                 if ((listOptionEvb == null || listOptionEvb.getEntityDefinition().isField("description"))
                         && listOption["description"]) {

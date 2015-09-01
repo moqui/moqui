@@ -223,7 +223,7 @@ class ScreenUrlInfo {
             // if screen is limited to certain tenants, and current tenant is not in the Set, it is not permitted
             if (screenDef.getTenantsAllowed() && !screenDef.getTenantsAllowed().contains(ec.getTenantId())) return false
 
-            String requireAuthentication = (String) screenNode.attributes().get('require-authentication')
+            String requireAuthentication = (String) screenNode.attribute('require-authentication')
             if (!aefi.isPermitted(username, aeii, lastAeii,
                     isLast ? (!requireAuthentication || requireAuthentication == "true") : false,
                     false, ec.getUser().getNowTimestamp())) {
@@ -377,8 +377,8 @@ class ScreenUrlInfo {
 
         // encrypt is the default loop through screens if all are not secure/etc use http setting, otherwise https
         requireEncryption = false
-        if (rootSd?.webSettingsNode?.attributes()?.get('require-encryption') != "false") requireEncryption = true
-        if (rootSd?.screenNode?.attributes()?.get('begin-transaction') == "true") beginTransaction = true
+        if (rootSd?.webSettingsNode?.attribute('require-encryption') != "false") requireEncryption = true
+        if (rootSd?.screenNode?.attribute('begin-transaction') == "true") beginTransaction = true
 
         // start the render list with the from/base SD
         screenRenderDefList.add(fromSd)
@@ -412,7 +412,7 @@ class ScreenUrlInfo {
                     }
                 }
 
-                if (lastSd.screenNode.attributes().get('allow-extra-path') == "true") {
+                if (lastSd.screenNode.attribute('allow-extra-path') == "true") {
                     // call it good
                     break
                 }
@@ -428,9 +428,9 @@ class ScreenUrlInfo {
                 // throw new IllegalArgumentException("Could not find screen at location [${nextLoc}], which is subscreen [${pathName}] in relative screen reference [${fromScreenPath}] in screen [${lastSd.location}]")
             }
 
-            if (nextSd.webSettingsNode?.attributes()?.get('require-encryption') != "false") this.requireEncryption = true
-            if (nextSd.screenNode?.attributes()?.get('begin-transaction') == "true") this.beginTransaction = true
-            if (nextSd.getSubscreensNode()?.attributes()?.get('always-use-full-path') == "true") alwaysUseFullPath = true
+            if (nextSd.webSettingsNode?.attribute('require-encryption') != "false") this.requireEncryption = true
+            if (nextSd.screenNode?.attribute('begin-transaction') == "true") this.beginTransaction = true
+            if (nextSd.getSubscreensNode()?.attribute('always-use-full-path') == "true") alwaysUseFullPath = true
 
             // if standalone, clear out screenRenderDefList before adding this to it
             if (nextSd.isStandalone() || this.lastStandalone) {
@@ -455,7 +455,7 @@ class ScreenUrlInfo {
         int defaultSubScreenCount = 0
         while (targetTransitionActualName == null && fileResourceRef == null && (String) lastSd.getSubscreensNode()?.attribute('default-item')) {
             String subscreenName = (String) lastSd.getSubscreensNode()?.attribute('default-item')
-            if (lastSd.getSubscreensNode()?.attributes()?.get('always-use-full-path') == "true") alwaysUseFullPath = true
+            if (lastSd.getSubscreensNode()?.attribute('always-use-full-path') == "true") alwaysUseFullPath = true
             // logger.warn("TOREMOVE lastSd ${minimalPathNameList} subscreens: ${lastSd.screenNode?.subscreens}, alwaysUseFullPath=${alwaysUseFullPath}, from ${lastSd.screenNode."subscreens"?."@always-use-full-path"?.getAt(0)}, subscreenName=${subscreenName}")
 
             // if any conditional-default.@condition eval to true, use that conditional-default.@item instead
@@ -463,10 +463,10 @@ class ScreenUrlInfo {
             NodeList condDefaultList = (NodeList) lastSd.getSubscreensNode()?.get("conditional-default")
             if (condDefaultList) for (Object conditionalDefaultObj in condDefaultList) {
                 Node conditionalDefaultNode = (Node) conditionalDefaultObj
-                String condStr = (String) conditionalDefaultNode.attributes().get('condition')
+                String condStr = (String) conditionalDefaultNode.attribute('condition')
                 if (!condStr) continue
                 if (ecfi.getResource().condition(condStr, null)) {
-                    subscreenName = conditionalDefaultNode.attributes().get('item')
+                    subscreenName = conditionalDefaultNode.attribute('item')
                     break
                 }
             }
@@ -499,8 +499,8 @@ class ScreenUrlInfo {
                 // throw new BaseException("Could not find screen at location [${nextLoc}], which is default subscreen [${subscreenName}] in screen [${lastSd.location}]")
             }
 
-            if (nextSd.webSettingsNode?.attributes()?.get('require-encryption') != "false") this.requireEncryption = true
-            if (nextSd.screenNode?.attributes()?.get('begin-transaction') == "true") this.beginTransaction = true
+            if (nextSd.webSettingsNode?.attribute('require-encryption') != "false") this.requireEncryption = true
+            if (nextSd.screenNode?.attribute('begin-transaction') == "true") this.beginTransaction = true
 
             // if standalone, clear out screenRenderDefList before adding this to it
             if (nextSd.isStandalone() || this.lastStandalone) {

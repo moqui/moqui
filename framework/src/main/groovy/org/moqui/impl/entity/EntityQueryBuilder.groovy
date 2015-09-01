@@ -409,7 +409,7 @@ class EntityQueryBuilder {
 
         boolean useBinaryTypeForBlob = false
         if (typeValue == 11 || typeValue == 12) {
-            useBinaryTypeForBlob = ("true" == efi.getDatabaseNode(ed.getEntityGroupName()).attributes().get('use-binary-type-for-blob'))
+            useBinaryTypeForBlob = ("true" == efi.getDatabaseNode(ed.getEntityGroupName()).attribute('use-binary-type-for-blob'))
         }
         try {
             setPreparedStatementValue(ps, index, value, typeValue, useBinaryTypeForBlob, efi)
@@ -426,7 +426,7 @@ class EntityQueryBuilder {
         // useBinaryTypeForBlob is only needed for types 11/Object and 12/Blob, faster to not determine otherwise
         boolean useBinaryTypeForBlob = false
         if (typeValue == 11 || typeValue == 12) {
-            useBinaryTypeForBlob = ("true" == efi.getDatabaseNode(ed.getEntityGroupName()).attributes().get('use-binary-type-for-blob'))
+            useBinaryTypeForBlob = ("true" == efi.getDatabaseNode(ed.getEntityGroupName()).attribute('use-binary-type-for-blob'))
         }
         setPreparedStatementValue(ps, index, value, typeValue, useBinaryTypeForBlob, efi)
 

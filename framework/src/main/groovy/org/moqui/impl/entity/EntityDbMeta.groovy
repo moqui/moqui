@@ -52,7 +52,7 @@ class EntityDbMeta {
         Boolean runtimeAddMissing = runtimeAddMissingMap.get(groupName)
         if (runtimeAddMissing == null) {
             Node datasourceNode = efi.getDatasourceNode(groupName)
-            runtimeAddMissing = datasourceNode?.attributes()?.get('runtime-add-missing') != "false"
+            runtimeAddMissing = datasourceNode?.attribute('runtime-add-missing') != "false"
             runtimeAddMissingMap.put(groupName, runtimeAddMissing)
         }
         if (!runtimeAddMissing) return
@@ -60,7 +60,7 @@ class EntityDbMeta {
         if (ed.isViewEntity()) {
             for (Object memberEntityObj in (NodeList) ed.entityNode.get("member-entity")) {
                 Node memberEntityNode = (Node) memberEntityObj
-                EntityDefinition med = efi.getEntityDefinition((String) memberEntityNode.attributes().get('entity-name'))
+                EntityDefinition med = efi.getEntityDefinition((String) memberEntityNode.attribute('entity-name'))
                 checkTableRuntime(med)
             }
         } else {
@@ -102,7 +102,7 @@ class EntityDbMeta {
 
         Node datasourceNode = efi.getDatasourceNode(ed.getEntityGroupName())
         // if there is no @database-conf-name skip this, it's probably not a SQL/JDBC datasource
-        if (!datasourceNode.attributes().get('database-conf-name')) return
+        if (!datasourceNode.attribute('database-conf-name')) return
 
         long startTime = System.currentTimeMillis()
         if (!tableExists(ed)) {
@@ -132,7 +132,7 @@ class EntityDbMeta {
                 }
             }
             // create foreign keys after checking each to see if it already exists
-            if (startup || datasourceNode?.attributes()?.get('@runtime-add-fks') == "true") createForeignKeys(ed, true)
+            if (startup || datasourceNode?.attribute('@runtime-add-fks') == "true") createForeignKeys(ed, true)
         }
         entityTablesChecked.put(ed.getFullEntityName(), new Timestamp(System.currentTimeMillis()))
         entityTablesExist.put(ed.getFullEntityName(), true)

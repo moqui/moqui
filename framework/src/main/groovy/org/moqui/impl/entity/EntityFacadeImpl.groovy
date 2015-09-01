@@ -1278,8 +1278,8 @@ class EntityFacadeImpl implements EntityFacade {
             EntityDefinition ed = getEntityDefinition(seqName)
             if (ed != null) {
                 String groupName = ed.getEntityGroupName()
-                if (ed.getEntityNode()?.attributes()?.get('@sequence-primary-use-uuid') == "true" ||
-                        getDatasourceNode(groupName)?.attributes()?.get('sequence-primary-use-uuid') == "true")
+                if (ed.getEntityNode()?.attribute('@sequence-primary-use-uuid') == "true" ||
+                        getDatasourceNode(groupName)?.attribute('sequence-primary-use-uuid') == "true")
                     return UUID.randomUUID().toString()
             }
         } catch (EntityException e) {

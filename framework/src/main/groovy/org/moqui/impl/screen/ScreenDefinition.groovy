@@ -69,7 +69,7 @@ class ScreenDefinition {
         String filename = location.contains("/") ? location.substring(location.lastIndexOf("/")+1) : location
         screenName = filename.contains(".") ? filename.substring(0, filename.indexOf(".")) : filename
 
-        standalone = screenNode.attributes().get('standalone') == "true"
+        standalone = screenNode.attribute('standalone') == "true"
 
         // parameter
         for (Node parameterNode in screenNode."parameter")
@@ -406,7 +406,7 @@ class ScreenDefinition {
     @CompileStatic
     void render(ScreenRenderImpl sri, boolean isTargetScreen) {
         // NOTE: don't require authz if the screen doesn't require auth
-        String requireAuthentication = (String) screenNode.attributes().get('require-authentication')
+        String requireAuthentication = (String) screenNode.attribute('require-authentication')
         sri.ec.artifactExecution.push(new ArtifactExecutionInfoImpl(location, "AT_XML_SCREEN", "AUTHZA_VIEW"),
                 isTargetScreen ? (!requireAuthentication || requireAuthentication == "true") : false)
 
@@ -628,7 +628,7 @@ class ScreenDefinition {
             // NOTE: if parent screen of transition does not require auth, don't require authz
             // NOTE: use the View authz action to leave it open, ie require minimal authz; restrictions are often more
             //    in the services/etc if/when needed, or specific transitions can have authz settings
-            String requireAuthentication = (String) parentScreen.screenNode.attributes().get('require-authentication')
+            String requireAuthentication = (String) parentScreen.screenNode.attribute('require-authentication')
             ec.getArtifactExecution().push(new ArtifactExecutionInfoImpl("${parentScreen.location}/${name}",
                     "AT_XML_SCREEN_TRANS", "AUTHZA_VIEW"), (!requireAuthentication || requireAuthentication == "true"))
 
