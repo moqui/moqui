@@ -26,14 +26,12 @@ along with this software (see the LICENSE.md file). If not, see
             fromDate="1265184000000" thruDate=""/>
     <moqui.security.UserLoginHistory userId="EX_JOHN_DOE" fromDate="1265184000000" successfulLogin="Y"/>
 
-    <!-- TODO: test & case for this -->
     <!-- services matched by fully qualified name, so can just use path/package prefix -->
     <moqui.security.ArtifactGroupMember artifactGroupId="EXAMPLE_APP" artifactName="org\.moqui\.example\..*"
             nameIsPattern="Y" artifactTypeEnumId="AT_SERVICE" inheritAuthz="Y"/>
-    <!-- TODO: test & case for this -->
     <!-- entities matched by full name (package + name), so can match by package; this will also handle entity-implicit
          services which can be authorized by their entity authz -->
-    <moqui.security.ArtifactGroupMember artifactGroupId="EXAMPLE_APP" artifactName="moqui\.example\..*"
+    <moqui.security.ArtifactGroupMember artifactGroupId="EXAMPLE_APP" artifactName="example\..*"
             nameIsPattern="Y" artifactTypeEnumId="AT_ENTITY" inheritAuthz="Y"/>
 
     <!-- ========== Example with just view access for the ExampleApp ========== -->
