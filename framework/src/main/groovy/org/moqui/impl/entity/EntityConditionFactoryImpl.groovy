@@ -60,27 +60,60 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
     }
 
     @Override
+    EntityCondition makeCondition(List<EntityCondition> conditionList) {
+        return this.makeCondition(conditionList, JoinOperator.AND)
+    }
+    @Override
     EntityCondition makeCondition(List<EntityCondition> conditionList, JoinOperator operator) {
         if (!conditionList) return null
         List<EntityConditionImplBase> newList = []
         Iterator<EntityCondition> conditionIter = conditionList.iterator()
         while (conditionIter.hasNext()) {
             EntityCondition curCond = conditionIter.next()
-            if (curCond == null) { conditionIter.remove(); continue }
+            if (curCond == null) continue
             // this is all they could be, all that is supported right now
             if (curCond instanceof EntityConditionImplBase) newList.add((EntityConditionImplBase) curCond)
             else throw new IllegalArgumentException("EntityCondition of type [${curCond.getClass().getName()}] not supported")
         }
-        if (conditionList.size() == 1) {
-            return conditionList.get(0)
+        if (!newList) return null
+        if (newList.size() == 1) {
+            return newList.get(0)
         } else {
             return new ListCondition(this, newList, operator)
         }
     }
 
     @Override
-    EntityCondition makeCondition(List<EntityCondition> conditionList) {
-        return this.makeCondition(conditionList, JoinOperator.AND)
+    EntityCondition makeCondition(List<Object> conditionList, String listOperator, String mapComparisonOperator, String mapJoinOperator) {
+        if (!conditionList) return null
+
+        JoinOperator listJoin = listOperator ? getJoinOperator(listOperator) : JoinOperator.AND
+        ComparisonOperator mapComparison = mapComparisonOperator ? getComparisonOperator(mapComparisonOperator) : ComparisonOperator.EQUALS
+        JoinOperator mapJoin = mapJoinOperator ? getJoinOperator(mapJoinOperator) : JoinOperator.AND
+
+        List<EntityConditionImplBase> newList = []
+        Iterator<Object> conditionIter = conditionList.iterator()
+        while (conditionIter.hasNext()) {
+            Object curObj = conditionIter.next()
+            if (curObj == null) continue
+            if (curObj instanceof Map) {
+                Map curMap = (Map) curObj
+                if (curMap.size() == 0) continue
+                EntityCondition curCond = makeCondition(curMap, mapComparison, mapJoin)
+                newList.add((EntityConditionImplBase) curCond)
+            } else if (curObj instanceof EntityConditionImplBase) {
+                EntityCondition curCond = (EntityConditionImplBase) curObj
+                newList.add(curCond)
+            } else {
+                throw new IllegalArgumentException("The conditionList parameter must contain only Map and EntityCondition objects, found entry of type [${curObj.getClass().getName()}]")
+            }
+        }
+        if (!newList) return null
+        if (newList.size() == 1) {
+            return newList.get(0)
+        } else {
+            return new ListCondition(this, newList, listJoin)
+        }
     }
 
     @Override

@@ -39,6 +39,7 @@ class ScreenDefinition {
     protected final Node subscreensNode
     protected final String location
     protected final String screenName
+    protected boolean standalone = false
     Long sourceLastModified = null
 
     protected Map<String, ParameterItem> parameterByName = new HashMap()
@@ -67,6 +68,8 @@ class ScreenDefinition {
 
         String filename = location.contains("/") ? location.substring(location.lastIndexOf("/")+1) : location
         screenName = filename.contains(".") ? filename.substring(0, filename.indexOf(".")) : filename
+
+        standalone = screenNode?.attributes()?.get('standalone') == "true"
 
         // parameter
         for (Node parameterNode in screenNode."parameter")
@@ -233,18 +236,25 @@ class ScreenDefinition {
 
     @CompileStatic
     String getScreenName() { return screenName }
+    @CompileStatic
+    boolean isStandalone() { return standalone }
 
+    @CompileStatic
     String getDefaultMenuName() {
-        if (screenNode."@default-menu-title") return screenNode."@default-menu-title"
-
-        String filename = location.substring(location.lastIndexOf("/")+1, location.length()-4)
-        StringBuilder prettyName = new StringBuilder()
-        for (String part in filename.split("(?=[A-Z])")) {
-            if (prettyName) prettyName.append(" ")
-            prettyName.append(part)
+        String menuName = screenNode.attribute("default-menu-title")
+        if (!menuName) {
+            String filename = location.substring(location.lastIndexOf("/")+1, location.length()-4)
+            StringBuilder prettyName = new StringBuilder()
+            for (String part in filename.split("(?=[A-Z])")) {
+                if (prettyName) prettyName.append(" ")
+                prettyName.append(part)
+            }
+            Character firstChar = prettyName.charAt(0) as Character
+            if (firstChar.isLowerCase()) prettyName.setCharAt(0, firstChar.toUpperCase())
+            menuName = prettyName.toString()
         }
-        if (prettyName.charAt(0).isLowerCase()) prettyName.setCharAt(0, prettyName.charAt(0).toUpperCase())
-        return prettyName.toString()
+
+        return sfi.getEcfi().getExecutionContext().getL10n().localize(menuName)
     }
 
     @CompileStatic
@@ -283,16 +293,16 @@ class ScreenDefinition {
     SubscreensItem getSubscreensItem(String name) { return (SubscreensItem) subscreensByName.get(name) }
 
     @CompileStatic
-    List<String> findSubscreenPath(List<String> remainingPathNameList) {
+    ArrayList<String> findSubscreenPath(ArrayList<String> remainingPathNameList) {
         if (!remainingPathNameList) return null
         String curName = remainingPathNameList.get(0)
         SubscreensItem curSsi = getSubscreensItem(curName)
         if (curSsi != null) {
             if (remainingPathNameList.size() > 1) {
-                List<String> subPathNameList = new ArrayList<>(remainingPathNameList)
+                ArrayList<String> subPathNameList = new ArrayList<>(remainingPathNameList)
                 subPathNameList.remove(0)
                 ScreenDefinition subSd = sfi.getScreenDefinition(curSsi.getLocation())
-                List<String> subPath = subSd.findSubscreenPath(subPathNameList)
+                ArrayList<String> subPath = subSd.findSubscreenPath(subPathNameList)
                 if (!subPath) return null
                 subPath.add(0, curName)
                 return subPath
@@ -315,10 +325,10 @@ class ScreenDefinition {
             if (subSsi != null) {
                 if (remainingPathNameList.size() > 1) {
                     // if there are still more path elements, recurse to find them
-                    List<String> subPathNameList = new ArrayList<>(remainingPathNameList)
+                    ArrayList<String> subPathNameList = new ArrayList<>(remainingPathNameList)
                     subPathNameList.remove(0)
                     ScreenDefinition subSubSd = sfi.getScreenDefinition(subSsi.getLocation())
-                    List<String> subPath = subSubSd.findSubscreenPath(subPathNameList)
+                    ArrayList<String> subPath = subSubSd.findSubscreenPath(subPathNameList)
                     // found a partial match, not the full thing, no match so give up
                     if (!subPath) return null
                     // we've found it two deep, add both names, sub name first
@@ -326,7 +336,7 @@ class ScreenDefinition {
                     subPath.add(0, entry.getKey())
                     return subPath
                 } else {
-                    return [entry.getKey(), curName]
+                    return new ArrayList<String>([entry.getKey(), curName])
                 }
             }
         }

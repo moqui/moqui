@@ -1,5 +1,7 @@
 ## Welcome to Moqui Framework
 
+[![Build Status](https://travis-ci.org/moqui/moqui.svg)](https://travis-ci.org/moqui/moqui)
+
 For details about running and deploying Moqui see:
 
 <http://www.moqui.org/framework/docs/RunDeploy.html>

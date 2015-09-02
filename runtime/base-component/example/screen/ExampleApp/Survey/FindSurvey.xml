@@ -17,7 +17,7 @@ along with this software (see the LICENSE.md file). If not, see
 
     <transition name="createFormResponse">
         <service-call name="org.moqui.impl.ScreenServices.create#FormResponse"
-                in-map="[formLocation:formLocation, responseMap:ec.web.parameters]"/>
+                in-map="[formLocation:formLocation, formId:formId, responseMap:ec.web.parameters]"/>
         <default-response url="../EditSurvey"/>
     </transition>
     <transition name="editSurvey"><default-response url="../EditSurvey"/></transition>
@@ -34,11 +34,13 @@ along with this software (see the LICENSE.md file). If not, see
         <container-dialog id="NewSurvey1Dialog" button-text="New Survey 1">
             <form-single name="NewSurvey1Form" transition="createFormResponse" extends="DbForm#ExampleSurvey1">
                 <field name="formLocation"><default-field><hidden default-value="DbForm#ExampleSurvey1"/></default-field></field>
+                <field name="formId"><default-field><hidden default-value="ExampleSurvey1"/></default-field></field>
             </form-single>
         </container-dialog>
         <container-dialog id="NewSurvey2Dialog" button-text="New Survey 2">
             <form-single name="NewSurvey2Form" transition="createFormResponse" extends="DbForm#ExampleSurvey2">
                 <field name="formLocation"><default-field><hidden default-value="DbForm#ExampleSurvey2"/></default-field></field>
+                <field name="formId"><default-field><hidden default-value="ExampleSurvey2"/></default-field></field>
             </form-single>
         </container-dialog>
 

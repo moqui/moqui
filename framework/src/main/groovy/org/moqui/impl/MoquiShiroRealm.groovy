@@ -13,6 +13,7 @@
 package org.moqui.impl
 
 import org.moqui.entity.EntityException
+import org.moqui.impl.context.ExecutionContextImpl
 
 import java.sql.Timestamp
 
@@ -171,20 +172,28 @@ class MoquiShiroRealm implements Realm {
             }
         } finally {
             // track the UserLoginHistory, whether the above succeeded or failed (ie even if an exception was thrown)
-            if (!ecfi.getEci().getSkipStats()) {
+            ExecutionContextImpl eci = ecfi.getEci()
+            if (!eci.getSkipStats()) {
                 Node loginNode = (Node) ecfi.confXmlRoot."user-facade"[0]."login"[0]
                 if (userId != null && loginNode."@history-store" != "false") {
-                    Map<String, Object> ulhContext =
-                            [userId:userId, visitId:ecfi.executionContext.user.visitId, successfulLogin:(successful?"Y":"N")]
-                    if (!successful && loginNode."@history-incorrect-password" != "false") ulhContext.passwordUsed = token.credentials
-                    try {
-                        ecfi.serviceFacade.sync().name("create", "moqui.security.UserLoginHistory").parameters(ulhContext)
-                                .requireNewTransaction(true).disableAuthz().call()
-                        // we want to ignore errors from this, may happen in high-volume inserts where we don't care about the records so much anyway
-                        ecfi.getExecutionContext().getMessage().clearErrors()
-                    } catch (EntityException ee) {
-                        // this blows up on MySQL, may in other cases, and is only so important so log a warning but don't rethrow
-                        logger.warn("UserLoginHistory create failed: ${ee.toString()}", ee)
+                    Timestamp fromDate = eci.getUser().getNowTimestamp()
+                    EntityValue curUlh = ecfi.getEntityFacade().find("moqui.security.UserLoginHistory")
+                            .condition([userId:userId, fromDate:fromDate]).disableAuthz().one()
+                    if (curUlh == null) {
+                        Map<String, Object> ulhContext = [userId:userId, fromDate:fromDate,
+                                visitId:ecfi.executionContext.user.visitId, successfulLogin:(successful?"Y":"N")]
+                        if (!successful && loginNode."@history-incorrect-password" != "false") ulhContext.passwordUsed = token.credentials
+                        try {
+                            ecfi.getServiceFacade().sync().name("create", "moqui.security.UserLoginHistory").parameters(ulhContext)
+                                    .requireNewTransaction(true).disableAuthz().call()
+                            // we want to ignore errors from this, may happen in high-volume inserts where we don't care about the records so much anyway
+                            ecfi.getExecutionContext().getMessage().clearErrors()
+                        } catch (EntityException ee) {
+                            // this blows up on MySQL, may in other cases, and is only so important so log a warning but don't rethrow
+                            logger.warn("UserLoginHistory create failed: ${ee.toString()}")
+                        }
+                    } else {
+                        logger.warn("Not creating UserLoginHistory, found existing record for userId [${userId}] and fromDate [${fromDate}]")
                     }
                 }
             }

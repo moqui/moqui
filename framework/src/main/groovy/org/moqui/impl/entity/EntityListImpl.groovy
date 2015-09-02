@@ -234,7 +234,12 @@ class EntityListImpl implements EntityList {
         return newObj
     }
 
-    void setFromCache(boolean fc) { fromCache = fc }
+    @Override
+    void setFromCache() {
+        fromCache = true
+        for (EntityValue ev in valueList) if (ev instanceof EntityValueBase) ((EntityValueBase) ev).setFromCache()
+    }
+    @Override
     boolean isFromCache() { return fromCache }
 
     // ========== List Interface Methods ==========
@@ -373,7 +378,7 @@ class EntityListImpl implements EntityList {
         List<Map> getPlainValueList(int dependentLevels) { return [] }
 
         EntityList cloneList() { return this }
-        void setFromCache(boolean fc) { }
+        void setFromCache() { }
         boolean isFromCache() { return false }
 
         // ========== List Interface Methods ==========

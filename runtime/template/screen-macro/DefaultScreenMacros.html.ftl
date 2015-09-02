@@ -37,7 +37,7 @@ along with this software (see the LICENSE.md file). If not, see
                 <#if urlInstance?exists && urlInstance.inCurrentScreenPath><#assign currentItemName = ec.l10n.localize(subscreensItem.menuTitle)></#if>
             </#list> -->
             <li id="${menuId}" class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown">${menuTitle} <i class="glyphicon glyphicon-chevron-right"></i></a>
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">${ec.l10n.localize(menuTitle)} <i class="glyphicon glyphicon-chevron-right"></i></a>
                 <ul class="dropdown-menu">
                     <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
                         <#assign urlInstance = sri.buildUrl(subscreensItem.name)>
@@ -78,7 +78,7 @@ along with this software (see the LICENSE.md file). If not, see
             </ul>
         </#if>
         <#-- add to navbar bread crumbs too -->
-        <div id="${menuId}-crumb" class="navbar-text">${menuTitle} <i class="glyphicon glyphicon-chevron-right"></i></div>
+        <div id="${menuId}-crumb" class="navbar-text">${ec.l10n.localize(menuTitle)} <i class="glyphicon glyphicon-chevron-right"></i></div>
         <script>$("#navbar-menu-crumbs").append($("#${menuId}-crumb"));</script>
     </#if>
 </#macro>
@@ -111,7 +111,7 @@ along with this software (see the LICENSE.md file). If not, see
                 <#if urlInstance.inCurrentScreenPath><#assign currentItemName = ec.l10n.localize(subscreensItem.menuTitle)></#if>
             </#list> -->
             <li id="${menuId}" class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown">${menuTitle} <i class="glyphicon glyphicon-chevron-right"></i></a>
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">${ec.l10n.localize(menuTitle)} <i class="glyphicon glyphicon-chevron-right"></i></a>
                 <ul class="dropdown-menu">
                     <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
                         <#assign urlInstance = sri.buildUrl(subscreensItem.name)>
@@ -161,13 +161,13 @@ along with this software (see the LICENSE.md file). If not, see
                             <#assign urlInstance = urlInstance.addParameters(ec.web.requestParameters)>
                         </#if>
                     </#if>
-                    <li class="<#if urlInstance.disableLink>disabled<#elseif urlInstance.inCurrentScreenPath>active</#if>"><a href="<#if urlInstance.disableLink>#<#else>${urlInstance.minimalPathUrlWithParams}</#if>">${subscreensItem.menuTitle}</a></li>
+                    <li class="<#if urlInstance.disableLink>disabled<#elseif urlInstance.inCurrentScreenPath>active</#if>"><a href="<#if urlInstance.disableLink>#<#else>${urlInstance.minimalPathUrlWithParams}</#if>">${ec.l10n.localize(subscreensItem.menuTitle)}</a></li>
                 </#if>
             </#list>
             </ul>
         </#if>
         <#-- add to navbar bread crumbs too -->
-        <div id="${menuId}-crumb" class="navbar-text">${menuTitle} <i class="glyphicon glyphicon-chevron-right"></i></div>
+        <div id="${menuId}-crumb" class="navbar-text">${ec.l10n.localize(menuTitle)} <i class="glyphicon glyphicon-chevron-right"></i></div>
         <script>$("#navbar-menu-crumbs").append($("#${menuId}-crumb"));</script>
 
         <#if !dynamic || !displayMenu>
@@ -1054,11 +1054,15 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                 </#if>
                     <#list fieldNodeList as fieldNode>
                         <#assign allHidden = true>
-                        <#list fieldNode?children as fieldSubNode><#if !(fieldSubNode["hidden"]?has_content || fieldSubNode["ignored"]?has_content)><#assign allHidden = false></#if></#list>
+                        <#assign hasSubmit = false>
+                        <#list fieldNode?children as fieldSubNode>
+                            <#if !(fieldSubNode["hidden"]?has_content || fieldSubNode["ignored"]?has_content)><#assign allHidden = false></#if>
+                            <#if fieldSubNode?node_name != "header-field" && fieldSubNode["submit"]?has_content><#assign hasSubmit = true></#if>
+                        </#list>
                         <#if !(fieldNode["@hide"]! == "true" || allHidden ||
                                 ((!fieldNode["@hide"]?has_content) && fieldNode?children?size == 1 &&
                                 (fieldNode["header-field"][0]?if_exists["hidden"]?has_content || fieldNode["header-field"][0]?if_exists["ignored"]?has_content))) &&
-                                !(isMulti && fieldNode["default-field"]?has_content && fieldNode["default-field"][0]["submit"]?has_content)>
+                                !(isMulti && hasSubmit)>
                             <th>
                                 <@formListHeaderField fieldNode/>
                             </th>
@@ -1458,7 +1462,7 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
     </#if>
 </#macro>
 <#macro "display-entity">
-    <#assign fieldValue = ""/><#assign fieldValue = sri.getFieldEntityValue(.node)/>
+    <#assign fieldValue = ""/><#assign fieldValue = sri.getFieldEntityValue(.node)!/>
     <#t><span id="<@fieldId .node/>_display" class="form-display"><#if fieldValue?has_content><#if .node["@encode"]!"true" == "false">${fieldValue!"&nbsp;"}<#else>${(fieldValue!" ")?html?replace("\n", "<br>")}</#if><#else>&nbsp;</#if></span>
     <#-- don't default to fieldValue for the hidden input value, will only be different from the entry value if @text is used, and we don't want that in the hidden value -->
     <#t><#if !.node["@also-hidden"]?has_content || .node["@also-hidden"] == "true"><input type="hidden" id="<@fieldId .node/>" name="<@fieldName .node/>" value="${sri.getFieldValuePlainString(.node?parent?parent, "")?html}"></#if>
@@ -1508,6 +1512,7 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
         <#assign doUrlInfo = sri.makeUrlByType(doNode["@transition"], "transition", .node, "false")>
         <#assign doUrlParameterMap = doUrlInfo.getParameterMap()>
         <#assign afterFormScript>
+
             function populate_${id}() {
                 var hasAllParms = true;
                 <#list depNodeList as depNode>if (!$('#${formName}_${depNode["@field"]}<#if listEntryIndex?has_content>_${listEntryIndex}</#if><#if sectionEntryIndex?has_content>_${sectionEntryIndex}</#if>').val()) { hasAllParms = false; } </#list>
@@ -1631,15 +1636,16 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
         <span id="${id}_value" class="form-autocomplete-value"><#if valueText?has_content>${valueText?html}<#else>&nbsp;</#if></span>
         </#if>
         <#assign afterFormScript>
+
             $("#${id}_ac").autocomplete({
                 source: function(request, response) { $.ajax({
                     url: "${acUrlInfo.url}", type: "POST", dataType: "json", data: { term: request.term<#list acUrlParameterMap?keys as parameterKey><#if acUrlParameterMap.get(parameterKey)?has_content>, "${parameterKey}":"${acUrlParameterMap.get(parameterKey)}"</#if></#list> },
                     success: function(data) { response($.map(data, function(item) { return { label: item.label, value: item.value } })); }
                 }); }, <#if .node["@ac-delay"]?has_content>delay: ${.node["@ac-delay"]},</#if><#if .node["@ac-min-length"]?has_content>minLength: ${.node["@ac-min-length"]},</#if>
-                focus: function(event, ui) { $("#${id}").val(ui.item.value); $("#${id}_ac").val(ui.item.label); return false; },
-                select: function(event, ui) { if (ui.item) { this.value = ui.item.value; $("#${id}").val(ui.item.value); $("#${id}_ac").val(ui.item.label);<#if acShowValue> if (ui.item.label) { $("#${id}_value").html(ui.item.label); }</#if> return false; } }
+                focus: function(event, ui) { $("#${id}").val(ui.item.value); $("#${id}").trigger("change"); $("#${id}_ac").val(ui.item.label); return false; },
+                select: function(event, ui) { if (ui.item) { this.value = ui.item.value; $("#${id}").val(ui.item.value); $("#${id}").trigger("change"); $("#${id}_ac").val(ui.item.label);<#if acShowValue> if (ui.item.label) { $("#${id}_value").html(ui.item.label); }</#if> return false; } }
             });
-            $("#${id}_ac").change(function() { if (!$("#${id}_ac").val()) { $("#${id}").val(""); }<#if acUseActual> else { $("#${id}").val($("#${id}_ac").val()); }</#if> });
+            $("#${id}_ac").change(function() { if (!$("#${id}_ac").val()) { $("#${id}").val(""); $("#${id}").trigger("change"); }<#if acUseActual> else { $("#${id}").val($("#${id}_ac").val()); $("#${id}").trigger("change"); }</#if> });
             <#if !.node["@ac-initial-text"]?has_content>
             /* load the initial value if there is one */
             if ($("#${id}").val()) {

@@ -38,15 +38,20 @@ return;
 <#-- NOTE should we handle out-map?has_content and async!=false with a ServiceResultWaiter? -->
 <#macro "service-call">
     <#assign handleResult = (.node["@out-map"]?has_content && (!.node["@async"]?has_content || .node["@async"] == "false"))>
+    <#assign outAapAddToExisting = !.node["@out-map-add-to-existing"]?has_content || .node["@out-map-add-to-existing"] == "true">
     if (true) {
         <#if handleResult>def call_service_result = </#if>ec.service.<#if .node.@async?has_content && .node.@async != "false">async()<#else>sync()</#if>.name("${.node.@name}")<#if .node["@async"]?if_exists == "persist">.persist(true)</#if><#if .node["@multi"]?if_exists == "true">.multi(true)</#if><#if .node["@multi"]?if_exists == "parameter">.multi(ec.web?.requestParameters?._isMulti == "true")</#if><#if .node["@transaction"]?exists><#if .node["@transaction"] == "ignore">.ignoreTransaction(true)<#elseif .node["@transaction"] == "force-new" || .node["@transaction"] == "force-cache">.requireNewTransaction(true)<#elseif .node["@transaction"] == "cache" || .node["@transaction"] == "force-cache">.useTransactionCache(true)</#if></#if>
             <#if .node["@in-map"]?if_exists == "true">.parameters(context)<#elseif .node["@in-map"]?has_content && .node["@in-map"] != "false">.parameters(${.node["@in-map"]})</#if><#list .node["field-map"] as fieldMap>.parameter("${fieldMap["@field-name"]}",<#if fieldMap["@from"]?has_content>${fieldMap["@from"]}<#elseif fieldMap["@value"]?has_content>"""${fieldMap["@value"]}"""<#else>${fieldMap["@field-name"]}</#if>)</#list>.call()
         <#if handleResult>
-        if (${.node["@out-map"]} != null) {
-            if (call_service_result) ${.node["@out-map"]}.putAll(call_service_result)
-        } else {
-            ${.node["@out-map"]} = call_service_result
-        }
+            <#if outAapAddToExisting>
+            if (${.node["@out-map"]} != null) {
+                if (call_service_result) ${.node["@out-map"]}.putAll(call_service_result)
+            } else {
+            </#if>
+                ${.node["@out-map"]} = call_service_result
+            <#if outAapAddToExisting>
+            }
+            </#if>
         </#if>
         <#if (.node["@web-send-json-response"]?if_exists == "true")>
         ec.web.sendJsonResponse(call_service_result)
@@ -144,7 +149,7 @@ return;
         ${.node["@list"]} = ${.node["@list"]}_xafind.list()
         <#if useCache>
             <#list .node["date-filter"] as df>
-                ${.node["@list"]} = ${.node["@list"]}.filterByDate("${df["@from-field-name"]?default("fromDate")}", "${df["@thru-field-name"]?default("thruDate")}", <#if df["@valid-date"]?has_content>${df["@valid-date"]} as Timestamp<#else>null</#if>, ${df["@ignore-if-empty"]?default("false")})
+                ${.node["@list"]} = ${.node["@list"]}.filterByDate("${df["@from-field-name"]?default("fromDate")}", "${df["@thru-field-name"]?default("thruDate")}", <#if df["@valid-date"]?has_content>${df["@valid-date"]} as java.sql.Timestamp<#else>null</#if>, ${df["@ignore-if-empty"]?default("false")})
             </#list>
             <#if doPaginate>
                 <#-- get the Count after the date-filter, but before the limit/pagination filter -->
@@ -173,7 +178,7 @@ return;
             <#list .node["date-filter"] as df>.condition(<#visit df/>)</#list><#list .node["econdition"] as ec>.condition(<#visit ec/>)</#list><#list .node["econditions"] as ecs>.condition(<#visit ecs/>)</#list><#list .node["econdition-object"] as eco>.condition(<#visit eco/>)</#list><#if .node["having-econditions"]?has_content><#list .node["having-econditions"]["*"] as havingCond>.havingCondition(<#visit havingCond/>)</#list></#if>.count()
 </#macro>
 <#-- =================== entity-find sub-elements =================== -->
-<#macro "date-filter">(org.moqui.entity.EntityCondition) ec.entity.conditionFactory.makeConditionDate("${.node["@from-field-name"]!("fromDate")}", "${.node["@thru-field-name"]!("thruDate")}", <#if .node["@valid-date"]?has_content>${.node["@valid-date"]} as Timestamp<#else>null</#if>, ${.node["@ignore-if-empty"]!("false")})</#macro>
+<#macro "date-filter">(org.moqui.entity.EntityCondition) ec.entity.conditionFactory.makeConditionDate("${.node["@from-field-name"]!("fromDate")}", "${.node["@thru-field-name"]!("thruDate")}", <#if .node["@valid-date"]?has_content>${.node["@valid-date"]} as java.sql.Timestamp<#else>null</#if>, ${.node["@ignore-if-empty"]!("false")})</#macro>
 <#macro "econdition">(org.moqui.entity.EntityCondition) ec.entity.conditionFactory.makeActionConditionDirect("${.node["@field-name"]}", "${.node["@operator"]?default("equals")}", ${.node["@from"]?default(.node["@field-name"])}, <#if .node["@value"]?has_content>"${.node["@value"]}"<#else>null</#if>, <#if .node["@to-field-name"]?has_content>"${.node["@to-field-name"]}"<#else>null</#if>, ${.node["@ignore-case"]?default("false")}, ${.node["@ignore-if-empty"]?default("false")}, ${.node["@or-null"]?default("false")}, "${.node["@ignore"]?default("false")}")</#macro>
 <#macro "econditions">(org.moqui.entity.EntityCondition) ec.entity.conditionFactory.makeCondition([<#list .node?children as subCond><#visit subCond/><#if subCond_has_next>, </#if></#list>], org.moqui.impl.entity.EntityConditionFactoryImpl.getJoinOperator("${.node["@combine"]!"and"}"))</#macro>
 <#macro "econdition-object">${.node["@field"]}</#macro>
@@ -211,16 +216,16 @@ return;
     if (${.node["@list"]} instanceof Map) {
         ${.node["@entry"]}_index = 0
         for (def ${.node["@entry"]}Entry in ${.node["@list"]}.entrySet()) {
-            def ${.node["@entry"]} = ${.node["@entry"]}Entry.getValue()
-            def ${.node["@key"]} = ${.node["@entry"]}Entry.getKey()
+            ${.node["@entry"]} = ${.node["@entry"]}Entry.getValue()
+            ${.node["@key"]} = ${.node["@entry"]}Entry.getKey()
             <#recurse/>
             ${.node["@entry"]}_index++
         }
     } else if (${.node["@list"]} instanceof Collection<Map.Entry>) {
         ${.node["@entry"]}_index = 0
         for (def ${.node["@entry"]}Entry in ${.node["@list"]}) {
-            def ${.node["@entry"]} = ${.node["@entry"]}Entry.getValue()
-            def ${.node["@key"]} = ${.node["@entry"]}Entry.getKey()
+            ${.node["@entry"]} = ${.node["@entry"]}Entry.getValue()
+            ${.node["@key"]} = ${.node["@entry"]}Entry.getKey()
             <#recurse/>
             ${.node["@entry"]}_index++
         }
@@ -229,8 +234,8 @@ return;
         ${.node["@entry"]}_index = 0
         _${.node["@entry"]}Iterator = ${.node["@list"]}.iterator()
         while (_${.node["@entry"]}Iterator.hasNext()) {
-            def ${.node["@entry"]} = _${.node["@entry"]}Iterator.next()
-            boolean ${.node["@entry"]}_has_next = _${.node["@entry"]}Iterator.hasNext()
+            ${.node["@entry"]} = _${.node["@entry"]}Iterator.next()
+            ${.node["@entry"]}_has_next = _${.node["@entry"]}Iterator.hasNext()
             <#recurse/>
             ${.node["@entry"]}_index++
         }

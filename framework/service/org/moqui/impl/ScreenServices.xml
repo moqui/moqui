@@ -15,7 +15,8 @@ along with this software (see the LICENSE.md file). If not, see
 
     <service verb="create" noun="FormResponse">
         <in-parameters>
-            <parameter name="formLocation" required="true"/>
+            <parameter name="formLocation" required="true" default-value="DbForm#${formId}"/>
+            <parameter name="formId"/>
             <parameter name="userId" default="ec.user.userId"/>
             <parameter name="responseDate" type="Timestamp" default="ec.user.nowTimestamp"/>
             <parameter name="responseMap" type="Map" required="true"/>
@@ -29,7 +30,7 @@ along with this software (see the LICENSE.md file). If not, see
                 <set field="fieldName" from="fieldNode.'@name'"/>
                 <if condition="responseMap.containsKey(fieldName)">
                     <service-call name="create#moqui.screen.form.FormResponseAnswer"
-                            in-map="[formResponseId:formResponseId, fieldName:fieldName,
+                            in-map="[formResponseId:formResponseId, formId:formId, fieldName:fieldName,
                                 valueText:StupidUtilities.toPlainString(responseMap.get(fieldName))]"/>
                 </if>
             </iterate>
@@ -71,9 +72,19 @@ along with this software (see the LICENSE.md file). If not, see
         <out-parameters>
             <auto-parameters entity-name="moqui.screen.form.FormResponse"/>
             <parameter name="responseMap" type="Map"/>
+            <parameter name="dbForm" type="Map"/>
+            <parameter name="dbFormFieldList" type="List"/>
         </out-parameters>
         <actions>
             <entity-find-one entity-name="moqui.screen.form.FormResponse" value-field="formResponse"/>
+            <if condition="formResponse.formId">
+                <entity-find-one entity-name="moqui.screen.form.DbForm" value-field="dbForm">
+                    <field-map field-name="formId" from="formResponse.formId"/></entity-find-one>
+                <entity-find entity-name="moqui.screen.form.DbFormField" list="dbFormFieldList">
+                    <econdition field-name="formId" from="formResponse.formId"/>
+                    <order-by field-name="layoutSequenceNum"/>
+                </entity-find>
+            </if>
             <script>context.putAll(formResponse)</script>
             <entity-find entity-name="moqui.screen.form.FormResponseAnswer" list="answerList">
                 <econdition field-name="formResponseId"/></entity-find>

@@ -292,6 +292,7 @@ class ScreenForm {
                     if (dbFormField.entryName) newFieldNode.attributes().put("entry-name", dbFormField.entryName)
                     Node subFieldNode = newFieldNode.appendNode("default-field", [:])
                     if (dbFormField.title) subFieldNode.attributes().put("title", dbFormField.title)
+                    if (dbFormField.tooltip) subFieldNode.attributes().put("tooltip", dbFormField.tooltip)
 
                     String fieldType = dbFormField.fieldTypeEnumId
                     if (!fieldType) throw new IllegalArgumentException("DbFormField record with formId [${formId}] and fieldName [${fieldName}] has no fieldTypeEnumId")
@@ -1065,8 +1066,11 @@ class ScreenForm {
     static void addFieldOption(ListOrderedMap options, Node fieldNode, Node childNode, Map listOption,
                                ExecutionContext ec) {
         EntityValueBase listOptionEvb = listOption instanceof EntityValueImpl ? listOption : null
-        if (listOptionEvb != null) ec.context.push(listOptionEvb.getValueMap())
-        else ec.context.push(listOption)
+        if (listOptionEvb != null) {
+            ec.context.push(listOptionEvb.getMap())
+        } else {
+            ec.context.push(listOption)
+        }
         try {
             String key = null
             String keyAttr = (String) childNode.attributes().get('key')

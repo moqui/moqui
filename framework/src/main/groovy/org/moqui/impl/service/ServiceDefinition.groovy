@@ -643,7 +643,7 @@ class ServiceDefinition {
             String regexp = (String) valNode.attributes().get('regexp')
             if (regexp && !pvString.matches(regexp)) {
                 // a message attribute should always be there, but just in case we'll have a default
-                eci.message.addValidationError(null, parameterName, getServiceName(), (String) valNode.attributes().get('message') ?: "Value entered (${pv}) did not match expression: ${regexp}", null)
+                eci.message.addValidationError(null, parameterName, getServiceName(), (String) (valNode.attributes().get('message') ?: "Value entered (${pv}) did not match expression: ${regexp}"), null)
                 return false
             }
             return true

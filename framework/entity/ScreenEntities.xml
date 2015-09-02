@@ -20,8 +20,9 @@ along with this software (see the LICENSE.md file). If not, see
     <entity entity-name="SubscreensItem" package-name="moqui.screen" authorize-skip="view" cache="true">
         <field name="screenLocation" type="text-medium" is-pk="true"/>
         <field name="subscreenName" type="text-medium" is-pk="true"/>
-        <field name="userGroupId" type="id" is-pk="true">
-            <description>These settings are for a UserGroup. To apply to all users just use the ALL_USERS UserGroup.</description></field>
+        <field name="userGroupId" type="id" is-pk="true" default="'ALL_USERS'">
+            <description>DEPRECATED. While still supported, to control access to subscreens use ArtifactAuthz and
+                related records instead.</description></field>
         <field name="subscreenLocation" type="text-medium"/>
         <field name="menuTitle" type="text-medium">
             <description>The title to show for this subscreen in the menu. Can be used to override subscreen titles in the
@@ -94,14 +95,37 @@ along with this software (see the LICENSE.md file). If not, see
         <field name="isListForm" type="text-indicator"/>
         <field name="modifyXmlScreenForm" type="text-medium"><description>The screen location and form name (separated
             by a hash/pound sign) of XML Screen Form to modify.</description></field>
+        <field name="description" type="text-medium"/>
+        <field name="comments" type="text-long"/>
+        <field name="printTemplateLocation" type="text-medium"/>
+        <field name="acroFormLocation" type="text-medium"/>
+        <field name="printFontSize" type="text-short"/>
+        <field name="printFontFamily" type="text-short"/>
+        <field name="printContainerHeight" type="text-short"/>
+        <field name="printRepeatCount" type="number-integer"/>
+        <field name="printRepeatNewPage" type="text-indicator"/>
     </entity>
     <entity entity-name="DbFormField" package-name="moqui.screen.form">
         <field name="formId" type="id" is-pk="true"/>
         <field name="fieldName" type="text-medium" is-pk="true"/>
         <field name="entryName" type="text-medium"/>
         <field name="title" type="text-medium"/>
-        <field name="fieldTypeEnumId" type="id"/>
+        <field name="tooltip" type="text-medium"/>
+        <field name="fieldTypeEnumId" type="id"><description>Field type for presentation, validation;
+            always stored as plain text FormResponseAnswer</description></field>
         <field name="layoutSequenceNum" type="number-integer"/>
+
+        <field name="printTop" type="text-short"/>
+        <field name="printLeft" type="text-short"/>
+        <field name="printBottom" type="text-short"/>
+        <field name="printRight" type="text-short"/>
+        <field name="printWidth" type="text-short"/>
+        <field name="printHeight" type="text-short"/>
+        <field name="printTextAlign" type="text-short"/>
+        <field name="printVerticalAlign" type="text-short"/>
+        <field name="printFontSize" type="text-short"/>
+        <field name="printFontFamily" type="text-short"/>
+
         <relationship type="one" related-entity-name="moqui.screen.form.DbForm"/>
         <relationship type="one" title="DbFormFieldType" related-entity-name="moqui.basic.Enumeration">
             <key-map field-name="fieldTypeEnumId" related-field-name="enumId"/></relationship>
@@ -128,6 +152,13 @@ along with this software (see the LICENSE.md file). If not, see
             <moqui.basic.Enumeration description="text-line" enumId="DBFFT_text-line" enumTypeId="DbFormFieldType"/>
             <moqui.basic.Enumeration description="text-area" enumId="DBFFT_text-area" enumTypeId="DbFormFieldType"/>
             <moqui.basic.Enumeration description="text-find" enumId="DBFFT_text-find" enumTypeId="DbFormFieldType"/>
+            <!-- add special support for these? 
+            <moqui.basic.Enumeration description="Number - Integer" enumId="FftNumberInteger" enumTypeId="DbFormFieldType"/>
+            <moqui.basic.Enumeration description="Number - Decimal" enumId="FftNumberDecimal" enumTypeId="DbFormFieldType"/>
+            <moqui.basic.Enumeration description="Boolean (Y/N)" enumId="FftBoolean" enumTypeId="DbFormFieldType"/>
+            <moqui.basic.Enumeration description="Enumeration" enumId="FftEnumeration" enumTypeId="DbFormFieldType"/>
+            <moqui.basic.Enumeration description="Resource" enumId="FftResource" enumTypeId="DbFormFieldType"/>
+            -->
         </seed-data>
     </entity>
     <entity entity-name="DbFormFieldAttribute" package-name="moqui.screen.form">
@@ -190,21 +221,29 @@ along with this software (see the LICENSE.md file). If not, see
     <entity entity-name="FormResponse" package-name="moqui.screen.form">
         <field name="formResponseId" type="id" is-pk="true"/>
         <field name="formLocation" type="text-medium"/>
+        <field name="formId" type="id"/>
         <field name="userId" type="id-long"/>
         <field name="responseDate" type="date-time"/>
+        <relationship type="one" related-entity-name="moqui.screen.form.DbForm"/>
         <relationship type="one" related-entity-name="moqui.security.UserAccount"/>
     </entity>
     <entity entity-name="FormResponseAnswer" package-name="moqui.screen.form">
         <field name="formResponseAnswerId" type="id" is-pk="true"/>
         <field name="formResponseId" type="id"/>
-        <field name="fieldName" type="text-short"/>
+        <field name="formId" type="id"/>
+        <field name="fieldName" type="text-medium"/>
+        <field name="sequenceNum" type="number-integer"/>
         <field name="valueText" type="text-long"/>
         <relationship type="one" related-entity-name="moqui.screen.form.FormResponse"/>
+        <relationship type="one" related-entity-name="moqui.screen.form.DbForm"/>
+        <!-- this is nofk because for forms other than DbForms fieldName may be populated but formId null -->
+        <relationship type="one-nofk" related-entity-name="moqui.screen.form.DbFormField"/>
     </entity>
 
     <!-- ========================================================= -->
     <!-- moqui.screen.dynscreen -->
     <!-- ========================================================= -->
+
     <!-- Tabled for now, not to be part of 1.0:
     <entity entity-name="DynamicScreen" package-name="moqui.screen.dynscreen">
         <field name="screenId" type="id" is-pk="true"/>

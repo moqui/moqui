@@ -11,9 +11,9 @@
             <span class="icon-bar"></span>
         </button>
         <#assign headerLogoList = sri.getThemeValues("STRT_HEADER_LOGO")>
-        <#if headerLogoList?has_content><a href="/" class="navbar-brand"><img src="${headerLogoList?first}" alt="Home" height="50"></a></#if>
+        <#if headerLogoList?has_content><a href="${sri.buildUrl("/").getUrl()}" class="navbar-brand"><img src="${sri.buildUrl(headerLogoList?first).getUrl()}" alt="Home" height="50"></a></#if>
         <#assign headerTitleList = sri.getThemeValues("STRT_HEADER_TITLE")>
-        <#if headerTitleList?has_content><div class="navbar-text">${headerTitleList?first}</div></#if>
+        <#if headerTitleList?has_content><div class="navbar-text">${ec.l10n.localize(headerTitleList?first)}</div></#if>
     </header>
     <#--
     <div class="topnav">
@@ -92,19 +92,37 @@
             -->
         </ul><!-- /.nav -->
         <div id="navbar-menu-crumbs"></div>
-        <div class="navbar-text">${html_title!((sri.screenUrlInfo.targetScreen.getDefaultMenuName())!"Page")}</div>
-        <a href="/Login/logout" data-toggle="tooltip" data-original-title="Logout ${(ec.getUser().getUserAccount().userFullName)!}" data-placement="bottom" class="btn btn-danger btn-sm navbar-btn navbar-right">
+        <div class="navbar-text">${html_title!(ec.l10n.localize(sri.screenUrlInfo.targetScreen.getDefaultMenuName()!"Page"))}</div>
+        <#-- logout button -->
+        <a href="${sri.buildUrl("/Login/logout").url}" data-toggle="tooltip" data-original-title="Logout ${(ec.getUser().getUserAccount().userFullName)!}" data-placement="bottom" class="btn btn-danger btn-sm navbar-btn navbar-right">
             <i class="glyphicon glyphicon-off"></i>
         </a>
+        <#-- dark/light switch -->
         <a href="#" onclick="switchDarkLight();" data-toggle="tooltip" data-original-title="Switch Dark/Light" data-placement="bottom" class="btn btn-default btn-sm navbar-btn navbar-right">
             <i class="glyphicon glyphicon-adjust"></i>
         </a>
+        <#-- header navbar items from the theme -->
         <#assign navbarItemList = sri.getThemeValues("STRT_HEADER_NAVBAR_ITEM")>
         <#list navbarItemList! as navbarItem>
             <#assign navbarItemTemplate = navbarItem?interpret>
             <@navbarItemTemplate/>
         </#list>
+        <#-- screen history menu -->
+        <#assign screenHistoryList = ec.web.getScreenHistory()>
+        <ul id="history-menus" class="nav navbar-right">
+            <li id="history-menu" class="dropdown">
+                <a id="history-menu-link" href="#" class="dropdown-toggle btn btn-default btn-sm navbar-btn" data-toggle="dropdown" title="History">
+                    <i class="glyphicon glyphicon-list"></i></a>
+                <ul class="dropdown-menu">
+                    <#list screenHistoryList as screenHistory><#if (screenHistory_index >= 25)><#break></#if>
+                        <li><a href="${screenHistory.url}"><i class="glyphicon glyphicon-link" style="padding-right: 8px;"></i>${screenHistory.name}</a></li>
+                    </#list>
+                </ul>
+            </li>
+        </ul>
+        <#-- dark/light switch JS method -->
         <script>
+            $('#history-menu-link').tooltip({ placement:'bottom', trigger:'hover' });
             function switchDarkLight() {
                 $("body").toggleClass("bg-dark dk");
                 $("body").toggleClass("bg-light lter");

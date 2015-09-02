@@ -318,12 +318,13 @@ class EntityDataDocument {
                 boolean recurseSetFields = true
                 if (isOneRelationship) {
                     // we only need a single Map
-                    relatedEntityDocMap = (Map) parentDocMap.get(relDocumentAlias)
+                    // don't put related one fields in child Map: relatedEntityDocMap = (Map) parentDocMap.get(relDocumentAlias)
                     if (relatedEntityDocMap == null) {
-                        relatedEntityDocMap = [:]
+                        // don't put related one fields in child Map: relatedEntityDocMap = [:]
                         // now time to recurse
-                        populateDataDocRelatedMap(ev, relatedEntityDocMap, relatedEd, fieldTreeChild, relationshipAliasMap, recurseSetFields)
-                        if (relatedEntityDocMap) parentDocMap.put(relDocumentAlias, relatedEntityDocMap)
+                        populateDataDocRelatedMap(ev, parentDocMap, relatedEd, fieldTreeChild, relationshipAliasMap, recurseSetFields)
+                        // don't put related one fields in child Map: populateDataDocRelatedMap(ev, relatedEntityDocMap, relatedEd, fieldTreeChild, relationshipAliasMap, recurseSetFields)
+                        // don't put related one fields in child Map: if (relatedEntityDocMap) parentDocMap.put(relDocumentAlias, relatedEntityDocMap)
                     } else {
                         recurseSetFields = false
                         // now time to recurse
