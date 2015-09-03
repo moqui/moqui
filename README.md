@@ -1,5 +1,6 @@
 ## Welcome to Moqui Framework
 
+[![License](https://img.shields.io/badge/License-CC0%201.0%20Universal-blue.svg)](https://github.com/moqui/moqui/blob/master/LICENSE.md)
 [![Build Status](https://travis-ci.org/moqui/moqui.svg)](https://travis-ci.org/moqui/moqui)
 
 For details about running and deploying Moqui see:
