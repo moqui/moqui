@@ -246,14 +246,14 @@ class EntityCache {
                 if (memberEntityNode == null) continue
                 if (!'member-entity'.equals(memberEntityNode.name())) continue
 
-                Map mePkFieldToAliasNameMap = ed.getMePkFieldToAliasNameMap((String) memberEntityNode.attributes().get('entity-alias'))
+                Map mePkFieldToAliasNameMap = ed.getMePkFieldToAliasNameMap((String) memberEntityNode.attribute('entity-alias'))
 
                 // logger.warn("TOREMOVE for view-entity ${entityName}, member-entity ${memberEntityNode.'@entity-name'}, got PK field to alias map: ${mePkFieldToAliasNameMap}")
 
                 // create EntityCondition with pk fields
                 // store with main ec with view-entity name in a RA cache for view entities for the member-entity name
                 // with cache key of member-entity PK EntityCondition obj
-                EntityDefinition memberEd = efi.getEntityDefinition((String) memberEntityNode.attributes().get('entity-name'))
+                EntityDefinition memberEd = efi.getEntityDefinition((String) memberEntityNode.attribute('entity-name'))
                 Cache listViewRaCache = getCacheListRa(memberEd.getFullEntityName())
                 for (EntityValue ev in eli) {
                     Map pkCondMap = new HashMap()

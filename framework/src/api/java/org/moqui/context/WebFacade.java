@@ -41,7 +41,8 @@ public interface WebFacade {
     Map<String, Object> getErrorParameters();
 
     /** A list of recent screen requests to show to a user (does not include requests to transitions or standalone screens).
-     * Map contains 'name' (screen name plus up to 2 parameter values), 'url' (full URL with parameters), and 'screenLocation' fields. */
+     * Map contains 'name' (screen name plus up to 2 parameter values), 'url' (full URL with parameters),
+     * 'screenLocation', 'image' (last menu image in screen render path), and 'imageType' fields. */
     List<Map> getScreenHistory();
 
     void sendJsonResponse(Object responseObj);

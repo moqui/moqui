@@ -37,12 +37,25 @@ along with this software (see the LICENSE.md file). If not, see
                 <#if urlInstance?exists && urlInstance.inCurrentScreenPath><#assign currentItemName = ec.l10n.localize(subscreensItem.menuTitle)></#if>
             </#list> -->
             <li id="${menuId}" class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown">${ec.l10n.localize(menuTitle)} <i class="glyphicon glyphicon-chevron-right"></i></a>
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">${ec.resource.expand(menuTitle, "")} <i class="glyphicon glyphicon-chevron-right"></i></a>
                 <ul class="dropdown-menu">
                     <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
                         <#assign urlInstance = sri.buildUrl(subscreensItem.name)>
                         <#if urlInstance.isPermitted()>
-                            <li class="<#if urlInstance.inCurrentScreenPath>active</#if>"><a href="<#if urlInstance.disableLink>#<#else>${urlInstance.minimalPathUrlWithParams}</#if>">${ec.l10n.localize(subscreensItem.menuTitle)}</a></li>
+                            <li class="<#if urlInstance.inCurrentScreenPath>active</#if>"><a href="<#if urlInstance.disableLink>#<#else>${urlInstance.minimalPathUrlWithParams}</#if>">
+                                <#if urlInstance.sui.menuImage?has_content>
+                                    <#if urlInstance.sui.menuImageType == "icon">
+                                        <i class="${urlInstance.sui.menuImage}" style="padding-right: 8px;"></i>
+                                    <#elseif urlInstance.sui.menuImageType == "url-plain">
+                                        <img src="${urlInstance.sui.menuImage}" width="18" style="padding-right: 4px;"/>
+                                    <#else>
+                                        <img src="${sri.buildUrl(urlInstance.sui.menuImage).url}" height="18" style="padding-right: 4px;"/>
+                                    </#if>
+                                <#else>
+                                    <i class="glyphicon glyphicon-link" style="padding-right: 8px;"></i>
+                                </#if>
+                                ${ec.resource.expand(subscreensItem.menuTitle, "")}
+                            </a></li>
                         </#if>
                     </#list>
                 </ul>
@@ -72,13 +85,13 @@ along with this software (see the LICENSE.md file). If not, see
                 <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
                     <#assign urlInstance = sri.buildUrl(subscreensItem.name)>
                     <#if urlInstance.isPermitted()>
-                        <li class="<#if urlInstance.inCurrentScreenPath>active</#if><#if urlInstance.disableLink> disabled</#if>"><#if urlInstance.disableLink>${ec.l10n.localize(subscreensItem.menuTitle)}<#else><a href="${urlInstance.minimalPathUrlWithParams}">${ec.l10n.localize(subscreensItem.menuTitle)}</a></#if></li>
+                        <li class="<#if urlInstance.inCurrentScreenPath>active</#if><#if urlInstance.disableLink> disabled</#if>"><#if urlInstance.disableLink>${ec.resource.expand(subscreensItem.menuTitle, "")}<#else><a href="${urlInstance.minimalPathUrlWithParams}">${ec.l10n.localize(subscreensItem.menuTitle)}</a></#if></li>
                     </#if>
                 </#list>
             </ul>
         </#if>
         <#-- add to navbar bread crumbs too -->
-        <div id="${menuId}-crumb" class="navbar-text">${ec.l10n.localize(menuTitle)} <i class="glyphicon glyphicon-chevron-right"></i></div>
+        <div id="${menuId}-crumb" class="navbar-text">${ec.resource.expand(menuTitle, "")} <i class="glyphicon glyphicon-chevron-right"></i></div>
         <script>$("#navbar-menu-crumbs").append($("#${menuId}-crumb"));</script>
     </#if>
 </#macro>
@@ -108,15 +121,28 @@ along with this software (see the LICENSE.md file). If not, see
         <#-- <ul id="${menuId}"<#if .node["@width"]?has_content> style="width: ${.node["@menu-width"]};"</#if>>  ->
             <#-- <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
                 <#assign urlInstance = sri.buildUrl(subscreensItem.name)>
-                <#if urlInstance.inCurrentScreenPath><#assign currentItemName = ec.l10n.localize(subscreensItem.menuTitle)></#if>
+                <#if urlInstance.inCurrentScreenPath><#assign currentItemName = ec.resource.expand(subscreensItem.menuTitle, "")></#if>
             </#list> -->
             <li id="${menuId}" class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown">${ec.l10n.localize(menuTitle)} <i class="glyphicon glyphicon-chevron-right"></i></a>
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">${ec.resource.expand(menuTitle, "")} <i class="glyphicon glyphicon-chevron-right"></i></a>
                 <ul class="dropdown-menu">
                     <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
                         <#assign urlInstance = sri.buildUrl(subscreensItem.name)>
                         <#if urlInstance.isPermitted()>
-                            <li class="<#if urlInstance.inCurrentScreenPath>active</#if>"><a href="<#if urlInstance.disableLink>#<#else>${urlInstance.minimalPathUrlWithParams}</#if>">${ec.l10n.localize(subscreensItem.menuTitle)}</a></li>
+                            <li class="<#if urlInstance.inCurrentScreenPath>active</#if>"><a href="<#if urlInstance.disableLink>#<#else>${urlInstance.minimalPathUrlWithParams}</#if>">
+                                <#if urlInstance.sui.menuImage?has_content>
+                                    <#if urlInstance.sui.menuImageType == "icon">
+                                        <i class="${urlInstance.sui.menuImage}" style="padding-right: 8px;"></i>
+                                    <#elseif urlInstance.sui.menuImageType == "url-plain">
+                                        <img src="${urlInstance.sui.menuImage}" width="18" style="padding-right: 4px;"/>
+                                    <#else>
+                                        <img src="${sri.buildUrl(urlInstance.sui.menuImage).url}" height="18" style="padding-right: 4px;"/>
+                                    </#if>
+                                <#else>
+                                    <i class="glyphicon glyphicon-link" style="padding-right: 8px;"></i>
+                                </#if>
+                                ${ec.resource.expand(subscreensItem.menuTitle, "")}
+                            </a></li>
                         </#if>
                     </#list>
                 </ul>
@@ -127,7 +153,7 @@ along with this software (see the LICENSE.md file). If not, see
                     <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
                         <#assign urlInstance = sri.buildUrl(subscreensItem.name)>
                         <#if urlInstance.isPermitted()>
-                            <li class="<#if urlInstance.inCurrentScreenPath>ui-state-active</#if>"><a href="<#if urlInstance.disableLink>#<#else>${urlInstance.minimalPathUrlWithParams}</#if>">${ec.l10n.localize(subscreensItem.menuTitle)}</a></li>
+                            <li class="<#if urlInstance.inCurrentScreenPath>ui-state-active</#if>"><a href="<#if urlInstance.disableLink>#<#else>${urlInstance.minimalPathUrlWithParams}</#if>">${ec.resource.expand(subscreensItem.menuTitle, "")}</a></li>
                         </#if>
                     </#list>
                 </ul>
@@ -161,13 +187,13 @@ along with this software (see the LICENSE.md file). If not, see
                             <#assign urlInstance = urlInstance.addParameters(ec.web.requestParameters)>
                         </#if>
                     </#if>
-                    <li class="<#if urlInstance.disableLink>disabled<#elseif urlInstance.inCurrentScreenPath>active</#if>"><a href="<#if urlInstance.disableLink>#<#else>${urlInstance.minimalPathUrlWithParams}</#if>">${ec.l10n.localize(subscreensItem.menuTitle)}</a></li>
+                    <li class="<#if urlInstance.disableLink>disabled<#elseif urlInstance.inCurrentScreenPath>active</#if>"><a href="<#if urlInstance.disableLink>#<#else>${urlInstance.minimalPathUrlWithParams}</#if>">${ec.resource.expand(subscreensItem.menuTitle, "")}</a></li>
                 </#if>
             </#list>
             </ul>
         </#if>
         <#-- add to navbar bread crumbs too -->
-        <div id="${menuId}-crumb" class="navbar-text">${ec.l10n.localize(menuTitle)} <i class="glyphicon glyphicon-chevron-right"></i></div>
+        <div id="${menuId}-crumb" class="navbar-text">${ec.resource.expand(menuTitle, "")} <i class="glyphicon glyphicon-chevron-right"></i></div>
         <script>$("#navbar-menu-crumbs").append($("#${menuId}-crumb"));</script>
 
         <#if !dynamic || !displayMenu>
@@ -543,7 +569,6 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
             <#assign labelValue = ec.resource.expand(.node["@text"], "")/>
         </#if>
         <#assign divId><@nodeId .node/></#assign>
-        <#if (labelValue?has_content && labelValue?length < 255)><#assign labelValue = ec.l10n.localize(labelValue)/></#if>
         <#if labelValue?trim?has_content>
         <${labelType}<#if divId?has_content> id="${divId}"</#if><#if .node["@style"]?has_content> class="${ec.resource.expand(.node["@style"], "")}"</#if>><#if !.node["@encode"]?has_content || .node["@encode"] == "true">${labelValue?html?replace("\n", "<br>")}<#else>${labelValue}</#if></${labelType}>
         </#if>

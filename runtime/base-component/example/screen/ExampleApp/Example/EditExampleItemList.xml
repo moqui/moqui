@@ -17,32 +17,25 @@ along with this software (see the LICENSE.md file). If not, see
     
     <parameter name="exampleId"/>
 
-    <transition name="updateExampleItem">
-        <service-call name="update#ExampleItem"/>
-        <default-response url="../EditExampleItems">
-            <parameter name="exampleId" from="exampleId_0"/>
-        </default-response>
-    </transition>
-    <transition name="deleteExampleItem">
-        <service-call name="delete#ExampleItem"/>
-        <default-response url="../EditExampleItems"/>
-    </transition>
+    <transition name="updateExampleItem"><service-call name="update#example.ExampleItem"/>
+        <default-response url="../EditExampleItems"><parameter name="exampleId" from="exampleId_0"/></default-response></transition>
+    <transition name="deleteExampleItem"><service-call name="delete#example.ExampleItem"/>
+        <default-response url="../EditExampleItems"/></transition>
 
     <actions>
-        <entity-find entity-name="ExampleItem" list="exampleItemList">
+        <entity-find entity-name="example.ExampleItem" list="exampleItemList">
             <search-form-inputs default-order-by="exampleItemSeqId"/>
             <econdition field-name="exampleId" from="exampleId"/>
         </entity-find>
 
         <entity-find entity-name="moqui.basic.UomAndType" list="allUomAndTypeList">
             <econdition field-name="uomTypeEnumId" operator="not-equals" value="UT_CURRENCY_MEASURE"/>
-            <order-by field-name="typeDescription"/>
-            <order-by field-name="description"/>
+            <order-by field-name="typeDescription"/><order-by field-name="description"/>
         </entity-find>
     </actions>
     <widgets>
         <form-list name="ListExampleItems" transition="updateExampleItem" list="exampleItemList" multi="true">
-            <auto-fields-service service-name="update#ExampleItem"/>
+            <auto-fields-service service-name="update#example.ExampleItem"/>
             <field name="exampleId">
                 <header-field><hidden/></header-field>
                 <default-field><hidden/></default-field>

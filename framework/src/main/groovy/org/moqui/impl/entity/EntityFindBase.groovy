@@ -305,16 +305,16 @@ abstract class EntityFindBase implements EntityFind {
     EntityFind findNode(Node node) {
         ExecutionContext ec = this.efi.ecfi.executionContext
 
-        this.entity((String) node.attributes().get('entity-name'))
-        String cache = node.attributes().get('cache')
+        this.entity((String) node.attribute('entity-name'))
+        String cache = node.attribute('cache')
         if (cache) { this.useCache(cache == "true") }
-        String forUpdate = node.attributes().get('for-update')
+        String forUpdate = node.attribute('for-update')
         if (forUpdate) this.forUpdate(forUpdate == "true")
-        String distinct = node.attributes().get('distinct')
+        String distinct = node.attribute('distinct')
         if (distinct) this.distinct(distinct == "true")
-        String offset = node.attributes().get('offset')
+        String offset = node.attribute('offset')
         if (offset) this.offset(offset as Integer)
-        String limit = node.attributes().get('limit')
+        String limit = node.attribute('limit')
         if (limit) this.limit(limit as Integer)
         for (Node sf in (Collection<Node>) node["select-field"]) this.selectField((String) sf["@field-name"])
         for (Node ob in (Collection<Node>) node["order-by"]) this.orderBy((String) ob["@field-name"])
@@ -523,7 +523,7 @@ abstract class EntityFindBase implements EntityFind {
         if (ed.isViewEntity() && (!entityNode.get("member-entity") || !entityNode.get("alias")))
             throw new EntityException("Cannot do find for view-entity with name [${entityName}] because it has no member entities or no aliased fields.")
 
-        String authorizeSkip = (String) entityNode.attributes().get('authorize-skip')
+        String authorizeSkip = (String) entityNode.attribute('authorize-skip')
         ec.getArtifactExecution().push(
                 new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW").setActionDetail("one"),
                 (authorizeSkip != "true" && !authorizeSkip?.contains("view")))
@@ -645,7 +645,7 @@ abstract class EntityFindBase implements EntityFind {
         if (ed.isViewEntity() && (!entityNode.get("member-entity") || !entityNode.get("alias")))
             throw new EntityException("Cannot do find for view-entity with name [${entityName}] because it has no member entities or no aliased fields.")
 
-        String authorizeSkip = (String) entityNode.attributes().get('authorize-skip')
+        String authorizeSkip = (String) entityNode.attribute('authorize-skip')
         ec.getArtifactExecution().push(
                 new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW").setActionDetail("list"),
                 (authorizeSkip != "true" && !authorizeSkip?.contains("view")))
@@ -661,7 +661,7 @@ abstract class EntityFindBase implements EntityFind {
         Node entityConditionNode = entityConditionList ? (Node) entityConditionList.get(0) : null
         NodeList ecObList = (NodeList) entityConditionNode?.get("order-by")
         if (ecObList) for (Object orderBy in ecObList)
-            orderByExpanded.add((String) ((Node) orderBy).attributes().get('field-name'))
+            orderByExpanded.add((String) ((Node) orderBy).attribute('field-name'))
 
         EntityConditionImplBase whereCondition = (EntityConditionImplBase) getWhereEntityCondition()
 
@@ -692,7 +692,7 @@ abstract class EntityFindBase implements EntityFind {
             if (!this.fieldsToSelect || txCache != null || doEntityCache) this.selectFields(ed.getFieldNames(true, true, false))
             // TODO: this will not handle query conditions on UserFields, it will blow up in fact
 
-            if (ed.isViewEntity() && entityConditionNode?.attributes()?.get('distinct') == "true") this.distinct(true)
+            if (ed.isViewEntity() && entityConditionNode?.attribute('distinct') == "true") this.distinct(true)
 
             EntityConditionImplBase viewWhere = ed.makeViewWhereCondition()
             if (whereCondition && viewWhere) {
@@ -717,7 +717,7 @@ abstract class EntityFindBase implements EntityFind {
             eli.setOrderByFields(orderByExpanded)
 
             Node databaseNode = this.efi.getDatabaseNode(ed.getEntityGroupName())
-            if (this.limit != null && databaseNode != null && databaseNode.attributes().get('offset-style') == "cursor") {
+            if (this.limit != null && databaseNode != null && databaseNode.attribute('offset-style') == "cursor") {
                 el = (EntityListImpl) eli.getPartialList(this.offset ?: 0, this.limit, true)
             } else {
                 el = (EntityListImpl) eli.getCompleteList(true)
@@ -760,7 +760,7 @@ abstract class EntityFindBase implements EntityFind {
         if (ed.isViewEntity() && (!entityNode.get("member-entity") || !entityNode.get("alias")))
             throw new EntityException("Cannot do find for view-entity with name [${entityName}] because it has no member entities or no aliased fields.")
 
-        String authorizeSkip = (String) entityNode.attributes().get('authorize-skip')
+        String authorizeSkip = (String) entityNode.attribute('authorize-skip')
         ec.getArtifactExecution().push(
                 new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW").setActionDetail("iterator"),
                 (authorizeSkip != "true" && !authorizeSkip?.contains("view")))
@@ -776,7 +776,7 @@ abstract class EntityFindBase implements EntityFind {
         Node entityConditionNode = entityConditionList ? (Node) entityConditionList.get(0) : null
         NodeList ecObList = (NodeList) entityConditionNode?.get("order-by")
         if (ecObList) for (Object orderBy in ecObList)
-            orderByExpanded.add((String) ((Node) orderBy).attributes().get('field-name'))
+            orderByExpanded.add((String) ((Node) orderBy).attribute('field-name'))
 
         // order by fields need to be selected (at least on some databases, Derby is one of them)
         if (this.fieldsToSelect && getDistinct() && orderByExpanded) {
@@ -789,7 +789,7 @@ abstract class EntityFindBase implements EntityFind {
         if (!this.fieldsToSelect) this.selectFields(ed.getFieldNames(true, true, false))
         // TODO: this will not handle query conditions on UserFields, it will blow up in fact
 
-        if (ed.isViewEntity() && entityConditionNode?.attributes()?.get('distinct') == "true") this.distinct(true)
+        if (ed.isViewEntity() && entityConditionNode?.attribute('distinct') == "true") this.distinct(true)
 
         EntityConditionImplBase whereCondition = (EntityConditionImplBase) getWhereEntityCondition()
         EntityConditionImplBase viewWhere = ed.makeViewWhereCondition()
@@ -816,7 +816,7 @@ abstract class EntityFindBase implements EntityFind {
         // NOTE: if we are doing offset/limit with a cursor no good way to limit results, but we'll at least jump to the offset
         Node databaseNode = this.efi.getDatabaseNode(ed.getEntityGroupName())
         // NOTE: allow databaseNode to be null because custom (non-JDBC) datasources may not have one
-        if (this.offset != null && databaseNode != null && databaseNode.attributes().get('offset-style') == "cursor") {
+        if (this.offset != null && databaseNode != null && databaseNode.attribute('offset-style') == "cursor") {
             if (!eli.absolute(offset)) {
                 // can't seek to desired offset? not enough results, just go to after last result
                 eli.afterLast()
@@ -852,7 +852,7 @@ abstract class EntityFindBase implements EntityFind {
         Node entityNode = ed.getEntityNode()
         ExecutionContext ec = efi.getEcfi().getExecutionContext()
 
-        String authorizeSkip = (String) entityNode.attributes().get('authorize-skip')
+        String authorizeSkip = (String) entityNode.attribute('authorize-skip')
         ec.getArtifactExecution().push(
                 new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW").setActionDetail("count"),
                 (authorizeSkip != "true" && !authorizeSkip?.contains("view")))
@@ -877,7 +877,7 @@ abstract class EntityFindBase implements EntityFind {
 
             NodeList entityConditionList = (NodeList) entityNode.get("entity-condition")
             Node entityConditionNode = entityConditionList ? (Node) entityConditionList.get(0) : null
-            if (ed.isViewEntity() && entityConditionNode?.attributes()?.get('distinct') == "true") this.distinct(true)
+            if (ed.isViewEntity() && entityConditionNode?.attribute('distinct') == "true") this.distinct(true)
 
             EntityConditionImplBase viewWhere = ed.makeViewWhereCondition()
             if (whereCondition && viewWhere) {

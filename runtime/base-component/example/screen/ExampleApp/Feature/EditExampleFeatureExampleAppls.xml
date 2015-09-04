@@ -18,18 +18,13 @@ along with this software (see the LICENSE.md file). If not, see
     <parameter name="exampleFeatureId" required="true"/>
 
     <transition name="editExample"><default-response url="../../Example/EditExample"/></transition>
-    <transition name="createExampleFeatureAppl">
-        <service-call name="org.moqui.example.ExampleServices.create#ExampleFeatureAppl"/>
-        <default-response url="."/>
-    </transition>
-    <transition name="updateExampleFeatureAppl">
-        <service-call name="update#ExampleFeatureAppl"/>
-        <default-response url="."/>
-    </transition>
-    <transition name="deleteExampleFeatureAppl">
-        <service-call name="delete#ExampleFeatureAppl"/>
-        <default-response url="."/>
-    </transition>
+    <transition name="createExampleFeatureAppl"><service-call name="org.moqui.example.ExampleServices.create#ExampleFeatureAppl"/>
+        <default-response url="."/></transition>
+    <transition name="updateExampleFeatureAppl"><service-call name="update#example.ExampleFeatureAppl"/>
+        <default-response url="."/></transition>
+    <transition name="deleteExampleFeatureAppl"><service-call name="delete#example.ExampleFeatureAppl"/>
+        <default-response url="."/></transition>
+
     <transition name="getExampleList">
         <actions>
             <entity-find entity-name="Example" list="exampleList" limit="20">
@@ -50,10 +45,8 @@ along with this software (see the LICENSE.md file). If not, see
     </transition>
 
     <actions>
-        <entity-find entity-name="ExampleFeatureAppl" list="exampleFeatureApplList">
-            <econdition field-name="exampleFeatureId" from="exampleFeatureId"/>
-            <order-by field-name="sequenceNum"/>
-        </entity-find>
+        <entity-find entity-name="example.ExampleFeatureAppl" list="exampleFeatureApplList">
+            <econdition field-name="exampleFeatureId"/><order-by field-name="sequenceNum"/></entity-find>
 
         <entity-find entity-name="moqui.basic.Enumeration" list="exampleFeatureApplEnumList">
             <econdition field-name="enumTypeId" value="ExampleFeatureAppl"/>
@@ -90,20 +83,15 @@ along with this software (see the LICENSE.md file). If not, see
 
         <form-single name="AddExampleFeatureAppl" transition="createExampleFeatureAppl">
             <auto-fields-service service-name="create#ExampleFeatureAppl"/>
-            <field name="exampleId">
-                <default-field title="Example">
-                    <text-line size="15" ac-transition="getExampleList"/>
-                </default-field>
-            </field>
+            <field name="exampleId"><default-field title="Example">
+                <text-line size="15" ac-transition="getExampleList"/></default-field></field>
             <field name="exampleFeatureId"><default-field><hidden/></default-field></field>
 
-            <field name="exampleFeatureApplEnumId">
-                <default-field title="Type">
-                    <drop-down allow-empty="false">
-                        <list-options list="exampleFeatureApplEnumList" text="${description}"/>
-                    </drop-down>
-                </default-field>
-            </field>
+            <field name="exampleFeatureApplEnumId"><default-field title="Type">
+                <drop-down allow-empty="false">
+                    <list-options list="exampleFeatureApplEnumList" text="${description}"/>
+                </drop-down>
+            </default-field></field>
             <field name="submitButton"><default-field title="Add"><submit/></default-field></field>
         </form-single>
     </widgets>

@@ -52,7 +52,7 @@ class EntityEcaRule {
 
         // check this first since it is the most common disqualifier
         String attrName = "on-${operation}"
-        if (eecaNode.attributes().get(attrName) != "true") return
+        if (eecaNode.attribute(attrName) != "true") return
 
         if (entityName != eecaNode."@entity") return
         if (ec.getMessage().hasError() && eecaNode."@run-on-error" != "true") return

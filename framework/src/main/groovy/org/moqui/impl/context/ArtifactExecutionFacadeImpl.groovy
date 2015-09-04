@@ -68,7 +68,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
         Boolean en = artifactTypeAuthzEnabled.get(artifactTypeEnumId)
         if (en == null) {
             Node aeNode = eci.getEcfi().getArtifactExecutionNode(artifactTypeEnumId)
-            en = aeNode != null ? !(aeNode.attributes().get('authz-enabled') == "false") : true
+            en = aeNode != null ? !(aeNode.attribute('authz-enabled') == "false") : true
             artifactTypeAuthzEnabled.put(artifactTypeEnumId, en)
         }
         return en
@@ -77,7 +77,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
         Boolean en = artifactTypeTarpitEnabled.get(artifactTypeEnumId)
         if (en == null) {
             Node aeNode = eci.getEcfi().getArtifactExecutionNode(artifactTypeEnumId)
-            en = aeNode != null ? !(aeNode.attributes().get('tarpit-enabled') == "false") : true
+            en = aeNode != null ? !(aeNode.attribute('tarpit-enabled') == "false") : true
             artifactTypeTarpitEnabled.put(artifactTypeEnumId, en)
         }
         return en

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This software is in the public domain under CC0 1.0 Universal.
+
+To the extent possible under law, the author(s) have dedicated all
+copyright and related and neighboring rights to this software to the
+public domain worldwide. This software is distributed without any
+warranty.
+
+You should have received a copy of the CC0 Public Domain Dedication
+along with this software (see the LICENSE.md file). If not, see
+<http://creativecommons.org/publicdomain/zero/1.0/>.
+-->
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd"
+        default-menu-index="1" menu-image="glyphicon glyphicon-dashboard" menu-image-type="icon">
+
+    <actions>
+    </actions>
+    <widgets>
+        <container-row>
+            <row-col lg="6" md="6">
+                <container-box>
+                    <box-header><label text="Usage" type="h5"/></box-header>
+                    <box-body>
+                        <link url="../ArtifactHitSummary" text="Artifact Hit Summary"/>
+                        <link url="../ArtifactHitBins" text="Artifact Hit Bins"/>
+                        <link url="../AuditLog" text="Audit Log"/>
+                        <link url="../Visit" text="Visits"/>
+                    </box-body>
+                </container-box>
+                <container-box>
+                    <box-header><label text="Security" type="h5"/></box-header>
+                    <box-body>
+                        <link url="../Security/UserAccount" text="Users"/>
+                        <link url="../Security/UserGroup" text="User Groups"/>
+                        <link url="../Security/UserGroup" text="Artifact Groups"/>
+                    </box-body>
+                </container-box>
+            </row-col>
+            <row-col lg="6" md="6">
+                <container-box>
+                    <box-header><label text="Server Admin" type="h5"/></box-header>
+                    <box-body>
+                        <link url="../Cache" text="Cache Stats and Mgmt"/>
+                        <link url="../Scheduler" text="Job Scheduler"/>
+                        <link url="../Print" text="Print Servers and Jobs"/>
+                    </box-body>
+                </container-box>
+                <container-box>
+                    <box-header><label text="Data Admin" type="h5"/></box-header>
+                    <box-body>
+                        <link url="../Localization" text="Localization"/>
+                        <link url="../DataDocument" text="Data Documents"/>
+                        <link url="../Resource" text="Resource Finder"/>
+                    </box-body>
+                </container-box>
+                <container-box>
+                    <box-header><label text="Integration Admin" type="h5"/></box-header>
+                    <box-body>
+                        <link url="../EntitySync" text="Entity Data Sync"/>
+                        <link url="../SystemMessage" text="System-System Messages"/>
+                    </box-body>
+                </container-box>
+            </row-col>
+        </container-row>
+    </widgets>
+</screen>

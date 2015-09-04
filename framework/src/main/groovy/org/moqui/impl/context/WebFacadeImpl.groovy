@@ -190,9 +190,10 @@ class WebFacadeImpl implements WebFacade {
     }
 
     @CompileStatic
-    void saveScreenHistory(ScreenUrlInfo.UrlInstance urlInstance, ArrayList<ScreenDefinition> screenRenderDefList) {
+    void saveScreenHistory(ScreenUrlInfo.UrlInstance urlInstance) {
         ScreenUrlInfo sui = urlInstance.sui
         ScreenDefinition targetScreen = urlInstance.sui.targetScreen
+
         // don't save standalone screens
         if (sui.lastStandalone || targetScreen.isStandalone()) return
         // don't save transition requests, just screens
@@ -217,26 +218,30 @@ class WebFacadeImpl implements WebFacade {
 
         StringBuilder nameBuilder = new StringBuilder()
         // append parent screen name
-        if (screenRenderDefList.size() > 1) {
-            ScreenDefinition parentScreen = screenRenderDefList.get(screenRenderDefList.size() - 2)
+        ScreenDefinition parentScreen = sui.getParentScreen()
+        if (parentScreen != null) {
             if (parentScreen.getLocation() != sui.rootSd.getLocation())
                 nameBuilder.append(parentScreen.getDefaultMenuName()).append(' - ')
         }
         // append target screen name
-        nameBuilder.append(targetMenuName)
-        // append parameter values
-        Map parameters = urlInstance.getParameterMap()
-        if (parameters) {
-            nameBuilder.append(' (')
-            int pCount = 0
-            Iterator<String> valueIter = parameters.values().iterator()
-            while (valueIter.hasNext() && pCount < 2) {
-                pCount++
-                String pv = valueIter.next()
-                nameBuilder.append(pv)
-                if (valueIter.hasNext() && pCount < 2) nameBuilder.append(', ')
+        if (targetMenuName.contains('${')) {
+            nameBuilder.append(eci.getResource().expand(targetMenuName, targetScreen.getLocation()))
+        } else {
+            nameBuilder.append(targetMenuName)
+            // append parameter values
+            Map parameters = urlInstance.getParameterMap()
+            if (parameters) {
+                nameBuilder.append(' (')
+                int pCount = 0
+                Iterator<String> valueIter = parameters.values().iterator()
+                while (valueIter.hasNext() && pCount < 2) {
+                    pCount++
+                    String pv = valueIter.next()
+                    nameBuilder.append(pv)
+                    if (valueIter.hasNext() && pCount < 2) nameBuilder.append(', ')
+                }
+                nameBuilder.append(')')
             }
-            nameBuilder.append(')')
         }
 
         // remove existing item(s) from list with same URL
@@ -247,7 +252,8 @@ class WebFacadeImpl implements WebFacade {
         }
 
         // add to history list
-        screenHistoryList.addFirst([name:nameBuilder.toString(), url:urlWithParams, screenLocation:targetScreen.getLocation()])
+        screenHistoryList.addFirst([name:nameBuilder.toString(), url:urlWithParams, image:sui.menuImage,
+                                    imageType:sui.menuImageType, screenLocation:targetScreen.getLocation()])
 
         // trim the list if needed; keep 40, whatever uses it may display less
         while (screenHistoryList.size() > 40) screenHistoryList.removeLast()
