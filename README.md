@@ -3,6 +3,7 @@
 [![license](https://img.shields.io/badge/license-CC0%201.0%20Universal-blue.svg)](https://github.com/moqui/moqui/blob/master/LICENSE.md)
 [![build](https://travis-ci.org/moqui/moqui.svg)](https://travis-ci.org/moqui/moqui)
 [![release](https://img.shields.io/github/release/moqui/moqui.svg)](https://github.com/moqui/moqui/releases)
+[![commits since release](https://img.shields.io/github/commits-since/moqui/moqui/release-1.5.2.svg)](https://github.com/moqui/moqui/commits/master)
 [![downloads](https://img.shields.io/github/downloads/moqui/moqui/latest/total.svg)](https://github.com/moqui/moqui/releases)
 
 For details about running and deploying Moqui see:
