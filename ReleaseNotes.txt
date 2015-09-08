@@ -78,6 +78,9 @@ Bug Fixes:
   trimmed because no matching field was in the fields to select
 - XML Actions ${iterate.@entry}_hasNext is now _has_next to be more
   consistent with section-iterate and others using this FTL inspired name
+- Fixed issue with select column names when doing a distinct query with
+  upper cased order by fields, now adds function to select clause as well
+  as order by clause (GitHub issue #146)
 
 
 ===========================================================================
