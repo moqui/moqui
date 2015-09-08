@@ -132,11 +132,15 @@ class EntityListIteratorImpl implements EntityListIterator {
     @Override
     EntityValue currentEntityValue() {
         EntityValueImpl newEntityValue = new EntityValueImpl(entityDefinition, efi)
-        int j = 1
-        for (String fieldName in fieldsSelected) {
-            EntityQueryBuilder.getResultSetValue(rs, j, entityDefinition.getFieldInfo(fieldName), newEntityValue, efi)
-            j++
+        int size = fieldsSelected.size()
+        for (int i = 0; i < size; i++) {
+            String fieldNameFull = fieldsSelected.get(i)
+            EntityFindBuilder.FieldOrderOptions foo = new EntityFindBuilder.FieldOrderOptions(fieldNameFull)
+            String fieldName = foo.fieldName
+
+            EntityQueryBuilder.getResultSetValue(rs, i+1, entityDefinition.getFieldInfo(fieldName), newEntityValue, efi)
         }
+
         this.haveMadeValue = true
 
         // if txCache in place always put in cache for future reference (onePut handles any stale from DB issues too)

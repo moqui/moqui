@@ -107,12 +107,23 @@ class EntityFindBuilder extends EntityQueryBuilder {
 
     void makeSqlSelectFields(ArrayList<String> fieldsToSelect) {
         if (fieldsToSelect.size() > 0) {
-            boolean isFirst = true
             int size = fieldsToSelect.size()
             for (int i = 0; i < size; i++) {
-                String fieldName = fieldsToSelect.get(i)
-                if (isFirst) isFirst = false else this.sqlTopLevel.append(", ")
-                this.sqlTopLevel.append(this.mainEntityDefinition.getColumnName(fieldName, true))
+                String fieldNameFull = fieldsToSelect.get(i)
+                FieldOrderOptions foo = new FieldOrderOptions(fieldNameFull)
+                String fieldName = foo.fieldName
+                int typeValue = 1
+                EntityDefinition.FieldInfo fieldInfo = getMainEd().getFieldInfo(fieldName)
+                if (fieldInfo != null) {
+                    typeValue = fieldInfo.typeValue
+                } else {
+                    logger.warn("Making SELECT clause, could not find field [${fieldName}] in entity [${getMainEd().getFullEntityName()}]")
+                }
+
+                if (i > 0) this.sqlTopLevel.append(", ")
+                if (foo.caseUpperLower != null && typeValue == 1) this.sqlTopLevel.append(foo.caseUpperLower ? "UPPER(" : "LOWER(")
+                this.sqlTopLevel.append(fieldInfo.getFullColumnName(false))
+                if (foo.caseUpperLower != null && typeValue == 1) this.sqlTopLevel.append(")")
             }
         } else {
             this.sqlTopLevel.append("*")
@@ -433,7 +444,7 @@ class EntityFindBuilder extends EntityQueryBuilder {
                 logger.warn("Making ORDER BY clause, could not find field [${fieldName}] in entity [${getMainEd().getFullEntityName()}]")
             }
 
-            // not that it's all torn down, build it back up using the column name
+            // now that it's all torn down, build it back up using the column name
             if (foo.caseUpperLower != null && typeValue == 1) this.sqlTopLevel.append(foo.caseUpperLower ? "UPPER(" : "LOWER(")
             this.sqlTopLevel.append(fieldInfo.getFullColumnName(false))
             if (foo.caseUpperLower != null && typeValue == 1) this.sqlTopLevel.append(")")

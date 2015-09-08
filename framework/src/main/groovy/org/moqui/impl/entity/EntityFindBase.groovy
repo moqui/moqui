@@ -653,7 +653,7 @@ abstract class EntityFindBase implements EntityFind {
         // there may not be a simpleAndMap, but that's all we have that can be treated directly by the EECA
         // find EECA rules deprecated, not worth performance hit: efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-list", true)
 
-        List<String> orderByExpanded = new ArrayList()
+        ArrayList<String> orderByExpanded = new ArrayList()
         // add the manually specified ones, then the ones in the view entity's entity-condition
         if (this.getOrderBy()) orderByExpanded.addAll(this.getOrderBy())
 
@@ -684,8 +684,9 @@ abstract class EntityFindBase implements EntityFind {
             // order by fields need to be selected (at least on some databases, Derby is one of them)
             if (this.fieldsToSelect && getDistinct() && orderByExpanded) {
                 for (String orderByField in orderByExpanded) {
-                    EntityFindBuilder.FieldOrderOptions foo = new EntityFindBuilder.FieldOrderOptions(orderByField)
-                    fieldsToSelect.add(foo.fieldName)
+                    //EntityFindBuilder.FieldOrderOptions foo = new EntityFindBuilder.FieldOrderOptions(orderByField)
+                    //fieldsToSelect.add(foo.fieldName)
+                    fieldsToSelect.add(orderByField)
                 }
             }
             // we always want fieldsToSelect populated so that we know the order of the results coming back
@@ -781,8 +782,9 @@ abstract class EntityFindBase implements EntityFind {
         // order by fields need to be selected (at least on some databases, Derby is one of them)
         if (this.fieldsToSelect && getDistinct() && orderByExpanded) {
             for (String orderByField in orderByExpanded) {
-                EntityFindBuilder.FieldOrderOptions foo = new EntityFindBuilder.FieldOrderOptions(orderByField)
-                fieldsToSelect.add(foo.fieldName)
+                //EntityFindBuilder.FieldOrderOptions foo = new EntityFindBuilder.FieldOrderOptions(orderByField)
+                //fieldsToSelect.add(foo.fieldName)
+                fieldsToSelect.add(orderByField)
             }
         }
         // we always want fieldsToSelect populated so that we know the order of the results coming back
