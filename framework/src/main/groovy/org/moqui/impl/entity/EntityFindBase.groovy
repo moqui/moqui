@@ -663,6 +663,8 @@ abstract class EntityFindBase implements EntityFind {
         if (ecObList) for (Object orderBy in ecObList)
             orderByExpanded.add((String) ((Node) orderBy).attribute('field-name'))
 
+        if (entityConditionNode?.attribute('distinct') == "true") this.distinct(true)
+
         EntityConditionImplBase whereCondition = (EntityConditionImplBase) getWhereEntityCondition()
 
         // try the txCache first, more recent than general cache (and for update general cache entries will be cleared anyway)
@@ -692,8 +694,6 @@ abstract class EntityFindBase implements EntityFind {
             // we always want fieldsToSelect populated so that we know the order of the results coming back
             if (!this.fieldsToSelect || txCache != null || doEntityCache) this.selectFields(ed.getFieldNames(true, true, false))
             // TODO: this will not handle query conditions on UserFields, it will blow up in fact
-
-            if (ed.isViewEntity() && entityConditionNode?.attribute('distinct') == "true") this.distinct(true)
 
             EntityConditionImplBase viewWhere = ed.makeViewWhereCondition()
             if (whereCondition && viewWhere) {
@@ -779,6 +779,8 @@ abstract class EntityFindBase implements EntityFind {
         if (ecObList) for (Object orderBy in ecObList)
             orderByExpanded.add((String) ((Node) orderBy).attribute('field-name'))
 
+        if (entityConditionNode?.attribute('distinct') == "true") this.distinct(true)
+
         // order by fields need to be selected (at least on some databases, Derby is one of them)
         if (this.fieldsToSelect && getDistinct() && orderByExpanded) {
             for (String orderByField in orderByExpanded) {
@@ -790,8 +792,6 @@ abstract class EntityFindBase implements EntityFind {
         // we always want fieldsToSelect populated so that we know the order of the results coming back
         if (!this.fieldsToSelect) this.selectFields(ed.getFieldNames(true, true, false))
         // TODO: this will not handle query conditions on UserFields, it will blow up in fact
-
-        if (ed.isViewEntity() && entityConditionNode?.attribute('distinct') == "true") this.distinct(true)
 
         EntityConditionImplBase whereCondition = (EntityConditionImplBase) getWhereEntityCondition()
         EntityConditionImplBase viewWhere = ed.makeViewWhereCondition()
