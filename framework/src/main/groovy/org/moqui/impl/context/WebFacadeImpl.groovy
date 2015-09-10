@@ -233,12 +233,16 @@ class WebFacadeImpl implements WebFacade {
             if (parameters) {
                 nameBuilder.append(' (')
                 int pCount = 0
-                Iterator<String> valueIter = parameters.values().iterator()
-                while (valueIter.hasNext() && pCount < 2) {
+                Iterator<Map.Entry<String, String>> entryIter = parameters.entrySet().iterator()
+                while (entryIter.hasNext() && pCount < 2) {
+                    Map.Entry<String, String> entry = entryIter.next()
+                    if (entry.key.contains("_op")) continue
+                    if (entry.key.contains("_not")) continue
+                    if (entry.key.contains("_ic")) continue
+                    if (!entry.value.trim()) continue
+                    nameBuilder.append(entry.value)
                     pCount++
-                    String pv = valueIter.next()
-                    nameBuilder.append(pv)
-                    if (valueIter.hasNext() && pCount < 2) nameBuilder.append(', ')
+                    if (entryIter.hasNext() && pCount < 2) nameBuilder.append(', ')
                 }
                 nameBuilder.append(')')
             }
