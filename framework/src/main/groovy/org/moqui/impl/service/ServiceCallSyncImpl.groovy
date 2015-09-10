@@ -15,6 +15,7 @@ package org.moqui.impl.service
 import groovy.transform.CompileStatic
 import org.moqui.BaseException
 import org.moqui.context.ArtifactAuthorizationException
+import org.moqui.context.ArtifactExecutionInfo
 import org.moqui.context.TransactionException
 import org.moqui.context.TransactionFacade
 import org.moqui.entity.EntityValue
@@ -166,7 +167,11 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         if (sd != null) sd.convertValidateCleanParameters(currentParameters, eci)
         // if error(s) in parameters, return now with no results
         if (eci.getMessage().hasError()) {
-            logger.warn("Found error(s) when validating input parameters for service [${getServiceName()}], so not running service. Errors: ${eci.getMessage().getErrorsString()}; the artifact stack is:\n ${eci.artifactExecution.stack}")
+            StringBuilder errMsg = new StringBuilder("Found error(s) when validating input parameters for service [${getServiceName()}], so not running service. Errors: ${eci.getMessage().getErrorsString()}; the artifact stack is:\n")
+            for (ArtifactExecutionInfo stackItem in eci.artifactExecution.stack) {
+                errMsg.append(stackItem.toString()).append('\n')
+            }
+            logger.warn(errMsg.toString())
             return null
         }
 
