@@ -822,9 +822,13 @@ class EntityFacadeImpl implements EntityFacade {
         return nonViewNames
     }
 
-    List<Map> getAllEntityInfo(int levels) {
+    List<Map> getAllEntityInfo(int levels, boolean excludeViewEntities) {
         Map<String, Map> entityInfoMap = [:]
         for (String entityName in getAllEntityNames()) {
+            if (excludeViewEntities) {
+                EntityDefinition ed = getEntityDefinition(entityName)
+                if (ed.isViewEntity()) continue
+            }
             int lastDotIndex = 0
             for (int i = 0; i < levels; i++) lastDotIndex = entityName.indexOf(".", lastDotIndex+1)
             String name = lastDotIndex == -1 ? entityName : entityName.substring(0, lastDotIndex)
