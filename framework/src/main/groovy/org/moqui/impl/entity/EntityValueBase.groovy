@@ -638,12 +638,13 @@ abstract class EntityValueBase implements EntityValue {
     }
 
     @Override
-    void checkAgainstDatabase(List messages) {
+    long checkAgainstDatabase(List messages) {
+        long fieldsChecked = 0
         try {
             EntityValue dbValue = this.cloneValue()
             if (!dbValue.refresh()) {
                 messages.add("Entity [${getEntityName()}] record not found for primary key [${getPrimaryKeys()}]")
-                return
+                return 0
             }
 
             for (String nonpkFieldName in this.getEntityDefinition().getFieldNames(false, true, true)) {
@@ -664,6 +665,8 @@ abstract class EntityValueBase implements EntityValue {
                     }
                     if (!areSame) messages.add("Field [${getEntityName()}.${nonpkFieldName}] did not match; check (file) value [${checkFieldValue}], db value [${dbFieldValue}] for primary key [${getPrimaryKeys()}]")
                 }
+
+                fieldsChecked++
             }
         } catch (EntityException e) {
             throw e
@@ -672,6 +675,7 @@ abstract class EntityValueBase implements EntityValue {
             messages.add(errMsg)
             logger.error(errMsg, t)
         }
+        return fieldsChecked
     }
 
     @Override
