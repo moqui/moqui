@@ -88,6 +88,7 @@ public interface EntityDataLoader {
      * @return List of messages about each comparison between data in the file(s) and data in the database.
      */
     List<String> check();
+    long check(List<String> messageList);
 
     /** Load the values into the database(s). */
     long load();

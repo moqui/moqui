@@ -18,7 +18,7 @@ along with this software (see the LICENSE.md file). If not, see
 
     <actions>
         <set field="levels" from="levels ? levels as int : 2"/>
-        <set field="entityInfoList" from="ec.entity.getAllEntityInfo(levels)"/>
+        <set field="entityInfoList" from="ec.entity.getAllEntityInfo(levels, false)"/>
         <set field="serviceInfoList" from="ec.service.getAllServiceInfo(levels)"/>
         <set field="allRootScreenLocations" from="ec.screen.getAllRootScreenLocations()"/>
     </actions>

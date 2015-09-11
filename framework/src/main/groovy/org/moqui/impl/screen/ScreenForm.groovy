@@ -768,7 +768,8 @@ class ScreenForm {
         if (oneRelNode != null) {
             if (internalFormNode."@name" == "UpdateMasterEntityValue") {
                 Node linkNode = subFieldNode.appendNode("link",
-                        [url:"edit", text:"Edit ${relatedEd.getPrettyName(null, null)} [\${fieldValues." + keyField + "}]", condition:"fieldValues.${keyField}"])
+                        [url:"edit", text:"Edit ${relatedEd.getPrettyName(null, null)} [\${fieldValues." + keyField + "}]",
+                         condition:"fieldValues.${keyField}", 'link-type':'anchor'])
                 linkNode.appendNode("parameter", [name:"aen", value:relatedEntityName])
                 linkNode.appendNode("parameter", [name:relKeyField, from:"fieldValues.${keyField}"])
             }
@@ -779,36 +780,43 @@ class ScreenForm {
                                           String relKeyField, String dropDownStyle) {
         String title = oneRelNode."@title"
 
-        if (relatedEd == null) subFieldNode.appendNode("text-line")
+        if (relatedEd == null) {
+            subFieldNode.appendNode("text-line")
+            return
+        }
         String relatedEntityName = relatedEd.getFullEntityName()
         String relDefaultDescriptionField = relatedEd.getDefaultDescriptionField()
 
-        // use the combo-box just in case the drop-down as a default is over-constrained
-        Node dropDownNode = subFieldNode.appendNode("drop-down", ["allow-empty":"true", style:(dropDownStyle ?: "")])
-        Node entityOptionsNode = dropDownNode.appendNode("entity-options")
-        Node entityFindNode = entityOptionsNode.appendNode("entity-find",
-                ["entity-name":relatedEntityName, "offset":0, "limit":200])
-        // don't require any permissions for this
-        boolean alreadyDisabled = this.ecfi.getExecutionContext().getArtifactExecution().disableAuthz()
-        try {
-            if (relatedEntityName == "moqui.basic.Enumeration") {
-                // make sure the title is an actual enumTypeId before adding condition
-                if (ecfi.entityFacade.find("moqui.basic.EnumerationType").condition("enumTypeId", title).count() > 0) {
-                    entityFindNode.appendNode("econdition", ["field-name":"enumTypeId", "value":title])
-                }
-            } else if (relatedEntityName == "moqui.basic.StatusItem") {
-                // make sure the title is an actual statusTypeId before adding condition
-                if (ecfi.entityFacade.find("moqui.basic.StatusType").condition("statusTypeId", title).count() > 0) {
-                    entityFindNode.appendNode("econdition", ["field-name":"statusTypeId", "value":title])
-                }
-            }
-        } finally {
-            if (!alreadyDisabled) this.ecfi.getExecutionContext().getArtifactExecution().enableAuthz()
+        // NOTE: combo-box not currently supported, so only show drop-down if less than 200 records
+        long recordCount
+        if (relatedEntityName == "moqui.basic.Enumeration") {
+            recordCount = ecfi.entityFacade.find("moqui.basic.EnumerationType").condition("enumTypeId", title).disableAuthz().count()
+        } else if (relatedEntityName == "moqui.basic.StatusItem") {
+            recordCount = ecfi.entityFacade.find("moqui.basic.StatusType").condition("statusTypeId", title).disableAuthz().count()
+        } else {
+            recordCount = ecfi.entityFacade.find(relatedEntityName).disableAuthz().count()
         }
+        if (recordCount > 0 && recordCount <= 200) {
+            // FOR FUTURE: use the combo-box just in case the drop-down as a default is over-constrained
+            Node dropDownNode = subFieldNode.appendNode("drop-down", ["allow-empty":"true", style:(dropDownStyle ?: "")])
+            Node entityOptionsNode = dropDownNode.appendNode("entity-options")
+            Node entityFindNode = entityOptionsNode.appendNode("entity-find",
+                    ["entity-name":relatedEntityName, "offset":0, "limit":200])
 
-        if (relDefaultDescriptionField) {
-            entityOptionsNode.attributes().put("text", "\${" + relDefaultDescriptionField + " ?: ''} [\${" + relKeyField + "}]")
-            entityFindNode.appendNode("order-by", ["field-name":relDefaultDescriptionField])
+            if (relatedEntityName == "moqui.basic.Enumeration") {
+                // recordCount will be > 0 so we know there are records with this type
+                entityFindNode.appendNode("econdition", ["field-name":"enumTypeId", "value":title])
+            } else if (relatedEntityName == "moqui.basic.StatusItem") {
+                // recordCount will be > 0 so we know there are records with this type
+                entityFindNode.appendNode("econdition", ["field-name":"statusTypeId", "value":title])
+            }
+
+            if (relDefaultDescriptionField) {
+                entityOptionsNode.attributes().put("text", "\${" + relDefaultDescriptionField + " ?: ''} [\${" + relKeyField + "}]")
+                entityFindNode.appendNode("order-by", ["field-name":relDefaultDescriptionField])
+            }
+        } else {
+            subFieldNode.appendNode("text-line")
         }
     }
 
