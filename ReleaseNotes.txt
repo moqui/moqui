@@ -2,18 +2,20 @@
 Moqui Framework Release Notes
 
 ===========================================================================
-Release 1.5.3 - TBD
+Release 1.5.3 - 11 Sep 2015
 ===========================================================================
 
 Moqui Framework 1.5.3 is a minor new feature and bug fix release.
+
+This release includes various smaller improvements and bug fixes, and a
+number of library updates. There are no significant new features but many
+smaller improvements and cleanups.
 
 There are around 400 commits since the last release and an increase in size
 from around 65k lines to around 67k lines of text (primarily Java, Groovy,
 XML, XSD, and FTL files; not including files from other projects). The
 System and Tools apps have 56 screens and 121 forms. Moqui has 127 entities
 and 70 services.
-
-TODO
 
 New Features:
 
