@@ -37,7 +37,7 @@ New Features:
   - Freemarker to 2.3.23
   - Groovy to 2.4.4
   - Liquibase to 3.4.1
-  - OrientDB to 2.1.0
+  - OrientDB to 2.1.2
   - OWASP ESAPI to 2.1.0 (with AntiSamy 1.5.3)
   - SLF4J to 1.7.12
   - other misc updates
