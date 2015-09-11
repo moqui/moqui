@@ -148,11 +148,11 @@ dependencies {
     providedCompile group: 'org.intelligents-ia.winstone', name: 'winstone', version: '1.7.0' // CDDL
     // providedCompile group: 'org.intelligents-ia.winstone', name: 'winstone-jndi', version: '1.7.0' // CDDL
 
-    compile module(group: 'org.apache.xmlgraphics', name: 'fop', version: '1.1') { // Apache 2.0
+    compile module(group: 'org.apache.xmlgraphics', name: 'fop', version: '2.0') { // Apache 2.0
         dependencies module(name: 'avalon-framework', version: '4.2.0'),
-                module(group: 'org.apache.xmlgraphics', name: 'xmlgraphics-commons', version: '1.5'), // Apache 2.0
+                module(group: 'org.apache.xmlgraphics', name: 'xmlgraphics-commons', version: '2.0.1'), // Apache 2.0
                 module(group: 'net.sf.barcode4j', name: 'barcode4j', version: '2.1-barcode4j-fop-ext-complete'),
-                module(group: 'batik', name: 'batik-all', version: '1.7') // Apache 2.0
+                module(group: 'batik', name: 'batik-all', version: '1.8') // Apache 2.0
     }
 
     // ElasticSearch Libraries, including Lucene

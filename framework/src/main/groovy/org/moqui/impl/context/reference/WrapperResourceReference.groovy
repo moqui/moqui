@@ -34,6 +34,7 @@ class WrapperResourceReference extends BaseResourceReference  {
     String getLocation() { return rr.getLocation() }
 
     InputStream openStream() { return rr.openStream() }
+    OutputStream getOutputStream() { return rr.getOutputStream() }
     String getText() { return rr.getText() }
 
     boolean supportsAll() { return rr.supportsAll() }
