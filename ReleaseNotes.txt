@@ -20,9 +20,10 @@ and 70 services.
 New Features:
 
 - Updated Apache Camel to 2.15.3, Apache Commons Codec to 1.10, Apache
-  Commons Email to 1.4, Apache Commons File Upload to 1.3.1, Apache Commons
-  Validator to 1.4.1, Apache Jackrabbit to 2.10.1, Apache Shiro to 1.2.4,
-  Drools and KIE to 6.2.0.Final,  Elasticsearch to 1.7.1,
+  Commons CSV to 1.2, Apache Commons Email to 1.4, Apache Commons File
+  Upload to 1.3.1, Apache Commons Validator to 1.4.1, Apache HTTP Core to
+  4.4.3, Apache HTTP Client to 4.5, Apache Jackrabbit to 2.10.1, Apache
+  Shiro to 1.2.4, Drools and KIE to 6.2.0.Final, Elasticsearch to 1.7.1,
   Ehcache to 2.10.0, Freemarker to 2.3.23, Groovy to 2.4.4,
   Liquibase to 3.4.1, OrientDB to 2.1.0, SLF4J to 1.7.12, other misc
   updates
