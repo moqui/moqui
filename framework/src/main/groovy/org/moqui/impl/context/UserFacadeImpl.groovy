@@ -155,7 +155,7 @@ class UserFacadeImpl implements UserFacade {
 
             // handle visitorId and cookie
             String cookieVisitorId = null
-            if (serverStatsNode.attributes().get('visitor-enabled') != "false") {
+            if (serverStatsNode.attribute('visitor-enabled') != "false") {
                 Cookie[] cookies = request.getCookies()
                 if (cookies != null) {
                     for (int i = 0; i < cookies.length; i++) {
@@ -189,7 +189,7 @@ class UserFacadeImpl implements UserFacade {
                 }
             }
 
-            if (serverStatsNode.attributes().get('visit-enabled') != "false") {
+            if (serverStatsNode.attribute('visit-enabled') != "false") {
                 // create and persist Visit
                 String contextPath = session.getServletContext().getContextPath()
                 String webappId = contextPath.length() > 1 ? contextPath.substring(1) : "ROOT"

@@ -13,6 +13,7 @@
 package org.moqui.context;
 
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
@@ -28,6 +29,7 @@ public interface ResourceReference {
     String getFileName();
 
     InputStream openStream();
+    OutputStream getOutputStream();
     String getText();
 
     /** The content (MIME) type for this content, if known or can be determined. */

@@ -27,15 +27,29 @@ along with this software (see the LICENSE.md file). If not, see
                 <actions>
                     <set field="currentScreenDef" from="sri.sfi.getScreenDefinition(currentSubscreensItem.location)"/>
                     <set field="currentScreenPath" value="/apps/${currentSubscreensItem.name}"/>
-                    <set field="currentUrlInfo" from="sri.buildUrl(currentScreenPath)"/>
+                    <set field="currentUrlInstance" from="sri.buildUrl(currentScreenPath)"/>
                 </actions>
                 <widgets>
                     <section name="ScreenItemRender">
                         <condition><expression>currentScreenDef != null &amp;&amp;
-                            !currentScreenDef?.getParameterMap() &amp;&amp; currentUrlInfo?.isPermitted()</expression></condition>
+                            !currentScreenDef?.getParameterMap() &amp;&amp; currentUrlInstance?.isPermitted()</expression></condition>
                         <widgets>
-                            <link url="${currentUrlInfo.url}" link-type="anchor-button" url-type="plain"
-                                    text="${ec.l10n.localize(currentSubscreensItem.menuTitle)}" style="app-list-link"/>
+                            <render-mode><text type="html"><![CDATA[
+                                <a href="${currentUrlInstance.url}" class="btn btn-primary app-list-link">
+                                    <#if currentUrlInstance.sui.menuImage?has_content>
+                                        <#if currentUrlInstance.sui.menuImageType == "icon">
+                                            <i class="${currentUrlInstance.sui.menuImage}" style="padding-right: 8px;"></i>
+                                        <#elseif currentUrlInstance.sui.menuImageType == "url-plain">
+                                            <img src="${currentUrlInstance.sui.menuImage}" width="18" style="padding-right: 4px;"/>
+                                        <#else>
+                                            <img src="${sri.buildUrl(currentUrlInstance.sui.menuImage).url}" height="18" style="padding-right: 4px;"/>
+                                        </#if>
+                                    <#else>
+                                        <i class="glyphicon glyphicon-link" style="padding-right: 8px;"></i>
+                                    </#if>
+                                    ${ec.resource.expand(currentSubscreensItem.menuTitle, "")}
+                                </a>
+                            ]]></text></render-mode>
                         </widgets>
                         <fail-widgets>
                             <render-mode><text type="html"><![CDATA[<!-- excluding screen at path ${currentScreenPath} -->]]></text></render-mode>

@@ -315,7 +315,8 @@ along with this software (see the LICENSE.md file). If not, see
                     HTML-specific characters are escaped.
                 </xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="icon" type="xs:string"/>
+            <xs:attribute name="icon" type="xs:string"><xs:annotation><xs:documentation>Icon name, actually an icon
+                style used in an 'i' element in HTML output.</xs:documentation></xs:annotation></xs:attribute>
             <xs:attribute name="tooltip" type="xs:string"/>
             <xs:attribute name="target-window" type="xs:string"/>
             <xs:attribute name="confirmation" type="xs:string"><xs:annotation><xs:documentation>

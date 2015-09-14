@@ -114,6 +114,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
     @Override
     EntityDataLoader csvQuoteChar(char quoteChar) { this.csvQuoteChar = quoteChar; return this }
 
+    @Override
     List<String> check() {
         CheckValueHandler cvh = new CheckValueHandler(this)
         EntityXmlHandler exh = new EntityXmlHandler(this, cvh)
@@ -124,6 +125,19 @@ class EntityDataLoaderImpl implements EntityDataLoader {
         return cvh.getMessageList()
     }
 
+    @Override
+    long check(List<String> messageList) {
+        CheckValueHandler cvh = new CheckValueHandler(this)
+        EntityXmlHandler exh = new EntityXmlHandler(this, cvh)
+        EntityCsvHandler ech = new EntityCsvHandler(this, cvh)
+        EntityJsonHandler ejh = new EntityJsonHandler(this, cvh)
+
+        internalRun(exh, ech, ejh)
+        messageList.addAll(cvh.getMessageList())
+        return cvh.getFieldsChecked()
+    }
+
+    @Override
     long load() {
         LoadValueHandler lvh = new LoadValueHandler(this)
         EntityXmlHandler exh = new EntityXmlHandler(this, lvh)
@@ -134,6 +148,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
         return exh.getValuesRead() + ech.getValuesRead() + ejh.getValuesRead()
     }
 
+    @Override
     EntityList list() {
         ListValueHandler lvh = new ListValueHandler(this)
         EntityXmlHandler exh = new EntityXmlHandler(this, lvh)
@@ -335,13 +350,15 @@ class EntityDataLoaderImpl implements EntityDataLoader {
     }
     static class CheckValueHandler extends ValueHandler {
         protected List<String> messageList = new LinkedList()
+        protected long fieldsChecked = 0
         CheckValueHandler(EntityDataLoaderImpl edli) { super(edli) }
         List<String> getMessageList() { return messageList }
+        long getFieldsChecked() { return fieldsChecked }
         void handleValue(EntityValue value) { value.checkAgainstDatabase(messageList) }
         void handlePlainMap(String entityName, Map value) {
             EntityList el = edli.getEfi().getValueListFromPlainMap(value, entityName)
             // logger.warn("=========== Check value: ${value}\nel: ${el}")
-            for (EntityValue ev in el) ev.checkAgainstDatabase(messageList)
+            for (EntityValue ev in el) fieldsChecked += ev.checkAgainstDatabase(messageList)
         }
         void handleService(ServiceCallSync scs) { messageList.add("Doing check only so not calling service [${scs.getServiceName()}] with parameters ${scs.getCurrentParameters()}") }
     }

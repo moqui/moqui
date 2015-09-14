@@ -26,7 +26,7 @@ public class StupidJavaUtilities {
                 theClass = Thread.currentThread().getContextClassLoader().loadClass(javaType);
             } catch (ClassNotFoundException e) { /* ignore */ }
         }
-        if (theClass == null) throw new IllegalArgumentException("Cannot find class for type: ${javaType}");
+        if (theClass == null) throw new IllegalArgumentException("Cannot find class for type: " + javaType);
         return theClass.isInstance(theObjectInQuestion);
     }
 

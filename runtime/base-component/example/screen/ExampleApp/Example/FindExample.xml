@@ -26,9 +26,8 @@ along with this software (see the LICENSE.md file). If not, see
     </pre-actions>
     
     <actions>
-        <entity-find entity-name="Example" list="exampleList">
-            <search-form-inputs default-order-by="^exampleName"/>
-        </entity-find>
+        <entity-find entity-name="example.Example" list="exampleList">
+            <search-form-inputs default-order-by="^exampleName"/></entity-find>
 
         <entity-find entity-name="ExampleStatusItem" list="exampleStatusItemList"/>
     </actions>

@@ -1,6 +1,10 @@
 ## Welcome to Moqui Framework
 
-[![Build Status](https://travis-ci.org/moqui/moqui.svg)](https://travis-ci.org/moqui/moqui)
+[![license](http://img.shields.io/badge/license-CC0%201.0%20Universal-blue.svg)](https://github.com/moqui/moqui/blob/master/LICENSE.md)
+[![build](https://travis-ci.org/moqui/moqui.svg)](https://travis-ci.org/moqui/moqui)
+[![release](http://img.shields.io/github/release/moqui/moqui.svg)](https://github.com/moqui/moqui/releases)
+[![commits since release](http://img.shields.io/github/commits-since/moqui/moqui/v1.5.3.svg)](https://github.com/moqui/moqui/commits/master)
+[![downloads](http://img.shields.io/github/downloads/moqui/moqui/latest/total.svg)](https://github.com/moqui/moqui/releases)
 
 For details about running and deploying Moqui see:
 

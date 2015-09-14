@@ -82,7 +82,7 @@ class ServiceCallAsyncImpl extends ServiceCallImpl implements ServiceCallAsync {
         if (sd == null && !isEntityAutoPattern()) throw new IllegalArgumentException("Could not find service with name [${getServiceName()}]")
 
         if (sd != null) {
-            String serviceType = (String) sd.serviceNode.attributes().get('type') ?: "inline"
+            String serviceType = (String) sd.serviceNode.attribute('type') ?: "inline"
             if (serviceType == "interface") throw new IllegalArgumentException("Cannot run interface service [${getServiceName()}]")
             ServiceRunner sr = sfi.getServiceRunner(serviceType)
             if (sr == null) throw new IllegalArgumentException("Could not find service runner for type [${serviceType}] for service [${getServiceName()}]")

@@ -13,7 +13,11 @@
 package org.moqui.impl.context
 
 import groovy.transform.CompileStatic
-import org.apache.avalon.framework.configuration.DefaultConfigurationBuilder
+import org.apache.fop.apps.FopConfParser
+import org.apache.fop.apps.FopFactoryBuilder
+import org.apache.fop.apps.io.ResourceResolverFactory
+import org.apache.xmlgraphics.io.Resource
+import org.apache.xmlgraphics.io.ResourceResolver
 import org.moqui.entity.EntityValue
 
 import javax.mail.util.ByteArrayDataSource
@@ -576,7 +580,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
         FopFactory ff = getFopFactory()
         FOUserAgent foUserAgent = ff.newFOUserAgent()
-        foUserAgent.setURIResolver(new LocalResolver(ecfi, foUserAgent.getURIResolver()))
+        // no longer needed? foUserAgent.setURIResolver(new LocalResolver(ecfi, foUserAgent.getURIResolver()))
         Fop fop = ff.newFop(contentType, foUserAgent, out)
 
         transformer.transform(xslFoSrc, new SAXResult(fop.getDefaultHandler()))
@@ -586,16 +590,50 @@ public class ResourceFacadeImpl implements ResourceFacade {
     FopFactory getFopFactory() {
         if (internalFopFactory != null) return internalFopFactory
 
-        // setup FopFactory
-        internalFopFactory = FopFactory.newInstance()
+        URI baseURI = getLocationReference((String) ecfi.runtimePath + "/conf").getUri()
+        ResourceResolver resolver = new LocalResourceResolver(ecfi, ResourceResolverFactory.createDefaultResourceResolver())
+        FopConfParser parser = new FopConfParser(getLocationStream("classpath://fop.xconf"), baseURI, resolver)
+        FopFactoryBuilder builder = parser.getFopFactoryBuilder()
         // Limit the validation for backwards compatibility
-        internalFopFactory.setStrictValidation(false)
-        DefaultConfigurationBuilder cfgBuilder = new DefaultConfigurationBuilder()
-        internalFopFactory.setUserConfig(cfgBuilder.build(ecfi.resourceFacade.getLocationStream("classpath://fop.xconf")))
-        internalFopFactory.getFontManager().setFontBaseURL((String) ecfi.runtimePath + "/conf")
-        internalFopFactory.setURIResolver(new LocalResolver(ecfi, internalFopFactory.getURIResolver()))
+        builder.setStrictFOValidation(false)
+        internalFopFactory = builder.build()
+
+        // need something like this? internalFopFactory.getFontManager().setResourceResolver(resolver)
 
         return internalFopFactory
+    }
+
+    @CompileStatic
+    static class LocalResourceResolver implements ResourceResolver {
+        protected ExecutionContextFactoryImpl ecfi
+        protected ResourceResolver defaultResolver
+
+        protected LocalResourceResolver() {}
+
+        public LocalResourceResolver(ExecutionContextFactoryImpl ecfi, ResourceResolver defaultResolver) {
+            this.ecfi = ecfi
+            this.defaultResolver = defaultResolver
+        }
+
+        public OutputStream getOutputStream(URI uri) throws IOException {
+            ResourceReference rr = ecfi.getResourceFacade().getLocationReference(uri.toASCIIString())
+            if (rr != null) {
+                OutputStream os = rr.getOutputStream()
+                if (os != null) { return os }
+            }
+
+            return defaultResolver?.getOutputStream(uri)
+         }
+
+         public Resource getResource(URI uri) throws IOException {
+             ResourceReference rr = ecfi.getResourceFacade().getLocationReference(uri.toASCIIString())
+             if (rr != null) {
+                 InputStream is = rr.openStream()
+                 if (is != null) { return new Resource(is) }
+             }
+
+             return defaultResolver?.getResource(uri)
+         }
     }
 
     @CompileStatic

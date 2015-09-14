@@ -17,18 +17,13 @@ along with this software (see the LICENSE.md file). If not, see
     
     <parameter name="exampleId" required="true"/>
 
-    <transition name="createExampleContent">
-        <service-call name="create#ExampleContent"/>
-        <default-response url="."/>
-    </transition>
-    <transition name="updateExampleContent">
-        <service-call name="update#ExampleContent"/>
-        <default-response url="."/>
-    </transition>
-    <transition name="deleteExampleContent">
-        <service-call name="delete#ExampleContent"/>
-        <default-response url="."/>
-    </transition>
+    <transition name="createExampleContent"><service-call name="create#example.ExampleContent"/>
+        <default-response url="."/></transition>
+    <transition name="updateExampleContent"><service-call name="update#example.ExampleContent"/>
+        <default-response url="."/></transition>
+    <transition name="deleteExampleContent"><service-call name="delete#example.ExampleContent"/>
+        <default-response url="."/></transition>
+
     <transition name="uploadExampleContent">
         <actions><script><![CDATA[
             import org.moqui.context.ResourceReference
@@ -68,7 +63,7 @@ along with this software (see the LICENSE.md file). If not, see
         <container>
             <container-dialog id="AddContentDialog" button-text="Add Content">
                 <form-single name="AddExampleContent" transition="createExampleContent">
-                    <auto-fields-service service-name="create#ExampleContent"/>
+                    <auto-fields-service service-name="create#example.ExampleContent"/>
                     <field name="exampleId"><default-field><hidden/></default-field></field>
                     <field name="contentLocation"><default-field><text-line size="60"/></default-field></field>
                     <field name="purposeEnumId"><default-field title="Purpose">

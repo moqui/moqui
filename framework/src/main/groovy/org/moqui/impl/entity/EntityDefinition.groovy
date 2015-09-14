@@ -107,7 +107,7 @@ public class EntityDefinition {
                 String fieldName = aliasNode."@field" ?: aliasNode."@name"
                 Node fieldNode = memberEd.getFieldNode(fieldName)
                 if (fieldNode == null) throw new EntityException("In view-entity [${internalEntityName}] alias [${aliasNode."@name"}] referred to field [${fieldName}] that does not exist on entity [${memberEd.internalEntityName}].")
-                if (!aliasNode.attributes().get("type")) aliasNode.attributes().put("type", fieldNode.attributes().get("type"))
+                if (!aliasNode.attribute("type")) aliasNode.attributes().put("type", fieldNode.attribute("type"))
                 if (fieldNode."@is-pk" == "true") aliasNode."@is-pk" = "true"
             }
             for (Node aliasNode in internalEntityNode."alias") {
@@ -177,14 +177,14 @@ public class EntityDefinition {
     @CompileStatic
     boolean createOnly() {
         if (createOnlyVal != null) return createOnlyVal
-        createOnlyVal = internalEntityNode.attributes().get('create-only') == "true"
+        createOnlyVal = internalEntityNode.attribute('create-only') == "true"
         return createOnlyVal
     }
 
     @CompileStatic
     boolean optimisticLock() {
         if (optimisticLockVal != null) return optimisticLockVal
-        optimisticLockVal = internalEntityNode.attributes().get('optimistic-lock') == "true"
+        optimisticLockVal = internalEntityNode.attribute('optimistic-lock') == "true"
         return optimisticLockVal
     }
 
@@ -202,9 +202,9 @@ public class EntityDefinition {
     }
     @CompileStatic
     String getFieldAuditLog(Node fieldNode) {
-        String fieldAuditLog = fieldNode.attributes().get('enable-audit-log')
+        String fieldAuditLog = fieldNode.attribute('enable-audit-log')
         if (fieldAuditLog) return fieldAuditLog
-        return internalEntityNode.attributes().get('enable-audit-log')
+        return internalEntityNode.attribute('enable-audit-log')
     }
 
     @CompileStatic
@@ -212,12 +212,12 @@ public class EntityDefinition {
         if (needsEncryptVal != null) return needsEncryptVal
         needsEncryptVal = false
         for (Node fieldNode in getFieldNodes(true, true, false)) {
-            if (fieldNode.attributes().get('encrypt') == "true") needsEncryptVal = true
+            if (fieldNode.attribute('encrypt') == "true") needsEncryptVal = true
         }
         if (needsEncryptVal) return true
 
         for (Node fieldNode in getFieldNodes(false, false, true)) {
-            if (fieldNode.attributes().get('encrypt') == "true") needsEncryptVal = true
+            if (fieldNode.attribute('encrypt') == "true") needsEncryptVal = true
         }
 
         return needsEncryptVal
@@ -225,7 +225,7 @@ public class EntityDefinition {
 
     @CompileStatic
     String getUseCache() {
-        if (useCache == null) useCache = internalEntityNode.attributes().get('cache') ?: 'false'
+        if (useCache == null) useCache = internalEntityNode.attribute('cache') ?: 'false'
         return useCache
     }
 
@@ -325,23 +325,23 @@ public class EntityDefinition {
                 // else {
 
                 if (fieldNode.get('complex-alias')) {
-                    String function = fieldNode.attributes().get('function')
+                    String function = fieldNode.attribute('function')
                     if (function) {
                         colNameBuilder.append(getFunctionPrefix(function))
                     }
                     ed.buildComplexAliasName(fieldNode, "+", colNameBuilder)
                     if (function) colNameBuilder.append(')')
                 } else {
-                    String function = fieldNode.attributes().get('function')
+                    String function = fieldNode.attribute('function')
                     if (function) {
                         colNameBuilder.append(getFunctionPrefix(function))
                     }
                     // column name for view-entity (prefix with "${entity-alias}.")
-                    colNameBuilder.append(fieldNode.attributes().get('entity-alias')).append('.')
+                    colNameBuilder.append(fieldNode.attribute('entity-alias')).append('.')
 
-                    String memberFieldName = fieldNode.attributes().get('field') ?: fieldNode.attributes().get('name')
+                    String memberFieldName = fieldNode.attribute('field') ?: fieldNode.attribute('name')
                     colNameBuilder.append(ed.getBasicFieldColName(ed.internalEntityNode,
-                            (String) fieldNode.attributes().get('entity-alias'), memberFieldName))
+                            (String) fieldNode.attribute('entity-alias'), memberFieldName))
 
                     if (function) colNameBuilder.append(')')
                 }
@@ -447,16 +447,16 @@ public class EntityDefinition {
     static Map<String, String> getRelationshipExpandedKeyMapInternal(Node relationship, EntityDefinition relEd) {
         Map<String, String> eKeyMap = [:]
         NodeList keyMapList = (NodeList) relationship.get("key-map")
-        if (!keyMapList && ((String) relationship.attributes().get('type')).startsWith('one')) {
+        if (!keyMapList && ((String) relationship.attribute('type')).startsWith('one')) {
             // go through pks of related entity, assume field names match
             for (String pkFieldName in relEd.getPkFieldNames()) eKeyMap.put(pkFieldName, pkFieldName)
         } else {
             for (Object childObj in keyMapList) {
                 Node keyMap = (Node) childObj
 
-                String fieldName = keyMap.attributes().get('field-name')
-                String relFn = keyMap.attributes().get('related-field-name') ?: fieldName
-                if (!relEd.isField(relFn) && ((String) relationship.attributes().get('type')).startsWith("one")) {
+                String fieldName = keyMap.attribute('field-name')
+                String relFn = keyMap.attribute('related-field-name') ?: fieldName
+                if (!relEd.isField(relFn) && ((String) relationship.attribute('type')).startsWith("one")) {
                     List<String> pks = relEd.getPkFieldNames()
                     if (pks.size() == 1) relFn = pks.get(0)
                     // if we don't match these constraints and get this default we'll get an error later...
@@ -794,8 +794,8 @@ public class EntityDefinition {
         String nodeName = this.isViewEntity() ? "alias" : "field"
         for (Object nodeObj in (NodeList) this.internalEntityNode.get(nodeName)) {
             Node node = (Node) nodeObj
-            if ((includePk && 'true'.equals(node.attributes().get('is-pk'))) || (includeNonPk && !'true'.equals(node.attributes().get('is-pk')))) {
-                nameSet.add(node.attributes().get('name'))
+            if ((includePk && 'true'.equals(node.attribute('is-pk'))) || (includeNonPk && !'true'.equals(node.attribute('is-pk')))) {
+                nameSet.add(node.attribute('name'))
             }
         }
         return nameSet
@@ -864,9 +864,9 @@ public class EntityDefinition {
         if (pkFieldDefaults == null) {
             Map<String, String> newDefaults = [:]
             for (Node fieldNode in getFieldNodes(true, false, false)) {
-                String defaultStr = fieldNode.attributes().get('default')
+                String defaultStr = fieldNode.attribute('default')
                 if (!defaultStr) continue
-                newDefaults.put((String) fieldNode.attributes().get('name'), defaultStr)
+                newDefaults.put((String) fieldNode.attribute('name'), defaultStr)
             }
             pkFieldDefaults = newDefaults
         }
@@ -877,9 +877,9 @@ public class EntityDefinition {
         if (nonPkFieldDefaults == null) {
             Map<String, String> newDefaults = [:]
             for (Node fieldNode in getFieldNodes(false, true, false)) {
-                String defaultStr = fieldNode.attributes().get('default')
+                String defaultStr = fieldNode.attribute('default')
                 if (!defaultStr) continue
-                newDefaults.put((String) fieldNode.attributes().get('name'), defaultStr)
+                newDefaults.put((String) fieldNode.attribute('name'), defaultStr)
             }
             nonPkFieldDefaults = newDefaults
         }

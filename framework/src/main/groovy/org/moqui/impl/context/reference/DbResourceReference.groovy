@@ -64,6 +64,11 @@ class DbResourceReference extends BaseResourceReference {
     }
 
     @Override
+    OutputStream getOutputStream() {
+        throw new UnsupportedOperationException("The getOutputStream method is not supported for DB resources, use putStream() instead")
+    }
+
+    @Override
     String getText() { return StupidUtilities.getStreamText(openStream()) }
 
     @Override

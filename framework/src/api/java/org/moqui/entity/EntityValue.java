@@ -215,7 +215,7 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
      */
     boolean checkFks(boolean insertDummy) throws EntityException;
 
-    void checkAgainstDatabase(List messages);
+    long checkAgainstDatabase(List messages);
 
     /** Makes an XML Element object with an attribute for each field of the entity
      * @param document The XML Document that the new Element will be part of

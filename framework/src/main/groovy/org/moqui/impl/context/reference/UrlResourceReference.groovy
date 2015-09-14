@@ -64,6 +64,14 @@ class UrlResourceReference extends BaseResourceReference {
 
     @Override
     InputStream openStream() { return locationUrl?.openStream() }
+    @Override
+    OutputStream getOutputStream() {
+        if (!isFileProtocol) throw new IllegalArgumentException("Write not supported for resource [${getLocation()}] with protocol [${locationUrl?.protocol}]")
+        // first make sure the directory exists that this is in
+        if (!getFile().parentFile.exists()) getFile().parentFile.mkdirs()
+        OutputStream os = new FileOutputStream(getFile())
+        return os
+    }
 
     @Override
     String getText() { return StupidUtilities.getStreamText(openStream()) }

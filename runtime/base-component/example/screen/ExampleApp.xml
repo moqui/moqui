@@ -13,7 +13,7 @@ along with this software (see the LICENSE.md file). If not, see
 -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd"
-        include-child-content="true" require-authentication="false">
+        include-child-content="true" require-authentication="false" menu-image="glyphicon glyphicon-flash" menu-image-type="icon">
 
     <!-- To test this try something like:
     NOTE: "am9obi5kb2U6bW9xdWk=" is the Base64 encoded String "john.doe:moqui"
@@ -24,7 +24,7 @@ along with this software (see the LICENSE.md file). If not, see
     <transition name="ExampleEntity" method="get" read-only="true">
         <path-parameter name="exampleId"/>
         <actions>
-            <entity-find-one entity-name="Example" value-field="example"/>
+            <entity-find-one entity-name="example.Example" value-field="example"/>
             <script>ec.web.sendJsonResponse(example)</script>
         </actions>
         <default-response type="none"/>
@@ -64,7 +64,7 @@ along with this software (see the LICENSE.md file). If not, see
     -->
     <transition name="ExampleEntity" method="delete">
         <path-parameter name="exampleId"/>
-        <service-call name="delete#Example" in-map="ec.web.parameters"
+        <service-call name="delete#example.Example" in-map="ec.web.parameters"
                       web-send-json-response="true"/>
         <default-response type="none"/>
     </transition>

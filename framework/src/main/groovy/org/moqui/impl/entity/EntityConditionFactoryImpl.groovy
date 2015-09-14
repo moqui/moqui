@@ -210,7 +210,7 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
         List<EntityCondition> condList = new ArrayList()
         List<Node> nodeChildren = (List<Node>) node.children()
         for (Node subCond in nodeChildren) condList.add(makeActionCondition(subCond))
-        return makeCondition(condList, getJoinOperator((String) node.attributes().get("combine")))
+        return makeCondition(condList, getJoinOperator((String) node.attribute("combine")))
     }
 
     protected static final Map<ComparisonOperator, String> comparisonOperatorStringMap = new HashMap()

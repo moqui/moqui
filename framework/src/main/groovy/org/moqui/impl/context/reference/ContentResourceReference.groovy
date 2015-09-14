@@ -73,6 +73,11 @@ class ContentResourceReference extends BaseResourceReference {
     }
 
     @Override
+    OutputStream getOutputStream() {
+        throw new UnsupportedOperationException("The getOutputStream method is not supported for JCR, use putStream() instead")
+    }
+
+    @Override
     String getText() { return StupidUtilities.getStreamText(openStream()) }
 
     @Override

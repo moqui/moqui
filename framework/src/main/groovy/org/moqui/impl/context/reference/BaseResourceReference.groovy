@@ -65,6 +65,8 @@ abstract class BaseResourceReference implements ResourceReference {
 
     @Override
     abstract InputStream openStream();
+    @Override
+    abstract OutputStream getOutputStream();
 
     @Override
     abstract String getText();

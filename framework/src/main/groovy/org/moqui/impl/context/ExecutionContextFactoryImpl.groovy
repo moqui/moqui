@@ -798,7 +798,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         Boolean ph = artifactPersistHitByType.get(cacheKey)
         if (ph == null) {
             Node artifactStats = getArtifactStatsNode(artifactType, artifactSubType)
-            ph = 'true'.equals(artifactStats.attributes().get('persist-hit'))
+            ph = 'true'.equals(artifactStats.attribute('persist-hit'))
             artifactPersistHitByType.put(cacheKey, ph)
         }
         return ph
@@ -809,7 +809,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         Boolean pb = artifactPersistBinByType.get(cacheKey)
         if (pb == null) {
             Node artifactStats = getArtifactStatsNode(artifactType, artifactSubType)
-            pb = 'true'.equals(artifactStats.attributes().get('persist-bin'))
+            pb = 'true'.equals(artifactStats.attribute('persist-bin'))
             artifactPersistBinByType.put(cacheKey, pb)
         }
         return pb
