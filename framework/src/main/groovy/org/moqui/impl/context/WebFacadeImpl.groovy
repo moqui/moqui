@@ -190,14 +190,14 @@ class WebFacadeImpl implements WebFacade {
     }
 
     @CompileStatic
-    void saveScreenHistory(ScreenUrlInfo.UrlInstance urlInstance) {
-        ScreenUrlInfo sui = urlInstance.sui
-        ScreenDefinition targetScreen = urlInstance.sui.targetScreen
+    void saveScreenHistory(ScreenUrlInfo.UrlInstance urlInstanceOrig) {
+        ScreenUrlInfo sui = urlInstanceOrig.sui
+        ScreenDefinition targetScreen = urlInstanceOrig.sui.targetScreen
 
         // don't save standalone screens
         if (sui.lastStandalone || targetScreen.isStandalone()) return
         // don't save transition requests, just screens
-        if (urlInstance.getTargetTransition() != null) return
+        if (urlInstanceOrig.getTargetTransition() != null) return
 
         LinkedList<Map> screenHistoryList = (LinkedList<Map>) session.getAttribute("moqui.screen.history")
         if (screenHistoryList == null) {
@@ -205,7 +205,12 @@ class WebFacadeImpl implements WebFacade {
             session.setAttribute("moqui.screen.history", screenHistoryList)
         }
 
+        ScreenUrlInfo.UrlInstance urlInstance = urlInstanceOrig.cloneUrlInstance()
+        // ignore the page index for history
+        urlInstance.getParameterMap().remove("pageIndex")
+        logger.warn("======= parameters: ${urlInstance.getParameterMap()}")
         String urlWithParams = urlInstance.getUrlWithParams()
+        logger.warn("======= urlWithParams: ${urlWithParams}")
 
         // if is the same as last screen skip it
         Map firstItem = screenHistoryList.size() > 0 ? screenHistoryList.get(0) : null
