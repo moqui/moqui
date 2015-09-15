@@ -75,7 +75,7 @@ along with this software (see the LICENSE.md file). If not, see
                 <radio no-current-selected-key="XML"><option key="XML"/><option key="JSON"/></radio>
             </default-field></field>
             <field name="output">
-                <default-field><radio no-current-selected-key="file">
+                <default-field><radio no-current-selected-key="browser">
                     <option key="file" text="Single File"/>
                     <option key="dir" text="Directory (one file per entity)"/>
                     <option key="browser" text="Out to Browser"/>
