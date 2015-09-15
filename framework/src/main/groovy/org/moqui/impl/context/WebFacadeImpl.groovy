@@ -208,9 +208,9 @@ class WebFacadeImpl implements WebFacade {
         ScreenUrlInfo.UrlInstance urlInstance = urlInstanceOrig.cloneUrlInstance()
         // ignore the page index for history
         urlInstance.getParameterMap().remove("pageIndex")
-        logger.warn("======= parameters: ${urlInstance.getParameterMap()}")
+        // logger.warn("======= parameters: ${urlInstance.getParameterMap()}")
         String urlWithParams = urlInstance.getUrlWithParams()
-        logger.warn("======= urlWithParams: ${urlWithParams}")
+        // logger.warn("======= urlWithParams: ${urlWithParams}")
 
         // if is the same as last screen skip it
         Map firstItem = screenHistoryList.size() > 0 ? screenHistoryList.get(0) : null
