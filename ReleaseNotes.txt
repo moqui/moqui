@@ -11,9 +11,16 @@ TODO
 
 New Features:
 
+- Localized strings may now contain a double hash (##) to specify context
+  where a single word in the default language (ie English) is ambiguous; at
+  runtime if no matching LocalizedMessage is found the text before the
+  double hash will be used to lookup records or as the default value
 
 Bug Fixes:
 
+- Fixed issue in the Tools EntityDetail screen where entities with many
+  dependents (like Enumeration, Uom, etc) caused an out of memory error;
+  GitHub issue #149
 
 ===========================================================================
 Release 1.5.3 - 11 Sep 2015
