@@ -187,6 +187,11 @@ along with this software (see the LICENSE.md file). If not, see
                     rules are run, and only if the field value is null or an empty String.
                 </xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="create-only" type="boolean">
+                <xs:annotation><xs:documentation>If true values are immutable, can only be set on create and not update.
+                    Overrides entity.@create-only value, set to false explicitly to allow update of certain fields on
+                    create-only entities.</xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
 

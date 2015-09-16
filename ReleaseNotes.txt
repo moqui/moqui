@@ -15,6 +15,9 @@ New Features:
   where a single word in the default language (ie English) is ambiguous; at
   runtime if no matching LocalizedMessage is found the text before the
   double hash will be used to lookup records or as the default value
+- Added field.@create-only attribute, defaults to entity.@create-only
+  value, create only now checked at field level on update (only at entity
+  level on delete)
 
 Bug Fixes:
 
