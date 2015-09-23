@@ -1108,12 +1108,16 @@ abstract class EntityValueBase implements EntityValue {
 
         ArrayList<String> pkFieldList = ed.getPkFieldNames()
         ArrayList<String> nonPkFieldList = new ArrayList<String>()
-        ArrayList<String> fieldNameList = ed.getNonPkFieldNames()
-        int size = fieldNameList.size()
+        ArrayList<EntityDefinition.FieldInfo> fieldInfoList = ed.getNonPkFieldInfoList()
+        List<String> changedCreateOnlyFields = []
+        int size = fieldInfoList.size()
         for (int i = 0; i < size; i++) {
-            String fieldName = fieldNameList.get(i)
-            if (valueMap.containsKey(fieldName) && (!oldValues.containsKey(fieldName) || valueMap.get(fieldName) != oldValues.get(fieldName)))
+            EntityDefinition.FieldInfo fieldInfo = fieldInfoList.get(i)
+            String fieldName = fieldInfo.name
+            if (valueMap.containsKey(fieldName) && (!oldValues.containsKey(fieldName) || valueMap.get(fieldName) != oldValues.get(fieldName))) {
                 nonPkFieldList.add(fieldName)
+                if (fieldInfo.createOnly) changedCreateOnlyFields.add(fieldName)
+            }
         }
         // if (ed.getEntityName() == "foo") logger.warn("================ evb.update() ${getEntityName()} nonPkFieldList=${nonPkFieldList};\nvalueMap=${valueMap};\noldValues=${oldValues}")
         if (!nonPkFieldList) {
@@ -1122,7 +1126,9 @@ abstract class EntityValueBase implements EntityValue {
         }
 
         // do this after the empty nonPkFieldList check so that if nothing has changed then ignore the attempt to update
-        if (ed.createOnly()) throw new EntityException("Entity [${getEntityName()}] is create-only (immutable), cannot be updated.")
+        if (changedCreateOnlyFields.size() > 0) {
+            throw new EntityException("Cannot update create-only (immutable) fields ${changedCreateOnlyFields} on entity [${getEntityName()}]")
+        }
 
         if (ed.optimisticLock()) {
             if (getTimestamp("lastUpdatedStamp") != refreshedValue.getTimestamp("lastUpdatedStamp"))

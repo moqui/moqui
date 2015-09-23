@@ -38,8 +38,8 @@ along with this software (see the LICENSE.md file). If not, see
                             <link url="../Entity/SqlRunner" text="SQL Runner"/>
                         </container>
                         <container>
+                            <link url="../Entity/DataEdit" text="Entities"/>
                             <link url="../DataView" text="Data Views"/>
-                            <link url="../Entity/DataEdit" text="Data Edit"/>
                             <link url="../Entity/SpeedTest" text="Speed Test"/>
                         </container>
                     </box-body>

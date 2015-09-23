@@ -55,6 +55,9 @@ class StupidUtilities {
             if (theClass == Boolean.class && value instanceof CharSequence && value) {
                 // for non-empty String to Boolean don't use normal not-empty rules, look for "true", "false", etc
                 return Boolean.valueOf((String) value)
+            } else if (theClass == java.sql.Date.class && value instanceof Timestamp) {
+                // Groovy doesn't handle this one, but easy conversion
+                return new java.sql.Date(((Timestamp) value).getTime())
             } else {
                 // let groovy do the work
                 Object newVal = value.asType(theClass)

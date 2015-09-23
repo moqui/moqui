@@ -50,6 +50,7 @@ public class EntityDefinition {
     // small lists, but very frequently accessed
     protected ArrayList<String> pkFieldNameList = null
     protected ArrayList<String> nonPkFieldNameList = null
+    protected ArrayList<FieldInfo> nonPkFieldInfoList = null
     protected ArrayList<String> allFieldNameList = null
     protected Boolean hasUserFields = null
     protected Boolean allowUserField = null
@@ -177,14 +178,14 @@ public class EntityDefinition {
     @CompileStatic
     boolean createOnly() {
         if (createOnlyVal != null) return createOnlyVal
-        createOnlyVal = internalEntityNode.attribute('create-only') == "true"
+        createOnlyVal = "true".equals(internalEntityNode.attribute('create-only'))
         return createOnlyVal
     }
 
     @CompileStatic
     boolean optimisticLock() {
         if (optimisticLockVal != null) return optimisticLockVal
-        optimisticLockVal = internalEntityNode.attribute('optimistic-lock') == "true"
+        optimisticLockVal = "true".equals(internalEntityNode.attribute('optimistic-lock'))
         return optimisticLockVal
     }
 
@@ -268,6 +269,18 @@ public class EntityDefinition {
         fieldInfoMap.put(fieldName, fi)
         return fi
     }
+    @CompileStatic
+    ArrayList<FieldInfo> getNonPkFieldInfoList() {
+        if (nonPkFieldInfoList != null) return nonPkFieldInfoList
+
+        ArrayList<String> nonPkFieldNameList = getNonPkFieldNames()
+        int nonPkFieldNameListSize = nonPkFieldNameList.size()
+        ArrayList<FieldInfo> tempList = new ArrayList<>(nonPkFieldNameListSize)
+        for (int i = 0; i < nonPkFieldNameListSize; i++) tempList.add(getFieldInfo(nonPkFieldNameList.get(i)))
+
+        nonPkFieldInfoList = tempList
+        return nonPkFieldInfoList
+    }
 
     @CompileStatic
     static class FieldInfo {
@@ -285,6 +298,7 @@ public class EntityDefinition {
         boolean isSimple
         boolean enableLocalization
         boolean isUserField
+        boolean createOnly
 
         FieldInfo(EntityDefinition ed, Node fieldNode) {
             this.ed = ed
@@ -309,6 +323,7 @@ public class EntityDefinition {
             enableLocalization = 'true'.equals(fnAttrs.get('enable-localization'))
             isUserField = 'true'.equals(fnAttrs.get('is-user-field'))
             isSimple = !enableLocalization && !isUserField
+            createOnly = fnAttrs.get('create-only') ? 'true'.equals(fnAttrs.get('create-only')) : ed.createOnly()
         }
 
         String getFullColumnName(boolean includeFunctionAndComplex) {
@@ -575,56 +590,78 @@ public class EntityDefinition {
         String toString() { return relationshipName + (shortAlias ? "(${shortAlias})" : "") }
     }
 
-    EntityDependents getDependentsTree(Deque<String> ancestorEntities) {
-        EntityDependents edp = new EntityDependents()
-        edp.entityName = fullEntityName
-        edp.ed = this
-
-        if (ancestorEntities == null) ancestorEntities = new LinkedList()
-        ancestorEntities.addFirst(this.fullEntityName)
-
-        List<RelationshipInfo> relInfoList = getRelationshipsInfo(true)
-        for (RelationshipInfo relInfo in relInfoList) {
-            edp.allDescendants.add((String) relInfo.relatedEntityName)
-            String relName = (String) relInfo.relationshipName
-            edp.relationshipInfos.put(relName, relInfo)
-            // if (relInfo.shortAlias) edp.relationshipInfos.put((String) relInfo.shortAlias, relInfo)
-            EntityDefinition relEd = efi.getEntityDefinition((String) relInfo.relatedEntityName)
-            if (!edp.dependentEntities.containsKey(relName) && !ancestorEntities.contains(relEd.fullEntityName)) {
-                EntityDependents relEpd = relEd.getDependentsTree(ancestorEntities)
-                edp.allDescendants.addAll(relEpd.allDescendants)
-                edp.dependentEntities.put(relName, relEpd)
-            }
-        }
-
-        ancestorEntities.removeFirst()
-
+    EntityDependents getDependentsTree() {
+        EntityDependents edp = new EntityDependents(this, null, null)
         return edp
     }
 
     static class EntityDependents {
         String entityName
         EntityDefinition ed
-        Map<String, EntityDependents> dependentEntities = new HashMap()
-        Set<String> allDescendants = new HashSet()
+        Map<String, EntityDependents> dependentEntities = new TreeMap()
+        Set<String> descendants = new TreeSet()
         Map<String, RelationshipInfo> relationshipInfos = new HashMap()
 
+        EntityDependents(EntityDefinition ed, Deque<String> ancestorEntities, Map<String, EntityDependents> allDependents) {
+            this.ed = ed
+            entityName = ed.fullEntityName
+
+            if (ancestorEntities == null) ancestorEntities = new LinkedList()
+            ancestorEntities.addFirst(entityName)
+            if (allDependents == null) allDependents = new HashMap<String, EntityDependents>()
+            allDependents.put(entityName, this)
+
+            List<RelationshipInfo> relInfoList = ed.getRelationshipsInfo(true)
+            for (RelationshipInfo relInfo in relInfoList) {
+                if (!relInfo.dependent) continue
+                descendants.add(relInfo.relatedEntityName)
+                String relName = relInfo.relationshipName
+                relationshipInfos.put(relName, relInfo)
+                // if (relInfo.shortAlias) edp.relationshipInfos.put((String) relInfo.shortAlias, relInfo)
+                EntityDefinition relEd = ed.efi.getEntityDefinition((String) relInfo.relatedEntityName)
+                if (!dependentEntities.containsKey(relName) && !ancestorEntities.contains(relEd.fullEntityName)) {
+                    EntityDependents relEdp = allDependents.get(relEd.fullEntityName)
+                    if (relEdp == null) relEdp = new EntityDependents(relEd, ancestorEntities, allDependents)
+                    dependentEntities.put(relName, relEdp)
+                }
+            }
+
+            ancestorEntities.removeFirst()
+        }
+
+        TreeSet<String> getAllDescendants() {
+            TreeSet<String> allSet = new TreeSet()
+            populateAllDescendants(allSet)
+            return allSet
+        }
+        protected void populateAllDescendants(TreeSet<String> allSet) {
+            allSet.addAll(descendants)
+            for (EntityDependents edp in dependentEntities.values()) edp.populateAllDescendants(allSet)
+        }
+
         String toString() {
-            StringBuilder builder = new StringBuilder()
-            buildString(builder, 0)
+            StringBuilder builder = new StringBuilder(10000)
+            Set<String> entitiesVisited = new HashSet<>()
+            buildString(builder, 0, entitiesVisited)
             return builder.toString()
         }
         static final String indentBase = '- '
-        void buildString(StringBuilder builder, int level) {
+        void buildString(StringBuilder builder, int level, Set<String> entitiesVisited) {
             StringBuilder ib = new StringBuilder()
-            for (int i = 0; i < level; i++) ib.append(indentBase)
+            for (int i = 0; i <= level; i++) ib.append(indentBase)
             String indent = ib.toString()
 
-            // builder.append(indent).append(entityName).append('\n')
             for (Map.Entry<String, EntityDependents> entry in dependentEntities) {
                 RelationshipInfo relInfo = relationshipInfos.get(entry.getKey())
-                builder.append(indent).append(indentBase).append(relInfo.relationshipName).append(' ').append(relInfo.keyMap).append('\n')
-                entry.getValue().buildString(builder, level+1)
+                builder.append(indent).append(relInfo.relationshipName).append(' ').append(relInfo.keyMap).append('\n')
+                if (level < 8 && !entitiesVisited.contains(entry.getValue().entityName)) {
+                    entry.getValue().buildString(builder, level+1, entitiesVisited)
+                    entitiesVisited.add(entry.getValue().entityName)
+                } else if (entitiesVisited.contains(entry.getValue().entityName)) {
+                    builder.append(indent).append(indentBase).append('Dependants already displayed\n')
+                } else if (level == 8) {
+                    builder.append(indent).append(indentBase).append('Reached level limit\n')
+                }
             }
         }
     }
