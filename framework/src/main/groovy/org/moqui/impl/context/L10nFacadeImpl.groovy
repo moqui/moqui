@@ -76,8 +76,9 @@ public class L10nFacadeImpl implements L10nFacade {
 
         // if original has a hash and we still don't have a localizedMessage then use what precedes the hash and try again
         if (!localizedMessage) {
-            int indexOfHash = original.indexOf('##')
-            if (indexOfHash > 0) {
+            int indexOfCloseCurly = original.lastIndexOf('}')
+            int indexOfHash = original.lastIndexOf('##')
+            if (indexOfHash > 0 && indexOfHash > indexOfCloseCurly) {
                 defaultValue = original.substring(0, indexOfHash)
                 EntityFind findHash = ecfi.getEntityFacade().find("moqui.basic.LocalizedMessage")
                         .condition(["original":defaultValue, "locale":localeString] as Map<String, Object>).useCache(true)
