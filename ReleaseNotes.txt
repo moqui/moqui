@@ -2055,7 +2055,6 @@ Features considered, but may not to be included in 1.x series
   - Auto Screen
     - Editable data grid, created by form-list, for detail and assoc related entities
   - Entity
-    - EntitySync UI in tools app
     - Entity model internal check (relationship, view-link.key-map, ?)
     - Database meta-data check/report against entity definitions; NOTE: use LiquiBase for this
   - Script Run (or groovy shell?)
@@ -2063,10 +2062,28 @@ Features considered, but may not to be included in 1.x series
     - Configure and run chain of services (dynamic wizard)
   - Artifact Info screens (with in/out references for all)
     - Screen tree and graph browse screen
-    - Entity info screen
     - Entity usage/reference section
     - Service usage/reference section on ServiceDetail screen
   - Screen to install a component (upload and register, load data from it; require special permission for this, not enabled on the demo server)
+
+- Integration
+  - OData (http://www.odata.org) compliant entity auto REST API
+    - like current but use OData URL structure, query parameters, etc
+    - mount on /odata4 as alternative to existing /rest
+    - generate EDMX for all entities (and exported services?)
+  - Generate RAML (http://raml.org) with json-schema (http://json-schema.org) (others: Swagger, RSDL) for all entities to use with entity REST API
+    - get: \ queryParameters: \ ${pk/etc}: \ (type:, required:, etc)
+    - get: \ responses: \ 200: \ body: \ application/json: \ schema: !include schema/${name}.json
+    - nested like: /orders: \ /${orderId}: \ /orderItems: \ ...
+    - see MuleSoft, other tools
+  - Generate json-schema (http://json-schema.org) documents, make available through entity REST API
+    - URL pattern? maybe /schema for all, /schema/${name}.json for particular entity
+    - MIME type: application/schema+json
+  - Generate minimal Data Document based on changes (per TX possible, runs async so not really; from existing doc, like current ES doc)
+  - Update database from Data Document
+  - Data Document UI
+    - show/edit field, rel alias, condition, link
+    - special form for add (edit?) field with 5 drop-downs for relationships, one for field, all updated based on master entity and previous selections
 
 - Atomikos
   - http://www.atomikos.com/Main/InstallingTransactionsEssentials
