@@ -923,6 +923,40 @@ public class EntityDefinition {
         return nonPkFieldDefaults
     }
 
+    protected static final Map<String, String> fieldTypeJsonMap = [
+            "id":"string", "id-long":"string", "text-indicator":"string", "text-short":"string", "text-medium":"string",
+            "text-long":"string", "text-very-long":"string", "date-time":"string", "time":"string",
+            "date":"string", "number-integer":"number", "number-float":"number",
+            "number-decimal":"number", "currency-amount":"number", "currency-precise":"number",
+            "binary-very-long":"string" ] // NOTE: binary-very-long may need hyper-schema stuff
+
+    @CompileStatic
+    Map getJsonSchema() {
+        Map properties = [_entity:[type:'string']]
+        Map schema = [title:(getShortAlias() ?: getFullEntityName()), type:'object', properties:properties]
+
+        // add all fields
+        ArrayList<String> allFields = getAllFieldNames(true)
+        for (int i = 0; i < allFields.size(); i++) {
+            FieldInfo fi = getFieldInfo(allFields.get(i))
+            properties.put(fi.getName(), [type:fieldTypeJsonMap.get(fi.type)])
+        }
+
+        // add all relationships, nest
+        List<RelationshipInfo> relInfoList = getRelationshipsInfo(true)
+        for (RelationshipInfo relInfo in relInfoList) {
+            String relationshipName = relInfo.relationshipName
+            String entryName = relInfo.shortAlias ?: relationshipName
+            if (relInfo.type == "many") {
+                properties.put(entryName, [type:'array', items:relInfo.relatedEd.getJsonSchema()])
+            } else {
+                properties.put(entryName, relInfo.relatedEd.getJsonSchema())
+            }
+        }
+
+        return schema
+    }
+
     List<Node> getFieldNodes(boolean includePk, boolean includeNonPk, boolean includeUserFields) {
         // NOTE: this is not necessarily the fastest way to do this, if it becomes a performance problem replace it with a local List of field Nodes
         List<Node> nodeList = new ArrayList<Node>()

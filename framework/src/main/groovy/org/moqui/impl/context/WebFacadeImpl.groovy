@@ -23,6 +23,7 @@ import org.moqui.context.ValidationError
 import org.moqui.entity.EntityNotFoundException
 import org.moqui.entity.EntityValueNotFoundException
 import org.moqui.impl.StupidUtilities
+import org.moqui.impl.entity.EntityDefinition
 import org.moqui.impl.screen.ScreenDefinition
 import org.moqui.impl.screen.ScreenUrlInfo
 
@@ -534,7 +535,7 @@ class WebFacadeImpl implements WebFacade {
                 } else {
                     jb.call((Object) responseObj)
                 }
-                jsonStr = jb.toString()
+                jsonStr = jb.toPrettyString()
                 response.setStatus(HttpServletResponse.SC_OK)
             } else {
                 jsonStr = ""
@@ -709,6 +710,34 @@ class WebFacadeImpl implements WebFacade {
             logger.warn((String) "General error in entity REST: " + t.toString(), t)
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, errorMessage)
         }
+    }
+
+    @Override
+    @CompileStatic
+    void handleEntityRestSchema(List<String> extraPathNameList) {
+        // make sure a user is logged in, screen/etc that calls will generally be configured to not require auth
+        if (!eci.getUser().getUsername()) {
+            // if there was a login error there will be a MessageFacade error message
+            String errorMessage = eci.message.errorsString
+            if (!errorMessage) errorMessage = "Authentication required for entity REST schema"
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, errorMessage)
+            return
+        }
+
+        if (extraPathNameList.size() < 1) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No entity name specified")
+            return
+        }
+        String entityName = extraPathNameList.get(0)
+        if (entityName.endsWith(".json")) entityName = entityName.substring(0, entityName.length() - 5)
+        EntityDefinition ed = eci.getEcfi().getEntityFacade().getEntityDefinition(entityName)
+        if (ed == null) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No entity found with name or alias [${entityName}]")
+            return
+        }
+
+        Map schema = ed.getJsonSchema()
+        sendJsonResponse(schema)
     }
 
 
