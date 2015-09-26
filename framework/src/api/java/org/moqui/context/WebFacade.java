@@ -51,4 +51,5 @@ public interface WebFacade {
     void handleXmlRpcServiceCall();
     void handleJsonRpcServiceCall();
     void handleEntityRestCall(List<String> extraPathNameList);
+    void handleEntityRestSchema(List<String> extraPathNameList);
 }

@@ -118,5 +118,17 @@ along with this software (see the LICENSE.md file). If not, see
         <default-response type="none"/>
     </transition>
 
+    <!--
+    To get the json-schema (see http://json-schema.org) for an entity use a request like:
+
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/schema/examples
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/schema/examples.json
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/schema/example.Example
+    -->
+    <transition name="schema" read-only="true" method="get">
+        <actions><script>ec.web.handleEntityRestSchema(sri.screenUrlInfo.extraPathNameList)</script></actions>
+        <default-response type="none"/>
+    </transition>
+
     <widgets><!-- this should never be viewed... --></widgets>
 </screen>

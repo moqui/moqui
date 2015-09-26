@@ -564,9 +564,11 @@ public class ResourceFacadeImpl implements ResourceFacade {
         if (contentType.startsWith("text/")) return false
         // aside from text/*, a few notable exceptions:
         if (contentType == "application/javascript") return false
+        if (contentType == "application/json") return false
+        if (contentType.endsWith("+json")) return false
         if (contentType == "application/rtf") return false
-        if (contentType == "application/xml") return false
-        if (contentType == "application/xml-dtd") return false
+        if (contentType.startsWith("application/xml")) return false
+        if (contentType.endsWith("+xml")) return false
         return true
     }
 
