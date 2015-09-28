@@ -728,18 +728,19 @@ class WebFacadeImpl implements WebFacade {
         EntityFacadeImpl efi = eci.getEcfi().getEntityFacade()
 
         if (extraPathNameList.size() < 1) {
-            List oneOfList = []
+            List allRefList = []
             Map definitionsMap = [:]
-            Map rootMap = ['$schema':'http://json-schema.org/draft-04/schema#', title:'Moqui Entity Auth REST API',
-                    type:'array', items:[oneOf:oneOfList], definitions:definitionsMap]
+            definitionsMap.put('paginationParameters', EntityDefinition.paginationParameters)
+            Map rootMap = ['$schema':'http://json-schema.org/draft-04/hyper-schema#', title:'Moqui Entity Auth REST API',
+                    anyOf:allRefList, definitions:definitionsMap]
 
             Set<String> entityNameSet = efi.getAllNonViewEntityNames()
             for (String entityName in entityNameSet) {
                 EntityDefinition ed = efi.getEntityDefinition(entityName)
                 String refName = ed.getShortAlias() ?: ed.getFullEntityName()
-                oneOfList.add(['$ref':"#/definitions/${refName}"])
+                allRefList.add(['$ref':"#/definitions/${refName}"])
 
-                Map schema = ed.getJsonSchema('#/definitions/', linkPrefix, schemaLinkPrefix)
+                Map schema = ed.getJsonSchema(false, null, linkPrefix, schemaLinkPrefix)
                 definitionsMap.put(refName, schema)
             }
 
@@ -770,8 +771,8 @@ class WebFacadeImpl implements WebFacade {
                     return
                 }
 
-                Map schema = ed.getJsonSchema(null, linkPrefix, schemaLinkPrefix)
-                // TODO: support array wrapper with [type:'array', items:schema]
+                Map schema = ed.getJsonSchema(true, null, linkPrefix, schemaLinkPrefix)
+                // TODO: support array wrapper (different URL? suffix?) with [type:'array', items:schema]
 
                 // sendJsonResponse(schema)
                 JsonBuilder jb = new JsonBuilder()

@@ -929,37 +929,90 @@ public class EntityDefinition {
             "date":"string", "number-integer":"number", "number-float":"number",
             "number-decimal":"number", "currency-amount":"number", "currency-precise":"number",
             "binary-very-long":"string" ] // NOTE: binary-very-long may need hyper-schema stuff
+    static final Map paginationParameters =
+            [type:'object', properties:
+                    [pageIndex:[type:'number', description:'Page number to return, starting with zero'],
+                             pageSize:[type:'number', description:'Number of records per page (default 100)'],
+                             orderByField:[type:'string', description:'Field name to order by (or comma separated names)'],
+                             pageNoLimit:[type:'string', description:'If true don\'t limit page size (no pagination)'],
+                             dependentLevels:[type:'number', description:'Levels of dependent child records to include']
+                    ]
+            ]
 
     @CompileStatic
-    Map getJsonSchema(String refPrefix, String linkPrefix, String schemaLinkPrefix) {
-        Map<String, Object> properties = [:]
-        properties.put('_entity', [type:'string'])
+    Map getJsonSchema(boolean standalone, Map<String, Object> definitionsMap, String linkPrefix, String schemaLinkPrefix) {
         String name = getShortAlias() ?: getFullEntityName()
         String prettyName = getPrettyName(null, null)
+
+        Map<String, Object> properties = [:]
+        properties.put('_entity', [type:'string', default:name])
         Map<String, Object> schema = [id:name, title:prettyName, type:'object', properties:properties] as Map<String, Object>
 
         // add all fields
+        List<RelationshipInfo> allRelInfoList = getRelationshipsInfo(false)
         ArrayList<String> allFields = getAllFieldNames(true)
         for (int i = 0; i < allFields.size(); i++) {
             FieldInfo fi = getFieldInfo(allFields.get(i))
-            Map propMap = [type:fieldTypeJsonMap.get(fi.type)]
+            Map<String, Object> propMap = [:]
+            propMap.put('type', fieldTypeJsonMap.get(fi.type))
             if (fi.type == 'date-time') propMap.put('format', 'date-time')
             properties.put(fi.getName(), propMap)
+
+            // populate enum values for Enumeration and StatusItem
+            // find first relationship that has this field as the only key map and is not a many relationship
+            RelationshipInfo oneRelInfo = null
+            for (RelationshipInfo relInfo in allRelInfoList) {
+                Map km = relInfo.keyMap
+                if (km.size() == 1 && km.containsKey(fi.name) && relInfo.type == "one" && relInfo.relNode.attribute("is-auto-reverse") != "true") {
+                    oneRelInfo = relInfo
+                    break;
+                }
+            }
+            if (oneRelInfo != null && oneRelInfo.title) {
+                if (oneRelInfo.relatedEd.getFullEntityName() == 'moqui.basic.Enumeration') {
+                    EntityList enumList = efi.find("moqui.basic.Enumeration").condition("enumTypeId", oneRelInfo.title)
+                            .orderBy("sequenceNum,enumId").disableAuthz().list()
+                    if (enumList) {
+                        List enumIdList = [null]
+                        for (EntityValue ev in enumList) enumIdList.add(ev.enumId)
+                        propMap.put('enum', enumIdList)
+                    }
+                } else if (oneRelInfo.relatedEd.getFullEntityName() == 'moqui.basic.StatusItem') {
+                    EntityList statusList = efi.find("moqui.basic.StatusItem").condition("statusTypeId", oneRelInfo.title)
+                            .orderBy("sequenceNum,statusId").disableAuthz().list()
+                    if (statusList) {
+                        List statusIdList = [null]
+                        for (EntityValue ev in statusList) statusIdList.add(ev.statusId)
+                        propMap.put('enum', statusIdList)
+                    }
+                }
+            }
         }
+
+
+        // put current schema in Map before nesting for relationships, avoid infinite recursion with entity rel loops
+        if (standalone && definitionsMap == null) {
+            definitionsMap = [:]
+            definitionsMap.put('paginationParameters', paginationParameters)
+        }
+        if (definitionsMap != null && !definitionsMap.containsKey(name))
+            definitionsMap.put(name, schema)
 
         // add all relationships, nest
         List<RelationshipInfo> relInfoList = getRelationshipsInfo(true)
         for (RelationshipInfo relInfo in relInfoList) {
             String relationshipName = relInfo.relationshipName
             String entryName = relInfo.shortAlias ?: relationshipName
+            String relatedRefName = relInfo.relatedEd.shortAlias ?: relInfo.relatedEd.getFullEntityName()
+
+            // recurse, let it put itself in the definitionsMap
+            if (definitionsMap != null && !definitionsMap.containsKey(relatedRefName))
+                relInfo.relatedEd.getJsonSchema(false, definitionsMap, linkPrefix, schemaLinkPrefix)
+
             if (relInfo.type == "many") {
-                Map items = refPrefix ? ['$ref':(refPrefix + (relInfo.shortAlias ?: relInfo.relatedEntityName))] :
-                        relInfo.relatedEd.getJsonSchema(refPrefix, linkPrefix, schemaLinkPrefix)
-                properties.put(entryName, [type:'array', items:items])
+                properties.put(entryName, [type:'array', items:['$ref':('#/definitions/' + relatedRefName)]])
             } else {
-                Map item = refPrefix ? ['$ref':(refPrefix + (relInfo.shortAlias ?: relInfo.relatedEntityName))] :
-                        relInfo.relatedEd.getJsonSchema(refPrefix, linkPrefix, schemaLinkPrefix)
-                properties.put(entryName, item)
+                properties.put(entryName, ['$ref':('#/definitions/' + relatedRefName)])
             }
         }
 
@@ -969,29 +1022,32 @@ public class EntityDefinition {
             StringBuilder idSb = new StringBuilder()
             for (String pkName in pkNameList) idSb.append('/{').append(pkName).append('}')
             String idString = idSb.toString()
-            Map paginationMap = [type:'object', properties:
-                                    [pageIndex:[type:'number', description:'Page number to return, starting with zero'],
-                                     pageSize:[type:'number', description:'Number of records per page (default 100)'],
-                                     orderByField:[type:'string', description:'Field name to order by (or comma separated names)'],
-                                     pageNoLimit:[type:'string', description:'If true don\'t limit page size (no pagination)'],
-                                     dependentLevels:[type:'number', description:'Levels of dependent child records to include']
-                                    ]
-                                ]
 
             List linkList = [
-                [rel:'self', method:'GET', href:"${linkPrefix}/${name}${idString}", title:"Get single ${prettyName}"],
-                [rel:'instances', method:'GET', href:"${linkPrefix}/${name}", title:"Get list of ${prettyName}", schema:paginationMap],
-                [rel:'create', method:'POST', href:"${linkPrefix}/${name}", title:"Create ${prettyName}"],
-                [rel:'update', method:'PATCH', href:"${linkPrefix}/${name}${idString}", title:"Update ${prettyName}"],
-                [rel:'store', method:'PUT', href:"${linkPrefix}/${name}${idString}", title:"Create or Update ${prettyName}"],
-                [rel:'destroy', method:'DELETE', href:"${linkPrefix}/${name}${idString}", title:"Delete ${prettyName}"]
+                [rel:'self', method:'GET', href:"${linkPrefix}/${name}${idString}", title:"Get single ${prettyName}",
+                    targetSchema:['$ref':"#/definitions/${name}"]],
+                [rel:'instances', method:'GET', href:"${linkPrefix}/${name}", title:"Get list of ${prettyName}",
+                    schema:[allOf:[['$ref':'#/definitions/paginationParameters'], ['$ref':"#/definitions/${name}"]]],
+                    targetSchema:[type:'array', items:['$ref':"#/definitions/${name}"]]],
+                [rel:'create', method:'POST', href:"${linkPrefix}/${name}", title:"Create ${prettyName}",
+                    schema:['$ref':"#/definitions/${name}"]],
+                [rel:'update', method:'PATCH', href:"${linkPrefix}/${name}${idString}", title:"Update ${prettyName}",
+                    schema:['$ref':"#/definitions/${name}"]],
+                [rel:'store', method:'PUT', href:"${linkPrefix}/${name}${idString}", title:"Create or Update ${prettyName}",
+                    schema:['$ref':"#/definitions/${name}"]],
+                [rel:'destroy', method:'DELETE', href:"${linkPrefix}/${name}${idString}", title:"Delete ${prettyName}",
+                    schema:['$ref':"#/definitions/${name}"]]
             ]
             if (schemaLinkPrefix) linkList.add([rel:'describedBy', method:'GET', href:"${schemaLinkPrefix}/${name}", title:"Get schema for ${prettyName}"])
 
             schema.put('links', linkList)
         }
 
-        return schema
+        if (standalone) {
+            return ['$schema':'http://json-schema.org/draft-04/hyper-schema#', '$ref':"#/definitions/${name}", definitions:definitionsMap]
+        } else {
+            return schema
+        }
     }
 
     List<Node> getFieldNodes(boolean includePk, boolean includeNonPk, boolean includeUserFields) {
