@@ -19,7 +19,8 @@ New Features:
   value, create only now checked at field level on update (only at entity
   level on delete)
 - All XML Form field widgets now support expanded tooltip
-- Added json-schema for entity REST API: get /rest/schema/${name}.json
+- Added json-schema for entity REST API: for all entities get
+  /rest/schema.json, for a single entity get /rest/schema/${name}.json
 
 Bug Fixes:
 
@@ -2079,9 +2080,9 @@ Features considered, but may not to be included in 1.x series
     - nested like: /orders: \ /${orderId}: \ /orderItems: \ ...
     - see MuleSoft, other tools
   - Generate json-schema (http://json-schema.org) documents, make available through entity REST API
-    - URL pattern? maybe /rest/schema for all
+    x URL pattern? maybe /rest/schema (or /rest/schema.json) for all
     x for particular entity: /rest/schema/${name}.json or just /rest/schema/${name}
-    - MIME type: application/schema+json
+    x MIME type: application/schema+json
   - Generate minimal Data Document based on changes (per TX possible, runs async so not really; from existing doc, like current ES doc)
   - Update database from Data Document
   - Data Document UI

@@ -24,6 +24,7 @@ import org.moqui.entity.EntityNotFoundException
 import org.moqui.entity.EntityValueNotFoundException
 import org.moqui.impl.StupidUtilities
 import org.moqui.impl.entity.EntityDefinition
+import org.moqui.impl.entity.EntityFacadeImpl
 import org.moqui.impl.screen.ScreenDefinition
 import org.moqui.impl.screen.ScreenUrlInfo
 
@@ -724,21 +725,72 @@ class WebFacadeImpl implements WebFacade {
             return
         }
 
+        EntityFacadeImpl efi = eci.getEcfi().getEntityFacade()
+
         if (extraPathNameList.size() < 1) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No entity name specified")
+            List oneOfList = []
+            Map definitionsMap = [:]
+            Map rootMap = ['$schema':'http://json-schema.org/draft-04/schema#', title:'Moqui Entity Auth REST API',
+                           oneOf:oneOfList, definitions:definitionsMap]
+
+            Set<String> entityNameSet = efi.getAllNonViewEntityNames()
+            for (String entityName in entityNameSet) {
+                EntityDefinition ed = efi.getEntityDefinition(entityName)
+                String refName = ed.getShortAlias() ?: ed.getFullEntityName()
+                oneOfList.add(['$ref':"#/definitions/${refName}"])
+
+                Map schema = ed.getJsonSchema('#/definitions/')
+                definitionsMap.put(refName, schema)
+            }
+
+            JsonBuilder jb = new JsonBuilder()
+            jb.call(rootMap)
+            String jsonStr = jb.toPrettyString()
+            response.setStatus(HttpServletResponse.SC_OK)
+
+            response.setContentType("application/schema+json")
+            // NOTE: String.length not correct for byte length
+            String charset = response.getCharacterEncoding() ?: "UTF-8"
+            int length = jsonStr.getBytes(charset).length
+            response.setContentLength(length)
+
+            try {
+                response.writer.write(jsonStr)
+                response.writer.flush()
+            } catch (IOException e) {
+                logger.error("Error sending JSON string response", e)
+            }
         } else {
             String entityName = extraPathNameList.get(0)
             if (entityName.endsWith(".json")) entityName = entityName.substring(0, entityName.length() - 5)
             try {
-                EntityDefinition ed = eci.getEcfi().getEntityFacade().getEntityDefinition(entityName)
+                EntityDefinition ed = efi.getEntityDefinition(entityName)
                 if (ed == null) {
                     response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No entity found with name or alias [${entityName}]")
                     return
                 }
 
-                Map schema = ed.getJsonSchema(false)
+                Map schema = ed.getJsonSchema(null)
                 // TODO: support array wrapper with [type:'array', items:schema]
-                sendJsonResponse(schema)
+
+                // sendJsonResponse(schema)
+                JsonBuilder jb = new JsonBuilder()
+                jb.call(schema)
+                String jsonStr = jb.toPrettyString()
+                response.setStatus(HttpServletResponse.SC_OK)
+
+                response.setContentType("application/schema+json")
+                // NOTE: String.length not correct for byte length
+                String charset = response.getCharacterEncoding() ?: "UTF-8"
+                int length = jsonStr.getBytes(charset).length
+                response.setContentLength(length)
+
+                try {
+                    response.writer.write(jsonStr)
+                    response.writer.flush()
+                } catch (IOException e) {
+                    logger.error("Error sending JSON string response", e)
+                }
             } catch (EntityNotFoundException e) {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No entity found with name or alias [${entityName}]")
             }

@@ -931,7 +931,7 @@ public class EntityDefinition {
             "binary-very-long":"string" ] // NOTE: binary-very-long may need hyper-schema stuff
 
     @CompileStatic
-    Map getJsonSchema(boolean useRef) {
+    Map getJsonSchema(String refPrefix) {
         Map<String,Object> properties = [:]
         properties.put('_entity', [type:'string'])
         String id = getShortAlias() ?: getFullEntityName()
@@ -950,10 +950,12 @@ public class EntityDefinition {
             String relationshipName = relInfo.relationshipName
             String entryName = relInfo.shortAlias ?: relationshipName
             if (relInfo.type == "many") {
-                Map items = useRef ? ['$ref':(relInfo.shortAlias ?: relInfo.relatedEntityName)] : relInfo.relatedEd.getJsonSchema(false)
+                Map items = refPrefix ? ['$ref':(refPrefix + (relInfo.shortAlias ?: relInfo.relatedEntityName))] :
+                        relInfo.relatedEd.getJsonSchema(refPrefix)
                 properties.put(entryName, [type:'array', items:items])
             } else {
-                Map item = useRef ? ['$ref':(relInfo.shortAlias ?: relInfo.relatedEntityName)] : relInfo.relatedEd.getJsonSchema(false)
+                Map item = refPrefix ? ['$ref':(refPrefix + (relInfo.shortAlias ?: relInfo.relatedEntityName))] :
+                        relInfo.relatedEd.getJsonSchema(refPrefix)
                 properties.put(entryName, item)
             }
         }

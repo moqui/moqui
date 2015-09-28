@@ -133,8 +133,18 @@ along with this software (see the LICENSE.md file). If not, see
     curl -X GET -u john.doe:moqui http://localhost:8080/rest/schema/examples
     curl -X GET -u john.doe:moqui http://localhost:8080/rest/schema/examples.json
     curl -X GET -u john.doe:moqui http://localhost:8080/rest/schema/example.Example
+
+    To get the json-schema (see http://json-schema.org) for ALL entities use a request like:
+
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/schema
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/schema.json
+
     -->
     <transition name="schema" read-only="true" method="get">
+        <actions><script>ec.web.handleEntityRestSchema(sri.screenUrlInfo.extraPathNameList)</script></actions>
+        <default-response type="none"/>
+    </transition>
+    <transition name="schema.json" read-only="true" method="get">
         <actions><script>ec.web.handleEntityRestSchema(sri.screenUrlInfo.extraPathNameList)</script></actions>
         <default-response type="none"/>
     </transition>
