@@ -715,7 +715,7 @@ class WebFacadeImpl implements WebFacade {
 
     @Override
     @CompileStatic
-    void handleEntityRestSchema(List<String> extraPathNameList, String linkPrefix, String schemaLinkPrefix) {
+    void handleEntityRestSchema(List<String> extraPathNameList, String schemaUri, String linkPrefix, String schemaLinkPrefix) {
         // make sure a user is logged in, screen/etc that calls will generally be configured to not require auth
         if (!eci.getUser().getUsername()) {
             // if there was a login error there will be a MessageFacade error message
@@ -733,6 +733,7 @@ class WebFacadeImpl implements WebFacade {
             definitionsMap.put('paginationParameters', EntityDefinition.paginationParameters)
             Map rootMap = ['$schema':'http://json-schema.org/draft-04/hyper-schema#', title:'Moqui Entity Auth REST API',
                     anyOf:allRefList, definitions:definitionsMap]
+            if (schemaUri) rootMap.put('id', schemaUri)
 
             Set<String> entityNameSet = efi.getAllNonViewEntityNames()
             for (String entityName in entityNameSet) {
@@ -740,7 +741,7 @@ class WebFacadeImpl implements WebFacade {
                 String refName = ed.getShortAlias() ?: ed.getFullEntityName()
                 allRefList.add(['$ref':"#/definitions/${refName}"])
 
-                Map schema = ed.getJsonSchema(false, null, linkPrefix, schemaLinkPrefix)
+                Map schema = ed.getJsonSchema(false, null, schemaUri, linkPrefix, schemaLinkPrefix)
                 definitionsMap.put(refName, schema)
             }
 
@@ -771,7 +772,7 @@ class WebFacadeImpl implements WebFacade {
                     return
                 }
 
-                Map schema = ed.getJsonSchema(true, null, linkPrefix, schemaLinkPrefix)
+                Map schema = ed.getJsonSchema(true, null, schemaUri, linkPrefix, schemaLinkPrefix)
                 // TODO: support array wrapper (different URL? suffix?) with [type:'array', items:schema]
 
                 // sendJsonResponse(schema)

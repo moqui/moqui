@@ -940,7 +940,7 @@ public class EntityDefinition {
             ]
 
     @CompileStatic
-    Map getJsonSchema(boolean standalone, Map<String, Object> definitionsMap, String linkPrefix, String schemaLinkPrefix) {
+    Map getJsonSchema(boolean standalone, Map<String, Object> definitionsMap, String schemaUri, String linkPrefix, String schemaLinkPrefix) {
         String name = getShortAlias() ?: getFullEntityName()
         String prettyName = getPrettyName(null, null)
 
@@ -1007,7 +1007,7 @@ public class EntityDefinition {
 
             // recurse, let it put itself in the definitionsMap
             if (definitionsMap != null && !definitionsMap.containsKey(relatedRefName))
-                relInfo.relatedEd.getJsonSchema(false, definitionsMap, linkPrefix, schemaLinkPrefix)
+                relInfo.relatedEd.getJsonSchema(false, definitionsMap, schemaUri, linkPrefix, schemaLinkPrefix)
 
             if (relInfo.type == "many") {
                 properties.put(entryName, [type:'array', items:['$ref':('#/definitions/' + relatedRefName)]])
@@ -1044,7 +1044,8 @@ public class EntityDefinition {
         }
 
         if (standalone) {
-            return ['$schema':'http://json-schema.org/draft-04/hyper-schema#', '$ref':"#/definitions/${name}", definitions:definitionsMap]
+            return ['$schema':'http://json-schema.org/draft-04/hyper-schema#', id:"${schemaUri}/${name}",
+                    '$ref':"#/definitions/${name}", definitions:definitionsMap]
         } else {
             return schema
         }
