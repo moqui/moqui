@@ -931,17 +931,20 @@ public class EntityDefinition {
             "binary-very-long":"string" ] // NOTE: binary-very-long may need hyper-schema stuff
 
     @CompileStatic
-    Map getJsonSchema(String refPrefix) {
-        Map<String,Object> properties = [:]
+    Map getJsonSchema(String refPrefix, String linkPrefix, String schemaLinkPrefix) {
+        Map<String, Object> properties = [:]
         properties.put('_entity', [type:'string'])
-        String id = getShortAlias() ?: getFullEntityName()
-        Map schema = [id:id, title:getPrettyName(null, null), type:'object', properties:properties]
+        String name = getShortAlias() ?: getFullEntityName()
+        String prettyName = getPrettyName(null, null)
+        Map<String, Object> schema = [id:name, title:prettyName, type:'object', properties:properties] as Map<String, Object>
 
         // add all fields
         ArrayList<String> allFields = getAllFieldNames(true)
         for (int i = 0; i < allFields.size(); i++) {
             FieldInfo fi = getFieldInfo(allFields.get(i))
-            properties.put(fi.getName(), [type:fieldTypeJsonMap.get(fi.type)])
+            Map propMap = [type:fieldTypeJsonMap.get(fi.type)]
+            if (fi.type == 'date-time') propMap.put('format', 'date-time')
+            properties.put(fi.getName(), propMap)
         }
 
         // add all relationships, nest
@@ -951,13 +954,41 @@ public class EntityDefinition {
             String entryName = relInfo.shortAlias ?: relationshipName
             if (relInfo.type == "many") {
                 Map items = refPrefix ? ['$ref':(refPrefix + (relInfo.shortAlias ?: relInfo.relatedEntityName))] :
-                        relInfo.relatedEd.getJsonSchema(refPrefix)
+                        relInfo.relatedEd.getJsonSchema(refPrefix, linkPrefix, schemaLinkPrefix)
                 properties.put(entryName, [type:'array', items:items])
             } else {
                 Map item = refPrefix ? ['$ref':(refPrefix + (relInfo.shortAlias ?: relInfo.relatedEntityName))] :
-                        relInfo.relatedEd.getJsonSchema(refPrefix)
+                        relInfo.relatedEd.getJsonSchema(refPrefix, linkPrefix, schemaLinkPrefix)
                 properties.put(entryName, item)
             }
+        }
+
+        // add links (for Entity REST API)
+        if (linkPrefix) {
+            List<String> pkNameList = getPkFieldNames()
+            StringBuilder idSb = new StringBuilder()
+            for (String pkName in pkNameList) idSb.append('/{').append(pkName).append('}')
+            String idString = idSb.toString()
+            Map paginationMap = [type:'object', properties:
+                                    [pageIndex:[type:'number', description:'Page number to return, starting with zero'],
+                                     pageSize:[type:'number', description:'Number of records per page (default 100)'],
+                                     orderByField:[type:'string', description:'Field name to order by (or comma separated names)'],
+                                     pageNoLimit:[type:'string', description:'If true don\'t limit page size (no pagination)'],
+                                     dependentLevels:[type:'number', description:'Levels of dependent child records to include']
+                                    ]
+                                ]
+
+            List linkList = [
+                [rel:'self', method:'GET', href:"${linkPrefix}/${name}${idString}", title:"Get single ${prettyName}"],
+                [rel:'instances', method:'GET', href:"${linkPrefix}/${name}", title:"Get list of ${prettyName}", schema:paginationMap],
+                [rel:'create', method:'POST', href:"${linkPrefix}/${name}", title:"Create ${prettyName}"],
+                [rel:'update', method:'PATCH', href:"${linkPrefix}/${name}${idString}", title:"Update ${prettyName}"],
+                [rel:'store', method:'PUT', href:"${linkPrefix}/${name}${idString}", title:"Create or Update ${prettyName}"],
+                [rel:'destroy', method:'DELETE', href:"${linkPrefix}/${name}${idString}", title:"Delete ${prettyName}"]
+            ]
+            if (schemaLinkPrefix) linkList.add([rel:'describedBy', method:'GET', href:"${schemaLinkPrefix}/${name}", title:"Get schema for ${prettyName}"])
+
+            schema.put('links', linkList)
         }
 
         return schema

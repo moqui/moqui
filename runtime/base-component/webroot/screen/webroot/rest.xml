@@ -141,11 +141,11 @@ along with this software (see the LICENSE.md file). If not, see
 
     -->
     <transition name="schema" read-only="true" method="get">
-        <actions><script>ec.web.handleEntityRestSchema(sri.screenUrlInfo.extraPathNameList)</script></actions>
+        <actions><script>ec.web.handleEntityRestSchema(sri.screenUrlInfo.extraPathNameList, '/rest/v1', '/rest/schema')</script></actions>
         <default-response type="none"/>
     </transition>
     <transition name="schema.json" read-only="true" method="get">
-        <actions><script>ec.web.handleEntityRestSchema(sri.screenUrlInfo.extraPathNameList)</script></actions>
+        <actions><script>ec.web.handleEntityRestSchema(sri.screenUrlInfo.extraPathNameList, '/rest/v1', '/rest/schema')</script></actions>
         <default-response type="none"/>
     </transition>
 

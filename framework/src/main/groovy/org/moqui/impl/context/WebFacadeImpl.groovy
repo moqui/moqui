@@ -715,7 +715,7 @@ class WebFacadeImpl implements WebFacade {
 
     @Override
     @CompileStatic
-    void handleEntityRestSchema(List<String> extraPathNameList) {
+    void handleEntityRestSchema(List<String> extraPathNameList, String linkPrefix, String schemaLinkPrefix) {
         // make sure a user is logged in, screen/etc that calls will generally be configured to not require auth
         if (!eci.getUser().getUsername()) {
             // if there was a login error there will be a MessageFacade error message
@@ -731,7 +731,7 @@ class WebFacadeImpl implements WebFacade {
             List oneOfList = []
             Map definitionsMap = [:]
             Map rootMap = ['$schema':'http://json-schema.org/draft-04/schema#', title:'Moqui Entity Auth REST API',
-                           oneOf:oneOfList, definitions:definitionsMap]
+                    type:'array', items:[oneOf:oneOfList], definitions:definitionsMap]
 
             Set<String> entityNameSet = efi.getAllNonViewEntityNames()
             for (String entityName in entityNameSet) {
@@ -739,7 +739,7 @@ class WebFacadeImpl implements WebFacade {
                 String refName = ed.getShortAlias() ?: ed.getFullEntityName()
                 oneOfList.add(['$ref':"#/definitions/${refName}"])
 
-                Map schema = ed.getJsonSchema('#/definitions/')
+                Map schema = ed.getJsonSchema('#/definitions/', linkPrefix, schemaLinkPrefix)
                 definitionsMap.put(refName, schema)
             }
 
@@ -770,7 +770,7 @@ class WebFacadeImpl implements WebFacade {
                     return
                 }
 
-                Map schema = ed.getJsonSchema(null)
+                Map schema = ed.getJsonSchema(null, linkPrefix, schemaLinkPrefix)
                 // TODO: support array wrapper with [type:'array', items:schema]
 
                 // sendJsonResponse(schema)

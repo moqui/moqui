@@ -2083,6 +2083,7 @@ Features considered, but may not to be included in 1.x series
     x URL pattern? maybe /rest/schema (or /rest/schema.json) for all
     x for particular entity: /rest/schema/${name}.json or just /rest/schema/${name}
     x MIME type: application/schema+json
+    x use hyper schema links to describe API options
   - Generate minimal Data Document based on changes (per TX possible, runs async so not really; from existing doc, like current ES doc)
   - Update database from Data Document
   - Data Document UI
