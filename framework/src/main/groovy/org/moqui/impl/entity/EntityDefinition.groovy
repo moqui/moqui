@@ -931,9 +931,11 @@ public class EntityDefinition {
             "binary-very-long":"string" ] // NOTE: binary-very-long may need hyper-schema stuff
 
     @CompileStatic
-    Map getJsonSchema() {
-        Map properties = [_entity:[type:'string']]
-        Map schema = [title:(getShortAlias() ?: getFullEntityName()), type:'object', properties:properties]
+    Map getJsonSchema(boolean useRef) {
+        Map<String,Object> properties = [:]
+        properties.put('_entity', [type:'string'])
+        String id = getShortAlias() ?: getFullEntityName()
+        Map schema = [id:id, title:getPrettyName(null, null), type:'object', properties:properties]
 
         // add all fields
         ArrayList<String> allFields = getAllFieldNames(true)
@@ -948,9 +950,11 @@ public class EntityDefinition {
             String relationshipName = relInfo.relationshipName
             String entryName = relInfo.shortAlias ?: relationshipName
             if (relInfo.type == "many") {
-                properties.put(entryName, [type:'array', items:relInfo.relatedEd.getJsonSchema()])
+                Map items = useRef ? ['$ref':(relInfo.shortAlias ?: relInfo.relatedEntityName)] : relInfo.relatedEd.getJsonSchema(false)
+                properties.put(entryName, [type:'array', items:items])
             } else {
-                properties.put(entryName, relInfo.relatedEd.getJsonSchema())
+                Map item = useRef ? ['$ref':(relInfo.shortAlias ?: relInfo.relatedEntityName)] : relInfo.relatedEd.getJsonSchema(false)
+                properties.put(entryName, item)
             }
         }
 

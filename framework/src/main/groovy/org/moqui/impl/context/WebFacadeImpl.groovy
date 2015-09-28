@@ -726,18 +726,23 @@ class WebFacadeImpl implements WebFacade {
 
         if (extraPathNameList.size() < 1) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No entity name specified")
-            return
-        }
-        String entityName = extraPathNameList.get(0)
-        if (entityName.endsWith(".json")) entityName = entityName.substring(0, entityName.length() - 5)
-        EntityDefinition ed = eci.getEcfi().getEntityFacade().getEntityDefinition(entityName)
-        if (ed == null) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No entity found with name or alias [${entityName}]")
-            return
-        }
+        } else {
+            String entityName = extraPathNameList.get(0)
+            if (entityName.endsWith(".json")) entityName = entityName.substring(0, entityName.length() - 5)
+            try {
+                EntityDefinition ed = eci.getEcfi().getEntityFacade().getEntityDefinition(entityName)
+                if (ed == null) {
+                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No entity found with name or alias [${entityName}]")
+                    return
+                }
 
-        Map schema = ed.getJsonSchema()
-        sendJsonResponse(schema)
+                Map schema = ed.getJsonSchema(false)
+                // TODO: support array wrapper with [type:'array', items:schema]
+                sendJsonResponse(schema)
+            } catch (EntityNotFoundException e) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No entity found with name or alias [${entityName}]")
+            }
+        }
     }
 
 
