@@ -2089,6 +2089,15 @@ Features considered, but may not to be included in 1.x series
   - Data Document UI
     - show/edit field, rel alias, condition, link
     - special form for add (edit?) field with 5 drop-downs for relationships, one for field, all updated based on master entity and previous selections
+  - Service REST API
+    - goal to define service mappings to REST path, method, etc for:
+      - json-schema and RAML descriptors
+      - handling service calls through generic transition like /rest/v1, instead of explicit transitions like ExampleApp.xml
+    - use structure somewhat similar to RAML (maybe use RAML with extensions?)
+    - define resources, sub-resources (including IDs in path)
+    - specify method and service name for that method
+    - from service: in-parameters (RAML queryParameters, json-schema), description, out-parameters (json-schema)
+    - authz at service level, like other interfaces
 
 - Atomikos
   - http://www.atomikos.com/Main/InstallingTransactionsEssentials

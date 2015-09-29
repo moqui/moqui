@@ -27,6 +27,8 @@ import org.moqui.impl.entity.EntityDefinition
 import org.moqui.impl.entity.EntityFacadeImpl
 import org.moqui.impl.screen.ScreenDefinition
 import org.moqui.impl.screen.ScreenUrlInfo
+import org.yaml.snakeyaml.DumperOptions
+import org.yaml.snakeyaml.Yaml
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -569,7 +571,10 @@ class WebFacadeImpl implements WebFacade {
 
     @Override
     @CompileStatic
-    void sendTextResponse(String text) {
+    void sendTextResponse(String text) { sendTextResponse(text, "text/plain") }
+    @Override
+    @CompileStatic
+    void sendTextResponse(String text, String contentType) {
         String responseText
         if (eci.getMessage().hasError()) {
             responseText = eci.message.errorsString
@@ -579,7 +584,7 @@ class WebFacadeImpl implements WebFacade {
             response.setStatus(HttpServletResponse.SC_OK)
         }
 
-        response.setContentType("text/plain")
+        response.setContentType(contentType)
         // NOTE: String.length not correct for byte length
         String charset = response.getCharacterEncoding() ?: "UTF-8"
         int length = responseText ? responseText.getBytes(charset).length : 0
@@ -588,6 +593,12 @@ class WebFacadeImpl implements WebFacade {
         try {
             if (responseText) response.writer.write(responseText)
             response.writer.flush()
+            if (logger.infoEnabled) {
+                Long startTime = (Long) requestAttributes.get("moquiRequestStartTime")
+                String timeMsg = ""
+                if (startTime) timeMsg = "in [${(System.currentTimeMillis()-startTime)/1000}] seconds"
+                logger.info("Sent text (${contentType}) response of length [${length}] with [${charset}] encoding ${timeMsg} for ${request.getMethod()} request to ${request.getPathInfo()}")
+            }
         } catch (IOException e) {
             logger.error("Error sending text response", e)
         }
@@ -731,7 +742,7 @@ class WebFacadeImpl implements WebFacade {
             List allRefList = []
             Map definitionsMap = [:]
             definitionsMap.put('paginationParameters', EntityDefinition.paginationParameters)
-            Map rootMap = ['$schema':'http://json-schema.org/draft-04/hyper-schema#', title:'Moqui Entity Auth REST API',
+            Map rootMap = ['$schema':'http://json-schema.org/draft-04/hyper-schema#', title:'Moqui Entity REST API',
                     anyOf:allRefList, definitions:definitionsMap]
             if (schemaUri) rootMap.put('id', schemaUri)
 
@@ -748,20 +759,8 @@ class WebFacadeImpl implements WebFacade {
             JsonBuilder jb = new JsonBuilder()
             jb.call(rootMap)
             String jsonStr = jb.toPrettyString()
-            response.setStatus(HttpServletResponse.SC_OK)
 
-            response.setContentType("application/schema+json")
-            // NOTE: String.length not correct for byte length
-            String charset = response.getCharacterEncoding() ?: "UTF-8"
-            int length = jsonStr.getBytes(charset).length
-            response.setContentLength(length)
-
-            try {
-                response.writer.write(jsonStr)
-                response.writer.flush()
-            } catch (IOException e) {
-                logger.error("Error sending JSON string response", e)
-            }
+            sendTextResponse(jsonStr, "application/schema+json")
         } else {
             String entityName = extraPathNameList.get(0)
             if (entityName.endsWith(".json")) entityName = entityName.substring(0, entityName.length() - 5)
@@ -779,24 +778,50 @@ class WebFacadeImpl implements WebFacade {
                 JsonBuilder jb = new JsonBuilder()
                 jb.call(schema)
                 String jsonStr = jb.toPrettyString()
-                response.setStatus(HttpServletResponse.SC_OK)
 
-                response.setContentType("application/schema+json")
-                // NOTE: String.length not correct for byte length
-                String charset = response.getCharacterEncoding() ?: "UTF-8"
-                int length = jsonStr.getBytes(charset).length
-                response.setContentLength(length)
-
-                try {
-                    response.writer.write(jsonStr)
-                    response.writer.flush()
-                } catch (IOException e) {
-                    logger.error("Error sending JSON string response", e)
-                }
+                sendTextResponse(jsonStr, "application/schema+json")
             } catch (EntityNotFoundException e) {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No entity found with name or alias [${entityName}]")
             }
         }
+    }
+
+    @Override
+    @CompileStatic
+    void handleEntityRestRaml(List<String> extraPathNameList, String linkPrefix, String schemaLinkPrefix) {
+        // make sure a user is logged in, screen/etc that calls will generally be configured to not require auth
+        if (!eci.getUser().getUsername()) {
+            // if there was a login error there will be a MessageFacade error message
+            String errorMessage = eci.message.errorsString
+            if (!errorMessage) errorMessage = "Authentication required for entity REST schema"
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, errorMessage)
+            return
+        }
+
+        EntityFacadeImpl efi = eci.getEcfi().getEntityFacade()
+
+        List<Map> schemasList = []
+        Map<String, Object> rootMap = [title:'Moqui Entity REST API', version:'v1', baseUri:linkPrefix,
+                                       mediaType:'application/json', schemas:schemasList] as Map<String, Object>
+
+        Set<String> entityNameSet = efi.getAllNonViewEntityNames()
+        for (String entityName in entityNameSet) {
+            EntityDefinition ed = efi.getEntityDefinition(entityName)
+            String refName = ed.getShortAlias() ?: ed.getFullEntityName()
+            schemasList.add([(refName):"!include ${schemaLinkPrefix}/${refName}.json".toString()])
+
+            // Map schema = ed.getJsonSchema(false, null, schemaUri, linkPrefix, schemaLinkPrefix)
+            // definitionsMap.put(refName, schema)
+        }
+
+        DumperOptions options = new DumperOptions()
+        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK)
+        options.setDefaultScalarStyle(DumperOptions.ScalarStyle.PLAIN)
+        Yaml yaml = new Yaml(options)
+        // TODO: add beginning line "#%RAML 0.8"
+        String yamlString = yaml.dump(rootMap)
+
+        sendTextResponse(yamlString, "application/raml+yaml")
     }
 
 
