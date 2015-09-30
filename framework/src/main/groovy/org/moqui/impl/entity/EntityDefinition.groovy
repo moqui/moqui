@@ -932,12 +932,47 @@ public class EntityDefinition {
     static final Map paginationParameters =
             [type:'object', properties:
                     [pageIndex:[type:'number', description:'Page number to return, starting with zero'],
-                             pageSize:[type:'number', description:'Number of records per page (default 100)'],
-                             orderByField:[type:'string', description:'Field name to order by (or comma separated names)'],
-                             pageNoLimit:[type:'string', description:'If true don\'t limit page size (no pagination)'],
-                             dependentLevels:[type:'number', description:'Levels of dependent child records to include']
+                     pageSize:[type:'number', description:'Number of records per page (default 100)'],
+                     orderByField:[type:'string', description:'Field name to order by (or comma separated names)'],
+                     pageNoLimit:[type:'string', description:'If true don\'t limit page size (no pagination)'],
+                     dependentLevels:[type:'number', description:'Levels of dependent child records to include']
                     ]
             ]
+
+    @CompileStatic
+    List<String> getFieldEnums(FieldInfo fi) {
+        // populate enum values for Enumeration and StatusItem
+        // find first relationship that has this field as the only key map and is not a many relationship
+        RelationshipInfo oneRelInfo = null
+        List<RelationshipInfo> allRelInfoList = getRelationshipsInfo(false)
+        for (RelationshipInfo relInfo in allRelInfoList) {
+            Map km = relInfo.keyMap
+            if (km.size() == 1 && km.containsKey(fi.name) && relInfo.type == "one" && relInfo.relNode.attribute("is-auto-reverse") != "true") {
+                oneRelInfo = relInfo
+                break;
+            }
+        }
+        if (oneRelInfo != null && oneRelInfo.title) {
+            if (oneRelInfo.relatedEd.getFullEntityName() == 'moqui.basic.Enumeration') {
+                EntityList enumList = efi.find("moqui.basic.Enumeration").condition("enumTypeId", oneRelInfo.title)
+                        .orderBy("sequenceNum,enumId").disableAuthz().list()
+                if (enumList) {
+                    List<String> enumIdList = [null]
+                    for (EntityValue ev in enumList) enumIdList.add((String) ev.enumId)
+                    return enumIdList
+                }
+            } else if (oneRelInfo.relatedEd.getFullEntityName() == 'moqui.basic.StatusItem') {
+                EntityList statusList = efi.find("moqui.basic.StatusItem").condition("statusTypeId", oneRelInfo.title)
+                        .orderBy("sequenceNum,statusId").disableAuthz().list()
+                if (statusList) {
+                    List<String> statusIdList = [null]
+                    for (EntityValue ev in statusList) statusIdList.add((String) ev.statusId)
+                    return statusIdList
+                }
+            }
+        }
+        return null
+    }
 
     @CompileStatic
     Map getJsonSchema(boolean standalone, Map<String, Object> definitionsMap, String schemaUri, String linkPrefix, String schemaLinkPrefix) {
@@ -949,7 +984,6 @@ public class EntityDefinition {
         Map<String, Object> schema = [id:name, title:prettyName, type:'object', properties:properties] as Map<String, Object>
 
         // add all fields
-        List<RelationshipInfo> allRelInfoList = getRelationshipsInfo(false)
         ArrayList<String> allFields = getAllFieldNames(true)
         for (int i = 0; i < allFields.size(); i++) {
             FieldInfo fi = getFieldInfo(allFields.get(i))
@@ -958,35 +992,8 @@ public class EntityDefinition {
             if (fi.type == 'date-time') propMap.put('format', 'date-time')
             properties.put(fi.getName(), propMap)
 
-            // populate enum values for Enumeration and StatusItem
-            // find first relationship that has this field as the only key map and is not a many relationship
-            RelationshipInfo oneRelInfo = null
-            for (RelationshipInfo relInfo in allRelInfoList) {
-                Map km = relInfo.keyMap
-                if (km.size() == 1 && km.containsKey(fi.name) && relInfo.type == "one" && relInfo.relNode.attribute("is-auto-reverse") != "true") {
-                    oneRelInfo = relInfo
-                    break;
-                }
-            }
-            if (oneRelInfo != null && oneRelInfo.title) {
-                if (oneRelInfo.relatedEd.getFullEntityName() == 'moqui.basic.Enumeration') {
-                    EntityList enumList = efi.find("moqui.basic.Enumeration").condition("enumTypeId", oneRelInfo.title)
-                            .orderBy("sequenceNum,enumId").disableAuthz().list()
-                    if (enumList) {
-                        List enumIdList = [null]
-                        for (EntityValue ev in enumList) enumIdList.add(ev.enumId)
-                        propMap.put('enum', enumIdList)
-                    }
-                } else if (oneRelInfo.relatedEd.getFullEntityName() == 'moqui.basic.StatusItem') {
-                    EntityList statusList = efi.find("moqui.basic.StatusItem").condition("statusTypeId", oneRelInfo.title)
-                            .orderBy("sequenceNum,statusId").disableAuthz().list()
-                    if (statusList) {
-                        List statusIdList = [null]
-                        for (EntityValue ev in statusList) statusIdList.add(ev.statusId)
-                        propMap.put('enum', statusIdList)
-                    }
-                }
-            }
+            List enumList = getFieldEnums(fi)
+            if (enumList) propMap.put('enum', enumList)
         }
 
 
@@ -1049,6 +1056,63 @@ public class EntityDefinition {
         } else {
             return schema
         }
+    }
+
+    static final Map ramlPaginationParameters = [
+             pageIndex:[type:'number', description:'Page number to return, starting with zero'],
+             pageSize:[type:'number', default:100, description:'Number of records per page (default 100)'],
+             orderByField:[type:'string', description:'Field name to order by (or comma separated names)'],
+             pageNoLimit:[type:'string', description:'If true don\'t limit page size (no pagination)'],
+             dependentLevels:[type:'number', description:'Levels of dependent child records to include']
+            ]
+
+    @CompileStatic
+    Map getRamlApi() {
+        String name = getShortAlias() ?: getFullEntityName()
+        String prettyName = getPrettyName(null, null)
+
+        Map<String, Object> ramlMap = [:]
+
+        // setup field info
+        Map qpMap = [:]
+        ArrayList<String> allFields = getAllFieldNames(true)
+        for (int i = 0; i < allFields.size(); i++) {
+            FieldInfo fi = getFieldInfo(allFields.get(i))
+            Map<String, Object> propMap = [:]
+            propMap.put('type', fieldTypeJsonMap.get(fi.type))
+            qpMap.put(fi.getName(), propMap)
+
+            List enumList = getFieldEnums(fi)
+            if (enumList) propMap.put('enum', enumList)
+        }
+
+        // get list
+        // TODO: make body array of schema
+        ramlMap.put('get', [is:['paged'], description:"Get list of ${prettyName}".toString(), queryParameters:qpMap,
+                            responses:[200:[body:['application/json': [schema:name]]]]])
+        // create
+        ramlMap.put('post', [description:"Create ${prettyName}".toString(), body:['application/json': [schema:name]]])
+
+        // under IDs for single record operations
+        List<String> pkNameList = getPkFieldNames()
+        Map recordMap = ramlMap
+        for (String pkName in pkNameList) {
+            Map childMap = [:]
+            recordMap.put('/{' + pkName + '}', childMap)
+            recordMap = childMap
+        }
+
+        // get single
+        recordMap.put('get', [description:"Get single ${prettyName}".toString(),
+                            responses:[200:[body:['application/json': [schema:name]]]]])
+        // update
+        recordMap.put('patch', [description:"Update ${prettyName}".toString(), body:['application/json': [schema:name]]])
+        // store
+        recordMap.put('put', [description:"Create or Update ${prettyName}".toString(), body:['application/json': [schema:name]]])
+        // delete
+        recordMap.put('delete', [description:"Delete ${prettyName}".toString()])
+
+        return ramlMap
     }
 
     List<Node> getFieldNodes(boolean includePk, boolean includeNonPk, boolean includeUserFields) {

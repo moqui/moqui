@@ -803,6 +803,7 @@ class WebFacadeImpl implements WebFacade {
         List<Map> schemasList = []
         Map<String, Object> rootMap = [title:'Moqui Entity REST API', version:'v1', baseUri:linkPrefix,
                                        mediaType:'application/json', schemas:schemasList] as Map<String, Object>
+        rootMap.put('traits', [[paged:[queryParameters:EntityDefinition.ramlPaginationParameters]]])
 
         Set<String> entityNameSet = efi.getAllNonViewEntityNames()
         for (String entityName in entityNameSet) {
@@ -810,16 +811,18 @@ class WebFacadeImpl implements WebFacade {
             String refName = ed.getShortAlias() ?: ed.getFullEntityName()
             schemasList.add([(refName):"!include ${schemaLinkPrefix}/${refName}.json".toString()])
 
-            // Map schema = ed.getJsonSchema(false, null, schemaUri, linkPrefix, schemaLinkPrefix)
-            // definitionsMap.put(refName, schema)
+            Map ramlApi = ed.getRamlApi()
+            rootMap.put('/' + refName, ramlApi)
         }
 
         DumperOptions options = new DumperOptions()
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK)
-        options.setDefaultScalarStyle(DumperOptions.ScalarStyle.PLAIN)
+        // default: options.setDefaultScalarStyle(DumperOptions.ScalarStyle.PLAIN)
+        options.setPrettyFlow(true)
         Yaml yaml = new Yaml(options)
-        // TODO: add beginning line "#%RAML 0.8"
         String yamlString = yaml.dump(rootMap)
+        // add beginning line "#%RAML 0.8", more efficient way to do this?
+        yamlString = "#%RAML 0.8\n" + yamlString
 
         sendTextResponse(yamlString, "application/raml+yaml")
     }
