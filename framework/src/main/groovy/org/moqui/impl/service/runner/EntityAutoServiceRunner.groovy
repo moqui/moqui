@@ -49,7 +49,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
         // check the verb and noun
         if (!sd.verb || !verbSet.contains(sd.verb))
             throw new ServiceException("In service [${sd.serviceName}] the verb must be one of ${verbSet} for entity-auto type services.")
-        if (!sd.noun)  throw new ServiceException("In service [${sd.serviceName}] you must specify a noun for entity-auto engine")
+        if (!sd.noun)  throw new ServiceException("In service [${sd.serviceName}] you must specify a noun for entity-auto service calls")
 
         EntityDefinition ed = sfi.ecfi.entityFacade.getEntityDefinition(sd.noun)
         if (!ed) throw new ServiceException("In service [${sd.serviceName}] the specified noun [${sd.noun}] is not a valid entity name")
