@@ -28,6 +28,7 @@ Bug Fixes:
 - Fixed issue in the Tools EntityDetail screen where entities with many
   dependents (like Enumeration, Uom, etc) caused an out of memory error;
   GitHub issue #149
+- Fixed XML Actions FTL error for entity-find.@having-econditions
 
 ===========================================================================
 Release 1.5.3 - 11 Sep 2015
