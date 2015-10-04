@@ -64,7 +64,7 @@ class ResourceFacadeTests extends Specification {
         where:
         location | contents
         "component://example/screen/ExampleApp.xml" | "<subscreens default-item=\"Example\">"
-        "classpath://shiro.ini" | "org.moqui.impl.MoquiShiroRealm"
+        "classpath://shiro.ini" | "org.moqui.impl.util.MoquiShiroRealm"
     }
 
     // TODO: add tests for renderTemplateInCurrentContext and script

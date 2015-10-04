@@ -10,7 +10,7 @@
  * along with this software (see the LICENSE.md file). If not, see
  * <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
-package org.moqui.impl
+package org.moqui.impl.util
 
 import freemarker.ext.beans.BeansWrapper
 import freemarker.template.TemplateNodeModel
@@ -20,6 +20,7 @@ import freemarker.template.AdapterTemplateModel
 import freemarker.template.TemplateModel
 import freemarker.template.TemplateScalarModel
 import groovy.transform.CompileStatic
+import org.moqui.impl.StupidUtilities
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger
 
