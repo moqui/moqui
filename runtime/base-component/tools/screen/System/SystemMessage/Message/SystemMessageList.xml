@@ -83,7 +83,7 @@ along with this software (see the LICENSE.md file). If not, see
 
             <field name="statusId">
                 <header-field title="Status">
-                    <drop-down>
+                    <drop-down allow-empty="true">
                         <entity-options key="${statusId}" text="${description}">
                             <entity-find entity-name="moqui.basic.StatusItem">
                                 <econdition field-name="statusTypeId" value="SystemMessage"/>
@@ -114,6 +114,36 @@ along with this software (see the LICENSE.md file). If not, see
                 <header-field>
                     <drop-down allow-empty="true"><option key="Y"/><option key="N"/></drop-down>
                 </header-field>
+                <default-field><display/></default-field>
+            </field>
+
+            <field name="senderId">
+                <header-field show-order-by="true"><text-find hide-options="true" size="8"/></header-field>
+                <default-field><display/></default-field>
+            </field>
+            <field name="receiverId">
+                <header-field show-order-by="true"><text-find hide-options="true" size="8"/></header-field>
+                <default-field><display/></default-field>
+            </field>
+            <field name="messageId">
+                <header-field show-order-by="true"><text-find hide-options="true" size="8"/></header-field>
+                <default-field><display/></default-field>
+            </field>
+            <field name="messageDate">
+                <header-field show-order-by="true"><date-period allow-empty="true"/></header-field>
+                <default-field><display/></default-field>
+            </field>
+
+            <field name="docType">
+                <header-field show-order-by="true"><text-find hide-options="true" size="5"/></header-field>
+                <default-field><display/></default-field>
+            </field>
+            <field name="docSubType">
+                <header-field show-order-by="true"><text-find hide-options="true" size="5"/></header-field>
+                <default-field><display/></default-field>
+            </field>
+            <field name="docVersion">
+                <header-field show-order-by="true"><text-find hide-options="true" size="5"/></header-field>
                 <default-field><display/></default-field>
             </field>
 
@@ -157,6 +187,9 @@ along with this software (see the LICENSE.md file). If not, see
             <form-list-column><field-ref name="initDate"/><field-ref name="processedDate"/></form-list-column>
             <form-list-column><field-ref name="lastAttemptDate"/><field-ref name="failCount"/></form-list-column>
             <form-list-column><field-ref name="systemMessageTypeId"/><field-ref name="systemMessageRemoteId"/></form-list-column>
+            <form-list-column><field-ref name="senderId"/><field-ref name="receiverId"/></form-list-column>
+            <form-list-column><field-ref name="messageId"/><field-ref name="messageDate"/></form-list-column>
+            <form-list-column><field-ref name="docType"/><field-ref name="docSubType"/><field-ref name="docVersion"/></form-list-column>
             <form-list-column><field-ref name="find"/></form-list-column>
         </form-list>
     </widgets>

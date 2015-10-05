@@ -61,6 +61,13 @@ along with this software (see the LICENSE.md file). If not, see
                     <field name="lastAttemptDate"><default-field><display/></default-field></field>
                     <field name="failCount"><default-field><display/></default-field></field>
 
+                    <field name="senderId"><default-field><display/></default-field></field>
+                    <field name="receiverId"><default-field><display/></default-field></field>
+                    <field name="messageId"><default-field><display/></default-field></field>
+                    <field name="messageDate"><default-field><display/></default-field></field>
+                    <field name="docType"><default-field><display/></default-field></field>
+                    <field name="docSubType"><default-field><display/></default-field></field>
+                    <field name="docVersion"><default-field><display/></default-field></field>
 
                     <field name="systemMessageTypeId"><default-field title="Type">
                         <display-entity entity-name="moqui.service.message.SystemMessageType" text="${description?:''} [${systemMessageTypeId}]"/>
