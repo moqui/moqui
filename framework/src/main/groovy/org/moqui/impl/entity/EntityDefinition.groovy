@@ -929,36 +929,190 @@ public class EntityDefinition {
             "date":"string", "number-integer":"number", "number-float":"number",
             "number-decimal":"number", "currency-amount":"number", "currency-precise":"number",
             "binary-very-long":"string" ] // NOTE: binary-very-long may need hyper-schema stuff
+    static final Map paginationParameters =
+            [type:'object', properties:
+                    [pageIndex:[type:'number', description:'Page number to return, starting with zero'],
+                     pageSize:[type:'number', description:'Number of records per page (default 100)'],
+                     orderByField:[type:'string', description:'Field name to order by (or comma separated names)'],
+                     pageNoLimit:[type:'string', description:'If true don\'t limit page size (no pagination)'],
+                     dependentLevels:[type:'number', description:'Levels of dependent child records to include']
+                    ]
+            ]
 
     @CompileStatic
-    Map getJsonSchema(boolean useRef) {
-        Map<String,Object> properties = [:]
-        properties.put('_entity', [type:'string'])
-        String id = getShortAlias() ?: getFullEntityName()
-        Map schema = [id:id, title:getPrettyName(null, null), type:'object', properties:properties]
+    List<String> getFieldEnums(FieldInfo fi) {
+        // populate enum values for Enumeration and StatusItem
+        // find first relationship that has this field as the only key map and is not a many relationship
+        RelationshipInfo oneRelInfo = null
+        List<RelationshipInfo> allRelInfoList = getRelationshipsInfo(false)
+        for (RelationshipInfo relInfo in allRelInfoList) {
+            Map km = relInfo.keyMap
+            if (km.size() == 1 && km.containsKey(fi.name) && relInfo.type == "one" && relInfo.relNode.attribute("is-auto-reverse") != "true") {
+                oneRelInfo = relInfo
+                break;
+            }
+        }
+        if (oneRelInfo != null && oneRelInfo.title) {
+            if (oneRelInfo.relatedEd.getFullEntityName() == 'moqui.basic.Enumeration') {
+                EntityList enumList = efi.find("moqui.basic.Enumeration").condition("enumTypeId", oneRelInfo.title)
+                        .orderBy("sequenceNum,enumId").disableAuthz().list()
+                if (enumList) {
+                    List<String> enumIdList = [null]
+                    for (EntityValue ev in enumList) enumIdList.add((String) ev.enumId)
+                    return enumIdList
+                }
+            } else if (oneRelInfo.relatedEd.getFullEntityName() == 'moqui.basic.StatusItem') {
+                EntityList statusList = efi.find("moqui.basic.StatusItem").condition("statusTypeId", oneRelInfo.title)
+                        .orderBy("sequenceNum,statusId").disableAuthz().list()
+                if (statusList) {
+                    List<String> statusIdList = [null]
+                    for (EntityValue ev in statusList) statusIdList.add((String) ev.statusId)
+                    return statusIdList
+                }
+            }
+        }
+        return null
+    }
+
+    @CompileStatic
+    Map getJsonSchema(boolean standalone, Map<String, Object> definitionsMap, String schemaUri, String linkPrefix, String schemaLinkPrefix) {
+        String name = getShortAlias() ?: getFullEntityName()
+        String prettyName = getPrettyName(null, null)
+
+        Map<String, Object> properties = [:]
+        properties.put('_entity', [type:'string', default:name])
+        Map<String, Object> schema = [id:name, title:prettyName, type:'object', properties:properties] as Map<String, Object>
 
         // add all fields
         ArrayList<String> allFields = getAllFieldNames(true)
         for (int i = 0; i < allFields.size(); i++) {
             FieldInfo fi = getFieldInfo(allFields.get(i))
-            properties.put(fi.getName(), [type:fieldTypeJsonMap.get(fi.type)])
+            Map<String, Object> propMap = [:]
+            propMap.put('type', fieldTypeJsonMap.get(fi.type))
+            if (fi.type == 'date-time') propMap.put('format', 'date-time')
+            properties.put(fi.getName(), propMap)
+
+            List enumList = getFieldEnums(fi)
+            if (enumList) propMap.put('enum', enumList)
         }
+
+
+        // put current schema in Map before nesting for relationships, avoid infinite recursion with entity rel loops
+        if (standalone && definitionsMap == null) {
+            definitionsMap = [:]
+            definitionsMap.put('paginationParameters', paginationParameters)
+        }
+        if (definitionsMap != null && !definitionsMap.containsKey(name))
+            definitionsMap.put(name, schema)
 
         // add all relationships, nest
         List<RelationshipInfo> relInfoList = getRelationshipsInfo(true)
         for (RelationshipInfo relInfo in relInfoList) {
             String relationshipName = relInfo.relationshipName
             String entryName = relInfo.shortAlias ?: relationshipName
+            String relatedRefName = relInfo.relatedEd.shortAlias ?: relInfo.relatedEd.getFullEntityName()
+
+            // recurse, let it put itself in the definitionsMap
+            if (definitionsMap != null && !definitionsMap.containsKey(relatedRefName))
+                relInfo.relatedEd.getJsonSchema(false, definitionsMap, schemaUri, linkPrefix, schemaLinkPrefix)
+
             if (relInfo.type == "many") {
-                Map items = useRef ? ['$ref':(relInfo.shortAlias ?: relInfo.relatedEntityName)] : relInfo.relatedEd.getJsonSchema(false)
-                properties.put(entryName, [type:'array', items:items])
+                properties.put(entryName, [type:'array', items:['$ref':('#/definitions/' + relatedRefName)]])
             } else {
-                Map item = useRef ? ['$ref':(relInfo.shortAlias ?: relInfo.relatedEntityName)] : relInfo.relatedEd.getJsonSchema(false)
-                properties.put(entryName, item)
+                properties.put(entryName, ['$ref':('#/definitions/' + relatedRefName)])
             }
         }
 
-        return schema
+        // add links (for Entity REST API)
+        if (linkPrefix) {
+            List<String> pkNameList = getPkFieldNames()
+            StringBuilder idSb = new StringBuilder()
+            for (String pkName in pkNameList) idSb.append('/{').append(pkName).append('}')
+            String idString = idSb.toString()
+
+            List linkList = [
+                [rel:'self', method:'GET', href:"${linkPrefix}/${name}${idString}", title:"Get single ${prettyName}",
+                    targetSchema:['$ref':"#/definitions/${name}"]],
+                [rel:'instances', method:'GET', href:"${linkPrefix}/${name}", title:"Get list of ${prettyName}",
+                    schema:[allOf:[['$ref':'#/definitions/paginationParameters'], ['$ref':"#/definitions/${name}"]]],
+                    targetSchema:[type:'array', items:['$ref':"#/definitions/${name}"]]],
+                [rel:'create', method:'POST', href:"${linkPrefix}/${name}", title:"Create ${prettyName}",
+                    schema:['$ref':"#/definitions/${name}"]],
+                [rel:'update', method:'PATCH', href:"${linkPrefix}/${name}${idString}", title:"Update ${prettyName}",
+                    schema:['$ref':"#/definitions/${name}"]],
+                [rel:'store', method:'PUT', href:"${linkPrefix}/${name}${idString}", title:"Create or Update ${prettyName}",
+                    schema:['$ref':"#/definitions/${name}"]],
+                [rel:'destroy', method:'DELETE', href:"${linkPrefix}/${name}${idString}", title:"Delete ${prettyName}",
+                    schema:['$ref':"#/definitions/${name}"]]
+            ]
+            if (schemaLinkPrefix) linkList.add([rel:'describedBy', method:'GET', href:"${schemaLinkPrefix}/${name}", title:"Get schema for ${prettyName}"])
+
+            schema.put('links', linkList)
+        }
+
+        if (standalone) {
+            return ['$schema':'http://json-schema.org/draft-04/hyper-schema#', id:"${schemaUri}/${name}",
+                    '$ref':"#/definitions/${name}", definitions:definitionsMap]
+        } else {
+            return schema
+        }
+    }
+
+    static final Map ramlPaginationParameters = [
+             pageIndex:[type:'number', description:'Page number to return, starting with zero'],
+             pageSize:[type:'number', default:100, description:'Number of records per page (default 100)'],
+             orderByField:[type:'string', description:'Field name to order by (or comma separated names)'],
+             pageNoLimit:[type:'string', description:'If true don\'t limit page size (no pagination)'],
+             dependentLevels:[type:'number', description:'Levels of dependent child records to include']
+            ]
+
+    @CompileStatic
+    Map getRamlApi() {
+        String name = getShortAlias() ?: getFullEntityName()
+        String prettyName = getPrettyName(null, null)
+
+        Map<String, Object> ramlMap = [:]
+
+        // setup field info
+        Map qpMap = [:]
+        ArrayList<String> allFields = getAllFieldNames(true)
+        for (int i = 0; i < allFields.size(); i++) {
+            FieldInfo fi = getFieldInfo(allFields.get(i))
+            Map<String, Object> propMap = [:]
+            propMap.put('type', fieldTypeJsonMap.get(fi.type))
+            qpMap.put(fi.getName(), propMap)
+
+            List enumList = getFieldEnums(fi)
+            if (enumList) propMap.put('enum', enumList)
+        }
+
+        // get list
+        // TODO: make body array of schema
+        ramlMap.put('get', [is:['paged'], description:"Get list of ${prettyName}".toString(), queryParameters:qpMap,
+                            responses:[200:[body:['application/json': [schema:name]]]]])
+        // create
+        ramlMap.put('post', [description:"Create ${prettyName}".toString(), body:['application/json': [schema:name]]])
+
+        // under IDs for single record operations
+        List<String> pkNameList = getPkFieldNames()
+        Map recordMap = ramlMap
+        for (String pkName in pkNameList) {
+            Map childMap = [:]
+            recordMap.put('/{' + pkName + '}', childMap)
+            recordMap = childMap
+        }
+
+        // get single
+        recordMap.put('get', [description:"Get single ${prettyName}".toString(),
+                            responses:[200:[body:['application/json': [schema:name]]]]])
+        // update
+        recordMap.put('patch', [description:"Update ${prettyName}".toString(), body:['application/json': [schema:name]]])
+        // store
+        recordMap.put('put', [description:"Create or Update ${prettyName}".toString(), body:['application/json': [schema:name]]])
+        // delete
+        recordMap.put('delete', [description:"Delete ${prettyName}".toString()])
+
+        return ramlMap
     }
 
     List<Node> getFieldNodes(boolean includePk, boolean includeNonPk, boolean includeUserFields) {

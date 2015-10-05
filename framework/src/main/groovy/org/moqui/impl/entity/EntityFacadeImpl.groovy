@@ -814,7 +814,7 @@ class EntityFacadeImpl implements EntityFacade {
 
     Set<String> getAllNonViewEntityNames() {
         Set<String> allNames = getAllEntityNames()
-        Set<String> nonViewNames = new HashSet<>()
+        Set<String> nonViewNames = new TreeSet<>()
         for (String name in allNames) {
             EntityDefinition ed = getEntityDefinition(name)
             if (ed != null && !ed.isViewEntity()) nonViewNames.add(name)
