@@ -13,6 +13,15 @@ along with this software (see the LICENSE.md file). If not, see
 -->
 <services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-1.5.xsd">
 
+    <!-- =========== Interfaces =========== -->
+
+    <service verb="receive" noun="SystemMessage" type="interface">
+        <in-parameters>
+            <parameter name="systemMessageTypeId" required="true"/>
+            <parameter name="messageText" required="true"/>
+        </in-parameters>
+        <out-parameters><parameter name="systemMessageIdList" type="List"/></out-parameters>
+    </service>
     <service verb="consume" noun="SystemMessage" type="interface">
         <in-parameters><parameter name="systemMessageId" required="true"/></in-parameters>
     </service>
@@ -20,6 +29,8 @@ along with this software (see the LICENSE.md file). If not, see
         <in-parameters><parameter name="systemMessageId" required="true"/></in-parameters>
         <out-parameters><parameter name="remoteMessageId"/></out-parameters>
     </service>
+
+    <!-- =========== Send Services =========== -->
 
     <service verb="queue" noun="SystemMessage">
         <description>Creates a SystemMessage record for the outgoing message in the SmsgProduced status. If sendNow=true
@@ -116,7 +127,7 @@ along with this software (see the LICENSE.md file). If not, see
                 <return error="true" message="System message [${systemMessageId}] has no systemMessageRemoteId, not sending."/></if>
             <set field="systemMessageRemote" from="systemMessage.'moqui.service.message.SystemMessageRemote'"/>
 
-            <set field="serviceName" from="systemMessageType.receiveServiceName ?: 'org.moqui.impl.SystemMessageServices.receive#SystemMessage'"/>
+            <set field="serviceName" from="systemMessageType.receiveServiceName ?: 'org.moqui.impl.SystemMessageServices.receive#IncomingSystemMessage'"/>
             <set field="inMap" from="[systemMessageTypeId:systemMessageType.systemMessageTypeId,
                     remoteMessageId:systemMessageId, messageText:systemMessage.messageText,
                     authUsername:systemMessageRemote.username, authPassword:systemMessageRemote.password,
@@ -135,7 +146,7 @@ along with this software (see the LICENSE.md file). If not, see
                 <return error="true" message="System message [${systemMessageId}] has no systemMessageRemoteId, not sending."/></if>
             <set field="systemMessageRemote" from="systemMessage.'moqui.service.message.SystemMessageRemote'"/>
 
-            <set field="serviceName" from="systemMessageType.receiveServiceName ?: 'org.moqui.impl.SystemMessageServices.receive#SystemMessage'"/>
+            <set field="serviceName" from="systemMessageType.receiveServiceName ?: 'org.moqui.impl.SystemMessageServices.receive#IncomingSystemMessage'"/>
             <set field="inMap" from="[systemMessageTypeId:systemMessageType.systemMessageTypeId,
                     remoteMessageId:systemMessageId, messageText:systemMessage.messageText,
                     authUsername:systemMessageRemote.username, authPassword:systemMessageRemote.password,
@@ -145,34 +156,42 @@ along with this software (see the LICENSE.md file). If not, see
         </actions>
     </service>
 
-    <service verb="receive" noun="SystemMessage" allow-remote="true">
-        <description>Call to receive a message. Creates a SystemMessage record for the
-            incoming message (in the Received status), then asynchronously calls the consume service based on the message type.</description>
-        <in-parameters>
-            <auto-parameters entity-name="moqui.service.message.SystemMessage" include="nonpk">
-                <exclude field-name="isOutgoing"/><exclude field-name="statusId"/><exclude field-name="processedDate"/>
-                <exclude field-name="lastAttemptDate"/><exclude field-name="failCount"/>
-            </auto-parameters>
-            <parameter name="systemMessageTypeId" required="true"/>
-            <parameter name="messageText" required="true"/>
-            <parameter name="initDate" type="Timestamp" default="ec.user.nowTimestamp"/>
-        </in-parameters>
-        <out-parameters><parameter name="systemMessageId"/></out-parameters>
+    <!-- =========== Receive Services =========== -->
+
+    <service verb="receive" noun="IncomingSystemMessage" allow-remote="true">
+        <description>Call to receive a message (often through a remote interface). If there is a
+            SystemMessageType.receiveServiceName calls that service to save the message, otherwise creates a
+            SystemMessage record for the incoming message (in the Received status). Either way after saving
+            asynchronously calls the consume service based on the message type.</description>
+        <implements service="org.moqui.impl.SystemMessageServices.receive#SystemMessage"/>
         <actions>
             <entity-find-one entity-name="moqui.service.message.SystemMessageType" value-field="systemMessageType"/>
-            <!-- while it shouldn't happen that the consume service is called before the tx for this service is
-                committed, run it in a separate tx to make sure -->
-            <service-call name="create#moqui.service.message.SystemMessage" out-map="context" transaction="force-new"
-                in-map="context + [statusId:'SmsgReceived', isOutgoing:'N']"/>
-
-            <service-call name="org.moqui.impl.SystemMessageServices.consume#ReceivedSystemMessage"
+            <if condition="systemMessageType.receiveServiceName &amp;&amp;
+                    systemMessageType.receiveServiceName != 'org.moqui.impl.SystemMessageServices.receive#IncomingSystemMessage'">
+                <then>
+                    <service-call name="${systemMessageType.receiveServiceName}" out-map="context" transaction="force-new"
+                        in-map="context"/>
+                </then>
+                <else>
+                    <!-- while it shouldn't happen that the consume service is called before the tx for this service is
+                        committed, run it in a separate tx to make sure -->
+                    <service-call name="create#moqui.service.message.SystemMessage" out-map="context" transaction="force-new"
+                        in-map="context + [statusId:'SmsgReceived', isOutgoing:'N', initDate:ec.user.nowTimestamp]"/>
+                    <set field="systemMessageIdList" from="[systemMessageId]"/>
+                </else>
+            </if>
+            <!-- run consume async for each message -->
+            <iterate list="systemMessageIdList" entry="systemMessageId">
+                <service-call name="org.moqui.impl.SystemMessageServices.consume#ReceivedSystemMessage"
                     in-map="[systemMessageId:systemMessageId]" async="true"/>
+            </iterate>
         </actions>
     </service>
+
     <!-- TODO: this service called async by an anonymous-all scheduled job so needs anonymous-all here too, but should
         find a way to restrict it when not called through the scheduled service so no anonymous-all service exists to do
         this, tighten security on it a bit -->
-    <service verb="consume" noun="ReceivedSystemMessage" authenticate="anonymous-all">
+    <service verb="consume" noun="ReceivedSystemMessage" authenticate="anonymous-all" allow-remote="false">
         <description>Calls the consume service (SystemMessageType.consumeServiceName). Sets the SystemMessage status to
             SmsgConsuming while consuming, then to SmsgConsumed if successful or back to original status if not. If the initial
             status is not SmsgReceived or SmsgError returns an error (generally means message already consumed). If you
@@ -225,6 +244,7 @@ along with this software (see the LICENSE.md file). If not, see
     </service>
 
     <!-- ========== Scheduled services to handle incoming and outgoing messages ========== -->
+
     <service verb="send" noun="AllProducedSystemMessages" authenticate="anonymous-all">
         <description>Meant to be run scheduled, this service tries to send outgoing (isOutgoing=Y) messages in the
             SmsgProduced status. After retryLimit attempts will change the status to SmsgError.</description>

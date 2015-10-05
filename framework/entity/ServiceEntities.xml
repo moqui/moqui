@@ -305,8 +305,10 @@ along with this software (see the LICENSE.md file). If not, see
             Should implement the org.moqui.impl.SystemMessageServices.send#SystemMessage interface (just a
             systemMessageId in-parameter and remoteMessageId out-parameter). Used by the send#ProducedSystemMessage service,
             and for that service must be specified or will result in an error.</description></field>
-        <field name="receiveServiceName" type="text-medium"><description>When applicable, used by the send service as
-            the service on the remote server to call to receive the message.</description></field>
+        <field name="receiveServiceName" type="text-medium"><description>The service to call to save a received message.
+            Should implement the org.moqui.impl.SystemMessageServices.receive#SystemMessage interface.
+            If not specified receive#IncomingSystemMessage just saves the message directly.
+            When applicable, used by the send service as the service on the remote server to call to receive the message.</description></field>
     </entity>
     <entity entity-name="SystemMessageRemote" package-name="moqui.service.message">
         <field name="systemMessageRemoteId" type="id" is-pk="true"/>
@@ -315,7 +317,7 @@ along with this software (see the LICENSE.md file). If not, see
         <!-- potential future use, restrict receive message: <field name="authorizedIpAddresses" type="text-long"/> -->
         <field name="sendServiceName" type="text-medium"><description>Override for SystemMessageType.sendServiceName</description></field>
         <field name="username" type="text-medium"><description>This user needs permission to run the remote service or
-            whatever on the remote system receives the message. For the the Moqui receive#SystemMessage service the user
+            whatever on the remote system receives the message. For the the Moqui receive#IncomingSystemMessage service the user
             should be in a group that has authz for the SystemMessageServices ArtifactGroup (see SecurityTypeData.xml).</description></field>
         <field name="password" type="text-short" encrypt="true"/>
         <field name="tenantId" type="text-short"/>

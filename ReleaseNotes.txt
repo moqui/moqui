@@ -22,6 +22,10 @@ New Features:
 - Added json-schema for Entity REST API: for all entities get
   /rest/schema.json, for a single entity get /rest/schema/${name}.json
 - Added RAML API definition for Entity REST API at /rest/schema.raml
+- SystemMessage entity has additional fields to identify messages
+- Changed receive#SystemMessage to an interface, now use
+  receive#IncomingSystemMessage for remote calls, will call the
+  SystemMessageType.receiveServiceName service if specified to save message
 
 Bug Fixes:
 
