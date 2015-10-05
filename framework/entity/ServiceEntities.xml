@@ -200,20 +200,43 @@ along with this software (see the LICENSE.md file). If not, see
         <field name="processedDate" type="date-time"><description>For incoming the consumed date, for outgoing the sent date.</description></field>
         <field name="lastAttemptDate" type="date-time"/>
         <field name="failCount" type="number-integer"/>
+        <field name="parentMessageId" type="id"><description>If a received message is split this is the original combined message</description></field>
+        <field name="remoteMessageId" type="text-medium"><description>For messages to/from another Moqui system, the
+            systemMessageId on the remote system; may also be used for other system level message IDs (as opposed to
+            messageId which is for the ID in the envelope of the message)</description></field>
+        <field name="systemMessageRemoteId" type="id"><description>Reference to the SystemMessageRemote record to
+            use for sending, etc</description></field>
+
         <field name="messageText" type="text-very-long"/>
-        <field name="remoteMessageId" type="text-medium"/>
-        <field name="systemMessageRemoteId" type="id"/>
-        <!-- the follow are useful for many types of messages, but come specifically from the OAGIS specification -->
+
+        <!-- these fields are from the message envelope, populated by receive or consume service (after initial parse) -->
+        <field name="senderId" type="text-medium"><description>ID of the sender (for OAGIS may be broken down into
+            logicalId, component, task, referenceId; for EDI X12 this is ISA06)</description></field>
+        <field name="receiverId" type="text-medium"><description>ID of the receiver (for OAGIS may also be broken down;
+            for EDI X12 this is ISA08)</description></field>
+        <field name="messageId" type="text-medium"><description>ID of the message; this may be globally unique (like
+            the OAGIS BODID, a GUID) or only unique relative to the senderId and the receiverId (like EDI X12 ISA13 in
+            the context of ISA06, ISA08), and may only be unique within a certain time period (ID may be reused since in
+            EDI X12 limited to 9 digits)</description></field>
+        <field name="messageDate" type="date-time"><description>Date/time from message (for EDI X12 this is ISA09 (date)
+            and ISA10 (time))</description></field>
+        <field name="docType" type="text-medium"><description>For OAGIS the BSR Noun; For X12 GS01 (functional ID code)</description></field>
+        <field name="docSubType" type="text-medium"><description>For OAGIS the BSR Verb; For X12 ST01 (tx set ID code)</description></field>
+        <field name="docVersion" type="text-medium"><description>The document version (for OAGIS BSR Revision, for X12 GS08 (version/revision))</description></field>
+
+        <!-- the follow may be useful for other types of messages, but come specifically from the OAGIS specification;
+            leave out for now, senderId and messageId with combined fields may be adequate and are more generic
         <field name="logicalId" type="text-medium"/>
         <field name="component" type="text-medium"/>
         <field name="task" type="text-medium"/>
         <field name="referenceId" type="text-medium"/>
         <field name="authId" type="text-medium"/>
-        <field name="bsrVerb" type="text-medium"/>
-        <field name="bsrNoun" type="text-medium"/>
-        <field name="bsrRevision" type="text-medium"/>
+        -->
+
         <relationship type="one" related-entity-name="moqui.service.message.SystemMessageType"/>
         <relationship type="one" title="SystemMessage" related-entity-name="moqui.basic.StatusItem"/>
+        <relationship type="one" title="Parent" related-entity-name="moqui.service.message.SystemMessage">
+            <key-map field-name="parentMessageId"/></relationship>
         <relationship type="one" related-entity-name="moqui.service.message.SystemMessageRemote"/>
         <seed-data>
             <moqui.basic.StatusType description="System Message" statusTypeId="SystemMessage"/>
