@@ -146,21 +146,24 @@ along with this software (see the LICENSE.md file). If not, see
     </service>
 
     <service verb="receive" noun="SystemMessage" allow-remote="true">
-        <description>Creates a SystemMessage record for the incoming message, then asynchronously calls the consume service.</description>
+        <description>Call to receive a message. Creates a SystemMessage record for the
+            incoming message (in the Received status), then asynchronously calls the consume service based on the message type.</description>
         <in-parameters>
+            <auto-parameters entity-name="moqui.service.message.SystemMessage" include="nonpk">
+                <exclude field-name="isOutgoing"/><exclude field-name="statusId"/><exclude field-name="processedDate"/>
+                <exclude field-name="lastAttemptDate"/><exclude field-name="failCount"/>
+            </auto-parameters>
             <parameter name="systemMessageTypeId" required="true"/>
-            <parameter name="remoteMessageId"/>
             <parameter name="messageText" required="true"/>
+            <parameter name="initDate" type="Timestamp" default="ec.user.nowTimestamp"/>
         </in-parameters>
         <out-parameters><parameter name="systemMessageId"/></out-parameters>
         <actions>
             <entity-find-one entity-name="moqui.service.message.SystemMessageType" value-field="systemMessageType"/>
             <!-- while it shouldn't happen that the consume service is called before the tx for this service is
                 committed, run it in a separate tx to make sure -->
-            <service-call name="create#moqui.service.message.SystemMessage" out-map="context"
-                in-map="[systemMessageTypeId:systemMessageTypeId, messageText:messageText, statusId:'SmsgReceived',
-                    isOutgoing:'N', initDate:ec.user.nowTimestamp, remoteMessageId:remoteMessageId]"
-                transaction="force-new"/>
+            <service-call name="create#moqui.service.message.SystemMessage" out-map="context" transaction="force-new"
+                in-map="context + [statusId:'SmsgReceived', isOutgoing:'N']"/>
 
             <service-call name="org.moqui.impl.SystemMessageServices.consume#ReceivedSystemMessage"
                     in-map="[systemMessageId:systemMessageId]" async="true"/>
