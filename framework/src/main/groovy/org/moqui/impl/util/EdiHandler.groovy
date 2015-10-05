@@ -13,6 +13,7 @@
 package org.moqui.impl.util
 
 import org.moqui.context.ExecutionContext
+import org.moqui.impl.StupidUtilities
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -25,22 +26,28 @@ class EdiHandler {
 
     char segmentTerminator = '~'
     char elementSeparator = '*'
-    char compositeDelimiter = '@'
+    char componentDelimiter = '@'
+    char escapeCharacter = '?'
 
     protected List<Map<String, Object>> envelope = null
     protected List<Map<String, Object>> body = null
+    protected String bodyRootId = null
+    protected Set<String> knownSegmentIds = new HashSet<>()
     // FUTURE: load Bots record defs to validate input/output messages: Map<String, List> recordDefs
 
-    EdiHandler(ExecutionContext ec) {
-        this.ec = ec
-    }
+    EdiHandler(ExecutionContext ec) { this.ec = ec }
 
-    EdiHandler setChars(char segmentTerminator, char elementSeparator, char compositeDelimiter) {
+    EdiHandler setChars(char segmentTerminator, char elementSeparator, char componentDelimiter, char escapeCharacter) {
         this.segmentTerminator = segmentTerminator
         this.elementSeparator = elementSeparator
-        this.compositeDelimiter = compositeDelimiter
+        this.componentDelimiter = componentDelimiter
+        this.escapeCharacter = escapeCharacter
         return this
     }
+
+    EdiHandler setX12DefaultChars() { setChars('~' as char, '*' as char, '>' as char, '?' as char); return this }
+    EdiHandler setITradeDefaultChars() { setChars('~' as char, '*' as char, '@' as char, '?' as char); return this }
+    EdiHandler setEdifactDefaultChars() { setChars('\'' as char, '+' as char, ':' as char, '?' as char); return this }
 
     /** Run a Groovy script at location to get the nested List/Map file envelope structure (for X12: ISA, GS, and ST
      * segments). The QUERIES and SUBTRANSLATION entries can be removed, will be ignored.
@@ -51,6 +58,7 @@ class EdiHandler {
      */
     EdiHandler loadEnvelope(String location) {
         envelope = (List<Map<String, Object>>) ec.resource.script(location, null)
+        extractSegmentIds(envelope)
         return this
     }
 
@@ -63,7 +71,16 @@ class EdiHandler {
      */
     EdiHandler loadBody(String location) {
         body = (List<Map<String, Object>>) ec.resource.script(location, null)
+        extractSegmentIds(body)
+        bodyRootId = body[0].ID
         return this
+    }
+
+    protected void extractSegmentIds(List<Map<String, Object>> defList) {
+        for (Map<String, Object> defMap in defList) {
+            knownSegmentIds.add((String) defMap.ID)
+            if (defMap.LEVEL) extractSegmentIds((List<Map<String, Object>>) defMap.LEVEL)
+        }
     }
 
     /** Parse EDI text and return a Map containing a "elements" entry with a List of element values (each may be a String
@@ -75,31 +92,112 @@ class EdiHandler {
      * the body structure loaded.
      */
     Map<String, Object> parseText(String ediText) {
-        // TODO: auto-detect segment/element/composite chars? only if not set, if can't use defaults?
-        // TODO: For X12: if root segment is ISA determine compositeDelimeter from ISA16
-        // TODO: if fileStructure == null just read segments defined in envelope
+        // TODO: auto-detect segment/element/component chars? only if not set, if can't use defaults?
+        // TODO: For X12: if root segment is ISA determine componentDelimeter from ISA16
 
-        List<String> allSegmentStringList = Arrays.asList(ediText.split(Pattern.quote(segmentTerminator as String)))
+        if (envelope == null) throw new IllegalArgumentException("Cannot parse EDI text, envelope must be loaded")
+
+        List<String> allSegmentStringList = Arrays.asList(ediText.split(getSegmentRegex()))
 
         Map<String, Object> rootSegment = [:]
-        parseSegment(allSegmentStringList, 0, rootSegment, envelope)
+        parseSegments(allSegmentStringList, 0, rootSegment, envelope)
         return rootSegment
     }
 
     /** Internal recursive method for parsing segments */
-    protected void parseSegment(List<String> allSegmentStringList, int segmentIndex, Map<String, Object> currentSegment,
+    protected int parseSegments(List<String> allSegmentStringList, int segmentIndex, Map<String, Object> currentSegment,
                                 List<Map<String, Object>> levelDefList) {
-        // TODO
+        while (segmentIndex < allSegmentStringList.size()) {
+            String segmentString = allSegmentStringList.get(segmentIndex).trim()
+            String segmentId = getSegmentId(segmentString)
+            if (segmentId == null) {
+                // this shouldn't generally happen, but may if there is a terminating character at the end of the message (after the last segment separator)
+                logger.info("No ID found for segment: ${segmentString}")
+                segmentIndex++
+                continue
+            }
+            Map<String, Object> curDefMap = levelDefList.find({ it.ID == segmentId })
+            if (curDefMap != null) {
+                // NOTE: incremented in parseSegment, returns next segment to process
+                segmentIndex = parseSegment(allSegmentStringList, segmentIndex, currentSegment, curDefMap)
+            } else if (!knownSegmentIds.contains(segmentId)) {
+                // skip the segment; this is necessary to support partial parsing with envelope only
+                segmentIndex++
+                // save the string in originalList
+                List<String> originalList = (List<String>) currentSegment.originalList
+                if (originalList == null) {
+                    originalList = new ArrayList<>()
+                    currentSegment.originalList = originalList
+                }
+                originalList.add(segmentString)
+            } else {
+                // if segmentId is not in the current levelDefList, return to check against parent
+                return segmentIndex
+            }
+        }
+        // this will only happen for the root segment, the final child (trailer segment)
+        return segmentIndex
     }
+
+    protected int parseSegment(List<String> allSegmentStringList, int segmentIndex, Map<String, Object> currentSegment,
+                               Map<String, Object> curDefMap) {
+        String segmentString = allSegmentStringList.get(segmentIndex).trim()
+        List<String> originalElementList = Arrays.asList(segmentString.split(getElementRegex()))
+        // split composite elements to components List, unescape elements
+        ArrayList<Object> elements = new ArrayList<>(originalElementList.size())
+        for (String originalElement in originalElementList) {
+            originalElement = originalElement.trim()
+            String[] componentArray = originalElement.split(getComponentRegex())
+            if (componentArray.length == 1) {
+                elements.add(unescape(componentArray[0]))
+            } else {
+                ArrayList<String> components = new ArrayList<>(componentArray.length)
+                for (String component in componentArray) components.add(unescape(component.trim()))
+                elements.add(components)
+            }
+        }
+
+        String segmentId = elements[0]
+        // if segmentId is in the current levelDefList add as child to current segment, increment index, recurse
+        Map<String, Object> newSegment = [elements:elements]
+        StupidUtilities.addToListInMap(segmentId, newSegment, currentSegment)
+
+        int nextSegmentIndex = segmentIndex + 1
+        // current segment has children (ie LEVEL entry)? then recurse otherwise just return to handle siblings/parents
+        List<Map<String, Object>> curDefLevel = (List<Map<String, Object>>) curDefMap.LEVEL
+        if (!curDefLevel && body && curDefMap.ID == bodyRootId) {
+            // switch from envelope to body
+            curDefLevel = body[0].LEVEL
+        }
+        if (curDefLevel) {
+            return parseSegments(allSegmentStringList, nextSegmentIndex, newSegment, curDefLevel)
+        } else {
+            return nextSegmentIndex
+        }
+    }
+
+    protected String getSegmentId(String segmentString) {
+        int separatorIndex = segmentString.indexOf(elementSeparator as String)
+        if (separatorIndex > 0) {
+            return segmentString.substring(0, separatorIndex)
+        } else {
+            return null
+        }
+    }
+
+    // regex strings have a non-capturing lookahead for the escape character (ie only separate if not escaped)
+    protected String getSegmentRegex() { return "(?<!${Pattern.quote(escapeCharacter as String)})${Pattern.quote(segmentTerminator as String)}".toString() }
+    protected String getElementRegex() { return "(?<!${Pattern.quote(escapeCharacter as String)})${Pattern.quote(elementSeparator as String)}".toString() }
+    protected String getComponentRegex() { return "(?<!${Pattern.quote(escapeCharacter as String)})${Pattern.quote(componentDelimiter as String)}".toString() }
 
     List<String> splitMessage(String rootHeaderId, String rootTrailerId, String ediText) {
         List<String> splitStringList = []
-        List<String> allSegmentStringList = Arrays.asList(ediText.split(Pattern.quote(segmentTerminator as String)))
+        List<String> allSegmentStringList = Arrays.asList(ediText.split(getSegmentRegex()))
 
         ArrayList<String> curSplitList = null
         for (int i = 0; i < allSegmentStringList.size(); i++) {
-            String segmentString = allSegmentStringList.get(i)
-            String segId = segmentString.substring(0, segmentString.indexOf(elementSeparator))
+            String segmentString = allSegmentStringList.get(i).trim()
+            String segId = getSegmentId(segmentString)
 
             if (rootHeaderId && segId == rootHeaderId && curSplitList) {
                 // hit a header without a footer, save what we have so far and start a new split
@@ -128,11 +226,29 @@ class EdiHandler {
 
 
     protected String escape(String original) {
-        // TODO
-        return original
+        StringBuilder builder = new StringBuilder()
+        for (int i = 0; i < original.length(); i++) {
+            char c = original.charAt(i)
+            if (needsEscape(c)) builder.append(escapeCharacter)
+            builder.append(c)
+        }
+        return builder.toString()
+    }
+    protected boolean needsEscape(char c) {
+        return (c == componentDelimiter || c == elementSeparator || c == escapeCharacter || c == segmentTerminator)
     }
     protected String unescape(String original) {
-        // TODO
-        return original
+        StringBuilder builder = new StringBuilder()
+        for (int i = 0; i < original.length(); i++) {
+            char c = original.charAt(i)
+            if (c == escapeCharacter) {
+                // skip it and append the next character (next char might be escape character to don't just skip)
+                i++
+                builder.append(original.charAt(i))
+            } else {
+                builder.append(c)
+            }
+        }
+        return builder.toString()
     }
 }
