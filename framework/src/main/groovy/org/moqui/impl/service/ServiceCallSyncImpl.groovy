@@ -412,6 +412,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                         case "update": EntityAutoServiceRunner.updateEntity(sfi, ed, currentParameters, result, null, null); break
                         case "delete": EntityAutoServiceRunner.deleteEntity(sfi, ed, currentParameters); break
                         case "store": EntityAutoServiceRunner.storeEntity(sfi, ed, currentParameters, result, null); break
+                        // NOTE: no need to throw exception for other verbs, checked in advance when looking for valid service name by entity auto pattern
                     }
                 } finally {
                     sfi.registerTxSecaRules(getServiceNameNoHash(), currentParameters, result)
