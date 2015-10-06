@@ -24,9 +24,9 @@ class EdiHandler {
 
     protected ExecutionContext ec
 
-    char segmentTerminator = '~'
-    char elementSeparator = '*'
-    char componentDelimiter = '@'
+    Character segmentTerminator = null
+    Character elementSeparator = null
+    Character componentDelimiter = null
     char escapeCharacter = '?'
 
     protected List<Map<String, Object>> envelope = null
@@ -92,16 +92,37 @@ class EdiHandler {
      * the body structure loaded.
      */
     Map<String, Object> parseText(String ediText) {
-        // TODO: auto-detect segment/element/component chars? only if not set, if can't use defaults?
-        // TODO: For X12: if root segment is ISA determine componentDelimeter from ISA16
-
         if (envelope == null) throw new IllegalArgumentException("Cannot parse EDI text, envelope must be loaded")
+        if (!ediText) throw new IllegalArgumentException("No EDI text passed")
+
+        determineSeparators(ediText)
 
         List<String> allSegmentStringList = Arrays.asList(ediText.split(getSegmentRegex()))
+        if (allSegmentStringList.size() < 2) throw new IllegalArgumentException("No segments found in EDI text, using segment terminator [${segmentTerminator}]")
 
         Map<String, Object> rootSegment = [:]
         parseSegments(allSegmentStringList, 0, rootSegment, envelope)
         return rootSegment
+    }
+
+    protected void determineSeparators(String ediText) {
+        // auto-detect segment/element/component chars (only if not set)
+        // useful reference, see: https://mohsinkalam.wordpress.com/delimiters/
+        if (ediText.startsWith("ISA")) {
+            // X12 message
+            if (segmentTerminator == null) segmentTerminator = ediText.charAt(105)
+            if (elementSeparator == null) elementSeparator = ediText.charAt(3)
+            if (componentDelimiter == null) componentDelimiter = ediText.charAt(104)
+        } else if (ediText.startsWith("UNA")) {
+            // EDIFACT message
+            if (segmentTerminator == null) segmentTerminator = ediText.charAt(8)
+            if (elementSeparator == null) elementSeparator = ediText.charAt(4)
+            if (componentDelimiter == null) componentDelimiter = ediText.charAt(3)
+        }
+
+        if (segmentTerminator == null) throw new IllegalArgumentException("No segment terminator specified or automatically determined")
+        if (elementSeparator == null) throw new IllegalArgumentException("No element separator specified or automatically determined")
+        if (componentDelimiter == null) throw new IllegalArgumentException("No component delimiter specified or automatically determined")
     }
 
     /** Internal recursive method for parsing segments */
@@ -142,20 +163,7 @@ class EdiHandler {
     protected int parseSegment(List<String> allSegmentStringList, int segmentIndex, Map<String, Object> currentSegment,
                                Map<String, Object> curDefMap) {
         String segmentString = allSegmentStringList.get(segmentIndex).trim()
-        List<String> originalElementList = Arrays.asList(segmentString.split(getElementRegex()))
-        // split composite elements to components List, unescape elements
-        ArrayList<Object> elements = new ArrayList<>(originalElementList.size())
-        for (String originalElement in originalElementList) {
-            originalElement = originalElement.trim()
-            String[] componentArray = originalElement.split(getComponentRegex())
-            if (componentArray.length == 1) {
-                elements.add(unescape(componentArray[0]))
-            } else {
-                ArrayList<String> components = new ArrayList<>(componentArray.length)
-                for (String component in componentArray) components.add(unescape(component.trim()))
-                elements.add(components)
-            }
-        }
+        ArrayList<Object> elements = getSegmentElements(segmentString)
 
         String segmentId = elements[0]
         // if segmentId is in the current levelDefList add as child to current segment, increment index, recurse
@@ -184,6 +192,30 @@ class EdiHandler {
             return null
         }
     }
+    protected ArrayList<Object> getSegmentElements(String segmentString) {
+        List<String> originalElementList = Arrays.asList(segmentString.split(getElementRegex()))
+        // split composite elements to components List, unescape elements
+        ArrayList<Object> elements = new ArrayList<>(originalElementList.size())
+        for (String originalElement in originalElementList) {
+            // change non-breaking white space to regular space before trim
+            originalElement = originalElement.replaceAll("\\u00a0", " ")
+            originalElement = originalElement.trim()
+            if (originalElement.length() >= 3 && originalElement.contains(componentDelimiter as String)) {
+                String[] componentArray = originalElement.split(getComponentRegex())
+                if (componentArray.length == 1) {
+                    elements.add(unescape(componentArray[0]))
+                } else {
+                    ArrayList<String> components = new ArrayList<>(componentArray.length)
+                    for (String component in componentArray) components.add(unescape(component.trim()))
+                    elements.add(components)
+                }
+            } else {
+                elements.add(unescape(originalElement))
+            }
+        }
+
+        return elements
+    }
 
     // regex strings have a non-capturing lookahead for the escape character (ie only separate if not escaped)
     protected String getSegmentRegex() { return "(?<!${Pattern.quote(escapeCharacter as String)})${Pattern.quote(segmentTerminator as String)}".toString() }
@@ -191,6 +223,8 @@ class EdiHandler {
     protected String getComponentRegex() { return "(?<!${Pattern.quote(escapeCharacter as String)})${Pattern.quote(componentDelimiter as String)}".toString() }
 
     List<String> splitMessage(String rootHeaderId, String rootTrailerId, String ediText) {
+        determineSeparators(ediText)
+
         List<String> splitStringList = []
         List<String> allSegmentStringList = Arrays.asList(ediText.split(getSegmentRegex()))
 
