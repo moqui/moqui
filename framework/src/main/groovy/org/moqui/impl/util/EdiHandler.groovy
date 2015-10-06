@@ -28,6 +28,7 @@ class EdiHandler {
     Character elementSeparator = null
     Character componentDelimiter = null
     char escapeCharacter = '?'
+    Character segmentSuffix = '\n'
 
     protected List<Map<String, Object>> envelope = null
     protected List<Map<String, Object>> body = null
@@ -45,7 +46,8 @@ class EdiHandler {
         return this
     }
 
-    EdiHandler setX12DefaultChars() { setChars('~' as char, '*' as char, '>' as char, '?' as char); return this }
+    // NOTE: common X12 componentDelimiter seems to include ':', '^', '<', '@', etc...
+    EdiHandler setX12DefaultChars() { setChars('~' as char, '*' as char, ':' as char, '?' as char); return this }
     EdiHandler setITradeDefaultChars() { setChars('~' as char, '*' as char, '@' as char, '?' as char); return this }
     EdiHandler setEdifactDefaultChars() { setChars('\'' as char, '+' as char, ':' as char, '?' as char); return this }
 
@@ -91,7 +93,7 @@ class EdiHandler {
      * (of type List<String>) entry. This is used for partial parsing (envelope only) and then completing the parse with
      * the body structure loaded.
      */
-    Map<String, Object> parseText(String ediText) {
+    Map<String, List<Object>> parseText(String ediText) {
         if (envelope == null) throw new IllegalArgumentException("Cannot parse EDI text, envelope must be loaded")
         if (!ediText) throw new IllegalArgumentException("No EDI text passed")
 
@@ -100,9 +102,84 @@ class EdiHandler {
         List<String> allSegmentStringList = Arrays.asList(ediText.split(getSegmentRegex()))
         if (allSegmentStringList.size() < 2) throw new IllegalArgumentException("No segments found in EDI text, using segment terminator [${segmentTerminator}]")
 
-        Map<String, Object> rootSegment = [:]
-        parseSegments(allSegmentStringList, 0, rootSegment, envelope)
-        return rootSegment
+        Map<String, List<Object>> rootMap = [:]
+        parseSegments(allSegmentStringList, 0, rootMap, envelope)
+        return rootMap
+    }
+
+    /** Generate EDI text from the same Map/List structure created from the parse. */
+    String generateText(Map<String, List<Object>> rootMap) {
+        if (segmentTerminator == null) throw new IllegalArgumentException("No segment terminator specified")
+        if (elementSeparator == null) throw new IllegalArgumentException("No element separator specified")
+        if (componentDelimiter == null) throw new IllegalArgumentException("No component delimiter specified")
+
+        StringBuilder sb = new StringBuilder()
+        generateSegment(rootMap, sb)
+        return sb.toString()
+    }
+
+
+    // X12 ISA segment is fixed width, pad fields to width of each element
+    Map<String, List<Integer>> segmentElementSizes = [ISA:[3, 2, 10, 2, 10, 2, 15, 2, 15, 6, 4, 1, 5, 9, 1, 1, 1]]
+    char paddingChar = '\u00a0'
+    Set<String> noEscapeSegments = new HashSet<>(['ISA', 'UNA'])
+    protected void generateSegment(Map<String, List<Object>> segmentMap, StringBuilder sb) {
+        if (segmentMap.elements) {
+            List<Object> elements = segmentMap.elements
+            String segmentId = elements[0]
+            List<Integer> elementSizes = segmentElementSizes.get(segmentId)
+            boolean noEscape = noEscapeSegments.contains(segmentId)
+
+            // all segments should have elements, but root Map will not
+            for (int i = 0; i < elements.size(); i++) {
+                Object element = elements[i]
+                Integer elementSize = elementSizes ? elementSizes[i] : null
+                if (element instanceof List) {
+                    // composite element, add each component with component delimiter
+                    Iterator compIter = element.iterator()
+                    while (compIter.hasNext()) {
+                        Object curComp = compIter.next()
+                        if (curComp != null) sb.append(escape(curComp.toString()))
+                        if (compIter.hasNext()) sb.append(componentDelimiter)
+                    }
+                } else {
+                    if (element != null) {
+                        String elementString = element.toString()
+                        if (!noEscape) elementString = escape(element.toString())
+                        sb.append(elementString)
+                        if (elementSize != null) {
+                            int curSize = elementString.size()
+                            while (curSize < elementSize) { sb.append(paddingChar); curSize++ }
+                        }
+                    }
+                }
+                // append the element separator, if there is another element
+                if (i < (elements.size() - 1)) sb.append(elementSeparator)
+            }
+            // append segment terminator
+            sb.append(segmentTerminator)
+            // if there is a segment suffix append that
+            if (segmentSuffix) sb.append(segmentSuffix)
+        }
+
+        // generate child segments
+        for (Map.Entry<String, List<Object>> entry in segmentMap.entrySet()) {
+            if (entry.key == "elements") continue
+            if (entry.key == "originalList") {
+                // also support output of literal child segments from originalList (full segment string except terminator)
+                for (Object original in entry.value) sb.append(original).append(segmentTerminator)
+            } else {
+                // is a child segment
+                for (Object childObj in entry.value) {
+                    if (childObj instanceof Map) {
+                        generateSegment(childObj, sb)
+                    } else {
+                        // should ALWAYS be a Map at this level, if not blow up
+                        throw new Exception("Expected Map for segment, got: ${childObj}")
+                    }
+                }
+            }
+        }
     }
 
     protected void determineSeparators(String ediText) {
@@ -126,7 +203,7 @@ class EdiHandler {
     }
 
     /** Internal recursive method for parsing segments */
-    protected int parseSegments(List<String> allSegmentStringList, int segmentIndex, Map<String, Object> currentSegment,
+    protected int parseSegments(List<String> allSegmentStringList, int segmentIndex, Map<String, List<Object>> currentSegment,
                                 List<Map<String, Object>> levelDefList) {
         while (segmentIndex < allSegmentStringList.size()) {
             String segmentString = allSegmentStringList.get(segmentIndex).trim()
@@ -145,7 +222,7 @@ class EdiHandler {
                 // skip the segment; this is necessary to support partial parsing with envelope only
                 segmentIndex++
                 // save the string in originalList
-                List<String> originalList = (List<String>) currentSegment.originalList
+                List<Object> originalList = currentSegment.originalList
                 if (originalList == null) {
                     originalList = new ArrayList<>()
                     currentSegment.originalList = originalList
@@ -160,7 +237,7 @@ class EdiHandler {
         return segmentIndex
     }
 
-    protected int parseSegment(List<String> allSegmentStringList, int segmentIndex, Map<String, Object> currentSegment,
+    protected int parseSegment(List<String> allSegmentStringList, int segmentIndex, Map<String, List<Object>> currentSegment,
                                Map<String, Object> curDefMap) {
         String segmentString = allSegmentStringList.get(segmentIndex).trim()
         ArrayList<Object> elements = getSegmentElements(segmentString)
