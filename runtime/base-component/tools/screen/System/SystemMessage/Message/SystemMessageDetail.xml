@@ -83,6 +83,42 @@ along with this software (see the LICENSE.md file). If not, see
                 </form-single>
             </row-col>
             <row-col lg="7">
+                <section name="StatusHistorySection">
+                    <actions>
+                        <entity-find entity-name="moqui.entity.EntityAuditLog" list="reverseList">
+                            <econdition field-name="changedEntityName" value="moqui.service.message.SystemMessage"/>
+                            <econdition field-name="changedFieldName" value="statusId"/>
+                            <econdition field-name="pkPrimaryValue" from="systemMessageId"/>
+                            <order-by field-name="-changedDate"/>
+                        </entity-find>
+                    </actions>
+                    <widgets>
+                        <container-box>
+                            <box-header><label text="Status History" type="h5"/></box-header>
+                            <box-body>
+                                <section-iterate name="StatusHistoryTable" list="reverseList" entry="statusHistory">
+                                    <actions>
+                                        <entity-find-one entity-name="moqui.security.UserAccount" value-field="userAccount">
+                                            <field-map field-name="userId" from="statusHistory.changedByUserId"/></entity-find-one>
+                                        <entity-find-one entity-name="moqui.basic.StatusItem" value-field="statusItem" cache="true">
+                                            <field-map field-name="statusId" from="statusHistory.newValueText"/></entity-find-one>
+                                    </actions>
+                                    <widgets>
+                                        <container-row>
+                                            <row-col lg="7" md="7" sm="7">
+                                                <label text="${ec.l10n.format(statusHistory.changedDate, '')}" type="strong" style="text-nowrap"/>
+                                                <label text="by ${userAccount?.username ?: statusHistory.changedByUserId ?: 'Unknown'}" style="text-nowrap"/>
+                                            </row-col>
+                                            <row-col lg="5" md="5" sm="5">
+                                                <label text="${statusItem?statusItem.description:''}" type="p"/>
+                                            </row-col>
+                                        </container-row>
+                                    </widgets>
+                                </section-iterate>
+                            </box-body>
+                        </container-box>
+                    </widgets>
+                </section>
                 <form-list name="ErrorListForm" list="errorList" skip-form="true">
                     <field name="errorDate"><default-field><display/></default-field></field>
                     <field name="errorText"><default-field><display/></default-field></field>
