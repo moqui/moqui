@@ -19,6 +19,7 @@ along with this software (see the LICENSE.md file). If not, see
         <in-parameters>
             <parameter name="systemMessageTypeId" required="true"/>
             <parameter name="messageText" required="true"/>
+            <parameter name="remoteMessageId"/>
         </in-parameters>
         <out-parameters><parameter name="systemMessageIdList" type="List"/></out-parameters>
     </service>
@@ -99,15 +100,17 @@ along with this software (see the LICENSE.md file). If not, see
             <!-- if successful set status to SmsgSent, otherwise set back to previous status -->
             <set field="nowDate" from="ec.user.nowTimestamp"/>
             <if condition="ec.message.hasError()">
-                <set field="errorText" from="ec.message.getErrorsString()"/>
-                <!-- clear errors before calling services so they'll go through, and so this service won't blow up -->
-                <script>ec.message.clearErrors()</script>
-                <service-call name="update#moqui.service.message.SystemMessage" transaction="force-new"
-                        in-map="[systemMessageId:systemMessageId, statusId:initialStatusId, lastAttemptDate:nowDate,
-                            failCount:((systemMessage.failCount ?: 0) + 1)]"/>
-                <service-call name="create#moqui.service.message.SystemMessageError" transaction="force-new"
-                        in-map="[systemMessageId:systemMessageId, errorDate:nowDate, attemptedStatusId:'SmsgSent',
-                            errorText:errorText]"/>
+                <then>
+                    <set field="errorText" from="ec.message.getErrorsString()"/>
+                    <!-- clear errors before calling services so they'll go through, and so this service won't blow up -->
+                    <script>ec.message.clearErrors()</script>
+                    <service-call name="update#moqui.service.message.SystemMessage" transaction="force-new"
+                            in-map="[systemMessageId:systemMessageId, statusId:initialStatusId, lastAttemptDate:nowDate,
+                                failCount:((systemMessage.failCount ?: 0) + 1)]"/>
+                    <service-call name="create#moqui.service.message.SystemMessageError" transaction="force-new"
+                            in-map="[systemMessageId:systemMessageId, errorDate:nowDate, attemptedStatusId:'SmsgSent',
+                                errorText:errorText]"/>
+                </then>
                 <else>
                     <service-call name="update#moqui.service.message.SystemMessage" transaction="force-new"
                             in-map="[systemMessageId:systemMessageId, statusId:'SmsgSent',
@@ -133,7 +136,7 @@ along with this software (see the LICENSE.md file). If not, see
                     authUsername:systemMessageRemote.username, authPassword:systemMessageRemote.password,
                     authTenantId:systemMessageRemote.tenantId]"/>
             <script>receiveOutMap = ec.service.callJsonRpc(systemMessageRemote.sendUrl, serviceName, inMap)</script>
-            <set field="remoteMessageId" from="receiveOutMap?.systemMessageId"/>
+            <set field="remoteMessageId" from="receiveOutMap?.systemMessageIdList?.first()"/>
         </actions>
     </service>
     <service verb="send" noun="SystemMessageDirectLocal">
@@ -152,7 +155,7 @@ along with this software (see the LICENSE.md file). If not, see
                     authUsername:systemMessageRemote.username, authPassword:systemMessageRemote.password,
                     authTenantId:systemMessageRemote.tenantId]"/>
             <script>receiveOutMap = ec.service.sync().name(serviceName).parameters(inMap).call()</script>
-            <set field="remoteMessageId" from="receiveOutMap?.systemMessageId"/>
+            <set field="remoteMessageId" from="receiveOutMap?.systemMessageIdList?.first()"/>
         </actions>
     </service>
 
