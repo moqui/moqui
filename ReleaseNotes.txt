@@ -26,6 +26,7 @@ New Features:
 - Changed receive#SystemMessage to an interface, now use
   receive#IncomingSystemMessage for remote calls, will call the
   SystemMessageType.receiveServiceName service if specified to save message
+- Added EDI handler (parser and generator), examples in Mantle
 
 Bug Fixes:
 

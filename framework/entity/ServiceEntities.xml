@@ -218,8 +218,8 @@ along with this software (see the LICENSE.md file). If not, see
             the OAGIS BODID, a GUID) or only unique relative to the senderId and the receiverId (like EDI X12 ISA13 in
             the context of ISA06, ISA08), and may only be unique within a certain time period (ID may be reused since in
             EDI X12 limited to 9 digits)</description></field>
-        <field name="messageDate" type="date-time"><description>Date/time from message (for EDI X12 this is ISA09 (date)
-            and ISA10 (time))</description></field>
+        <field name="messageDate" type="date-time"><description>Date/time from message (for EDI X12 this is GS04 (date)
+            and GS05 (time))</description></field>
         <field name="docType" type="text-medium"><description>For OAGIS the BSR Noun; For X12 GS01 (functional ID code)</description></field>
         <field name="docSubType" type="text-medium"><description>For OAGIS the BSR Verb; For X12 ST01 (tx set ID code)</description></field>
         <field name="docVersion" type="text-medium"><description>The document version (for OAGIS BSR Revision, for X12 GS08 (version/revision))</description></field>
