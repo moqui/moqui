@@ -225,7 +225,7 @@ along with this software (see the LICENSE.md file). If not, see
             <!-- put this in a try block with the follow up below in a finally and a Throwable catch to add message facade errors -->
             <script>try {</script>
             <service-call name="${systemMessageType.consumeServiceName}" in-map="[systemMessageId:systemMessageId]"
-                    out-map="consumeOut" transaction="force-new" ignore-error="true"/>
+                    out-map="consumeOut" transaction="force-new"/>
             <script>} catch (Throwable t) { ec.message.addError(t.toString()) } finally {</script>
 
             <!-- if successful set status to SmsgConsumed, otherwise set back to previous status -->
