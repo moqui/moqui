@@ -210,19 +210,19 @@ along with this software (see the LICENSE.md file). If not, see
         <field name="messageText" type="text-very-long"/>
 
         <!-- these fields are from the message envelope, populated by receive or consume service (after initial parse) -->
-        <field name="senderId" type="text-medium"><description>ID of the sender (for OAGIS may be broken down into
+        <field name="senderId" type="text-short"><description>ID of the sender (for OAGIS may be broken down into
             logicalId, component, task, referenceId; for EDI X12 this is ISA06)</description></field>
-        <field name="receiverId" type="text-medium"><description>ID of the receiver (for OAGIS may also be broken down;
+        <field name="receiverId" type="text-short"><description>ID of the receiver (for OAGIS may also be broken down;
             for EDI X12 this is ISA08)</description></field>
-        <field name="messageId" type="text-medium"><description>ID of the message; this may be globally unique (like
+        <field name="messageId" type="text-short"><description>ID of the message; this may be globally unique (like
             the OAGIS BODID, a GUID) or only unique relative to the senderId and the receiverId (like EDI X12 ISA13 in
             the context of ISA06, ISA08), and may only be unique within a certain time period (ID may be reused since in
             EDI X12 limited to 9 digits)</description></field>
         <field name="messageDate" type="date-time"><description>Date/time from message (for EDI X12 this is GS04 (date)
             and GS05 (time))</description></field>
-        <field name="docType" type="text-medium"><description>For OAGIS the BSR Noun; For X12 GS01 (functional ID code)</description></field>
-        <field name="docSubType" type="text-medium"><description>For OAGIS the BSR Verb; For X12 ST01 (tx set ID code)</description></field>
-        <field name="docVersion" type="text-medium"><description>The document version (for OAGIS BSR Revision, for X12 GS08 (version/revision))</description></field>
+        <field name="docType" type="text-short"><description>For OAGIS the BSR Noun; For X12 GS01 (functional ID code)</description></field>
+        <field name="docSubType" type="text-short"><description>For OAGIS the BSR Verb; For X12 ST01 (tx set ID code)</description></field>
+        <field name="docVersion" type="text-short"><description>The document version (for OAGIS BSR Revision, for X12 GS08 (version/revision))</description></field>
 
         <!-- the follow may be useful for other types of messages, but come specifically from the OAGIS specification;
             leave out for now, senderId and messageId with combined fields may be adequate and are more generic
