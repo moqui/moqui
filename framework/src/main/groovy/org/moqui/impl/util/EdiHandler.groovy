@@ -331,7 +331,10 @@ class EdiHandler {
     }
     String combineSegments(ArrayList<String> segmentStringList) {
         StringBuilder sb = new StringBuilder()
-        for (int i = 0; i < segmentStringList.size(); i++) sb.append(segmentStringList.get(i)).append(segmentTerminator)
+        for (int i = 0; i < segmentStringList.size(); i++) {
+            sb.append(segmentStringList.get(i)).append(segmentTerminator)
+            if (segmentSuffix) sb.append(segmentSuffix)
+        }
         return sb.toString()
     }
 
