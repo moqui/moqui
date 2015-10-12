@@ -100,8 +100,9 @@ along with this software (see the LICENSE.md file). If not, see
             consumeServiceName="org.moqui.example.ExampleServices.consume#ExampleMessage"
             sendServiceName="org.moqui.impl.SystemMessageServices.send#SystemMessageJsonRpc"
             receiveServiceName=""/>
-    <moqui.service.message.SystemMessageRemote systemMessageRemoteId="Example1Local" sendUrl="http://localhost:8080/rpc/json"
+    <moqui.service.message.SystemMessageRemote systemMessageRemoteId="Example1Local" description="Example Local"
+            sendUrl="http://localhost:8080/rpc/json"
             username="john.doe" password="moqui"/><!-- to try a different tenant: tenantId="EXAMPLE1" -->
-    <moqui.service.message.SystemMessageRemote systemMessageRemoteId="Example1Direct"
+    <moqui.service.message.SystemMessageRemote systemMessageRemoteId="Example1Direct" description="Example Direct"
             sendServiceName="org.moqui.impl.SystemMessageServices.send#SystemMessageDirectLocal"/>
 </entity-facade-xml>
