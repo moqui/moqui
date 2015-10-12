@@ -96,7 +96,7 @@ along with this software (see the LICENSE.md file). If not, see
     <!-- NOTE: empty receiveServiceName to use the default, org.moqui.impl.SystemMessageServices.receive#IncomingSystemMessage,
         in the send#SystemMessageJsonRpc service -->
     <moqui.service.message.SystemMessageType systemMessageTypeId="ExampleMessage" description="Example Message"
-            produceServiceName="org.moqui.example.ExampleServices.send#ExampleMessage"
+            produceServiceName="org.moqui.example.ExampleServices.produce#ExampleMessage"
             consumeServiceName="org.moqui.example.ExampleServices.consume#ExampleMessage"
             sendServiceName="org.moqui.impl.SystemMessageServices.send#SystemMessageJsonRpc"
             receiveServiceName=""/>
