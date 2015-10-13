@@ -52,22 +52,10 @@ along with this software (see the LICENSE.md file). If not, see
             <row-col lg="5">
                 <form-single name="SystemMessageForm" map="systemMessage">
                     <field name="systemMessageId"><default-field title="ID"><display/></default-field></field>
-                    <field name="remoteMessageId"><default-field title="Remote ID"><display/></default-field></field>
+                    <auto-fields-entity entity-name="moqui.service.message.SystemMessage" field-type="display" include="nonpk"/>
+                    <field name="messageText"><default-field><ignored/></default-field></field>
 
-                    <field name="isOutgoing"><default-field><display/></default-field></field>
                     <field name="statusId"><default-field title="Status"><display-entity entity-name="moqui.basic.StatusItem"/></default-field></field>
-                    <field name="initDate"><default-field><display/></default-field></field>
-                    <field name="processedDate"><default-field><display/></default-field></field>
-                    <field name="lastAttemptDate"><default-field><display/></default-field></field>
-                    <field name="failCount"><default-field><display/></default-field></field>
-
-                    <field name="senderId"><default-field><display/></default-field></field>
-                    <field name="receiverId"><default-field><display/></default-field></field>
-                    <field name="messageId"><default-field><display/></default-field></field>
-                    <field name="messageDate"><default-field><display/></default-field></field>
-                    <field name="docType"><default-field><display/></default-field></field>
-                    <field name="docSubType"><default-field><display/></default-field></field>
-                    <field name="docVersion"><default-field><display/></default-field></field>
 
                     <field name="systemMessageTypeId"><default-field title="Type">
                         <display-entity entity-name="moqui.service.message.SystemMessageType" text="${description?:''} [${systemMessageTypeId}]"/>
