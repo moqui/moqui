@@ -143,14 +143,12 @@ class EdiHandler {
                         if (compIter.hasNext()) sb.append(componentDelimiter)
                     }
                 } else {
-                    if (element != null) {
-                        String elementString = element.toString()
-                        if (!noEscape) elementString = escape(element.toString())
-                        sb.append(elementString)
-                        if (elementSize != null) {
-                            int curSize = elementString.size()
-                            while (curSize < elementSize) { sb.append(paddingChar); curSize++ }
-                        }
+                    String elementString = StupidUtilities.toPlainString(element)
+                    if (!noEscape) elementString = escape(element.toString())
+                    sb.append(elementString)
+                    if (elementSize != null) {
+                        int curSize = elementString.size()
+                        while (curSize < elementSize) { sb.append(paddingChar); curSize++ }
                     }
                 }
                 // append the element separator, if there is another element
