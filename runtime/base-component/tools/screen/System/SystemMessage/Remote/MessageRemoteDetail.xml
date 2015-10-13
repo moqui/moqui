@@ -29,7 +29,7 @@ along with this software (see the LICENSE.md file). If not, see
             <field name="description"><default-field><text-line size="40"/></default-field></field>
             <field name="sendUrl"><default-field><text-line size="100"/></default-field></field>
             <field name="sendServiceName"><default-field><text-line size="100"/></default-field></field>
-            <field name="systemMessageTypeId"><default-field title="Message Remote">
+            <field name="systemMessageTypeId"><default-field title="Message Type">
                 <drop-down allow-empty="true">
                     <entity-options key="${systemMessageTypeId}" text="${description}">
                         <entity-find entity-name="moqui.service.message.SystemMessageType">
