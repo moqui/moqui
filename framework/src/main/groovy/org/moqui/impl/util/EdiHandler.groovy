@@ -141,12 +141,12 @@ class EdiHandler {
                     Iterator compIter = element.iterator()
                     while (compIter.hasNext()) {
                         Object curComp = compIter.next()
-                        if (curComp != null) sb.append(escape(curComp.toString()))
+                        if (curComp != null) sb.append(escape(StupidUtilities.toPlainString(curComp)))
                         if (compIter.hasNext()) sb.append(componentDelimiter)
                     }
                 } else {
                     String elementString = StupidUtilities.toPlainString(element)
-                    if (!noEscape) elementString = escape(element.toString())
+                    if (!noEscape) elementString = escape(elementString)
                     sb.append(elementString)
                     if (elementSize != null) {
                         int curSize = elementString.size()
@@ -356,6 +356,7 @@ class EdiHandler {
     }
 
     protected String escape(String original) {
+        if (!original) return ""
         StringBuilder builder = new StringBuilder()
         for (int i = 0; i < original.length(); i++) {
             char c = original.charAt(i)
