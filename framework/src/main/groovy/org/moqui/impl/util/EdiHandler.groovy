@@ -12,6 +12,7 @@
  */
 package org.moqui.impl.util
 
+import groovy.transform.CompileStatic
 import org.moqui.context.ExecutionContext
 import org.moqui.impl.StupidUtilities
 import org.slf4j.Logger
@@ -19,6 +20,7 @@ import org.slf4j.LoggerFactory
 
 import java.util.regex.Pattern
 
+@CompileStatic
 class EdiHandler {
     protected final static Logger logger = LoggerFactory.getLogger(EdiHandler.class)
 
@@ -39,10 +41,10 @@ class EdiHandler {
     EdiHandler(ExecutionContext ec) { this.ec = ec }
 
     EdiHandler setChars(Character segmentTerminator, Character elementSeparator, Character componentDelimiter, Character escapeCharacter) {
-        this.segmentTerminator = segmentTerminator ?: ('~' as char)
-        this.elementSeparator = elementSeparator ?: ('*' as char)
-        this.componentDelimiter = componentDelimiter ?: (':' as char)
-        this.escapeCharacter = escapeCharacter ?: ('?' as char)
+        this.segmentTerminator = segmentTerminator ?: ('~' as Character)
+        this.elementSeparator = elementSeparator ?: ('*' as Character)
+        this.componentDelimiter = componentDelimiter ?: (':' as Character)
+        this.escapeCharacter = (escapeCharacter ?: '?') as char
         return this
     }
 
@@ -162,6 +164,7 @@ class EdiHandler {
 
         // generate child segments
         for (Map.Entry<String, List<Object>> entry in segmentMap.entrySet()) {
+            if (!(entry.value instanceof List)) throw new IllegalArgumentException("Entry value is not a list: ${entry}")
             if (entry.key == "elements") continue
             if (entry.key == "originalList") {
                 // also support output of literal child segments from originalList (full segment string except terminator)
@@ -170,7 +173,7 @@ class EdiHandler {
                 // is a child segment
                 for (Object childObj in entry.value) {
                     if (childObj instanceof Map) {
-                        generateSegment(childObj, sb)
+                        generateSegment((Map<String, List<Object>>) childObj, sb)
                     } else {
                         // should ALWAYS be a Map at this level, if not blow up
                         throw new Exception("Expected Map for segment, got: ${childObj}")
@@ -185,14 +188,14 @@ class EdiHandler {
         // useful reference, see: https://mohsinkalam.wordpress.com/delimiters/
         if (ediText.startsWith("ISA")) {
             // X12 message
-            if (segmentTerminator == null) segmentTerminator = ediText.charAt(105)
-            if (elementSeparator == null) elementSeparator = ediText.charAt(3)
-            if (componentDelimiter == null) componentDelimiter = ediText.charAt(104)
+            if (segmentTerminator == null) segmentTerminator = ediText.charAt(105) as Character
+            if (elementSeparator == null) elementSeparator = ediText.charAt(3) as Character
+            if (componentDelimiter == null) componentDelimiter = ediText.charAt(104) as Character
         } else if (ediText.startsWith("UNA")) {
             // EDIFACT message
-            if (segmentTerminator == null) segmentTerminator = ediText.charAt(8)
-            if (elementSeparator == null) elementSeparator = ediText.charAt(4)
-            if (componentDelimiter == null) componentDelimiter = ediText.charAt(3)
+            if (segmentTerminator == null) segmentTerminator = ediText.charAt(8) as Character
+            if (elementSeparator == null) elementSeparator = ediText.charAt(4) as Character
+            if (componentDelimiter == null) componentDelimiter = ediText.charAt(3) as Character
         }
 
         if (segmentTerminator == null) throw new IllegalArgumentException("No segment terminator specified or automatically determined")
@@ -242,7 +245,7 @@ class EdiHandler {
 
         String segmentId = elements[0]
         // if segmentId is in the current levelDefList add as child to current segment, increment index, recurse
-        Map<String, Object> newSegment = [elements:elements]
+        Map<String, List<Object>> newSegment = [elements:elements] as Map<String, List>
         StupidUtilities.addToListInMap(segmentId, newSegment, currentSegment)
 
         int nextSegmentIndex = segmentIndex + 1
@@ -250,7 +253,7 @@ class EdiHandler {
         List<Map<String, Object>> curDefLevel = (List<Map<String, Object>>) curDefMap.LEVEL
         if (!curDefLevel && body && curDefMap.ID == bodyRootId) {
             // switch from envelope to body
-            curDefLevel = body[0].LEVEL
+            curDefLevel = (List<Map<String, Object>>) body[0].LEVEL
         }
         if (curDefLevel) {
             return parseSegments(allSegmentStringList, nextSegmentIndex, newSegment, curDefLevel)
@@ -336,6 +339,21 @@ class EdiHandler {
         return sb.toString()
     }
 
+    int countSegments(Map<String, List<Object>> ediMap) {
+        int count = 0
+        if (ediMap.size() <= 1) return 0
+        for (Map.Entry<String, List<Object>> entry in ediMap) {
+            if (entry.key == 'elements') continue
+            for (Object itemObj in entry.value) {
+                if (itemObj instanceof Map) {
+                    Map<String, List<Object>> itemMap = (Map<String, List<Object>>) itemObj
+                    if (itemMap.size() > 0) count++
+                    if (itemMap.size() > 1) count += countSegments(itemMap)
+                }
+            }
+        }
+        return count
+    }
 
     protected String escape(String original) {
         StringBuilder builder = new StringBuilder()
