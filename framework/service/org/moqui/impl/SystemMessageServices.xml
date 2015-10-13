@@ -34,22 +34,28 @@ along with this software (see the LICENSE.md file). If not, see
     <!-- =========== Send Services =========== -->
 
     <service verb="queue" noun="SystemMessage">
-        <description>Creates a SystemMessage record for the outgoing message in the SmsgProduced status. If sendNow=true
-            (default) will attempt to send it immediately (though asynchronously), otherwise the message will be picked
-            up the next time the send#ProducedSystemMessages service runs.</description>
+        <description>Queue an outgoing message. Creates a SystemMessage record for the outgoing message in the
+            Produced status. If sendNow=true (default) will attempt to send it immediately (though asynchronously),
+            otherwise the message will be picked up the next time the send#ProducedSystemMessages service runs.</description>
         <in-parameters>
-            <parameter name="sendNow" type="Boolean" default="true"/>
+            <parameter name="systemMessageId"><description>Sequenced if null, may be passed in (sequenced value
+                determined in advance) because sometimes this is needed as a reference ID inside messages.</description></parameter>
+
+            <auto-parameters entity-name="moqui.service.message.SystemMessage" include="nonpk"/>
+
             <parameter name="systemMessageTypeId" required="true"/>
             <parameter name="messageText" required="true"/>
             <parameter name="systemMessageRemoteId"><description>Required if the send service
                 (SystemMessageType.sendServiceName) requires it. The send#SystemMessageJsonRpc service does require it.</description></parameter>
+            <parameter name="statusId" default-value="SmsgProduced"/>
+            <parameter name="isOutgoing" default-value="Y"/>
+            <parameter name="initDate" type="Timestamp" default="ec.user.nowTimestamp"/>
+
+            <parameter name="sendNow" type="Boolean" default="true"/>
         </in-parameters>
         <out-parameters><parameter name="systemMessageId"/></out-parameters>
         <actions>
-            <service-call name="create#moqui.service.message.SystemMessage" out-map="context"
-                    in-map="[systemMessageTypeId:systemMessageTypeId, messageText:messageText, statusId:'SmsgProduced',
-                        isOutgoing:'Y', initDate:ec.user.nowTimestamp, systemMessageRemoteId:systemMessageRemoteId]"
-                    transaction="force-new"/>
+            <service-call name="create#moqui.service.message.SystemMessage" in-map="context" out-map="context" transaction="force-new"/>
 
             <if condition="sendNow">
                 <service-call name="org.moqui.impl.SystemMessageServices.send#ProducedSystemMessage"
