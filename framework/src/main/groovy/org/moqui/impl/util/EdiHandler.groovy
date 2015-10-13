@@ -38,11 +38,11 @@ class EdiHandler {
 
     EdiHandler(ExecutionContext ec) { this.ec = ec }
 
-    EdiHandler setChars(char segmentTerminator, char elementSeparator, char componentDelimiter, char escapeCharacter) {
-        this.segmentTerminator = segmentTerminator
-        this.elementSeparator = elementSeparator
-        this.componentDelimiter = componentDelimiter
-        this.escapeCharacter = escapeCharacter
+    EdiHandler setChars(Character segmentTerminator, Character elementSeparator, Character componentDelimiter, Character escapeCharacter) {
+        this.segmentTerminator = segmentTerminator ?: ('~' as char)
+        this.elementSeparator = elementSeparator ?: ('*' as char)
+        this.componentDelimiter = componentDelimiter ?: (':' as char)
+        this.escapeCharacter = escapeCharacter ?: ('?' as char)
         return this
     }
 
