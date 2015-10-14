@@ -310,15 +310,15 @@ class StupidUtilities {
         theList.add(value)
     }
     static boolean addToSetInMap(Object key, Object value, Map theMap) {
-        if (theMap == null) return
+        if (theMap == null) return false
         Set theSet = (Set) theMap.get(key)
-        if (theSet == null) { theSet = new HashSet(); theMap.put(key, theSet) }
+        if (theSet == null) { theSet = new LinkedHashSet(); theMap.put(key, theSet) }
         return theSet.add(value)
     }
     static void addToMapInMap(Object keyOuter, Object keyInner, Object value, Map theMap) {
         if (theMap == null) return
         Map innerMap = (Map) theMap.get(keyOuter)
-        if (innerMap == null) { innerMap = new HashMap(); theMap.put(keyOuter, innerMap) }
+        if (innerMap == null) { innerMap = new LinkedHashMap(); theMap.put(keyOuter, innerMap) }
         innerMap.put(keyInner, value)
     }
     static void addToBigDecimalInMap(Object key, BigDecimal value, Map theMap) {

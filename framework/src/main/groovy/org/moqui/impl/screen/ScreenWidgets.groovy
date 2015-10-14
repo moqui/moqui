@@ -15,7 +15,7 @@ package org.moqui.impl.screen
 import groovy.transform.CompileStatic
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger
-import org.moqui.impl.FtlNodeWrapper
+import org.moqui.impl.util.FtlNodeWrapper
 import org.moqui.context.ContextStack
 
 @CompileStatic

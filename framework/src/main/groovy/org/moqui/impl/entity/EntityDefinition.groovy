@@ -553,16 +553,16 @@ public class EntityDefinition {
 
         RelationshipInfo(Node relNode, EntityDefinition fromEd, EntityFacadeImpl efi) {
             this.relNode = relNode
-            type = relNode.'@type'
+            type = relNode.attribute('type')
             isTypeOne = type.startsWith("one")
-            title = relNode.'@title' ?: ''
-            relatedEntityName = relNode.'@related-entity-name'
+            title = relNode.attribute('title') ?: ''
+            relatedEntityName = relNode.attribute('related-entity-name')
             this.fromEd = fromEd
             relatedEd = efi.getEntityDefinition(relatedEntityName)
             relatedEntityName = relatedEd.getFullEntityName()
 
             relationshipName = (title ? title + '#' : '') + relatedEntityName
-            shortAlias = relNode.'@short-alias' ?: ''
+            shortAlias = relNode.attribute('short-alias') ?: ''
             prettyName = relatedEd.getPrettyName(title, fromEd.internalEntityName)
             keyMap = getRelationshipExpandedKeyMapInternal(relNode, relatedEd)
             dependent = hasReverse()
@@ -587,7 +587,7 @@ public class EntityDefinition {
             return targetParameterMap
         }
 
-        String toString() { return relationshipName + (shortAlias ? "(${shortAlias})" : "") }
+        String toString() { return "${relationshipName}${shortAlias ? ' (' + shortAlias + ')' : ''}, type ${type}, one? ${isTypeOne}, dependent? ${dependent}" }
     }
 
     EntityDependents getDependentsTree() {
