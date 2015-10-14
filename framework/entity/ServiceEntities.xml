@@ -332,7 +332,7 @@ along with this software (see the LICENSE.md file). If not, see
         <field name="remoteAppCode" type="text-medium"><description>Application code (EDI: in GS02/03; OAGIS: in ApplicationArea.Sender/Receiver elements, split among sub-elements)</description></field>
 
         <field name="ackRequested" type="text-short"><description>Request acknowledgement? Possible values dependent on message standard.</description></field>
-        <field name="usage" type="text-short"><description>Used for production versus test/etc. Possible values dependent on message standard.</description></field>
+        <field name="usageCode" type="text-short"><description>Used for production versus test/etc. Possible values dependent on message standard.</description></field>
 
         <!-- for formatting EDI and other character delimited files -->
         <field name="segmentTerminator" type="text-indicator"/>
