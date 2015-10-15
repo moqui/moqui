@@ -47,8 +47,12 @@ public interface WebFacade {
 
     void sendJsonResponse(Object responseObj);
     void sendTextResponse(String text);
+    void sendTextResponse(String text, String contentType);
     void sendResourceResponse(String location);
+
     void handleXmlRpcServiceCall();
     void handleJsonRpcServiceCall();
     void handleEntityRestCall(List<String> extraPathNameList);
+    void handleEntityRestSchema(List<String> extraPathNameList, String schemaUri, String linkPrefix, String schemaLinkPrefix);
+    void handleEntityRestRaml(List<String> extraPathNameList, String linkPrefix, String schemaLinkPrefix);
 }

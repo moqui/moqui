@@ -42,7 +42,7 @@ import org.moqui.context.ContextStack
 import org.moqui.impl.screen.ScreenDefinition.ResponseItem
 import org.moqui.impl.context.WebFacadeImpl
 import org.moqui.impl.StupidWebUtilities
-import org.moqui.impl.FtlNodeWrapper
+import org.moqui.impl.util.FtlNodeWrapper
 import org.moqui.impl.context.ArtifactExecutionInfoImpl
 import org.moqui.impl.screen.ScreenDefinition.SubscreensItem
 import org.moqui.impl.entity.EntityDefinition

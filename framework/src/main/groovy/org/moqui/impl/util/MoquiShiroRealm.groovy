@@ -10,7 +10,7 @@
  * along with this software (see the LICENSE.md file). If not, see
  * <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
-package org.moqui.impl
+package org.moqui.impl.util
 
 import org.moqui.entity.EntityException
 import org.moqui.impl.context.ExecutionContextImpl

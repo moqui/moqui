@@ -637,7 +637,7 @@ class EntityFacadeImpl implements EntityFacade {
             List<String> pkSet = ed.getPkFieldNames()
             for (Node relNode in ed.entityNode."relationship") {
                 // don't create reverse for auto reference relationships
-                if (relNode."@is-auto-reverse" == "true") continue
+                if (relNode.attribute('is-auto-reverse') == "true") continue
                 String relatedEntityName = (String) relNode."@related-entity-name"
                 // don't create reverse relationships coming back to the same entity, since it will have the same title
                 //     it would create multiple relationships with the same name
@@ -657,12 +657,13 @@ class EntityFacadeImpl implements EntityFacade {
 
                 List<String> reversePkSet = reverseEd.getPkFieldNames()
                 String relType = reversePkSet.equals(pkSet) ? "one-nofk" : "many"
-                String title = relNode."@title"
+                String title = relNode.attribute('title')
 
-                // does a many relationship coming back already exist?
+                // does a relationship coming back already exist?
                 Node reverseRelNode = (Node) reverseEd.entityNode."relationship".find(
-                        { (it."@related-entity-name" == ed.entityName || it."@related-entity-name" == ed.fullEntityName) &&
-                                it."@type" == relType && ((!title && !it."@title") || it."@title" == title) })
+                        { (it.attribute('related-entity-name') == ed.entityName || it.attribute('related-entity-name') == ed.fullEntityName) &&
+                                ((!title && !it.attribute('title')) || it.attribute('title') == title) })
+                // NOTE: removed "it."@type" == relType && ", if there is already any relationship coming back don't create the reverse
                 if (reverseRelNode != null) {
                     // NOTE DEJ 20150314 Just track auto-reverse, not one-reverse
                     // make sure has is-one-reverse="true"
@@ -678,7 +679,7 @@ class EntityFacadeImpl implements EntityFacade {
 
                 Node newRelNode = reverseEd.entityNode.appendNode("relationship",
                         ["related-entity-name":ed.fullEntityName, "type":relType, "is-auto-reverse":"true"])
-                if (relNode."@title") newRelNode.attributes().title = title
+                if (relNode.attribute('title')) newRelNode.attributes().title = title
                 for (Map.Entry keyEntry in keyMap) {
                     // add a key-map with the reverse fields
                     newRelNode.appendNode("key-map", ["field-name":keyEntry.value, "related-field-name":keyEntry.key])
@@ -814,7 +815,7 @@ class EntityFacadeImpl implements EntityFacade {
 
     Set<String> getAllNonViewEntityNames() {
         Set<String> allNames = getAllEntityNames()
-        Set<String> nonViewNames = new HashSet<>()
+        Set<String> nonViewNames = new TreeSet<>()
         for (String name in allNames) {
             EntityDefinition ed = getEntityDefinition(name)
             if (ed != null && !ed.isViewEntity()) nonViewNames.add(name)
