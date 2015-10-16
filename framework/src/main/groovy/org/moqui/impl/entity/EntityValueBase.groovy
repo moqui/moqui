@@ -140,6 +140,7 @@ abstract class EntityValueBase implements EntityValue {
         if (fieldInfo == null) {
             // if this is not a valid field name but is a valid relationship name, do a getRelated or getRelatedOne to return an EntityList or an EntityValue
             RelationshipInfo relInfo = ed.getRelationshipInfo(name)
+            // logger.warn("====== get related relInfo: ${relInfo}")
             if (relInfo!= null) {
                 if (relInfo.isTypeOne) {
                     return this.findRelatedOne(name, null, null)
