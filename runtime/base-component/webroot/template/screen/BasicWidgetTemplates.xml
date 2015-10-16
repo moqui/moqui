@@ -37,7 +37,7 @@ along with this software (see the LICENSE.md file). If not, see
     </widget-template>
 
     <widget-template name="statusDropDown">
-        <drop-down allow-empty="${allowEmpty ?: 'false'}" no-current-selected-key="${noCurrentSelectedKey?:''}">
+        <drop-down allow-empty="${allowEmpty ?: 'false'}" no-current-selected-key="${noCurrentSelectedKey?:''}" style="${style?:''}" allow-multiple="${allowMultiple ?: 'false'}">
             <entity-options key="${statusId}" text="${description}">
                 <entity-find entity-name="moqui.basic.StatusItem">
                     <econdition field-name="statusTypeId"/>
