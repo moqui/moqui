@@ -1502,9 +1502,10 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
         <#assign currentDescription = ec.resource.expand(.node["@current-description"], "")/>
     </#if>
     <#assign id><@fieldId .node/></#assign>
-    <#assign allowMultiple = ec.resource.expand(.node["@allow-multiple"]!, "")/>
-    <select name="<@fieldName .node/>" class="chosen-select<#if .node["dynamic-options"]?has_content> dynamic-options</#if><#if .node["@style"]?has_content> ${ec.resource.expand(.node["@style"], "")}</#if>" id="${id}"<#if allowMultiple! == "true"> multiple="multiple"</#if><#if .node["@size"]?has_content> size="${.node["@size"]}"</#if><#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${ec.resource.expand(.node?parent["@tooltip"], "")}"</#if>>
-    <#if currentValue?has_content && (.node["@current"]! != "selected") && !(allowMultiple! == "true")>
+    <#assign allowMultiple = ec.resource.expand(.node["@allow-multiple"]!, "") == "true"/>
+    <#assign name><@fieldName .node/></#assign>
+    <select name="${name}" class="chosen-select<#if .node["dynamic-options"]?has_content> dynamic-options</#if><#if .node["@style"]?has_content> ${ec.resource.expand(.node["@style"], "")}</#if>" id="${id}"<#if allowMultiple> multiple="multiple"</#if><#if .node["@size"]?has_content> size="${.node["@size"]}"</#if><#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${ec.resource.expand(.node?parent["@tooltip"], "")}"</#if>>
+    <#if currentValue?has_content && (.node["@current"]! != "selected") && !(allowMultiple)>
         <option selected="selected" value="${currentValue}"><#if currentDescription?has_content>${currentDescription}<#else>${currentValue}</#if></option><#rt/>
         <option value="${currentValue}">---</option><#rt/>
     </#if>
@@ -1519,6 +1520,7 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
         </#list>
     </#if>
     </select>
+    <#if allowMultiple><input type="hidden" id="${id}_op" name="${name}_op" value="in"></#if>
     <#if .node["@combo-box"]! == "true">
     <#-- TODO: find a real combobox that allows entering additional elements; make sure chosen style removed for whatever it is
         <#assign afterFormScript>$("#${id}").combobox();</#assign>
