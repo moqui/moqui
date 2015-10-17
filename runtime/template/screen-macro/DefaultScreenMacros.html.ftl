@@ -1516,7 +1516,7 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
 
     <#if !.node["dynamic-options"]?has_content>
         <#list (options.keySet())! as key>
-            <option<#if currentValue?has_content && currentValue == key> selected="selected"</#if> value="${key}">${options.get(key)}</option>
+            <option<#if currentValue?has_content && (currentValue == key || (allowMultiple && currentValue.contains(key)))> selected="selected"</#if> value="${key}">${options.get(key)}</option>
         </#list>
     </#if>
     </select>
