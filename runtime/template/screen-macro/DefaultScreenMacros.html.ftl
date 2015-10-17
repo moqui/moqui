@@ -1497,7 +1497,8 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
     <#assign options = {"":""}/><#assign options = sri.getFieldOptions(.node)/>
     <#assign currentValue = sri.getFieldValueString(.node?parent?parent, "", null)/>
     <#if !currentValue?has_content><#assign currentValue = ec.resource.expand(.node["@no-current-selected-key"]!, "")/></#if>
-    <#assign currentDescription = (options.get(currentValue))!/>
+    <#assign currentValueList = (currentValue.split(","))!>
+    <#assign currentDescription = (options.get(currentValue))!>
     <#if !currentDescription?has_content && .node["@current-description"]?has_content>
         <#assign currentDescription = ec.resource.expand(.node["@current-description"], "")/>
     </#if>
@@ -1516,7 +1517,11 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
 
     <#if !.node["dynamic-options"]?has_content>
         <#list (options.keySet())! as key>
-            <option<#if currentValue?has_content && (currentValue == key || (allowMultiple && currentValue.contains(key)))> selected="selected"</#if> value="${key}">${options.get(key)}</option>
+            <#assign isSelected = currentValue?has_content && currentValue == key>
+            <#if allowMultiple && currentValueList?has_content><#list currentValueList as curValue>
+                <#if curValue == key><#assign isSelected = true></#if>
+            </#list></#if>
+            <option<#if isSelected> selected="selected"</#if> value="${key}">${options.get(key)}</option>
         </#list>
     </#if>
     </select>
