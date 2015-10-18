@@ -40,13 +40,17 @@ along with this software (see the LICENSE.md file). If not, see
         <field name="anotherDate" type="date-time"/>
         <field name="anotherText" type="text-medium"/>
         -->
-        <relationship type="one" title="ExampleType" related-entity-name="moqui.basic.Enumeration">
+        <relationship type="one" title="ExampleType" related-entity-name="moqui.basic.Enumeration" short-alias="type">
             <key-map field-name="exampleTypeEnumId"/></relationship>
-        <relationship type="one" title="Example" related-entity-name="moqui.basic.StatusItem"/>
+        <relationship type="one" title="Example" related-entity-name="moqui.basic.StatusItem" short-alias="status"/>
 
         <!-- This is not generally necessary, reverse relationships are created automatically, but needed to specify
             the short-alias for use in entity REST requests and quick path look ups -->
         <relationship type="many" related-entity-name="example.ExampleItem" short-alias="items">
+            <key-map field-name="exampleId"/></relationship>
+        <relationship type="many" related-entity-name="example.ExampleContent" short-alias="contents">
+            <key-map field-name="exampleId"/></relationship>
+        <relationship type="many" related-entity-name="example.ExampleFeatureAppl" short-alias="featureAppls">
             <key-map field-name="exampleId"/></relationship>
 
         <seed-data>
@@ -77,6 +81,14 @@ along with this software (see the LICENSE.md file). If not, see
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="EXST_IMPLEMENTED" toStatusId="EXST_CANCELLED" transitionName="Cancel Example"/>
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="EXST_TESTED" toStatusId="EXST_CANCELLED" transitionName="Cancel Example"/>
         </seed-data>
+
+        <master>
+            <detail relationship="type"/>
+            <detail relationship="status"/>
+            <detail relationship="items"/>
+            <detail relationship="contents"/>
+            <detail relationship="featureAppls"/>
+        </master>
     </entity>
     <entity entity-name="ExampleItem" package-name="example" short-alias="exampleItems">
         <field name="exampleId" type="id" is-pk="true"/>
