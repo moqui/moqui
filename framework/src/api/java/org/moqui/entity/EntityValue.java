@@ -238,4 +238,7 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
      * relationship name (title + related-entity-name). Each dependent entity's Map may have its own dependent records
      * up to dependentLevels levels deep.*/
     Map<String, Object> getPlainValueMap(int dependentLevels);
+
+    /** List getPlainValueMap() but uses a master definition to determine which dependent/related records to get. */
+    Map<String, Object> getMasterValueMap(String name);
 }

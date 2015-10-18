@@ -113,7 +113,8 @@ public interface EntityList extends List<EntityValue>, Iterable<EntityValue>, Cl
 
     /** Get a list of Map (not EntityValue) objects. If dependentLevels is greater than zero includes nested dependents
      * in the Map for each value. */
-    List<Map> getPlainValueList(int dependentLevels);
+    List<Map<String, Object>> getPlainValueList(int dependentLevels);
+    List<Map<String, Object>> getMasterValueList(String name);
 
     EntityList cloneList();
 
