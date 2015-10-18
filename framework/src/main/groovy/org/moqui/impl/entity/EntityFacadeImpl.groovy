@@ -610,6 +610,8 @@ class EntityFacadeImpl implements EntityFacade {
             for (Node copyNode in extendEntity."relationship") entityNode.append(copyNode)
             // add index, index-field
             for (Node copyNode in extendEntity."index") entityNode.append(copyNode)
+            // copy master nodes (will be merged on parse)
+            for (Node copyNode in extendEntity."master") entityNode.append(copyNode)
         }
 
         // create the new EntityDefinition
