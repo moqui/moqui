@@ -40,6 +40,10 @@ along with this software (see the LICENSE.md file). If not, see
 
     curl -X GET -u john.doe:moqui -i http://localhost:8080/rest/v1/examples/TEST2?dependents=true
 
+    To get a record plus all dependent/related records for a master definition in the JSON document use master=${masterName}:
+
+    curl -X GET -u john.doe:moqui -i http://localhost:8080/rest/v1/examples/TEST2?master=default
+
     Parameters can also be used for searching, which supports the per-field extensions (_op, _ic, etc) of
     EntityFind.searchFormInputs(), the orderByField parameter for comma-separated fields to sort the results by,
     and pageIndex, pageSize for pagination; parameters can be in the URL (preferred) or in request body as JSON.
