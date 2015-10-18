@@ -11,6 +11,10 @@ TODO
 
 New Features:
 
+- New concept of explicit master entity definitions with details made up of
+  related entities; definitions go in new entity.master element; there are
+  new methods in EntityValue, EntityList, and EntityFind to get value Maps
+  for the master record plus all details
 - Localized strings may now contain a double hash (##) to specify context
   where a single word in the default language (ie English) is ambiguous; at
   runtime if no matching LocalizedMessage is found the text before the

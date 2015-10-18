@@ -1079,6 +1079,8 @@ class EntityFacadeImpl implements EntityFacade {
 
         boolean dependents = (parameters.dependents == 'true' || parameters.dependents == 'Y')
         int dependentLevels = (parameters.dependentLevels ?: (dependents ? '2' : '0')) as int
+        String masterName = parameters.master
+
         List<String> localPath = new ArrayList<String>(entityPath)
 
         String firstEntityName = localPath.remove(0)
@@ -1133,18 +1135,23 @@ class EntityFacadeImpl implements EntityFacade {
                 // if we have a full PK lookup by PK and return the single value
                 Map pkValues = [:]
                 lastEd.setFields(parameters, pkValues, false, null, true)
-                EntityValueBase evb = (EntityValueBase) find(lastEd.getFullEntityName()).condition(pkValues).one()
-                if (evb == null) throw new EntityValueNotFoundException("No value found for entity [${lastEd.getShortAlias()?:''}:${lastEd.getFullEntityName()}] with key ${pkValues}")
 
-                Map resultMap = evb.getPlainValueMap(dependentLevels)
-                return resultMap
+                if (masterName) {
+                    Map resultMap = find(lastEd.getFullEntityName()).condition(pkValues).oneMaster(masterName)
+                    if (resultMap == null) throw new EntityValueNotFoundException("No value found for entity [${lastEd.getShortAlias()?:''}:${lastEd.getFullEntityName()}] with key ${pkValues}")
+                    return resultMap
+                } else {
+                    EntityValueBase evb = (EntityValueBase) find(lastEd.getFullEntityName()).condition(pkValues).one()
+                    if (evb == null) throw new EntityValueNotFoundException("No value found for entity [${lastEd.getShortAlias()?:''}:${lastEd.getFullEntityName()}] with key ${pkValues}")
+                    Map resultMap = evb.getPlainValueMap(dependentLevels)
+                    return resultMap
+                }
             } else {
                 // otherwise do a list find
                 EntityFind ef = find(lastEd.getFullEntityName()).searchFormMap(parameters, null, false)
                 // we don't want to go overboard with these requests, never do an unlimited find, if no limit use 100
                 if (!ef.getLimit()) ef.limit(100)
 
-                EntityList el = ef.list()
                 // support pagination, at least "X-Total-Count" header if find is paginated
                 long count = ef.count()
                 long pageIndex = ef.getPageIndex()
@@ -1161,8 +1168,14 @@ class EntityFacadeImpl implements EntityFacade {
                 parameters.put('xPageRangeLow', pageRangeLow)
                 parameters.put('xPageRangeHigh', pageRangeHigh)
 
-                List resultList = el.getPlainValueList(dependentLevels)
-                return resultList
+                if (masterName) {
+                    List resultList = ef.listMaster(masterName)
+                    return resultList
+                } else {
+                    EntityList el = ef.list()
+                    List resultList = el.getPlainValueList(dependentLevels)
+                    return resultList
+                }
             }
         } else {
             // use the entity auto service runner for other operations (create, store, update, delete)

@@ -811,7 +811,11 @@ abstract class EntityValueBase implements EntityValue {
             for (RelationshipInfo relInfo in relInfoList) {
                 String relationshipName = relInfo.relationshipName
                 String entryName = relInfo.shortAlias ?: relationshipName
-                if (relInfo.type == "many") {
+                if (relInfo.isTypeOne) {
+                    EntityValue relEv = findRelatedOne(relationshipName, null, false)
+                    if (relEv != null) vMap.put(entryName, ((EntityValueBase) relEv)
+                            .internalPlainValueMap(dependentLevels - 1, curPkFields))
+                } else {
                     EntityList relList = findRelated(relationshipName, null, null, null, false)
                     if (relList) {
                         List plainRelList = []
@@ -820,16 +824,55 @@ abstract class EntityValueBase implements EntityValue {
                         }
                         vMap.put(entryName, plainRelList)
                     }
-                } else {
-                    EntityValue relEv = findRelatedOne(relationshipName, null, false)
-                    if (relEv != null) vMap.put(entryName, ((EntityValueBase) relEv)
-                            .internalPlainValueMap(dependentLevels - 1, curPkFields))
                 }
             }
         }
 
         return vMap
     }
+
+    @Override
+    Map<String, Object> getMasterValueMap(String name) {
+        EntityDefinition.MasterDefinition masterDefinition = getEntityDefinition().getMasterDefinition(name)
+        if (masterDefinition == null) throw new EntityException("No master definition found for name [${name}] in entity [${getEntityDefinition().getFullEntityName()}]")
+        return internalMasterValueMap(masterDefinition.detailList, null)
+    }
+
+    protected Map<String, Object> internalMasterValueMap(List<EntityDefinition.MasterDetail> detailList, Set<String> parentPkFields) {
+        Map<String, Object> vMap = StupidUtilities.removeNullsFromMap(new HashMap(valueMap))
+        if (parentPkFields != null) for (String pkField in parentPkFields) vMap.remove(pkField)
+        EntityDefinition ed = getEntityDefinition()
+        vMap.put('_entity', ed.getShortAlias() ?: ed.getFullEntityName())
+
+        if (detailList) {
+            Set<String> curPkFields = new HashSet(ed.getPkFieldNames())
+            // keep track of all parent PK field names, even not part of this entity's PK, they will be inherited when read
+            if (parentPkFields != null) curPkFields.addAll(parentPkFields)
+
+            for (EntityDefinition.MasterDetail detail in detailList) {
+                RelationshipInfo relInfo = detail.relInfo
+                String relationshipName = relInfo.relationshipName
+                String entryName = relInfo.shortAlias ?: relationshipName
+                if (relInfo.isTypeOne) {
+                    EntityValue relEv = findRelatedOne(relationshipName, null, false)
+                    if (relEv != null) vMap.put(entryName, ((EntityValueBase) relEv)
+                            .internalMasterValueMap(detail.detailList, curPkFields))
+                } else {
+                    EntityList relList = findRelated(relationshipName, null, null, null, false)
+                    if (relList) {
+                        List plainRelList = []
+                        for (EntityValue relEv in relList) {
+                            plainRelList.add(((EntityValueBase) relEv).internalMasterValueMap(detail.detailList, curPkFields))
+                        }
+                        vMap.put(entryName, plainRelList)
+                    }
+                }
+            }
+        }
+
+        return vMap
+    }
+
 
     // ========== Map Interface Methods ==========
 
