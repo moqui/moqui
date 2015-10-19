@@ -1497,7 +1497,9 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
     <#assign options = {"":""}/><#assign options = sri.getFieldOptions(.node)/>
     <#assign currentValue = sri.getFieldValueString(.node?parent?parent, "", null)/>
     <#if !currentValue?has_content><#assign currentValue = ec.resource.expand(.node["@no-current-selected-key"]!, "")/></#if>
-    <#assign currentValueList = (currentValue.split(","))!>
+    <#if currentValue?starts_with("[")><#assign currentValue = currentValue?substring(1, currentValue?length - 1)?replace(" ", "")></#if>
+    <#assign currentValueList = (currentValue?split(","))!>
+
     <#assign currentDescription = (options.get(currentValue))!>
     <#if !currentDescription?has_content && .node["@current-description"]?has_content>
         <#assign currentDescription = ec.resource.expand(.node["@current-description"], "")/>
@@ -1525,6 +1527,7 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
         </#list>
     </#if>
     </select>
+    <#-- <span>[${currentValue}]; <#list currentValueList as curValue>[${curValue!''}], </#list></span> -->
     <#if allowMultiple><input type="hidden" id="${id}_op" name="${name}_op" value="in"></#if>
     <#if .node["@combo-box"]! == "true">
     <#-- TODO: find a real combobox that allows entering additional elements; make sure chosen style removed for whatever it is
