@@ -26,6 +26,13 @@ along with this software (see the LICENSE.md file). If not, see
     <service verb="consume" noun="SystemMessage" type="interface">
         <in-parameters><parameter name="systemMessageId" required="true"/></in-parameters>
     </service>
+    <service verb="produce" noun="AckSystemMessage" type="interface">
+        <in-parameters>
+            <parameter name="systemMessageId" required="true"/>
+            <parameter name="systemMessageRemoteId"><description>If not specified comes from SystemMessage.systemMessageRemoteId</description></parameter>
+        </in-parameters>
+        <out-parameters><parameter name="systemMessageId"/></out-parameters>
+    </service>
     <service verb="send" noun="SystemMessage" type="interface">
         <in-parameters><parameter name="systemMessageId" required="true"/></in-parameters>
         <out-parameters><parameter name="remoteMessageId"/></out-parameters>
@@ -39,7 +46,7 @@ along with this software (see the LICENSE.md file). If not, see
             otherwise the message will be picked up the next time the send#ProducedSystemMessages service runs.</description>
         <in-parameters>
             <parameter name="systemMessageId"><description>Sequenced if null, may be passed in (sequenced value
-                determined in advance) because sometimes this is needed as a reference ID inside messages.</description></parameter>
+                determined in advance) because sometimes this is needed as a reference ID inside a message.</description></parameter>
 
             <auto-parameters entity-name="moqui.service.message.SystemMessage" include="nonpk"/>
 
@@ -63,6 +70,42 @@ along with this software (see the LICENSE.md file). If not, see
             </if>
         </actions>
     </service>
+    <service verb="queue" noun="AckSystemMessage">
+        <description>Call the service to produce an async acknowledgement message (SystemMessageType.produceAckServiceName).
+            If sendNow=true (default) will attempt to send it immediately (though asynchronously),
+            otherwise the message will be picked up the next time the send#ProducedSystemMessages service runs.</description>
+        <implements service="org.moqui.impl.SystemMessageServices.produce#AckSystemMessage"/>
+        <actions>
+            <entity-find-one entity-name="moqui.service.message.SystemMessage" value-field="origMessage"/>
+            <if condition="!systemMessageRemoteId"><set field="systemMessageRemoteId" from="origMessage.systemMessageRemoteId"/></if>
+
+            <if condition="origMessage.ackMessageId">
+                <entity-find-one entity-name="moqui.service.message.SystemMessage" value-field="ackMessage">
+                    <field-map field-name="systemMessageId" from="origMessage.ackMessageId"/></entity-find-one>
+                <if condition="ackMessage.statusId != 'SmsgCancelled'">
+                    <return error="true" message="Ack message already sent [${origMessage.ackMessageId}] for SystemMessage [${systemMessageId}]"/></if>
+            </if>
+            <if condition="!(origMessage.statusId in ['SmsgConsumed', 'SmsgRejected', 'SmsgError'])">
+                <return error="true" message="Cannot send ack for SystemMessage [${systemMessageId}], in status [${origMessage.statusId}] and must be in Consumed, Rejected, or Error"/></if>
+
+            <set field="systemMessageType" from="origMessage.'moqui.service.message.SystemMessageType'"/>
+            <set field="produceAckServiceName" from="systemMessageType.produceAckServiceName"/>
+
+            <if condition="!produceAckServiceName">
+                <return error="true" message="While queueing ack message for system message [${systemMessageId}], type [${systemMessageType.systemMessageTypeId}] has no produceAckServiceName, not queueing."/></if>
+
+            <service-call name="${produceAckServiceName}" out-map="produceOut"
+                    in-map="[systemMessageId:systemMessageId, systemMessageRemoteId:systemMessageRemoteId]"/>
+            <set field="systemMessageId" from="produceOut.systemMessageId"/>
+
+            <if condition="sendNow">
+                <service-call name="org.moqui.impl.SystemMessageServices.send#ProducedSystemMessage" async="true"
+                        in-map="[systemMessageId:systemMessageId]"/>
+            </if>
+        </actions>
+    </service>
+
+
     <!-- TODO: this service called async by an anonymous-all scheduled job so needs anonymous-all here too, but should
         find a way to restrict it when not called through the scheduled service so no anonymous-all service exists to do
         this, tighten security on it a bit -->
