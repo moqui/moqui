@@ -23,6 +23,8 @@ along with this software (see the LICENSE.md file). If not, see
         <default-response url="."/></transition>
     <transition name="consumeMessage"><service-call name="org.moqui.impl.SystemMessageServices.consume#ReceivedSystemMessage"/>
         <default-response url="."/></transition>
+    <transition name="queueAckMessage"><service-call name="org.moqui.impl.SystemMessageServices.queue#AckSystemMessage"/>
+        <default-response url="."/></transition>
 
     <transition name="updateMessage"><service-call name="update#moqui.service.message.SystemMessage"/>
         <default-response url="."/></transition>
@@ -42,6 +44,8 @@ along with this software (see the LICENSE.md file). If not, see
             <widgets><link url="sendMessage" text="Send Message" parameter-map="[systemMessageId:systemMessageId]"/></widgets></section>
         <section name="ConsumeSection" condition="systemMessage.isOutgoing == 'N' &amp;&amp; (systemMessage.statusId == 'SmsgReceived' || systemMessage.statusId == 'SmsgError')">
             <widgets><link url="consumeMessage" text="Consume Message" parameter-map="[systemMessageId:systemMessageId]"/></widgets></section>
+        <section name="AckSection" condition="systemMessage.isOutgoing == 'N' &amp;&amp; (systemMessage.statusId in ['SmsgConsumed', 'SmsgRejected', 'SmsgError'])">
+            <widgets><link url="queueAckMessage" text="Send Ack Message" parameter-map="[systemMessageId:systemMessageId]"/></widgets></section>
         <section name="CancelSection" condition="systemMessage.statusId in ['SmsgProduced', 'SmsgReceived', 'SmsgError']">
             <widgets><link url="updateMessage" text="Cancel Message" parameter-map="[systemMessageId:systemMessageId, statusId:'SmsgCancelled']"/></widgets></section>
 
