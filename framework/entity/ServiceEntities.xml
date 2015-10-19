@@ -222,6 +222,10 @@ along with this software (see the LICENSE.md file). If not, see
             and GS05 (time))</description></field>
         <field name="docType" type="text-short"><description>For OAGIS the BSR Noun; For X12 GS01 (functional ID code)</description></field>
         <field name="docSubType" type="text-short"><description>For OAGIS the BSR Verb; For X12 ST01 (tx set ID code)</description></field>
+        <field name="docControl" type="text-short"><description>Control number of the message when applicable (such as
+            GS06 in EDI X12 messages)</description></field>
+        <field name="docSubControl" type="text-short"><description>Sub-Control number of the message when applicable (such as
+            ST02 in EDI X12 messages)</description></field>
         <field name="docVersion" type="text-short"><description>The document version (for OAGIS BSR Revision, for X12 GS08 (version/revision))</description></field>
 
         <!-- the follow may be useful for other types of messages, but come specifically from the OAGIS specification;
