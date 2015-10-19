@@ -311,6 +311,9 @@ along with this software (see the LICENSE.md file). If not, see
         <field name="consumeServiceName" type="text-medium"><description>The service to call after a message is
             received to consume it. Should implement the org.moqui.impl.SystemMessageServices.consume#SystemMessage
             interface (just a systemMessageId in-parameter). Used by the consume#ReceivedSystemMessage service.</description></field>
+        <field name="produceAckServiceName" type="text-medium"><description>The service to call to produce an async
+            acknowledgement of a message. Should implement the org.moqui.impl.SystemMessageServices.produce#AckSystemMessage.
+            Once the message is produced should call the org.moqui.impl.SystemMessageServices.queue#SystemMessage service.</description></field>
         <field name="sendServiceName" type="text-medium"><description>The service to call to send queued messages.
             Should implement the org.moqui.impl.SystemMessageServices.send#SystemMessage interface (just a
             systemMessageId in-parameter and remoteMessageId out-parameter). Used by the send#ProducedSystemMessage service,
