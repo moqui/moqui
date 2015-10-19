@@ -62,12 +62,22 @@ along with this software (see the LICENSE.md file). If not, see
                         <link url="typeDetail" text="Edit" parameter-map="[systemMessageTypeId:systemMessage.systemMessageTypeId]"/>
                     </default-field>
                     </field>
+                    <field name="parentMessageId"><default-field title="Parent Message">
+                        <link url="." text="${systemMessage.parentMessageId}" link-type="anchor"
+                                parameter-map="[systemMessageId:systemMessage.parentMessageId]"
+                                condition="systemMessage.parentMessageId"/>
+                    </default-field></field>
+                    <field name="ackMessageId"><default-field title="Ack Message">
+                        <link url="." text="${systemMessage.ackMessageId}" link-type="anchor"
+                                parameter-map="[systemMessageId:systemMessage.ackMessageId]"
+                                condition="systemMessage.ackMessageId"/>
+                    </default-field></field>
                     <field name="systemMessageRemoteId"><default-field title="Remote">
-                        <display-entity entity-name="moqui.service.message.SystemMessageRemote" text="${description?:''} [${systemMessageRemoteId}]"/>
-                        <link url="remoteDetail" text="Edit" parameter-map="[systemMessageRemoteId:systemMessage.systemMessageRemoteId]"
+                        <link url="remoteDetail" text="${description?:''} [${systemMessageRemoteId}]" link-type="anchor"
+                                entity-name="moqui.service.message.SystemMessageRemote"
+                                parameter-map="[systemMessageRemoteId:systemMessage.systemMessageRemoteId]"
                                 condition="systemMessage.systemMessageRemoteId"/>
-                    </default-field>
-                    </field>
+                    </default-field></field>
                 </form-single>
             </row-col>
             <row-col lg="7">
