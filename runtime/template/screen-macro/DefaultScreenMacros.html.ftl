@@ -1177,6 +1177,14 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
         <#if fieldSubNode["@show-order-by"]! == "true" || fieldSubNode["@show-order-by"]! == "case-insensitive">
             <#assign caseInsensitive = fieldSubNode["@show-order-by"]! == "case-insensitive">
             <#assign orderByField = ec.context.orderByField!>
+            <#if orderByField?has_content && orderByField?contains(",")>
+                <#list (orderByField?split(","))! as orderByFieldCandidate>
+                    <#if orderByFieldCandidate?has_content && orderByFieldCandidate?contains(fieldNode["@name"])>
+                        <#assign orderByField = orderByFieldCandidate>
+                        <#break>
+                    </#if>
+                </#list>
+            </#if>
             <#assign ascActive = orderByField?has_content && orderByField?contains(fieldNode["@name"]) && !orderByField?starts_with("-")>
             <#assign ascOrderByUrlInfo = sri.getScreenUrlInstance().cloneUrlInstance().addParameter("orderByField", "+" + caseInsensitive?string("^","") + fieldNode["@name"])>
             <#assign descActive = orderByField?has_content && orderByField?contains(fieldNode["@name"]) && orderByField?starts_with("-")>
