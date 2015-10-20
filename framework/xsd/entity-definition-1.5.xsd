@@ -144,6 +144,7 @@ along with this software (see the LICENSE.md file). If not, see
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="relationship"/>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="index"/>
                 <xs:element minOccurs="0" ref="seed-data"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="master"/>
             </xs:sequence>
             <xs:attribute name="entity-name" type="xs:string" use="required"/>
             <xs:attribute name="package-name" type="xs:string" use="required"/>
