@@ -318,10 +318,12 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
     @Override
     @CompileStatic
+    @Deprecated
     Object runScriptInCurrentContext(String location, String method) { return script(location, method) }
 
     @Override
     @CompileStatic
+    @Deprecated
     Object runScriptInCurrentContext(String location, String method, Map additionalContext) {
         return script(location, method, additionalContext)
     }
@@ -373,18 +375,20 @@ public class ResourceFacadeImpl implements ResourceFacade {
     }
     @CompileStatic
     Object getValueFromContext(String from, String value, String defaultValue, String type) {
-        def tempValue = from ? expression(from, "") : expand(value, "")
-        if (!tempValue && defaultValue) tempValue = expand(defaultValue, "")
+        def tempValue = from ? expression(from, "") : expand(value, "", null, false)
+        if (!tempValue && defaultValue) tempValue = expand(defaultValue, "", null, false)
         if (type) tempValue = StupidUtilities.basicConvert(tempValue, type)
         return tempValue
     }
 
     @Override
     @CompileStatic
+    @Deprecated
     boolean evaluateCondition(String expression, String debugLocation) { return condition(expression, debugLocation) }
 
     @Override
     @CompileStatic
+    @Deprecated
     boolean evaluateCondition(String expression, String debugLocation, Map additionalContext) {
         return condition(expression, debugLocation, additionalContext)
     }
@@ -421,9 +425,11 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
     @Override
     @CompileStatic
+    @Deprecated
     Object evaluateContextField(String expr, String debugLocation) { return expression(expr, debugLocation) }
     @Override
     @CompileStatic
+    @Deprecated
     Object evaluateContextField(String expr, String debugLocation, Map additionalContext) {
         return expression(expr, debugLocation, additionalContext)
     }
@@ -460,38 +466,37 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
     @Override
     @CompileStatic
+    @Deprecated
     String evaluateStringExpand(String inputString, String debugLocation) { expand(inputString, debugLocation) }
     @Override
     @CompileStatic
+    @Deprecated
     String evaluateStringExpand(String inputString, String debugLocation, Map additionalContext) {
         return expand(inputString, debugLocation, additionalContext)
     }
+
     @Override
     @CompileStatic
     String expand(String inputString, String debugLocation) {
-        if (!inputString) return ""
-
-        // always localize string before expanding
-        if (inputString.length() < 256) inputString = ecfi.l10nFacade.localize(inputString)
-        // if no $ then it's a plain String, just return it
-        if (!inputString.contains("\$")) return inputString
-
-        String expression = '"""' + inputString + '"""'
-        try {
-            Script script = getGroovyScript(expression)
-            if (script == null) return null
-            Object result = script.run()
-            return result as String
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Error in string expression [${expression}] from [${debugLocation}]", e)
-        }
+        return expand(inputString, debugLocation, null, true)
     }
     @Override
     @CompileStatic
     String expand(String inputString, String debugLocation, Map additionalContext) {
-        ExecutionContext ec = ecfi.getExecutionContext()
-        ContextStack cs = (ContextStack) ec.context
-        boolean doPushPop = additionalContext as boolean
+        return expand(inputString, debugLocation, additionalContext, true)
+    }
+
+    @Override
+    @CompileStatic
+    String expand(String inputString, String debugLocation, Map additionalContext, boolean localize) {
+        if (!inputString) return ""
+
+        boolean doPushPop = additionalContext != null && additionalContext.size() > 0
+        ContextStack cs = null
+        if (doPushPop) {
+            ExecutionContext ec = ecfi.getExecutionContext()
+            cs = (ContextStack) ec.context
+        }
         try {
             if (doPushPop) {
                 if (additionalContext instanceof EntityValue) { cs.push(((EntityValue) additionalContext).getMap()) }
@@ -499,7 +504,21 @@ public class ResourceFacadeImpl implements ResourceFacade {
                 // do another push so writes to the context don't modify the passed in Map
                 cs.push()
             }
-            return expand(inputString, debugLocation)
+
+            // localize string before expanding
+            if (localize && inputString.length() < 256) inputString = ecfi.l10nFacade.localize(inputString)
+            // if no $ then it's a plain String, just return it
+            if (!inputString.contains('$')) return inputString
+
+            String expression = '"""' + inputString + '"""'
+            try {
+                Script script = getGroovyScript(expression)
+                if (script == null) return null
+                Object result = script.run()
+                return result as String
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Error in string expression [${expression}] from [${debugLocation}]", e)
+            }
         } finally {
             if (doPushPop) { cs.pop(); cs.pop(); }
         }
