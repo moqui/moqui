@@ -40,6 +40,8 @@ Bug Fixes:
 - Fixed XML Actions FTL error for entity-find.@having-econditions
 - Fixed issue where ResourceFacadeImpl.setInContext localized values when
   expanding; caused problems with set elements in widget-template-include
+- Fixed issue with multiple render-mode elements where there is no
+  text.@type attribute; GitHub issue #158
 
 ===========================================================================
 Release 1.5.3 - 11 Sep 2015
