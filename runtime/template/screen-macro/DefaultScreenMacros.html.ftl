@@ -533,6 +533,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
             <#-- do nothing -->
         <#else>
             <form method="post" action="${urlInstance.url}" name="${linkFormId!""}"<#if linkFormId?has_content> id="${linkFormId}"</#if><#if linkNode["@target-window"]?has_content> target="${linkNode["@target-window"]}"</#if>>
+                <input type="hidden" name="moquiSessionToken" value="${(ec.web.sessionToken)!}">
                 <#assign targetParameters = urlInstance.getParameterMap()>
                 <#-- NOTE: using .keySet() here instead of ?keys because ?keys was returning all method names with the other keys, not sure why -->
                 <#if targetParameters?has_content><#list targetParameters.keySet() as pKey>
@@ -618,6 +619,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#if !skipStart>
     <form name="${formId}" id="${formId}" class="validation-engine-init" method="post" action="${urlInstance.url}"<#if sri.isFormUpload(formNode["@name"])> enctype="multipart/form-data"</#if>>
         <input type="hidden" name="moquiFormName" value="${formNode["@name"]}">
+        <input type="hidden" name="moquiSessionToken" value="${(ec.web.sessionToken)!}">
     </#if>
         <fieldset class="form-horizontal"><#-- was form-single-outer -->
     <#if formNode["field-layout"]?has_content>
@@ -954,6 +956,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                     <#assign headerFormId>${formId}-header</#assign>
                 <tr>
                 <form name="${headerFormId}" id="${headerFormId}" method="post" action="${curUrlInstance.url}">
+                    <input type="hidden" name="moquiSessionToken" value="${(ec.web.sessionToken)!}">
                     <#if orderByField?has_content><input type="hidden" name="orderByField" value="${orderByField}"></#if>
                     <#assign nonReferencedFieldList = sri.getFtlFormListColumnNonReferencedHiddenFieldList(.node["@name"])>
                     <#list nonReferencedFieldList as nonReferencedField><#if nonReferencedField["header-field"]?has_content><#recurse nonReferencedField["header-field"][0]/></#if></#list>
@@ -997,6 +1000,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                 <tbody>
                 <form name="${formId}" id="${formId}" method="post" action="${formListUrlInfo.url}">
                     <input type="hidden" name="moquiFormName" value="${formNode["@name"]}">
+                    <input type="hidden" name="moquiSessionToken" value="${(ec.web.sessionToken)!}">
                     <input type="hidden" name="_isMulti" value="true">
             <#else>
                 <tbody>
@@ -1011,6 +1015,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
             <#else>
             <tr>
             <form name="${formId}_${listEntryIndex}" id="${formId}_${listEntryIndex}" method="post" action="${formListUrlInfo.url}">
+                <input type="hidden" name="moquiSessionToken" value="${(ec.web.sessionToken)!}">
             </#if>
             <#assign nonReferencedFieldList = sri.getFtlFormListColumnNonReferencedHiddenFieldList(.node["@name"])>
             <#list nonReferencedFieldList as nonReferencedField><@formListSubField nonReferencedField/></#list>
@@ -1073,6 +1078,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                     <#assign curUrlInfo = sri.getCurrentScreenUrl()>
                     <tr>
                     <form name="${formId}-header" id="${formId}-header" class="form-header-row" method="post" action="${curUrlInfo.url}">
+                        <input type="hidden" name="moquiSessionToken" value="${(ec.web.sessionToken)!}">
                         <#if orderByField?has_content><input type="hidden" name="orderByField" value="${orderByField}"></#if>
                 <#else>
                     <tr>
@@ -1107,6 +1113,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                 <tbody>
                 <form name="${formId}" id="${formId}" class="form-body" method="post" action="${formListUrlInfo.url}">
                     <input type="hidden" name="moquiFormName" value="${formNode["@name"]}">
+                    <input type="hidden" name="moquiSessionToken" value="${(ec.web.sessionToken)!}">
                     <input type="hidden" name="_isMulti" value="true">
             <#else>
                 <tbody>
@@ -1121,6 +1128,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
             <#else>
                 <tr>
                 <form name="${formId}_${listEntryIndex}" id="${formId}_${listEntryIndex}" method="post" action="${formListUrlInfo.url}">
+                    <input type="hidden" name="moquiSessionToken" value="${(ec.web.sessionToken)!}">
             </#if>
                 <#list fieldNodeList as fieldNode><@formListSubField fieldNode/></#list>
             <#if isMulti || skipForm>

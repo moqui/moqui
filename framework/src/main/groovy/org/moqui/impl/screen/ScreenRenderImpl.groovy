@@ -194,8 +194,7 @@ class ScreenRenderImpl implements ScreenRender {
         ScreenDefinition sd = sdIterator.next()
         // for these authz is not required, as long as something authorizes on the way to the transition, or
         // the transition itself, it's fine
-        ec.getArtifactExecution().push(
-                new ArtifactExecutionInfoImpl(sd.location, "AT_XML_SCREEN", "AUTHZA_VIEW"), false)
+        ec.getArtifactExecution().push(new ArtifactExecutionInfoImpl(sd.location, "AT_XML_SCREEN", "AUTHZA_VIEW"), false)
 
         boolean loggedInAnonymous = false
         Node screenNode = sd.getScreenNode()
@@ -277,17 +276,31 @@ class ScreenRenderImpl implements ScreenRender {
         // logger.warn("============ Rendering screen ${screenUrlInfo.getTargetScreen().getLocation()} transition ${screenUrlInfo.getTargetTransitionActualName()} has transition ${targetTransition != null}")
         if (targetTransition != null) {
             // if this transition has actions and request was not secure or any parameters were not in the body
-            // return an error, helps prevent XSRF attacks
-            if (request != null && targetTransition.hasActionsOrSingleService() &&
-                    !targetTransition.isReadOnly()) {
-                if ((!request.isSecure() && getWebappNode().attribute('https-enabled') != "false") ||
+            // return an error, helps prevent CSRF/XSRF attacks
+            if (request != null && targetTransition.hasActionsOrSingleService()) {
+                if (!targetTransition.isReadOnly() && (
+                        (!request.isSecure() && getWebappNode().attribute('https-enabled') != "false") ||
                         request.getQueryString() ||
-                        StupidWebUtilities.getPathInfoParameterMap(request.getPathInfo())) {
+                        StupidWebUtilities.getPathInfoParameterMap(request.getPathInfo()))) {
                     throw new IllegalArgumentException(
                         """Cannot run screen transition with actions from non-secure request or with URL
                         parameters for security reasons (they are not encrypted and need to be for data
                         protection and source validation). Change the link this came from to be a
                         form with hidden input fields instead, or declare the transition as read-only.""")
+                }
+                // require a moquiSessionToken parameter for all but get
+                if (request.getMethod().toLowerCase() != "get" &&
+                        getWebappNode().attribute("require-session-token") != "false" &&
+                        request.getAttribute("moqui.session.token.created") != "true") {
+                    String passedToken = ec.web.getParameters().get("moquiSessionToken")
+                    String curToken = ec.web.getSessionToken()
+                    if (curToken) {
+                        if (!passedToken) {
+                            throw new IllegalArgumentException("Session token required (in moquiSessionToken)")
+                        } else if (curToken != passedToken) {
+                            throw new IllegalArgumentException("Session token does not match (in moquiSessionToken)")
+                        }
+                    }
                 }
             }
 
