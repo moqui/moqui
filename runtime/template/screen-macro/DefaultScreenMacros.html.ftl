@@ -441,8 +441,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
 <#-- ============== Render Mode Elements ============== -->
 <#macro "render-mode"><#t>
 <#if .node["text"]?has_content>
-    <#t><#list .node["text"] as textNode><#if textNode["@type"]?has_content && textNode["@type"] == sri.getRenderMode()><#assign textToUse = textNode/></#if></#list>
-    <#if !textToUse?has_content><#list .node["text"] as textNode><#if !textNode["@type"]?has_content || textNode["@type"] == "any"><#assign textToUse = textNode/></#if></#list></#if>
+    <#list .node["text"] as textNode><#if !textNode["@type"]?has_content || textNode["@type"] == "any"><#assign textToUse = textNode/></#if></#list>
+    <#list .node["text"] as textNode><#if textNode["@type"]?has_content && textNode["@type"] == sri.getRenderMode()><#assign textToUse = textNode></#if></#list>
     <#if textToUse?exists>
         <#if textToUse["@location"]?has_content>
           <#assign textLocation = ec.resource.expand(textToUse["@location"], "")>
