@@ -38,6 +38,8 @@ class EdiHandler {
     protected Set<String> knownSegmentIds = new HashSet<>()
     // FUTURE: load Bots record defs to validate input/output messages: Map<String, List> recordDefs
 
+    protected List<SegmentError> segmentErrors = null
+
     EdiHandler(ExecutionContext ec) { this.ec = ec }
 
     EdiHandler setChars(Character segmentTerminator, Character elementSeparator, Character componentDelimiter, Character escapeCharacter) {
@@ -99,6 +101,7 @@ class EdiHandler {
         if (envelope == null) throw new IllegalArgumentException("Cannot parse EDI text, envelope must be loaded")
         if (!ediText) throw new IllegalArgumentException("No EDI text passed")
 
+        segmentErrors = []
         determineSeparators(ediText)
 
         List<String> allSegmentStringList = Arrays.asList(ediText.split(getSegmentRegex()))
@@ -108,6 +111,7 @@ class EdiHandler {
         parseSegments(allSegmentStringList, 0, rootMap, envelope)
         return rootMap
     }
+    List<SegmentError> getSegmentErrors() { return segmentErrors }
 
     /** Generate EDI text from the same Map/List structure created from the parse. */
     String generateText(Map<String, List<Object>> rootMap) {
@@ -220,15 +224,23 @@ class EdiHandler {
                 // NOTE: incremented in parseSegment, returns next segment to process
                 segmentIndex = parseSegment(allSegmentStringList, segmentIndex, currentSegment, curDefMap)
             } else if (!knownSegmentIds.contains(segmentId)) {
-                // skip the segment; this is necessary to support partial parsing with envelope only
-                segmentIndex++
-                // save the string in originalList
-                List<Object> originalList = currentSegment.originalList
-                if (originalList == null) {
-                    originalList = new ArrayList<>()
-                    currentSegment.originalList = originalList
+                if (body) {
+                    // TODO: improve this to handle multiple positions, somehow keep track of last tx set start segment (in X12 is ST; is first segment in body)
+                    int positionInTxSet = segmentIndex - 2
+                    segmentErrors.add(new SegmentError(SegmentErrorType.NOT_DEFINED_IN_TX_SET, segmentIndex,
+                            positionInTxSet, segmentId, segmentString))
+                    segmentIndex++
+                } else {
+                    // skip the segment; this is necessary to support partial parsing with envelope only
+                    segmentIndex++
+                    // save the string in originalList
+                    List<Object> originalList = currentSegment.originalList
+                    if (originalList == null) {
+                        originalList = new ArrayList<>()
+                        currentSegment.originalList = originalList
+                    }
+                    originalList.add(segmentString)
                 }
-                originalList.add(segmentString)
             } else {
                 // if segmentId is not in the current levelDefList, return to check against parent
                 return segmentIndex
@@ -266,6 +278,8 @@ class EdiHandler {
         int separatorIndex = segmentString.indexOf(elementSeparator as String)
         if (separatorIndex > 0) {
             return segmentString.substring(0, separatorIndex)
+        } else if (segmentString.size() <= 3) {
+            return segmentString
         } else {
             return null
         }
@@ -381,5 +395,83 @@ class EdiHandler {
             }
         }
         return builder.toString()
+    }
+
+    static enum SegmentErrorType { UNRECOGNIZED_SEGMENT_ID, UNEXPECTED, MANDATORY_MISSING, LOOP_OVER_MAX, EXCEEDS_MAXIMUM_USE,
+            NOT_DEFINED_IN_TX_SET, NOT_IN_SEQUENCE, ELEMENT_ERRORS }
+    /* X12 AK304 Element Error Codes
+        1 Unrecognized segment ID
+        2 Unexpected segment
+        3 Mandatory segment missing
+        4 Loop Occurs Over Maximum Times
+        5 Segment Exceeds Maximum Use
+        6 Segment Not in Defined Transaction Set
+        7 Segment Not in Proper Sequence
+        8 Segment Has Data Element Errors
+     */
+    static Map<SegmentErrorType, String> segmentErrorX12Codes = [
+            (SegmentErrorType.UNRECOGNIZED_SEGMENT_ID):'1', (SegmentErrorType.UNEXPECTED):'2',
+            (SegmentErrorType.MANDATORY_MISSING):'3', (SegmentErrorType.LOOP_OVER_MAX):'4',
+            (SegmentErrorType.EXCEEDS_MAXIMUM_USE):'5', (SegmentErrorType.NOT_DEFINED_IN_TX_SET):'6',
+            (SegmentErrorType.NOT_IN_SEQUENCE):'7',(SegmentErrorType.ELEMENT_ERRORS):'8']
+
+    static enum ElementErrorType { MANDATORY_MISSING, CONDITIONAL_REQUIED_MISSING, TOO_MANY, TOO_SHORT, TOO_LONG,
+            INVALID_CHAR, INVALID_CODE, INVALID_DATE, INVALID_TIME, EXCLUSION_VIOLATED }
+    /* X12 AK403 Element Error Codes
+        1 Mandatory data element missing
+        2 Conditional required data element missing.
+        3 Too many data elements.
+        4 Data element too short.
+        5 Data element too long.
+        6 Invalid character in data element.
+        7 Invalid code value.
+        8 Invalid Date
+        9 Invalid Time
+        10 Exclusion Condition Violated
+     */
+    static Map<ElementErrorType, String> elementErrorX12Codes = [
+            (ElementErrorType.MANDATORY_MISSING):'1', (ElementErrorType.CONDITIONAL_REQUIED_MISSING):'2',
+            (ElementErrorType.TOO_MANY):'3', (ElementErrorType.TOO_SHORT):'4',
+            (ElementErrorType.TOO_LONG):'5', (ElementErrorType.INVALID_CHAR):'6',
+            (ElementErrorType.INVALID_CODE):'7', (ElementErrorType.INVALID_DATE):'8',
+            (ElementErrorType.INVALID_TIME):'9', (ElementErrorType.EXCLUSION_VIOLATED):'10']
+
+    static class SegmentError {
+        SegmentErrorType errorType
+        int segmentIndex
+        int positionInTxSet
+        String segmentId
+        String segmentText
+        List<ElementError> elementErrors = []
+        SegmentError(SegmentErrorType errorType, int segmentIndex, int positionInTxSet, String segmentId, String segmentText) {
+            this.errorType=errorType; this.segmentIndex = segmentIndex; this.positionInTxSet = positionInTxSet
+            this.segmentId = segmentId; this.segmentText = segmentText
+        }
+        /** NOTE: used in mantle EdiServices.produce#X12FunctionalAck */
+        Map<String, List> makeAk3() {
+            Map<String, List> AK3 = [:]
+            AK3.elements = ['AK3', segmentId, positionInTxSet as String, '', segmentErrorX12Codes.get(errorType)]
+            if (elementErrors) {
+                List<Object> ak4List = []
+                AK3.AK4 = ak4List
+                for (ElementError elementError in elementErrors) ak4List.add(elementError.makeAk4())
+            }
+            return AK3
+        }
+    }
+    static class ElementError {
+        ElementErrorType errorType
+        int elementPosition
+        Integer compositePosition
+        String elementText
+        ElementError(ElementErrorType errorType, int elementPosition, Integer compositePosition, String elementText) {
+            this.errorType = errorType; this.elementPosition = elementPosition
+            this.compositePosition = compositePosition; this.elementText = elementText
+        }
+        Map<String, List<Object>> makeAk4() {
+            Object position = elementPosition as String
+            if (compositePosition) position = [position, compositePosition as String]
+            return [elements:['AK4', position, elementErrorX12Codes.get(errorType), elementText]]
+        }
     }
 }
