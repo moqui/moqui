@@ -25,6 +25,7 @@ along with this software (see the LICENSE.md file). If not, see
     </service>
     <service verb="consume" noun="SystemMessage" type="interface">
         <in-parameters><parameter name="systemMessageId" required="true"/></in-parameters>
+        <out-parameters><parameter name="noStatusUpdate" type="Boolean"/></out-parameters>
     </service>
     <service verb="produce" noun="AckSystemMessage" type="interface">
         <in-parameters>
@@ -85,8 +86,8 @@ along with this software (see the LICENSE.md file). If not, see
                 <if condition="ackMessage.statusId != 'SmsgCancelled'">
                     <return error="true" message="Ack message already sent [${origMessage.ackMessageId}] for SystemMessage [${systemMessageId}]"/></if>
             </if>
-            <if condition="!(origMessage.statusId in ['SmsgConsumed', 'SmsgRejected', 'SmsgError'])">
-                <return error="true" message="Cannot send ack for SystemMessage [${systemMessageId}], in status [${origMessage.statusId}] and must be in Consumed, Rejected, or Error"/></if>
+            <if condition="!(origMessage.statusId in ['SmsgConsuming', 'SmsgConsumed', 'SmsgRejected', 'SmsgError'])">
+                <return error="true" message="Cannot send ack for SystemMessage [${systemMessageId}], in status [${origMessage.statusId}] and must be in Consuming, Consumed, Rejected, or Error"/></if>
 
             <set field="systemMessageType" from="origMessage.'moqui.service.message.SystemMessageType'"/>
             <set field="produceAckServiceName" from="systemMessageType.produceAckServiceName"/>
@@ -290,9 +291,11 @@ along with this software (see the LICENSE.md file). If not, see
                         in-map="[systemMessageId:systemMessageId, errorDate:nowDate, attemptedStatusId:'SmsgConsumed',
                             errorText:errorText]"/>
                 <else>
-                    <service-call name="update#moqui.service.message.SystemMessage" transaction="force-new"
-                            in-map="[systemMessageId:systemMessageId, statusId:'SmsgConsumed',
-                                processedDate:nowDate, lastAttemptDate:nowDate]"/>
+                    <if condition="!consumeOut.noStatusUpdate">
+                        <service-call name="update#moqui.service.message.SystemMessage" transaction="force-new"
+                                in-map="[systemMessageId:systemMessageId, statusId:'SmsgConsumed',
+                                    processedDate:nowDate, lastAttemptDate:nowDate]"/>
+                    </if>
                 </else>
             </if>
             <script>}</script>
