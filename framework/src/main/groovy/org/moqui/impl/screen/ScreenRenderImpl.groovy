@@ -298,9 +298,9 @@ class ScreenRenderImpl implements ScreenRender {
                     String curToken = ec.web.getSessionToken()
                     if (curToken) {
                         if (!passedToken) {
-                            throw new IllegalArgumentException("Session token required (in moquiSessionToken)")
+                            throw new IllegalArgumentException("Session token required (in moquiSessionToken) for URL ${screenUrlInstance.url}")
                         } else if (curToken != passedToken) {
-                            throw new IllegalArgumentException("Session token does not match (in moquiSessionToken)")
+                            throw new IllegalArgumentException("Session token does not match (in moquiSessionToken) for URL ${screenUrlInstance.url}")
                         }
                     }
                 }
