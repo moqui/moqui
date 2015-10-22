@@ -12,10 +12,13 @@ TODO
 New Features:
 
 - Better protection against CSRF/XSRF attaches with a session token as per
-  https://www.owasp.org/index.php/CSRF_Prevention_Cheat_Sheet; when enabled
-  (webapp.@require-session-token in Moqui Conf XML file not false) a
-  moquiSessionToken parameter must be passed with all requests (except GET)
-  after the first request in a session
+  https://www.owasp.org/index.php/CSRF_Prevention_Cheat_Sheet;
+  - when enabled (webapp.@require-session-token in Moqui Conf XML file not
+    false) a moquiSessionToken parameter must be passed
+  - applies to all transition requests with actions by all methods except,
+    GET after the first request in a session
+  - for REST/etc API calls with authentication for each call is ignored
+  - can be disabled per screen transition with @require-session-token=false
 - New concept of explicit master entity definitions with details made up of
   related entities; definitions go in new entity.master element; there are
   new methods in EntityValue, EntityList, and EntityFind to get value Maps

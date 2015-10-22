@@ -4,7 +4,7 @@
     <div id="login" class="tab-pane active">
         <form method="post" action="${sri.makeUrlByType("login", "transition", null, "false").getUrl()}" class="form-signin">
             <p class="text-muted text-center">Enter your username and password to sign in</p>
-            <input type="hidden" name="moquiSessionToken" value="${ec.web.sessionToken}">
+            <#-- not needed for this request: <input type="hidden" name="moquiSessionToken" value="${ec.web.sessionToken}"> -->
             <input type="text" name="username" value="${(ec.getWeb().getErrorParameters().get("username"))!""}" placeholder="Username" required="required" class="form-control top">
             <#if !ec.getWeb()?? || ec.getWeb().getSession().getAttribute("moqui.tenantAllowOverride")! != "N">
                 <input type="password" name="password" placeholder="Password" required="required" class="form-control middle">
