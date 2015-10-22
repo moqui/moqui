@@ -415,7 +415,7 @@ class EdiHandler {
             (SegmentErrorType.EXCEEDS_MAXIMUM_USE):'5', (SegmentErrorType.NOT_DEFINED_IN_TX_SET):'6',
             (SegmentErrorType.NOT_IN_SEQUENCE):'7',(SegmentErrorType.ELEMENT_ERRORS):'8']
 
-    static enum ElementErrorType { MANDATORY_MISSING, CONDITIONAL_REQUIED_MISSING, TOO_MANY, TOO_SHORT, TOO_LONG,
+    static enum ElementErrorType { MANDATORY_MISSING, CONDITIONAL_REQUIRED_MISSING, TOO_MANY, TOO_SHORT, TOO_LONG,
             INVALID_CHAR, INVALID_CODE, INVALID_DATE, INVALID_TIME, EXCLUSION_VIOLATED }
     /* X12 AK403 Element Error Codes
         1 Mandatory data element missing
@@ -430,7 +430,7 @@ class EdiHandler {
         10 Exclusion Condition Violated
      */
     static Map<ElementErrorType, String> elementErrorX12Codes = [
-            (ElementErrorType.MANDATORY_MISSING):'1', (ElementErrorType.CONDITIONAL_REQUIED_MISSING):'2',
+            (ElementErrorType.MANDATORY_MISSING):'1', (ElementErrorType.CONDITIONAL_REQUIRED_MISSING):'2',
             (ElementErrorType.TOO_MANY):'3', (ElementErrorType.TOO_SHORT):'4',
             (ElementErrorType.TOO_LONG):'5', (ElementErrorType.INVALID_CHAR):'6',
             (ElementErrorType.INVALID_CODE):'7', (ElementErrorType.INVALID_DATE):'8',
