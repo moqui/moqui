@@ -90,12 +90,12 @@ dependencies {
     apiCompile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.4.5-indy' // Apache 2.0
     compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.4.5-indy' // Apache 2.0
 
-    compile group: 'org.apache.jackrabbit', name: 'jackrabbit-api', version: '2.10.1' // Apache 2.0
-    compile group: 'org.apache.jackrabbit', name: 'jackrabbit-jcr-commons', version: '2.10.1' // Apache 2.0
-    compile group: 'org.apache.jackrabbit', name: 'jackrabbit-jcr2dav', version: '2.10.1' // Apache 2.0
-    compile group: 'org.apache.jackrabbit', name: 'jackrabbit-jcr-rmi', version: '2.10.1' // Apache 2.0
-    compile group: 'org.apache.jackrabbit', name: 'jackrabbit-spi', version: '2.10.1' // Apache 2.0
-    compile group: 'org.apache.jackrabbit', name: 'jackrabbit-jcr2spi', version: '2.10.1' // Apache 2.0
+    compile group: 'org.apache.jackrabbit', name: 'jackrabbit-api', version: '2.11.1' // Apache 2.0
+    compile group: 'org.apache.jackrabbit', name: 'jackrabbit-jcr-commons', version: '2.11.1' // Apache 2.0
+    compile group: 'org.apache.jackrabbit', name: 'jackrabbit-jcr2dav', version: '2.11.1' // Apache 2.0
+    compile group: 'org.apache.jackrabbit', name: 'jackrabbit-jcr-rmi', version: '2.11.1' // Apache 2.0
+    compile group: 'org.apache.jackrabbit', name: 'jackrabbit-spi', version: '2.11.1' // Apache 2.0
+    compile group: 'org.apache.jackrabbit', name: 'jackrabbit-jcr2spi', version: '2.11.1' // Apache 2.0
     compile group: 'javax.jcr', name: 'jcr', version: '2.0' // Apache 2.0???
 
     compile group: 'jaxb', name: 'jsr173_1.0_api', version: '' // ???
