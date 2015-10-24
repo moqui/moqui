@@ -87,8 +87,8 @@ dependencies {
     apiCompile group: 'org.apache.geronimo.specs', name: 'geronimo-servlet_2.5_spec', version: '1.2' // Apache 2.0
     providedCompile group: 'org.apache.geronimo.specs', name: 'geronimo-servlet_2.5_spec', version: '1.2' // Apache 2.0
 
-    apiCompile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.4.4-indy' // Apache 2.0
-    compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.4.4-indy' // Apache 2.0
+    apiCompile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.4.5-indy' // Apache 2.0
+    compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.4.5-indy' // Apache 2.0
 
     compile group: 'org.apache.jackrabbit', name: 'jackrabbit-api', version: '2.10.1' // Apache 2.0
     compile group: 'org.apache.jackrabbit', name: 'jackrabbit-jcr-commons', version: '2.10.1' // Apache 2.0
