@@ -172,7 +172,7 @@ dependencies {
     compile group: 'org.apache.lucene', name: 'lucene-sandbox', version: '4.10.4' // Apache 2.0
     compile group: 'org.apache.lucene', name: 'lucene-suggest', version: '4.10.4' // Apache 2.0
     runtime group: 'com.vividsolutions', name: 'jts', version: '1.13' // LGPL (runtime only, needed by spatial4j)
-    runtime group: 'com.spatial4j', name: 'spatial4j', version: '0.4.1' // Apache 2.0
+    runtime group: 'com.spatial4j', name: 'spatial4j', version: '0.5' // Apache 2.0
     runtime group: 'org.apache.lucene', name: 'lucene-spatial', version: '4.10.4' // Apache 2.0
 
     // Rules Libraries: Drools/jBPM/etc
