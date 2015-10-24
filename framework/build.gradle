@@ -176,26 +176,26 @@ dependencies {
     runtime group: 'org.apache.lucene', name: 'lucene-spatial', version: '4.10.4' // Apache 2.0
 
     // Rules Libraries: Drools/jBPM/etc
-    apiCompile group: 'org.kie', name: 'kie-api', version: '6.2.0.Final' // Apache 2.0
-    compile group: 'org.kie', name: 'kie-api', version: '6.2.0.Final' // Apache 2.0
-    compile group: 'org.drools', name: 'drools-compiler', version: '6.2.0.Final' // Apache 2.0
-    compile group: 'org.drools', name: 'drools-core', version: '6.2.0.Final' // Apache 2.0
-    compile group: 'org.drools', name: 'drools-decisiontables', version: '6.2.0.Final' // Apache 2.0
-    compile group: 'org.drools', name: 'drools-templates', version: '6.2.0.Final' // Apache 2.0
-    runtime group: 'org.drools', name: 'drools-jsr94', version: '6.2.0.Final' // Apache 2.0
+    apiCompile group: 'org.kie', name: 'kie-api', version: '6.3.0.Final' // Apache 2.0
+    compile group: 'org.kie', name: 'kie-api', version: '6.3.0.Final' // Apache 2.0
+    compile group: 'org.drools', name: 'drools-compiler', version: '6.3.0.Final' // Apache 2.0
+    compile group: 'org.drools', name: 'drools-core', version: '6.3.0.Final' // Apache 2.0
+    compile group: 'org.drools', name: 'drools-decisiontables', version: '6.3.0.Final' // Apache 2.0
+    compile group: 'org.drools', name: 'drools-templates', version: '6.3.0.Final' // Apache 2.0
+    runtime group: 'org.drools', name: 'drools-jsr94', version: '6.3.0.Final' // Apache 2.0
     runtime name: 'jsr94', version: '1.1' // ???
-    runtime group: 'org.kie', name: 'kie-internal', version: '6.2.0.Final' // Apache 2.0
-    runtime group: 'org.mvel', name: 'mvel2', version: '2.2.6.Final' // Apache 2.0
+    runtime group: 'org.kie', name: 'kie-internal', version: '6.3.0.Final' // Apache 2.0
+    runtime group: 'org.mvel', name: 'mvel2', version: '2.2.7.Final' // Apache 2.0
     runtime group: 'com.google.protobuf', name: 'protobuf-java', version: '2.6.1' // New BSD
     runtime group: 'com.thoughtworks.xstream', name: 'xstream', version: '1.4.8' // New BSD
     runtime group: 'org.antlr', name: 'antlr-runtime', version: '3.5.2' // New BSD
-    runtime group: 'org.apache.poi', name: 'poi', version: '3.12' // Apache 2.0
-    runtime group: 'org.apache.poi', name: 'poi-ooxml', version: '3.12' // Apache 2.0
+    runtime group: 'org.apache.poi', name: 'poi', version: '3.13' // Apache 2.0
+    runtime group: 'org.apache.poi', name: 'poi-ooxml', version: '3.13' // Apache 2.0
     // really necessary? nearly 5MB file: runtime group: 'org.apache.poi', name: 'poi-ooxml-schemas', version: '3.12' // Apache 2.0
     runtime group: 'org.codehaus.janino', name: 'janino', version: '2.7.8' // New BSD
     runtime group: 'org.codehaus.janino', name: 'commons-compiler', version: '2.7.8' // New BSD
     // NOTE: ecj 4.3.1 is not the latest but is the version distributed with drools/kie 6.2.0.Final
-    runtime group: 'org.eclipse.jdt.core.compiler', name: 'ecj', version: '4.3.1' // New BSD
+    runtime group: 'org.eclipse.jdt.core.compiler', name: 'ecj', version: '4.4.2' // New BSD
 
     // ========== runtime-only dependencies ==========
     runtime group: 'org.apache.camel', name: 'camel-csv', version: '2.16.0' // Apache 2.0
