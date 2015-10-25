@@ -11,6 +11,19 @@ TODO
 
 New Features:
 
+- Library Updates
+  - Apache Camel to 2.16.0
+  - Apache Derby to 10.12.1.1
+  - Apache HttpClient to 4.5.1
+  - Ehcache to 2.10.1
+  - Groovy to 2.4.5
+  - H2 to 1.4.190
+  - Apache Jackrabbit to 2.11.1
+  - JNA to 4.2.1
+  - KIE, Drools to 6.3.0.Final
+  - OrientDB to 2.1.4
+  - Quartz Scheduler to 2.2.2
+  - ElasticSearch to 1.7.3
 - Better protection against CSRF/XSRF attaches with a session token as per
   https://www.owasp.org/index.php/CSRF_Prevention_Cheat_Sheet;
   - when enabled (webapp.@require-session-token in Moqui Conf XML file not
