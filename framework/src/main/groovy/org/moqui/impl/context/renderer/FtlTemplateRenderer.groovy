@@ -75,7 +75,7 @@ class FtlTemplateRenderer implements TemplateRenderer {
         Template newTemplate = null
         Reader templateReader = null
         try {
-            templateReader = new InputStreamReader(ecfi.resourceFacade.getLocationStream(location))
+            templateReader = new InputStreamReader(ecfi.resourceFacade.getLocationStream(location), "UTF-8")
             newTemplate = new Template(location, templateReader, getFtlConfiguration())
         } catch (Exception e) {
             throw new IllegalArgumentException("Error while initializing template at [${location}]", e)
