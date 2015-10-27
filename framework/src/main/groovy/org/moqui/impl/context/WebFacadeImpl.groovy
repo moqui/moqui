@@ -138,7 +138,7 @@ class WebFacadeImpl implements WebFacade {
 
             for (FileItem item in items) {
                 if (item.isFormField()) {
-                    multiPartParameters.put(item.getFieldName(), item.getString())
+                    multiPartParameters.put(item.getFieldName(), item.getString("UTF-8"))
                 } else {
                     // put the FileItem itself in the Map to be used by the application code
                     multiPartParameters.put(item.getFieldName(), item)
