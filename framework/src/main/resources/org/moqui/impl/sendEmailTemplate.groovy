@@ -16,6 +16,7 @@
     For JavaMail JavaDocs see: https://javamail.java.net/nonav/docs/api/index.html
  */
 
+import org.apache.commons.mail.DefaultAuthenticator
 import org.apache.commons.mail.HtmlEmail
 
 import javax.mail.util.ByteArrayDataSource
@@ -90,7 +91,8 @@ try {
     HtmlEmail email = new HtmlEmail()
     email.setHostName(host)
     email.setSmtpPort(port)
-    if (emailServer.mailUsername) email.setAuthentication((String) emailServer.mailUsername, (String) emailServer.mailPassword)
+    if (emailServer.mailUsername)
+        email.setAuthenticator(new DefaultAuthenticator((String) emailServer.mailUsername, (String) emailServer.mailPassword))
     if (emailServer.smtpStartTls) {
         email.setStartTLSEnabled(emailServer.smtpStartTls == "Y")
         email.setStartTLSRequired(emailServer.smtpStartTls == "Y")
@@ -155,7 +157,7 @@ try {
             }
         } else {
             // not a screen, get straight data with type depending on extension
-            DataSource dataSource = ec.resource.getLocationDataSource(emailTemplateAttachment.attachmentLocation)
+            DataSource dataSource = ec.resource.getLocationDataSource((String) emailTemplateAttachment.attachmentLocation)
             email.attach(dataSource, (String) emailTemplateAttachment.fileName, "")
         }
     }
