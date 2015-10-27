@@ -629,7 +629,7 @@ class WebFacadeImpl implements WebFacade {
         if (rr == null) throw new IllegalArgumentException("Resource not found at: ${location}")
         response.setContentType(rr.contentType)
         if (inline) response.addHeader("Content-Disposition", "inline")
-        else response.addHeader("Content-Disposition", "attachment; filename=\"${rr.getFileName()}\"; filename*=utf-8''${StupidUtilities.rfc6266FileName(rr.getFileName())}")
+        else response.addHeader("Content-Disposition", "attachment; filename=\"${rr.getFileName()}\"; filename*=utf-8''${StupidUtilities.encodeAsciiFilename(rr.getFileName())}")
         InputStream is = rr.openStream()
         try {
             OutputStream os = response.outputStream

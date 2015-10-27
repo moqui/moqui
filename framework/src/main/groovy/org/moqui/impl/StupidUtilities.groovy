@@ -507,6 +507,15 @@ class StupidUtilities {
         return newValue.toString()
     }
 
+    public static final String encodeAsciiFilename(String filename) {
+        try {
+            URI uri = new URI(null, null, filename, null);
+            return uri.toASCIIString();
+        } catch (URISyntaxException e) {
+            return filename;
+        }
+    }
+
     static String toStringCleanBom(byte[] bytes) {
         // NOTE: this only supports UTF-8 for now!
         if (!bytes) return ""
@@ -668,14 +677,5 @@ class StupidUtilities {
         String decimalText = value.setScale(2, BigDecimal.ROUND_HALF_UP).toPlainString()
         decimalText = decimalText.substring(decimalText.indexOf('.') + 1)
         return "${integerText} and ${decimalText}/100"
-    }
-
-    public static final String rfc6266FileName(String filename) {
-        try {
-            URI uri = new URI(null, null, filename, null);
-            return uri.toASCIIString();
-        } catch (URISyntaxException e) {
-            return filename;
-        }
     }
 }
