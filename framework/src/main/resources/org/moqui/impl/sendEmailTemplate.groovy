@@ -10,6 +10,12 @@
  * along with this software (see the LICENSE.md file). If not, see
  * <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
+
+/*
+    JavaMail API Documentation at: https://java.net/projects/javamail/pages/Home
+    For JavaMail JavaDocs see: https://javamail.java.net/nonav/docs/api/index.html
+ */
+
 import org.apache.commons.mail.HtmlEmail
 import javax.mail.util.ByteArrayDataSource
 import javax.activation.DataSource
@@ -128,6 +134,6 @@ if (emailMessageId) {
 }
 
 } catch (Throwable t) {
-    logger.info("Error in groovy", t)
+    logger.info("Error in sendEmailTemplate groovy", t)
     throw new BaseException("Error in sendEmailTemplate", t)
 }
