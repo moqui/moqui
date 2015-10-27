@@ -44,6 +44,14 @@ try {
     if (!emailTemplate) ec.message.addError("No EmailTemplate record found for ID [${emailTemplateId}]")
     if (ec.message.hasError()) return
 
+    // combine ccAddresses and bccAddresses
+    if (ccAddresses) {
+        if (emailTemplate.ccAddresses) ccAddresses = ccAddresses + "," + emailTemplate.ccAddresses
+    } else { ccAddresses = emailTemplate.ccAddresses }
+    if (bccAddresses) {
+        if (emailTemplate.bccAddresses) bccAddresses = bccAddresses + "," + emailTemplate.bccAddresses
+    } else { bccAddresses = emailTemplate.bccAddresses }
+
     // prepare the subject
     String subject = ec.resource.expand((String) emailTemplate.subject, "")
 
@@ -63,7 +71,7 @@ try {
     if (createEmailMessage) {
         Map cemParms = [sentDate:ec.user.nowTimestamp, statusId:"ES_READY", subject:subject, body:bodyHtml,
                         fromAddress:emailTemplate.fromAddress, toAddresses:toAddresses,
-                        ccAddresses:emailTemplate.ccAddresses, bccAddresses:emailTemplate.bccAddresses,
+                        ccAddresses:ccAddresses, bccAddresses:bccAddresses,
                         contentType:"text/html", emailTemplateId:emailTemplateId, fromUserId:ec.user?.userId]
         Map cemResults = ec.service.sync().name("create", "moqui.basic.email.EmailMessage").requireNewTransaction(true)
                 .parameters(cemParms).disableAuthz().call()
@@ -91,16 +99,18 @@ try {
     HtmlEmail email = new HtmlEmail()
     email.setHostName(host)
     email.setSmtpPort(port)
-    if (emailServer.mailUsername)
+    if (emailServer.mailUsername) {
         email.setAuthenticator(new DefaultAuthenticator((String) emailServer.mailUsername, (String) emailServer.mailPassword))
-    if (emailServer.smtpStartTls) {
-        email.setStartTLSEnabled(emailServer.smtpStartTls == "Y")
-        email.setStartTLSRequired(emailServer.smtpStartTls == "Y")
+        // logger.info("Set user=${emailServer.mailUsername}, password=${emailServer.mailPassword}")
     }
-    if (emailServer.smtpSsl) email.setSSLOnConnect(emailServer.smtpSsl == "Y")
-    if (email.isSSLOnConnect()) {
+    if (emailServer.smtpStartTls == "Y") {
+        email.setStartTLSEnabled(true)
+        // email.setStartTLSRequired(true)
+    }
+    if (emailServer.smtpSsl == "Y") {
+        email.setSSLOnConnect(true)
         // email.setSslSmtpPort(port as String)
-        // email.setSSLCheckServerIdentity(emailServer.smtpSsl == "Y")
+        // email.setSSLCheckServerIdentity(true)
     }
 
     // set the subject
@@ -117,17 +127,9 @@ try {
     // set to, cc, bcc addresses
     def toList = ((String) toAddresses).split(",")
     for (def toAddress in toList) email.addTo(toAddress.trim())
-    if (emailTemplate.ccAddresses) {
-        def ccList = ((String) emailTemplate.ccAddresses).split(",")
-        for (def ccAddress in ccList) email.addCc(ccAddress.trim())
-    }
     if (ccAddresses) {
         def ccList = ((String) ccAddresses).split(",")
         for (def ccAddress in ccList) email.addCc(ccAddress.trim())
-    }
-    if (emailTemplate.bccAddresses) {
-        def bccList = ((String) emailTemplate.bccAddresses).split(",")
-        for (def bccAddress in bccList) email.addBcc(bccAddress.trim())
     }
     if (bccAddresses) {
         def bccList = ((String) bccAddresses).split(",")
@@ -163,7 +165,7 @@ try {
     }
 
     logger.info("Sending email [${email.getSubject()}] from ${email.getFromAddress()} to ${email.getToAddresses()} cc ${email.getCcAddresses()} bcc ${email.getBccAddresses()} via ${emailServer.mailUsername}@${email.getHostName()}:${email.getSmtpPort()} SSL? ${email.isSSLOnConnect()}:${email.isSSLCheckServerIdentity()} TLS? ${email.isStartTLSEnabled()}:${email.isStartTLSRequired()} with bodyHtml:\n${bodyHtml}\nbodyText:\n${bodyText}")
-    email.setDebug(true)
+    // email.setDebug(true)
 
     // send the email
     messageId = email.send()
