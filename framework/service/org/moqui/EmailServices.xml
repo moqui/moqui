@@ -33,18 +33,29 @@ along with this software (see the LICENSE.md file). If not, see
     <service verb="process" noun="EmailEca" type="interface">
         <description>Defines input parameters matching what is available when an Email ECA rule is called.</description>
         <in-parameters>
+            <parameter name="emailServerId"/>
+            <parameter name="message" type="javax.mail.internet.MimeMessage"/>
             <parameter name="fields" type="Map">
-                <parameter name="toList" type="List"/>
-                <parameter name="ccList" type="List"/>
-                <parameter name="bccList" type="List"/>
-                <parameter name="from"/>
+                <parameter name="toList" type="List" allow-html="any"/>
+                <parameter name="ccList" type="List" allow-html="any"/>
+                <parameter name="bccList" type="List" allow-html="any"/>
+                <parameter name="from" allow-html="any"/>
                 <parameter name="subject"/>
-                <parameter name="sentDate" type="java.util.Date"/>
-                <parameter name="receivedDate" type="java.util.Date"/>
-                <parameter name="bodyPartList" type="List"><description>List of String for each body part. If the
+                <parameter name="sentDate" type="Timestamp"/>
+                <parameter name="receivedDate" type="Timestamp"/>
+                <parameter name="bodyPartList" type="List" allow-html="any"><description>List of String for each body part. If the
                     message is not multi-part will have a single String entry.</description></parameter>
             </parameter>
-            <parameter name="headers" type="Map"/>
+            <parameter name="headers" type="Map" allow-html="any"><description>All header names (keys) are converted to
+                lower case for consistency. If multiple values for a header name are found they will be put in a List.</description></parameter>
+            <parameter name="flags" type="Map">
+                <parameter name="answered" type="Boolean"/>
+                <parameter name="deleted" type="Boolean"/>
+                <parameter name="draft" type="Boolean"/>
+                <parameter name="flagged" type="Boolean"/>
+                <parameter name="recent" type="Boolean"/>
+                <parameter name="seen" type="Boolean"/>
+            </parameter>
         </in-parameters>
     </service>
 </services>

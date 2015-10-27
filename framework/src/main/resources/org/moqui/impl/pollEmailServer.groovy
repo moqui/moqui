@@ -24,6 +24,7 @@ import javax.mail.Session
 import javax.mail.Store
 import javax.mail.internet.MimeMessage
 import javax.mail.search.FlagTerm
+import javax.mail.search.SearchTerm
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -66,24 +67,28 @@ int totalMessages = folder.getMessageCount()
 // close and return if no messages
 if (totalMessages == 0) { folder.close(false); return }
 
-// get unseen messages
-Message[] messages = folder.search(new FlagTerm(new Flags(Flags.Flag.SEEN), false))
+// get messages not deleted (and optionally not seen)
+Flags searchFlags = new Flags(Flags.Flag.DELETED)
+if (emailServer.storeSkipSeen == "Y") searchFlags.add(Flags.Flag.SEEN)
+SearchTerm searchTerm = new FlagTerm(searchFlags, false)
+Message[] messages = folder.search(searchTerm)
 FetchProfile profile = new FetchProfile()
 profile.add(FetchProfile.Item.ENVELOPE)
 profile.add(FetchProfile.Item.FLAGS)
 profile.add("X-Mailer")
 folder.fetch(messages, profile)
 
-logger.info("Found ${totalMessages} messages (${messages.size()} unseen) at ${user}@${host}:${port}/${storeFolder}")
+logger.info("Found ${totalMessages} messages (${messages.size()} filtered) at ${user}@${host}:${port}/${storeFolder}")
 
 for (Message message in messages) {
-    if (message.isSet(Flags.Flag.SEEN)) continue
+    if (emailServer.storeSkipSeen == "Y" && message.isSet(Flags.Flag.SEEN)) continue
 
     // NOTE: should we check size? long messageSize = message.getSize()
     if (message instanceof MimeMessage) {
-        ec.service.runEmecaRules(message)
-        message.setFlag(Flags.Flag.SEEN, true)
+        ec.service.runEmecaRules(message, emailServerId)
 
+        // mark seen if setup to do so
+        if (emailServer.storeMarkSeen == "Y") message.setFlag(Flags.Flag.SEEN, true)
         // delete the message if setup to do so
         if (emailServer.storeDelete == "Y") message.setFlag(Flags.Flag.DELETED, true)
     } else {

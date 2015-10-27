@@ -72,7 +72,8 @@ try {
         Map cemParms = [sentDate:ec.user.nowTimestamp, statusId:"ES_READY", subject:subject, body:bodyHtml,
                         fromAddress:emailTemplate.fromAddress, toAddresses:toAddresses,
                         ccAddresses:ccAddresses, bccAddresses:bccAddresses,
-                        contentType:"text/html", emailTemplateId:emailTemplateId, fromUserId:ec.user?.userId]
+                        contentType:"text/html", emailTemplateId:emailTemplateId, emailServerId:emailTemplate.emailServerId,
+                        fromUserId:ec.user?.userId]
         Map cemResults = ec.service.sync().name("create", "moqui.basic.email.EmailMessage").requireNewTransaction(true)
                 .parameters(cemParms).disableAuthz().call()
         emailMessageId = cemResults.emailMessageId

@@ -16,6 +16,7 @@ import org.moqui.impl.actions.XmlAction
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.context.ExecutionContext
 
+import javax.mail.Flags
 import javax.mail.internet.MimeMessage
 import javax.mail.Address
 import javax.mail.Multipart
@@ -25,6 +26,8 @@ import javax.mail.Header
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+
+import java.sql.Timestamp
 
 class EmailEcaRule {
     protected final static Logger logger = LoggerFactory.getLogger(EmailEcaRule.class)
@@ -52,12 +55,15 @@ class EmailEcaRule {
 
     // Node getEmecaNode() { return emecaNode }
 
-    void runIfMatches(MimeMessage message, ExecutionContext ec) {
+    void runIfMatches(MimeMessage message, String emailServerId, ExecutionContext ec) {
 
         try {
             ec.context.push()
 
-            Map<String, Object> fields = new HashMap()
+            ec.context.put("emailServerId", emailServerId)
+            ec.context.put("message", message)
+
+            Map<String, Object> fields = [:]
             ec.context.put("fields", fields)
 
             List<String> toList = []
@@ -74,25 +80,36 @@ class EmailEcaRule {
 
             fields.put("from", message.getFrom()?.getAt(0)?.toString())
             fields.put("subject", message.getSubject())
-            fields.put("sentDate", message.getSentDate())
-            fields.put("receivedDate", message.getReceivedDate())
+            fields.put("sentDate", message.getSentDate() ? new Timestamp(message.getSentDate().getTime()) : null)
+            fields.put("receivedDate", message.getReceivedDate() ? new Timestamp(message.getReceivedDate().getTime()) : null)
             fields.put("bodyPartList", makeBodyPartList(message))
 
-            Map<String, Object> headers = new HashMap()
+            Map<String, Object> headers = [:]
             ec.context.put("headers", headers)
             for (Header header in message.allHeaders) {
-                if (headers.get(header.name)) {
-                    Object hi = headers.get(header.name)
+                String headerName = header.name.toLowerCase()
+                if (headers.get(headerName)) {
+                    Object hi = headers.get(headerName)
                     if (hi instanceof List) { hi.add(header.value) }
-                    else { headers.put(header.name, [hi, header.value]) }
+                    else { headers.put(headerName, [hi, header.value]) }
                 } else {
-                    headers.put(header.name, header.value)
+                    headers.put(headerName, header.value)
                 }
             }
+
+            Map<String, Boolean> flags = [:]
+            ec.context.put("flags", flags)
+            flags.answered = message.isSet(Flags.Flag.ANSWERED)
+            flags.deleted = message.isSet(Flags.Flag.DELETED)
+            flags.draft = message.isSet(Flags.Flag.DRAFT)
+            flags.flagged = message.isSet(Flags.Flag.FLAGGED)
+            flags.recent = message.isSet(Flags.Flag.RECENT)
+            flags.seen = message.isSet(Flags.Flag.SEEN)
 
             // run the condition and if passes run the actions
             boolean conditionPassed = true
             if (condition) conditionPassed = condition.checkCondition(ec)
+            // logger.info("======== EMECA ${emecaNode.attribute("rule-name")} conditionPassed? ${conditionPassed} fields:\n${fields}\nflags: ${flags}\nheaders: ${headers}")
             if (conditionPassed) {
                 if (actions) actions.run(ec)
             }
