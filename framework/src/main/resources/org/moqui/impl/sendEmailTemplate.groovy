@@ -43,6 +43,9 @@ try {
     if (!emailTemplate) ec.message.addError("No EmailTemplate record found for ID [${emailTemplateId}]")
     if (ec.message.hasError()) return
 
+    // prepare the subject
+    String subject = ec.resource.expand((String) emailTemplate.subject, "")
+
     // prepare the html message
     def bodyRender = ec.screen.makeRender().rootScreen((String) emailTemplate.bodyScreenLocation)
             .webappName((String) emailTemplate.webappName).renderMode("html")
@@ -53,6 +56,18 @@ try {
     def bodyTextRender = ec.screen.makeRender().rootScreen((String) emailTemplate.bodyScreenLocation)
             .webappName((String) emailTemplate.webappName).renderMode("text")
     String bodyText = bodyTextRender.render()
+
+    // create an moqui.basic.email.EmailMessage record with info about this sent message
+    // NOTE: can do anything with: purposeEnumId, toUserId?
+    if (createEmailMessage) {
+        Map cemParms = [sentDate:ec.user.nowTimestamp, statusId:"ES_READY", subject:subject, body:bodyHtml,
+                        fromAddress:emailTemplate.fromAddress, toAddresses:toAddresses,
+                        ccAddresses:emailTemplate.ccAddresses, bccAddresses:emailTemplate.bccAddresses,
+                        contentType:"text/html", emailTemplateId:emailTemplateId, fromUserId:ec.user?.userId]
+        Map cemResults = ec.service.sync().name("create", "moqui.basic.email.EmailMessage").requireNewTransaction(true)
+                .parameters(cemParms).disableAuthz().call()
+        emailMessageId = cemResults.emailMessageId
+    }
 
     def emailTemplateAttachmentList = emailTemplate."moqui.basic.email.EmailTemplateAttachment"
     def emailServer = emailTemplate."moqui.basic.email.EmailServer"
@@ -65,6 +80,7 @@ try {
         ec.message.addError("From address is empty for EmailTemplate [${emailTemplateId}]")
     if (ec.message.hasError()) {
         logger.info("Error sending email: ${ec.message.getErrorsString()}\nbodyHtml:\n${bodyHtml}\nbodyText:\n${bodyText}")
+        if (emailMessageId) logger.info("Email with error saved as Readyin EmailMessage [${emailMessageId}]")
         return
     }
 
@@ -86,7 +102,6 @@ try {
     }
 
     // set the subject
-    String subject = ec.resource.expand((String) emailTemplate.subject, "")
     email.setSubject(subject)
 
     // set from, reply to, bounce addresses
@@ -143,17 +158,6 @@ try {
             DataSource dataSource = ec.resource.getLocationDataSource(emailTemplateAttachment.attachmentLocation)
             email.attach(dataSource, (String) emailTemplateAttachment.fileName, "")
         }
-    }
-
-    // create an moqui.basic.email.EmailMessage record with info about this sent message
-    // NOTE: can do anything with: purposeEnumId, toUserId?
-    if (createEmailMessage) {
-        Map cemParms = [sentDate:ec.user.nowTimestamp, statusId:"ES_READY", subject:subject, body:bodyHtml,
-                        fromAddress:emailTemplate.fromAddress, toAddresses:toAddresses,
-                        ccAddresses:emailTemplate.ccAddresses, bccAddresses:emailTemplate.bccAddresses,
-                        contentType:"text/html", emailTemplateId:emailTemplateId, fromUserId:ec.user?.userId]
-        Map cemResults = ec.service.sync().name("create", "moqui.basic.email.EmailMessage").parameters(cemParms).disableAuthz().call()
-        emailMessageId = cemResults.emailMessageId
     }
 
     logger.info("Sending email [${email.getSubject()}] from ${email.getFromAddress()} to ${email.getToAddresses()} cc ${email.getCcAddresses()} bcc ${email.getBccAddresses()} via ${emailServer.mailUsername}@${email.getHostName()}:${email.getSmtpPort()} SSL? ${email.isSSLOnConnect()}:${email.isSSLCheckServerIdentity()} TLS? ${email.isStartTLSEnabled()}:${email.isStartTLSRequired()} with bodyHtml:\n${bodyHtml}\nbodyText:\n${bodyText}")
