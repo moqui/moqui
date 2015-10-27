@@ -669,4 +669,13 @@ class StupidUtilities {
         decimalText = decimalText.substring(decimalText.indexOf('.') + 1)
         return "${integerText} and ${decimalText}/100"
     }
+
+    public static final String rfc6266FileName(String filename) {
+        try {
+            URI uri = new URI(null, null, filename, null);
+            return uri.toASCIIString();
+        } catch (URISyntaxException e) {
+            return filename;
+        }
+    }
 }
