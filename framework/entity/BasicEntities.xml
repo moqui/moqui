@@ -394,6 +394,7 @@ along with this software (see the LICENSE.md file). If not, see
         <field name="storeHost" type="text-medium"/>
         <field name="storePort" type="text-short"/>
         <field name="storeProtocol" type="text-short"/>
+        <field name="storeFolder" type="text-medium"><description>Defaults to INBOX</description></field>
         <field name="storeDelete" type="text-indicator"/>
         <field name="mailUsername" type="text-medium"/>
         <field name="mailPassword" type="text-medium" encrypt="true"/>
@@ -401,8 +402,8 @@ along with this software (see the LICENSE.md file). If not, see
             <!-- NOTE: these are skeleton settings and some fields need to be filled in (probably best with another data file)
                 for your specific installation in order to be functional -->
             <moqui.basic.email.EmailServer emailServerId="SYSTEM"
-                         smtpHost="" smtpPort="25" smtpStartTls="N" smtpSsl="N"
-                         storeHost="" storePort="143" storeProtocol="imap" storeDelete="N"
+                         smtpHost="" smtpPort="465" smtpStartTls="N" smtpSsl="Y"
+                         storeHost="" storePort="993" storeProtocol="imaps" storeFolder="" storeDelete="N"
                          mailUsername="" mailPassword=""/>
             <!-- Other common values:
                 smtpPort="25" (std) smtpPort="465" (ssmtp) smtpPort="587" (ssmtp?)
