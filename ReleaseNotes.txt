@@ -33,6 +33,9 @@ New Features:
     GET after the first request in a session
   - for REST/etc API calls with authentication for each call is ignored
   - can be disabled per screen transition with @require-session-token=false
+- Password reset now sets a reset password separate from the current
+  password that may only be used to change the password; current password
+  stays valid for password change or login (if email-require-change=false)
 - New concept of explicit master entity definitions with details made up of
   related entities; definitions go in new entity.master element; there are
   new methods in EntityValue, EntityList, and EntityFind to get value Maps
