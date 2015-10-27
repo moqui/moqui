@@ -418,8 +418,10 @@ along with this software (see the LICENSE.md file). If not, see
         <field name="emailServerId" type="id"/>
         <field name="fromAddress" type="text-medium"/>
         <field name="fromName" type="text-medium"/>
-        <field name="ccAddresses" type="text-medium"/>
-        <field name="bccAddresses" type="text-medium"/>
+        <field name="replyToAddresses" type="text-medium"><description>Comma separated list of reply to email addresses</description></field>
+        <field name="bounceAddress" type="text-medium"/>
+        <field name="ccAddresses" type="text-medium"><description>Comma separated list of CC email addresses</description></field>
+        <field name="bccAddresses" type="text-medium"><description>Comma separated list of BCC email addresses</description></field>
         <field name="subject" type="text-long"/>
         <field name="bodyScreenLocation" type="text-medium"/>
         <field name="webappName" type="text-medium"/>

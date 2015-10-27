@@ -17,6 +17,8 @@
  */
 
 import org.apache.commons.mail.HtmlEmail
+
+import javax.mail.internet.InternetAddress
 import javax.mail.util.ByteArrayDataSource
 import javax.activation.DataSource
 import org.moqui.BaseException
@@ -54,25 +56,52 @@ if (emailTemplate && !emailTemplate.fromAddress)
     ec.message.addError("From address is empty for EmailTemplate [${emailTemplateId}]")
 if (ec.message.hasError()) return
 
-HtmlEmail email = new HtmlEmail()
-email.setHostName((String) emailServer.smtpHost)
-if (emailServer.smtpPort) email.setSmtpPort((emailServer.smtpPort ?: "25") as int)
-if (emailServer.mailUsername) email.setAuthentication((String) emailServer.mailUsername, (String) emailServer.mailPassword)
-if (emailServer.smtpStartTls) email.setTLS(emailServer.smtpStartTls == "Y")
-if (emailServer.smtpSsl) email.setSSL(emailServer.smtpSsl == "Y")
+String host = emailServer.smtpHost
+int port = (emailServer.smtpPort ?: "25") as int
 
-email.setFrom((String) emailTemplate.fromAddress, (String) emailTemplate.fromName)
+HtmlEmail email = new HtmlEmail()
+email.setHostName(host)
+email.setSmtpPort(port)
+if (emailServer.mailUsername) email.setAuthentication((String) emailServer.mailUsername, (String) emailServer.mailPassword)
+if (emailServer.smtpStartTls) {
+    email.setStartTLSEnabled(emailServer.smtpStartTls == "Y")
+    email.setStartTLSRequired(emailServer.smtpStartTls == "Y")
+}
+if (emailServer.smtpSsl) email.setSSLOnConnect(emailServer.smtpSsl == "Y")
+if (email.isSSLOnConnect()) {
+    // email.setSslSmtpPort(port as String)
+    // email.setSSLCheckServerIdentity(emailServer.smtpSsl == "Y")
+}
+
+// set the subject
 String subject = ec.resource.expand((String) emailTemplate.subject, "")
 email.setSubject(subject)
 
+// set from, reply to, bounce addresses
+email.setFrom((String) emailTemplate.fromAddress, (String) emailTemplate.fromName)
+if (emailTemplate.replyToAddresses) {
+    def rtList = ((String) emailTemplate.replyToAddresses).split(",")
+    for (def address in rtList) email.addReplyTo(address.trim())
+}
+if (emailTemplate.bounceAddress) email.setBounceAddress((String) emailTemplate.bounceAddress)
+
+// set to, cc, bcc addresses
 def toList = ((String) toAddresses).split(",")
 for (def toAddress in toList) email.addTo(toAddress.trim())
 if (emailTemplate.ccAddresses) {
     def ccList = ((String) emailTemplate.ccAddresses).split(",")
     for (def ccAddress in ccList) email.addCc(ccAddress.trim())
 }
+if (ccAddresses) {
+    def ccList = ((String) ccAddresses).split(",")
+    for (def ccAddress in ccList) email.addCc(ccAddress.trim())
+}
 if (emailTemplate.bccAddresses) {
     def bccList = ((String) emailTemplate.bccAddresses).split(",")
+    for (def bccAddress in bccList) email.addBcc(bccAddress.trim())
+}
+if (bccAddresses) {
+    def bccList = ((String) bccAddresses).split(",")
     for (def bccAddress in bccList) email.addBcc(bccAddress.trim())
 }
 
@@ -123,7 +152,8 @@ if (createEmailMessage) {
     emailMessageId = cemResults.emailMessageId
 }
 
-logger.info("Sending [${email}] email from template [${emailTemplateId}] with bodyHtml:\n${bodyHtml}\n bodyText:\n${bodyText}")
+logger.info("Sending email [${email.getSubject()}] from ${email.getFromAddress()} to ${email.getToAddresses()} cc ${email.getCcAddresses()} bcc ${email.getBccAddresses()} via ${emailServer.mailUsername}@${email.getHostName()}:${email.getSmtpPort()} SSL? ${email.isSSLOnConnect()}:${email.isSSLCheckServerIdentity()} TLS? ${email.isStartTLSEnabled()}:${email.isStartTLSRequired()} with bodyHtml:\n${bodyHtml}\nbodyText:\n${bodyText}")
+email.setDebug(true)
 
 // send the email
 messageId = email.send()

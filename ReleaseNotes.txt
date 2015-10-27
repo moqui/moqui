@@ -38,6 +38,11 @@ New Features:
   new methods in EntityValue, EntityList, and EntityFind to get value Maps
   for the master record plus all details
 - Various improvements to email message polling (calling EM-ECA rules)
+  including support for Java System Properties pass through and fix for
+  password pass through for IMAPS/etc
+- Improved sending EmailTemplate with support for reply to and bounce
+  addresses from EmailTemplate and CC/BCC addresses from both EmailTemplate
+  and service parameters
 - Localized strings may now contain a double hash (##) to specify context
   where a single word in the default language (ie English) is ambiguous; at
   runtime if no matching LocalizedMessage is found the text before the
