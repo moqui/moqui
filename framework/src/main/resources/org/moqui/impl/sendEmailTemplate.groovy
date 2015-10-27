@@ -18,7 +18,6 @@
 
 import org.apache.commons.mail.HtmlEmail
 
-import javax.mail.internet.InternetAddress
 import javax.mail.util.ByteArrayDataSource
 import javax.activation.DataSource
 import org.moqui.BaseException
@@ -44,7 +43,17 @@ try {
     if (!emailTemplate) ec.message.addError("No EmailTemplate record found for ID [${emailTemplateId}]")
     if (ec.message.hasError()) return
 
-    //def emailTemplateAttachmentList = ec.entity.find("moqui.basic.email.EmailTemplateAttachment").condition("emailTemplateId", emailTemplateId).list()
+    // prepare the html message
+    def bodyRender = ec.screen.makeRender().rootScreen((String) emailTemplate.bodyScreenLocation)
+            .webappName((String) emailTemplate.webappName).renderMode("html")
+    String bodyHtml = bodyRender.render()
+
+    // prepare the alternative plain text message
+    // render screen with renderMode=text for this
+    def bodyTextRender = ec.screen.makeRender().rootScreen((String) emailTemplate.bodyScreenLocation)
+            .webappName((String) emailTemplate.webappName).renderMode("text")
+    String bodyText = bodyTextRender.render()
+
     def emailTemplateAttachmentList = emailTemplate."moqui.basic.email.EmailTemplateAttachment"
     def emailServer = emailTemplate."moqui.basic.email.EmailServer"
 
@@ -54,7 +63,10 @@ try {
         ec.message.addError("SMTP Host is empty for EmailServer [${emailServer.emailServerId}]")
     if (emailTemplate && !emailTemplate.fromAddress)
         ec.message.addError("From address is empty for EmailTemplate [${emailTemplateId}]")
-    if (ec.message.hasError()) return
+    if (ec.message.hasError()) {
+        logger.info("Error sending email: ${ec.message.getErrorsString()}\nbodyHtml:\n${bodyHtml}\nbodyText:\n${bodyText}")
+        return
+    }
 
     String host = emailServer.smtpHost
     int port = (emailServer.smtpPort ?: "25") as int
@@ -105,17 +117,9 @@ try {
         for (def bccAddress in bccList) email.addBcc(bccAddress.trim())
     }
 
-    // prepare and set the html message
-    def bodyRender = ec.screen.makeRender().rootScreen((String) emailTemplate.bodyScreenLocation)
-            .webappName((String) emailTemplate.webappName).renderMode("html")
-    String bodyHtml = bodyRender.render()
+    // set the html message
     email.setHtmlMsg(bodyHtml)
-
     // set the alternative plain text message
-    // render screen with renderMode=text for this
-    def bodyTextRender = ec.screen.makeRender().rootScreen((String) emailTemplate.bodyScreenLocation)
-            .webappName((String) emailTemplate.webappName).renderMode("text")
-    String bodyText = bodyTextRender.render()
     email.setTextMsg(bodyText)
     //email.setTextMsg("Your email client does not support HTML messages")
 
