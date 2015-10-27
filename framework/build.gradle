@@ -96,11 +96,14 @@ dependencies {
     compile group: 'org.apache.jackrabbit', name: 'jackrabbit-jcr-rmi', version: '2.11.1' // Apache 2.0
     compile group: 'org.apache.jackrabbit', name: 'jackrabbit-spi', version: '2.11.1' // Apache 2.0
     compile group: 'org.apache.jackrabbit', name: 'jackrabbit-jcr2spi', version: '2.11.1' // Apache 2.0
-    compile group: 'javax.jcr', name: 'jcr', version: '2.0' // Apache 2.0???
 
+    compile group: 'com.sun.mail', name: 'javax.mail', version: '1.5.4' // CDDL
+    compile group: 'javax.jcr', name: 'jcr', version: '2.0' // Apache 2.0???
+    compile group: 'net.java.dev.jna', name: 'jna', version: '4.2.1' // Apache 2.0
+    compile group: 'net.java.dev.jna', name: 'jna-platform', version: '4.2.1' // Apache 2.0
     compile group: 'jaxb', name: 'jsr173_1.0_api', version: '' // ???
     compile group: 'org.liquibase', name: 'liquibase-core', version: '3.4.1' // Apache 2.0
-    compile name: 'mail', version: '' // ???
+
     compile group: 'org.commonjava.googlecode.markdown4j', name: 'markdown4j', version: '2.2' // BSD
     compile name: 'org.eclipse.mylyn.wikitext.core_1.8.0.I20121130-0624', version: '' // EPL
     compile name: 'org.eclipse.mylyn.wikitext.confluence.core_1.8.0.I20121130-0624', version: '' // EPL
@@ -122,8 +125,6 @@ dependencies {
     compile group: 'com.tinkerpop.gremlin', name: 'gremlin-java', version: '2.6.0' // BSD
     compile group: 'com.tinkerpop.gremlin', name: 'gremlin-groovy', version: '2.6.0' // BSD
     compile group: 'org.javassist', name: 'javassist', version: '3.20.0-GA' // Apache 2.0
-    compile group: 'net.java.dev.jna', name: 'jna', version: '4.2.1' // Apache 2.0
-    compile group: 'net.java.dev.jna', name: 'jna-platform', version: '4.2.1' // Apache 2.0
 
     apiCompile group: 'org.quartz-scheduler', name: 'quartz', version: '2.2.2' // Apache 2.0
     compile group: 'org.quartz-scheduler', name: 'quartz', version: '2.2.2' // Apache 2.0
@@ -207,8 +208,7 @@ dependencies {
     // runtime group: 'org.apache.camel', name: 'camel-http4', version: '2.16.0' // Apache 2.0
     runtime group: 'org.apache.camel', name: 'camel-jms', version: '2.16.0' // Apache 2.0
     runtime group: 'org.apache.camel', name: 'camel-lucene', version: '2.16.0' // Apache 2.0
-    // camel-mail commented until resolution of missing class: com.sun.mail.imap.SortTerm
-    // runtime group: 'org.apache.camel', name: 'camel-mail', version: '2.16.0' // Apache 2.0
+    runtime group: 'org.apache.camel', name: 'camel-mail', version: '2.16.0' // Apache 2.0
     runtime group: 'org.apache.camel', name: 'camel-mqtt', version: '2.16.0' // Apache 2.0
     runtime group: 'org.apache.camel', name: 'camel-quartz2', version: '2.16.0' // Apache 2.0
     runtime group: 'org.apache.camel', name: 'camel-shiro', version: '2.16.0' // Apache 2.0
