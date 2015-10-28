@@ -204,8 +204,8 @@ dependencies {
     runtime group: 'org.apache.camel', name: 'camel-elasticsearch', version: '2.16.0' // Apache 2.0
     runtime group: 'org.apache.camel', name: 'camel-freemarker', version: '2.16.0' // Apache 2.0
     runtime group: 'org.apache.camel', name: 'camel-groovy', version: '2.16.0' // Apache 2.0
-    // camel-http4 commented until resolution of missing class: org.apache.camel.http.common.HttpMethods
-    // runtime group: 'org.apache.camel', name: 'camel-http4', version: '2.16.0' // Apache 2.0
+    runtime group: 'org.apache.camel', name: 'camel-http-common', version: '2.16.0' // Apache 2.0
+    runtime group: 'org.apache.camel', name: 'camel-http4', version: '2.16.0' // Apache 2.0
     runtime group: 'org.apache.camel', name: 'camel-jms', version: '2.16.0' // Apache 2.0
     runtime group: 'org.apache.camel', name: 'camel-lucene', version: '2.16.0' // Apache 2.0
     runtime group: 'org.apache.camel', name: 'camel-mail', version: '2.16.0' // Apache 2.0
