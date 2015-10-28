@@ -196,11 +196,12 @@ along with this software (see the LICENSE.md file). If not, see
         <field name="systemMessageTypeId" type="id"/>
         <field name="statusId" type="id" enable-audit-log="true"/>
         <field name="isOutgoing" type="text-indicator"/>
-        <field name="initDate" type="date-time"><description>For incoming the received date, for outgoing the produced date.</description></field>
-        <field name="processedDate" type="date-time"><description>For incoming the consumed date, for outgoing the sent date.</description></field>
+        <field name="initDate" type="date-time"><description>For incoming the received date, for outgoing the produced date</description></field>
+        <field name="processedDate" type="date-time"><description>For incoming the consumed date, for outgoing the sent date</description></field>
         <field name="lastAttemptDate" type="date-time"/>
         <field name="failCount" type="number-integer"/>
         <field name="parentMessageId" type="id"><description>If a received message is split this is the original combined message</description></field>
+        <field name="ackMessageId" type="id"><description>The message received or sent to acknowledge this message</description></field>
         <field name="remoteMessageId" type="text-medium"><description>For messages to/from another Moqui system, the
             systemMessageId on the remote system; may also be used for other system level message IDs (as opposed to
             messageId which is for the ID in the envelope of the message)</description></field>
@@ -222,6 +223,10 @@ along with this software (see the LICENSE.md file). If not, see
             and GS05 (time))</description></field>
         <field name="docType" type="text-short"><description>For OAGIS the BSR Noun; For X12 GS01 (functional ID code)</description></field>
         <field name="docSubType" type="text-short"><description>For OAGIS the BSR Verb; For X12 ST01 (tx set ID code)</description></field>
+        <field name="docControl" type="text-short"><description>Control number of the message when applicable (such as
+            GS06 in EDI X12 messages)</description></field>
+        <field name="docSubControl" type="text-short"><description>Sub-Control number of the message when applicable (such as
+            ST02 in EDI X12 messages)</description></field>
         <field name="docVersion" type="text-short"><description>The document version (for OAGIS BSR Revision, for X12 GS08 (version/revision))</description></field>
 
         <!-- the follow may be useful for other types of messages, but come specifically from the OAGIS specification;
@@ -250,8 +255,11 @@ along with this software (see the LICENSE.md file). If not, see
             <moqui.basic.StatusItem description="Consuming" sequenceNum="21" statusId="SmsgConsuming" statusTypeId="SystemMessage"/>
             <moqui.basic.StatusItem description="Consumed" sequenceNum="22" statusId="SmsgConsumed" statusTypeId="SystemMessage"/>
 
-            <!-- Confirmation sent -->
+            <!-- Confirmation sent/received -->
             <moqui.basic.StatusItem description="Confirmed" sequenceNum="90" statusId="SmsgConfirmed" statusTypeId="SystemMessage"/>
+            <!-- Rejected by receiver (functional reject, ie syntax/etc errors) -->
+            <moqui.basic.StatusItem description="Rejected" sequenceNum="97" statusId="SmsgRejected" statusTypeId="SystemMessage"/>
+            <!-- Cancelled by sender -->
             <moqui.basic.StatusItem description="Cancelled" sequenceNum="98" statusId="SmsgCancelled" statusTypeId="SystemMessage"/>
             <!-- Error, generally after retry limit -->
             <moqui.basic.StatusItem description="Error" sequenceNum="99" statusId="SmsgError" statusTypeId="SystemMessage"/>
@@ -261,13 +269,16 @@ along with this software (see the LICENSE.md file). If not, see
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgSending" toStatusId="SmsgProduced" transitionName="Back to Produced"/>
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgProduced" toStatusId="SmsgSent" transitionName="Send"/>
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgSent" toStatusId="SmsgConfirmed" transitionName="Confirm"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgSent" toStatusId="SmsgRejected" transitionName="Reject"/>
 
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgReceived" toStatusId="SmsgConsuming" transitionName="Consuming"/>
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgConsuming" toStatusId="SmsgConsumed" transitionName="Consume"/>
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgConsuming" toStatusId="SmsgReceived" transitionName="Back to Received"/>
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgReceived" toStatusId="SmsgConsumed" transitionName="Consume"/>
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgConsumed" toStatusId="SmsgConfirmed" transitionName="Confirm"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgConsumed" toStatusId="SmsgRejected" transitionName="Reject"/>
 
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgConsuming" toStatusId="SmsgError" transitionName="Error"/>
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgProduced" toStatusId="SmsgError" transitionName="Error"/>
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgError" toStatusId="SmsgProduced" transitionName="Back to Produced"/>
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgError" toStatusId="SmsgSending" transitionName="Sending"/>
@@ -301,6 +312,10 @@ along with this software (see the LICENSE.md file). If not, see
         <field name="consumeServiceName" type="text-medium"><description>The service to call after a message is
             received to consume it. Should implement the org.moqui.impl.SystemMessageServices.consume#SystemMessage
             interface (just a systemMessageId in-parameter). Used by the consume#ReceivedSystemMessage service.</description></field>
+        <field name="produceAckServiceName" type="text-medium"><description>The service to call to produce an async
+            acknowledgement of a message. Should implement the org.moqui.impl.SystemMessageServices.produce#AckSystemMessage.
+            Once the message is produced should call the org.moqui.impl.SystemMessageServices.queue#SystemMessage service.</description></field>
+        <field name="produceAckOnConsumed" type="text-indicator"/>
         <field name="sendServiceName" type="text-medium"><description>The service to call to send queued messages.
             Should implement the org.moqui.impl.SystemMessageServices.send#SystemMessage interface (just a
             systemMessageId in-parameter and remoteMessageId out-parameter). Used by the send#ProducedSystemMessage service,

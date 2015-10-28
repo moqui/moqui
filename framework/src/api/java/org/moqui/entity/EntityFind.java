@@ -243,24 +243,26 @@ public interface EntityFind extends java.io.Serializable {
 
     EntityFind disableAuthz();
 
-    /** Runs a find with current options to get a single record by primary key.
-     * This method ignores the cache setting and always gets results from the database.
-     */
+    /** Runs a find with current options to get a single record by primary key. */
     EntityValue one() throws EntityException;
 
-    /** Runs a find with current options to get a list of records.
-     * This method ignores the cache setting and always gets results from the database.
-     */
+    /** Runs a find with current options to get a single record by primary key, then gets all related/dependent
+     * entities according to the named master definition (default name is 'default'). */
+    Map<String, Object> oneMaster(String name) throws EntityException;
+
+    /** Runs a find with current options to get a list of records. */
     EntityList list() throws EntityException;
+
+    /** Runs a find with current options to get a list of records, then for each result gets all related/dependent
+     * entities according to the named master definition (default name is 'default') */
+    List<Map<String, Object>> listMaster(String name) throws EntityException;
 
     /** Runs a find with current options and returns an EntityListIterator object.
      * This method ignores the cache setting and always gets results from the database.
      */
     EntityListIterator iterator() throws EntityException;
 
-    /** Runs a find with current options to get a count of matching records.
-     * This method ignores the cache setting and always gets results from the database.
-     */
+    /** Runs a find with current options to get a count of matching records. */
     long count() throws EntityException;
 
     /** Update a set of values that match a condition.

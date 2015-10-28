@@ -445,9 +445,9 @@ class ServiceFacadeImpl implements ServiceFacade {
     }
 
     @CompileStatic
-    void runEmecaRules(MimeMessage message) {
+    void runEmecaRules(MimeMessage message, String emailServerId) {
         ExecutionContext ec = ecfi.executionContext
-        for (EmailEcaRule eer in emecaRuleList) eer.runIfMatches(message, ec)
+        for (EmailEcaRule eer in emecaRuleList) eer.runIfMatches(message, emailServerId, ec)
     }
 
     @Override

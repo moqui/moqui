@@ -507,6 +507,15 @@ class StupidUtilities {
         return newValue.toString()
     }
 
+    public static final String encodeAsciiFilename(String filename) {
+        try {
+            URI uri = new URI(null, null, filename, null);
+            return uri.toASCIIString();
+        } catch (URISyntaxException e) {
+            return filename;
+        }
+    }
+
     static String toStringCleanBom(byte[] bytes) {
         // NOTE: this only supports UTF-8 for now!
         if (!bytes) return ""

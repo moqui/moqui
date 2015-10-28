@@ -15,38 +15,36 @@ package org.moqui.impl.context
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 import groovy.transform.CompileStatic
-import org.moqui.context.ArtifactAuthorizationException
-import org.moqui.context.ArtifactTarpitException
-import org.moqui.context.ContextStack
-import org.moqui.context.ResourceReference
-import org.moqui.context.ValidationError
+
+import org.apache.commons.codec.binary.Base64
+import org.apache.commons.fileupload.FileItem
+import org.apache.commons.fileupload.FileItemFactory
+import org.apache.commons.fileupload.disk.DiskFileItemFactory
+import org.apache.commons.fileupload.servlet.ServletFileUpload
+
+import org.moqui.context.*
 import org.moqui.entity.EntityNotFoundException
 import org.moqui.entity.EntityValueNotFoundException
 import org.moqui.impl.StupidUtilities
+import org.moqui.impl.StupidWebUtilities
+import org.moqui.impl.context.ExecutionContextFactoryImpl.WebappInfo
 import org.moqui.impl.entity.EntityDefinition
 import org.moqui.impl.entity.EntityFacadeImpl
 import org.moqui.impl.screen.ScreenDefinition
 import org.moqui.impl.screen.ScreenUrlInfo
-import org.yaml.snakeyaml.DumperOptions
-import org.yaml.snakeyaml.Yaml
-
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
-import javax.servlet.http.HttpSession
-import javax.servlet.ServletContext
-
-import org.apache.commons.fileupload.disk.DiskFileItemFactory
-import org.apache.commons.fileupload.servlet.ServletFileUpload
-import org.apache.commons.fileupload.FileItemFactory
-import org.apache.commons.fileupload.FileItem
-import org.moqui.context.WebFacade
-import org.moqui.impl.context.ExecutionContextFactoryImpl.WebappInfo
 import org.moqui.impl.service.ServiceJsonRpcDispatcher
 import org.moqui.impl.service.ServiceXmlRpcDispatcher
-import org.moqui.impl.StupidWebUtilities
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.yaml.snakeyaml.DumperOptions
+import org.yaml.snakeyaml.Yaml
+
+import javax.servlet.ServletContext
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
+import javax.servlet.http.HttpSession
+import java.security.SecureRandom
 
 /** This class is a facade to easily get information from and about the web context. */
 class WebFacadeImpl implements WebFacade {
@@ -140,7 +138,7 @@ class WebFacadeImpl implements WebFacade {
 
             for (FileItem item in items) {
                 if (item.isFormField()) {
-                    multiPartParameters.put(item.getFieldName(), item.getString())
+                    multiPartParameters.put(item.getFieldName(), item.getString("UTF-8"))
                 } else {
                     // put the FileItem itself in the Map to be used by the application code
                     multiPartParameters.put(item.getFieldName(), item)
@@ -169,7 +167,22 @@ class WebFacadeImpl implements WebFacade {
                 }
             }
         }
+
+        // create the session token if needed (protection against CSRF/XSRF attacks; see ScreenRenderImpl)
+        String sessionToken = session.getAttribute("moqui.session.token")
+        if (!sessionToken) {
+            SecureRandom sr = new SecureRandom()
+            byte[] randomBytes = new byte[20]
+            sr.nextBytes(randomBytes)
+            sessionToken = Base64.encodeBase64URLSafeString(randomBytes)
+            session.setAttribute("moqui.session.token", sessionToken)
+            request.setAttribute("moqui.session.token.created", "true")
+        }
     }
+
+    @Override
+    @CompileStatic
+    String getSessionToken() { return session.getAttribute("moqui.session.token") }
 
     // ExecutionContextImpl getEci() { eci }
     void runFirstHitInVisitActions() {
@@ -295,8 +308,11 @@ class WebFacadeImpl implements WebFacade {
         declaredPathParameters.put(name, value)
     }
 
+    @CompileStatic
     List<String> getSavedMessages() { return savedMessages }
+    @CompileStatic
     List<String> getSavedErrors() { return savedErrors }
+    @CompileStatic
     List<ValidationError> getSavedValidationErrors() { return savedValidationErrors }
 
     @Override
@@ -613,7 +629,7 @@ class WebFacadeImpl implements WebFacade {
         if (rr == null) throw new IllegalArgumentException("Resource not found at: ${location}")
         response.setContentType(rr.contentType)
         if (inline) response.addHeader("Content-Disposition", "inline")
-        else response.addHeader("Content-Disposition", "attachment; filename=\"${rr.getFileName()}\"")
+        else response.addHeader("Content-Disposition", "attachment; filename=\"${rr.getFileName()}\"; filename*=utf-8''${StupidUtilities.encodeAsciiFilename(rr.getFileName())}")
         InputStream is = rr.openStream()
         try {
             OutputStream os = response.outputStream
