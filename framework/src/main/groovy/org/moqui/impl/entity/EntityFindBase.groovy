@@ -548,11 +548,7 @@ abstract class EntityFindBase implements EntityFind {
         }
 
         // no condition means no condition/parameter set, so return null for find.one()
-        if (!whereCondition) {
-            // pop the ArtifactExecutionInfo
-            ec.artifactExecution.pop()
-            return null
-        }
+        if (!whereCondition) return null
 
         // try the TX cache before the entity cache, may be more up-to-date
         EntityValueBase txcValue = txCache != null ? txCache.oneGet(this) : null
