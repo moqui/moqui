@@ -16,6 +16,7 @@ import groovy.transform.CompileStatic
 import groovy.util.slurpersupport.GPathResult
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.moqui.BaseException
+import org.moqui.context.ArtifactExecutionInfo
 import org.moqui.context.ExecutionContext
 import org.moqui.entity.EntityList
 import org.moqui.entity.EntityValue
@@ -633,8 +634,9 @@ class ScreenDefinition {
             // NOTE: use the View authz action to leave it open, ie require minimal authz; restrictions are often more
             //    in the services/etc if/when needed, or specific transitions can have authz settings
             String requireAuthentication = (String) parentScreen.screenNode.attribute('require-authentication')
-            ec.getArtifactExecution().push(new ArtifactExecutionInfoImpl("${parentScreen.location}/${name}",
-                    "AT_XML_SCREEN_TRANS", "AUTHZA_VIEW"), (!requireAuthentication || requireAuthentication == "true"))
+            ArtifactExecutionInfo aei = new ArtifactExecutionInfoImpl("${parentScreen.location}/${name}",
+                                "AT_XML_SCREEN_TRANS", "AUTHZA_VIEW")
+            ec.getArtifactExecution().push(aei, (!requireAuthentication || requireAuthentication == "true"))
 
             boolean loggedInAnonymous = false
             if (requireAuthentication == "anonymous-all") {
@@ -678,7 +680,7 @@ class ScreenDefinition {
 
             // all done so pop the artifact info; don't bother making sure this is done on errors/etc like in a finally
             // clause because if there is an error this will help us know how we got there
-            ec.getArtifactExecution().pop()
+            ec.getArtifactExecution().pop(aei)
             if (loggedInAnonymous) ((UserFacadeImpl) ec.getUser()).logoutAnonymousOnly()
 
             return ri
