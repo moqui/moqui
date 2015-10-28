@@ -43,6 +43,8 @@ New Features:
 - Various improvements to email message polling (calling EM-ECA rules)
   including support for Java System Properties pass through and fix for
   password pass through for IMAPS/etc
+- Email ECA structure significantly improved, for details see the
+  org.moqui.EmailServices.process#EmailEca service interface
 - Improved sending EmailTemplate with support for reply to and bounce
   addresses from EmailTemplate and CC/BCC addresses from both EmailTemplate
   and service parameters

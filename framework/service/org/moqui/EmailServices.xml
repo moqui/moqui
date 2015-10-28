@@ -43,8 +43,16 @@ along with this software (see the LICENSE.md file). If not, see
                 <parameter name="subject"/>
                 <parameter name="sentDate" type="Timestamp"/>
                 <parameter name="receivedDate" type="Timestamp"/>
-                <parameter name="bodyPartList" type="List" allow-html="any"><description>List of String for each body part. If the
-                    message is not multi-part will have a single String entry.</description></parameter>
+            </parameter>
+            <parameter name="bodyPartList" type="List">
+                <description>List of Map for each body part. If the message is not multi-part will have a single entry.</description>
+                <parameter name="bodyPartMap" type="Map">
+                    <parameter name="contentType"/>
+                    <parameter name="filename"/>
+                    <parameter name="disposition"/>
+                    <parameter name="contentText" allow-html="any"/>
+                    <parameter name="contentBytes" type="byte[]"/>
+                </parameter>
             </parameter>
             <parameter name="headers" type="Map" allow-html="any"><description>All header names (keys) are converted to
                 lower case for consistency. If multiple values for a header name are found they will be put in a List.</description></parameter>

@@ -12,10 +12,7 @@
  */
 package org.moqui.impl.service
 
-import org.moqui.impl.actions.XmlAction
-import org.moqui.impl.context.ExecutionContextFactoryImpl
-import org.moqui.context.ExecutionContext
-
+import java.sql.Timestamp
 import javax.mail.Flags
 import javax.mail.internet.MimeMessage
 import javax.mail.Address
@@ -24,10 +21,13 @@ import javax.mail.BodyPart
 import javax.mail.Part
 import javax.mail.Header
 
+import org.apache.commons.io.IOUtils
+import org.moqui.impl.actions.XmlAction
+import org.moqui.impl.context.ExecutionContextFactoryImpl
+import org.moqui.context.ExecutionContext
+
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-
-import java.sql.Timestamp
 
 class EmailEcaRule {
     protected final static Logger logger = LoggerFactory.getLogger(EmailEcaRule.class)
@@ -82,7 +82,8 @@ class EmailEcaRule {
             fields.put("subject", message.getSubject())
             fields.put("sentDate", message.getSentDate() ? new Timestamp(message.getSentDate().getTime()) : null)
             fields.put("receivedDate", message.getReceivedDate() ? new Timestamp(message.getReceivedDate().getTime()) : null)
-            fields.put("bodyPartList", makeBodyPartList(message))
+
+            ec.context.put("bodyPartList", makeBodyPartList(message))
 
             Map<String, Object> headers = [:]
             ec.context.put("headers", headers)
@@ -118,17 +119,24 @@ class EmailEcaRule {
         }
     }
 
-    protected List<String> makeBodyPartList(Part part) {
-        List<String> bodyPartList = []
+    protected List<Map> makeBodyPartList(Part part) {
+        List<Map> bodyPartList = []
         Object content = part.getContent()
+        Map bpMap = [contentType:part.getContentType(), filename:part.getFileName(), disposition:part.getDisposition()?.toLowerCase()]
         if (content instanceof CharSequence) {
-            bodyPartList.add(content.toString())
+            bpMap.contentText = content.toString()
+            bodyPartList.add(bpMap)
         } else if (content instanceof Multipart) {
-            int count = ((Multipart) content).getCount()
+            Multipart mpContent = (Multipart) content
+            int count = mpContent.getCount()
             for (int i = 0; i < count; i++) {
-                BodyPart bp = ((Multipart) content).getBodyPart(i)
+                BodyPart bp = mpContent.getBodyPart(i)
                 bodyPartList.addAll(makeBodyPartList(bp))
             }
+        } else if (content instanceof InputStream) {
+            InputStream is = (InputStream) content
+            bpMap.contentBytes = IOUtils.toByteArray(is)
+            bodyPartList.add(bpMap)
         }
         return bodyPartList
     }
