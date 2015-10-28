@@ -214,10 +214,11 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                 sfi.getEcfi().countArtifactHit("service", "entity-implicit", getServiceName(), currentParameters,
                         callStartTime, runningTimeMillis, null)
 
-                eci.artifactExecution.pop()
+                eci.artifactExecution.pop(aei)
                 return result
             } else {
                 logger.info("No service with name ${getServiceName()}, isEntityAutoPattern=${isEntityAutoPattern()}, path=${path}, verb=${verb}, noun=${noun}, noun is entity? ${((EntityFacadeImpl) eci.getEntity()).isEntityDefined(noun)}")
+                eci.artifactExecution.pop(aei)
                 throw new ServiceException("Could not find service with name [${getServiceName()}]")
             }
         }

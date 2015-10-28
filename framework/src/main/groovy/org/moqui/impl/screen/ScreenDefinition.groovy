@@ -408,8 +408,8 @@ class ScreenDefinition {
     void render(ScreenRenderImpl sri, boolean isTargetScreen) {
         // NOTE: don't require authz if the screen doesn't require auth
         String requireAuthentication = (String) screenNode.attribute('require-authentication')
-        sri.ec.artifactExecution.push(new ArtifactExecutionInfoImpl(location, "AT_XML_SCREEN", "AUTHZA_VIEW"),
-                isTargetScreen ? (!requireAuthentication || requireAuthentication == "true") : false)
+        ArtifactExecutionInfo aei = new ArtifactExecutionInfoImpl(location, "AT_XML_SCREEN", "AUTHZA_VIEW")
+        sri.ec.artifactExecution.push(aei, isTargetScreen ? (!requireAuthentication || requireAuthentication == "true") : false)
 
         boolean loggedInAnonymous = false
         if (requireAuthentication == "anonymous-all") {
@@ -423,7 +423,7 @@ class ScreenDefinition {
         rootSection.render(sri)
 
         // all done so pop the artifact info; don't bother making sure this is done on errors/etc like in a finally clause because if there is an error this will help us know how we got there
-        sri.ec.artifactExecution.pop()
+        sri.ec.artifactExecution.pop(aei)
         if (loggedInAnonymous) ((UserFacadeImpl) sri.ec.getUser()).logoutAnonymousOnly()
     }
 
