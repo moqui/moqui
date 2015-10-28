@@ -1165,17 +1165,19 @@ abstract class EntityValueBase implements EntityValue {
         // if (ed.getEntityName() == "foo") logger.warn("================ evb.update() ${getEntityName()} nonPkFieldList=${nonPkFieldList};\nvalueMap=${valueMap};\noldValues=${oldValues}")
         if (!nonPkFieldList) {
             if (logger.isTraceEnabled()) logger.trace((String) "Not doing update on entity with no populated non-PK fields; entity=" + this.toString())
+            ec.getArtifactExecution().pop(aei)
             return this
         }
 
         // do this after the empty nonPkFieldList check so that if nothing has changed then ignore the attempt to update
         if (changedCreateOnlyFields.size() > 0) {
+            ec.getArtifactExecution().pop(aei)
             throw new EntityException("Cannot update create-only (immutable) fields ${changedCreateOnlyFields} on entity [${getEntityName()}]")
         }
 
-        if (ed.optimisticLock()) {
-            if (getTimestamp("lastUpdatedStamp") != refreshedValue.getTimestamp("lastUpdatedStamp"))
-                throw new EntityException("This record was updated by someone else at [${getTimestamp("lastUpdatedStamp")}] which was after the version you loaded at [${refreshedValue.getTimestamp("lastUpdatedStamp")}]. Not updating to avoid overwriting data.")
+        if (ed.optimisticLock() && getTimestamp("lastUpdatedStamp") != refreshedValue.getTimestamp("lastUpdatedStamp")) {
+            ec.getArtifactExecution().pop(aei)
+            throw new EntityException("This record was updated by someone else at [${getTimestamp("lastUpdatedStamp")}] which was after the version you loaded at [${refreshedValue.getTimestamp("lastUpdatedStamp")}]. Not updating to avoid overwriting data.")
         }
 
         Long lastUpdatedLong = ecfi.getTransactionFacade().getCurrentTransactionStartTime() ?: System.currentTimeMillis()
@@ -1362,6 +1364,7 @@ abstract class EntityValueBase implements EntityValue {
         if (pkFieldList.size() == 0) {
             // throw new EntityException("Entity ${getEntityName()} has no primary key fields, cannot do refresh.")
             if (logger.isTraceEnabled()) logger.trace("Entity ${getEntityName()} has no primary key fields, cannot do refresh.")
+            ec.getArtifactExecution().pop(aei)
             return false
         }
 
