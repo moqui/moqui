@@ -579,15 +579,16 @@ class ScreenRenderImpl implements ScreenRender {
 
             // for inherited permissions to work, walk the screen list before the screenRenderDefList and artifact push
             // them, then pop after
-            ArrayList<ArtifactExecutionInfo> aeiList = new ArrayList<ArtifactExecutionInfo>(screenUrlInfo.renderPathDifference)
+            ArrayList<ArtifactExecutionInfo> aeiList = null
             if (screenUrlInfo.renderPathDifference > 0) {
+                aeiList = new ArrayList<ArtifactExecutionInfo>(screenUrlInfo.renderPathDifference)
                 for (int i = 0; i < screenUrlInfo.renderPathDifference; i++) {
                     ScreenDefinition permSd = screenUrlInfo.screenPathDefList.get(i)
                     if (permSd.getTenantsAllowed() && !permSd.getTenantsAllowed().contains(ec.getTenantId()))
                         throw new ArtifactAuthorizationException("The screen ${permSd.getScreenName()} is not available to tenant [${ec.getTenantId()}]")
                     ArtifactExecutionInfo aei = new ArtifactExecutionInfoImpl(permSd.location, "AT_XML_SCREEN", "AUTHZA_VIEW")
                     ec.artifactExecution.push(aei, false)
-                    aeiList.set(i, aei)
+                    aeiList.add(aei)
                 }
             }
 
@@ -604,7 +605,7 @@ class ScreenRenderImpl implements ScreenRender {
             // if dontDoRender then quit now; this should be set during always-actions or pre-actions
             if (dontDoRender) {
                 // pop all screens, then good to go
-                for (int i = (aeiList.size() - 1); i >= 0; i--) ec.artifactExecution.pop(aeiList.get(i))
+                if (aeiList) for (int i = (aeiList.size() - 1); i >= 0; i--) ec.artifactExecution.pop(aeiList.get(i))
                 return
             }
 
@@ -632,7 +633,7 @@ class ScreenRenderImpl implements ScreenRender {
                 internalWriter.write("\n</script>\n")
             }
 
-            for (int i = (aeiList.size() - 1); i >= 0; i--) ec.artifactExecution.pop(aeiList.get(i))
+            if (aeiList) for (int i = (aeiList.size() - 1); i >= 0; i--) ec.artifactExecution.pop(aeiList.get(i))
         } catch (ArtifactAuthorizationException e) {
             throw e
         } catch (ArtifactTarpitException e) {
