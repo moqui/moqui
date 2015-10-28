@@ -125,7 +125,9 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
     ArtifactExecutionInfo pop(ArtifactExecutionInfo aei) {
         if (this.artifactExecutionInfoStack.size() > 0) {
             ArtifactExecutionInfoImpl lastAeii = artifactExecutionInfoStack.removeFirst()
-            if (aei != null && (aei.name != lastAeii.name || aei.typeEnumId != lastAeii.typeEnumId || aei.actionEnumId != lastAeii.actionEnumId))
+            // removed this for performance reasons, generally just checking the name is adequate
+            // || aei.typeEnumId != lastAeii.typeEnumId || aei.actionEnumId != lastAeii.actionEnumId
+            if (aei != null && (aei.name != lastAeii.name))
                 throw new IllegalArgumentException("Popped artifact (${aei.name}:${aei.typeEnumId}:${aei.actionEnumId}) did not match top of stack (${lastAeii.name}:${lastAeii.typeEnumId}:${lastAeii.actionEnumId}:${lastAeii.actionDetail})")
             lastAeii.setEndTime()
             return lastAeii
