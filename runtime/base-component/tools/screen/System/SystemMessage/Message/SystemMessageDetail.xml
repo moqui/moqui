@@ -91,7 +91,7 @@ along with this software (see the LICENSE.md file). If not, see
             <row-col lg="7">
                 <section name="AckOfSection" condition="ackOfMessageList"><widgets>
                     <form-list name="AckOfForm" list="ackOfMessageList" skip-form="true">
-                        <field name="systemMessageId"><default-field title="Ack Message">
+                        <field name="systemMessageId"><default-field title="Ack of Message">
                             <link url="." text="${systemMessageId}"/></default-field></field>
                         <field name="systemMessageTypeId"><default-field title="Type">
                             <link url="typeDetail" entity-name="moqui.service.message.SystemMessageType"
