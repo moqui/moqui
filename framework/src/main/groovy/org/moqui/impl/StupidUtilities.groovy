@@ -459,25 +459,24 @@ class StupidUtilities {
     }
 
     static String encodeForXmlAttribute(String original) { return encodeForXmlAttribute(original, false) }
-
     static String encodeForXmlAttribute(String original, boolean addZeroWidthSpaces) {
         StringBuilder newValue = new StringBuilder(original)
         for (int i = 0; i < newValue.length(); i++) {
             char curChar = newValue.charAt(i)
 
             switch (curChar) {
-                case '\'': newValue.replace(i, i+1, "&apos;"); i+=5; break;
-                case '"' : newValue.replace(i, i+1, "&quot;"); i+=5; break;
-                case '&' : newValue.replace(i, i+1, "&amp;"); i+=4; break;
-                case '<' : newValue.replace(i, i+1, "&lt;"); i+=3; break;
-                case '>' : newValue.replace(i, i+1, "&gt;"); i+=3; break;
-                case 0x5 : newValue.replace(i, i+1, "..."); break;
-                case 0x12: newValue.replace(i, i+1, "&apos;"); i+=5; break;
-                case 0x13: newValue.replace(i, i+1, "&quot;"); i+=5; break; // left
-                case 0x14: newValue.replace(i, i+1, "&quot;"); i+=5; break; // right
-                case 0x16: newValue.replace(i, i+1, "-"); break; // big dash
-                case 0x17: newValue.replace(i, i+1, "-"); break;
-                case 0x19: newValue.replace(i, i+1, "tm"); break;
+                case '\'': newValue.replace(i, i+1I, "&apos;"); i+=5I; break;
+                case '"' : newValue.replace(i, i+1I, "&quot;"); i+=5I; break;
+                case '&' : newValue.replace(i, i+1I, "&amp;"); i+=4I; break;
+                case '<' : newValue.replace(i, i+1I, "&lt;"); i+=3I; break;
+                case '>' : newValue.replace(i, i+1I, "&gt;"); i+=3I; break;
+                case 0x5 : newValue.replace(i, i+1I, "..."); i+=2I; break;
+                case 0x12: newValue.replace(i, i+1I, "&apos;"); i+=5I; break;
+                case 0x13: newValue.replace(i, i+1I, "&quot;"); i+=5I; break; // left
+                case 0x14: newValue.replace(i, i+1I, "&quot;"); i+=5I; break; // right
+                case 0x16: newValue.replace(i, i+1I, "-"); break; // big dash
+                case 0x17: newValue.replace(i, i+1I, "-"); break;
+                case 0x19: newValue.replace(i, i+1I, "tm"); i++; break;
                 default:
                     if (curChar < 0x20 && curChar != 0x9 && curChar != 0xA && curChar != 0xD) {
                         // the only valid values < 0x20 are 0x9 (tab), 0xA (newline), 0xD (carriage return)
@@ -486,13 +485,38 @@ class StupidUtilities {
                     } else if (curChar > 0x7F) {
                         // Replace each char which is out of the ASCII range with a XML entity
                         String s = "&#" + (((int) curChar.charValue()) as String) + ";"
-                        newValue.replace(i, i+1, s)
-                        i += s.length() - 1
+                        newValue.replace(i, i+1I, s)
+                        i += s.length() - 1I
                     } else if (addZeroWidthSpaces) {
                         newValue.insert(i, "&#8203;")
-                        i += 7
+                        i += 7I
                     }
             }
+        }
+        return newValue.toString()
+    }
+    static final Map<String, String> xmlEntityMap = [apos:'\'', quot:'"', amp:'&', lt:'<', gt:'>']
+    static String decodeFromXml(String original) {
+        if (!original) return original
+        int pos = original.indexOf('&')
+        if (pos == -1) return original
+
+        StringBuilder newValue = new StringBuilder(original)
+        while (pos < newValue.length() && pos >= 0) {
+            int scIndex = newValue.indexOf(';', pos + 1I)
+            if (scIndex == -1) break
+            String entityName = newValue.substring(pos + 1I, scIndex)
+            String replaceChar
+            if (entityName.charAt(0) == ('#' as char)) {
+                String decStr = entityName.substring(1)
+                int decInt = Integer.valueOf(decStr)
+                replaceChar = new String(Character.toChars(decInt))
+            } else {
+                replaceChar = xmlEntityMap.get(entityName)
+            }
+            // logger.warn("========= pos=${pos}, entityName=${entityName}, replaceChar=${replaceChar}")
+            if (replaceChar) newValue.replace(pos, scIndex + 1I, replaceChar)
+            pos = newValue.indexOf('&', pos + 1I)
         }
         return newValue.toString()
     }
