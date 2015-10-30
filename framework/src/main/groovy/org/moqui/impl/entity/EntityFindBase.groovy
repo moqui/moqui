@@ -15,6 +15,7 @@ package org.moqui.impl.entity
 import groovy.transform.CompileStatic
 import groovy.transform.TypeChecked
 import groovy.transform.TypeCheckingMode
+import org.moqui.context.ArtifactExecutionInfo
 import org.moqui.impl.context.TransactionCache
 
 import java.sql.ResultSet
@@ -512,15 +513,14 @@ abstract class EntityFindBase implements EntityFind {
             ExecutionContext ec = efi.getEcfi().getExecutionContext()
 
             String authorizeSkip = (String) entityNode.attribute('authorize-skip')
-            ec.getArtifactExecution().push(
-                    new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW").setActionDetail("one"),
-                    (authorizeSkip != "true" && !authorizeSkip?.contains("view")))
+            ArtifactExecutionInfo aei = new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW").setActionDetail("one")
+            ec.getArtifactExecution().push(aei, (authorizeSkip != "true" && !authorizeSkip?.contains("view")))
 
             try {
                 return oneInternal(ec)
             } finally {
                 // pop the ArtifactExecutionInfo
-                ec.getArtifactExecution().pop()
+                ec.getArtifactExecution().pop(aei)
             }
         } finally {
             if (enableAuthz) efi.getEcfi().getExecutionContext().getArtifactExecution().enableAuthz()
@@ -548,11 +548,7 @@ abstract class EntityFindBase implements EntityFind {
         }
 
         // no condition means no condition/parameter set, so return null for find.one()
-        if (!whereCondition) {
-            // pop the ArtifactExecutionInfo
-            ec.artifactExecution.pop()
-            return null
-        }
+        if (!whereCondition) return null
 
         // try the TX cache before the entity cache, may be more up-to-date
         EntityValueBase txcValue = txCache != null ? txCache.oneGet(this) : null
@@ -642,16 +638,15 @@ abstract class EntityFindBase implements EntityFind {
             ExecutionContext ec = efi.getEcfi().getExecutionContext()
 
             String authorizeSkip = (String) entityNode.attribute('authorize-skip')
-            ec.getArtifactExecution().push(
-                    new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW").setActionDetail("one"),
-                    (authorizeSkip != "true" && !authorizeSkip?.contains("view")))
+            ArtifactExecutionInfo aei = new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW").setActionDetail("one")
+            ec.getArtifactExecution().push(aei, (authorizeSkip != "true" && !authorizeSkip?.contains("view")))
 
             try {
                 EntityValue ev = oneInternal(ec)
                 return ev.getMasterValueMap(name)
             } finally {
                 // pop the ArtifactExecutionInfo
-                ec.getArtifactExecution().pop()
+                ec.getArtifactExecution().pop(aei)
             }
         } finally {
             if (enableAuthz) efi.getEcfi().getExecutionContext().getArtifactExecution().enableAuthz()
@@ -667,14 +662,13 @@ abstract class EntityFindBase implements EntityFind {
             ExecutionContext ec = efi.getEcfi().getExecutionContext()
 
             String authorizeSkip = (String) entityNode.attribute('authorize-skip')
-            ec.getArtifactExecution().push(
-                    new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW").setActionDetail("list"),
-                    (authorizeSkip != "true" && !authorizeSkip?.contains("view")))
+            ArtifactExecutionInfo aei = new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW").setActionDetail("list")
+            ec.getArtifactExecution().push(aei, (authorizeSkip != "true" && !authorizeSkip?.contains("view")))
             try {
                 return listInternal(ec)
             } finally {
                 // pop the ArtifactExecutionInfo
-                ec.getArtifactExecution().pop()
+                ec.getArtifactExecution().pop(aei)
             }
         } finally {
             if (enableAuthz) efi.getEcfi().getExecutionContext().getArtifactExecution().enableAuthz()
@@ -788,15 +782,14 @@ abstract class EntityFindBase implements EntityFind {
             ExecutionContext ec = efi.getEcfi().getExecutionContext()
 
             String authorizeSkip = (String) entityNode.attribute('authorize-skip')
-            ec.getArtifactExecution().push(
-                    new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW").setActionDetail("list"),
-                    (authorizeSkip != "true" && !authorizeSkip?.contains("view")))
+            ArtifactExecutionInfo aei = new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW").setActionDetail("list")
+            ec.getArtifactExecution().push(aei, (authorizeSkip != "true" && !authorizeSkip?.contains("view")))
             try {
                 EntityList el = listInternal(ec)
                 return el.getMasterValueList(name)
             } finally {
                 // pop the ArtifactExecutionInfo
-                ec.getArtifactExecution().pop()
+                ec.getArtifactExecution().pop(aei)
             }
         } finally {
             if (enableAuthz) efi.getEcfi().getExecutionContext().getArtifactExecution().enableAuthz()
@@ -823,9 +816,8 @@ abstract class EntityFindBase implements EntityFind {
             throw new EntityException("Cannot do find for view-entity with name [${entityName}] because it has no member entities or no aliased fields.")
 
         String authorizeSkip = (String) entityNode.attribute('authorize-skip')
-        ec.getArtifactExecution().push(
-                new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW").setActionDetail("iterator"),
-                (authorizeSkip != "true" && !authorizeSkip?.contains("view")))
+        ArtifactExecutionInfo aei = new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW").setActionDetail("iterator")
+        ec.getArtifactExecution().push(aei, (authorizeSkip != "true" && !authorizeSkip?.contains("view")))
 
         // there may not be a simpleAndMap, but that's all we have that can be treated directly by the EECA
         // find EECA rules deprecated, not worth performance hit: efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-iterator", true)
@@ -891,7 +883,7 @@ abstract class EntityFindBase implements EntityFind {
         efi.ecfi.countArtifactHit("entity", "iterator", ed.getFullEntityName(), simpleAndMap, startTime,
                 (System.nanoTime() - startTimeNanos)/1E6, null)
         // pop the ArtifactExecutionInfo
-        ec.getArtifactExecution().pop()
+        ec.getArtifactExecution().pop(aei)
 
         return eli
     }
@@ -916,9 +908,8 @@ abstract class EntityFindBase implements EntityFind {
         ExecutionContext ec = efi.getEcfi().getExecutionContext()
 
         String authorizeSkip = (String) entityNode.attribute('authorize-skip')
-        ec.getArtifactExecution().push(
-                new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW").setActionDetail("count"),
-                (authorizeSkip != "true" && !authorizeSkip?.contains("view")))
+        ArtifactExecutionInfo aei = new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW").setActionDetail("count")
+        ec.getArtifactExecution().push(aei, (authorizeSkip != "true" && !authorizeSkip?.contains("view")))
 
         // there may not be a simpleAndMap, but that's all we have that can be treated directly by the EECA
         // find EECA rules deprecated, not worth performance hit: efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-count", true)
@@ -970,7 +961,7 @@ abstract class EntityFindBase implements EntityFind {
         efi.ecfi.countArtifactHit("entity", "count", ed.getFullEntityName(), simpleAndMap, startTime,
                 (System.nanoTime() - startTimeNanos)/1E6, count)
         // pop the ArtifactExecutionInfo
-        ec.getArtifactExecution().pop()
+        ec.getArtifactExecution().pop(aei)
 
         return count
     }

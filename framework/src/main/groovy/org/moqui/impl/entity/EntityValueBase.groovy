@@ -17,6 +17,7 @@ import org.apache.commons.codec.binary.Base64
 import org.apache.commons.collections.set.ListOrderedSet
 
 import org.moqui.Moqui
+import org.moqui.context.ArtifactExecutionInfo
 import org.moqui.context.ExecutionContext
 import org.moqui.entity.EntityCondition
 import org.moqui.entity.EntityException
@@ -1032,9 +1033,8 @@ abstract class EntityValueBase implements EntityValue {
         ExecutionContext ec = ecfi.getExecutionContext()
 
         String authorizeSkip = ed.entityNode.attribute('authorize-skip')
-        ec.getArtifactExecution().push(
-                new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_CREATE").setParameters(valueMap),
-                (authorizeSkip != "true" && !authorizeSkip?.contains("create")))
+        ArtifactExecutionInfo aei = new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_CREATE").setParameters(valueMap)
+        ec.getArtifactExecution().push(aei, (authorizeSkip != "true" && !authorizeSkip?.contains("create")))
 
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "create", true)
 
@@ -1071,7 +1071,7 @@ abstract class EntityValueBase implements EntityValue {
         ecfi.countArtifactHit("entity", "create", ed.getFullEntityName(), this.getPrimaryKeys(), startTime,
                 (System.nanoTime() - startTimeNanos)/1E6, 1L)
         // pop the ArtifactExecutionInfo to clean it up
-        ec.getArtifactExecution().pop()
+        ec.getArtifactExecution().pop(aei)
 
         return this
     }
@@ -1127,9 +1127,8 @@ abstract class EntityValueBase implements EntityValue {
         ExecutionContext ec = ecfi.getExecutionContext()
 
         String authorizeSkip = ed.entityNode.attribute('authorize-skip')
-        ec.getArtifactExecution().push(
-                new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_UPDATE").setParameters(valueMap),
-                    authorizeSkip != "true")
+        ArtifactExecutionInfo aei = new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_UPDATE").setParameters(valueMap)
+        ec.getArtifactExecution().push(aei, authorizeSkip != "true")
 
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "update", true)
 
@@ -1166,17 +1165,19 @@ abstract class EntityValueBase implements EntityValue {
         // if (ed.getEntityName() == "foo") logger.warn("================ evb.update() ${getEntityName()} nonPkFieldList=${nonPkFieldList};\nvalueMap=${valueMap};\noldValues=${oldValues}")
         if (!nonPkFieldList) {
             if (logger.isTraceEnabled()) logger.trace((String) "Not doing update on entity with no populated non-PK fields; entity=" + this.toString())
+            ec.getArtifactExecution().pop(aei)
             return this
         }
 
         // do this after the empty nonPkFieldList check so that if nothing has changed then ignore the attempt to update
         if (changedCreateOnlyFields.size() > 0) {
+            ec.getArtifactExecution().pop(aei)
             throw new EntityException("Cannot update create-only (immutable) fields ${changedCreateOnlyFields} on entity [${getEntityName()}]")
         }
 
-        if (ed.optimisticLock()) {
-            if (getTimestamp("lastUpdatedStamp") != refreshedValue.getTimestamp("lastUpdatedStamp"))
-                throw new EntityException("This record was updated by someone else at [${getTimestamp("lastUpdatedStamp")}] which was after the version you loaded at [${refreshedValue.getTimestamp("lastUpdatedStamp")}]. Not updating to avoid overwriting data.")
+        if (ed.optimisticLock() && getTimestamp("lastUpdatedStamp") != refreshedValue.getTimestamp("lastUpdatedStamp")) {
+            ec.getArtifactExecution().pop(aei)
+            throw new EntityException("This record was updated by someone else at [${getTimestamp("lastUpdatedStamp")}] which was after the version you loaded at [${refreshedValue.getTimestamp("lastUpdatedStamp")}]. Not updating to avoid overwriting data.")
         }
 
         Long lastUpdatedLong = ecfi.getTransactionFacade().getCurrentTransactionStartTime() ?: System.currentTimeMillis()
@@ -1201,7 +1202,7 @@ abstract class EntityValueBase implements EntityValue {
         ecfi.countArtifactHit("entity", "update", ed.getFullEntityName(), this.getPrimaryKeys(), startTime,
                 (System.nanoTime() - startTimeNanos)/1E6, 1L)
         // pop the ArtifactExecutionInfo to clean it up
-        ec.getArtifactExecution().pop()
+        ec.getArtifactExecution().pop(aei)
 
         return this
     }
@@ -1291,9 +1292,8 @@ abstract class EntityValueBase implements EntityValue {
         if (ed.createOnly()) throw new EntityException("Entity [${getEntityName()}] is create-only (immutable), cannot be deleted.")
 
         String authorizeSkip = ed.entityNode.attribute('authorize-skip')
-        ec.getArtifactExecution().push(
-                new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_DELETE").setParameters(valueMap),
-                    authorizeSkip != "true")
+        ArtifactExecutionInfo aei = new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_DELETE").setParameters(valueMap)
+        ec.getArtifactExecution().push(aei, authorizeSkip != "true")
 
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "delete", true)
         // this needs to be called before the actual update so we know which fields are modified
@@ -1314,7 +1314,7 @@ abstract class EntityValueBase implements EntityValue {
         ecfi.countArtifactHit("entity", "delete", ed.getFullEntityName(), this.getPrimaryKeys(), startTime,
                 (System.nanoTime() - startTimeNanos)/1E6, 1L)
         // pop the ArtifactExecutionInfo to clean it up
-        ec.getArtifactExecution().pop()
+        ec.getArtifactExecution().pop(aei)
 
         return this
     }
@@ -1354,10 +1354,9 @@ abstract class EntityValueBase implements EntityValue {
         ExecutionContext ec = ecfi.getExecutionContext()
 
         String authorizeSkip = ed.entityNode.attribute('authorize-skip')
-        ec.getArtifactExecution().push(
-                new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW")
-                        .setActionDetail("refresh").setParameters(valueMap),
-                authorizeSkip != "true")
+        ArtifactExecutionInfo aei = new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW")
+                                .setActionDetail("refresh").setParameters(valueMap)
+        ec.getArtifactExecution().push(aei, authorizeSkip != "true")
 
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "find-one", true)
 
@@ -1365,6 +1364,7 @@ abstract class EntityValueBase implements EntityValue {
         if (pkFieldList.size() == 0) {
             // throw new EntityException("Entity ${getEntityName()} has no primary key fields, cannot do refresh.")
             if (logger.isTraceEnabled()) logger.trace("Entity ${getEntityName()} has no primary key fields, cannot do refresh.")
+            ec.getArtifactExecution().pop(aei)
             return false
         }
 
@@ -1384,7 +1384,7 @@ abstract class EntityValueBase implements EntityValue {
         ecfi.countArtifactHit("entity", "refresh", ed.getFullEntityName(), this.getPrimaryKeys(), startTime,
                 (System.nanoTime() - startTimeNanos)/1E6, retVal ? 1L : 0L)
         // pop the ArtifactExecutionInfo to clean it up
-        ec.getArtifactExecution().pop()
+        ec.getArtifactExecution().pop(aei)
 
         return retVal
     }

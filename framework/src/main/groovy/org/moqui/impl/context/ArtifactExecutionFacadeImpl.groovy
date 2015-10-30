@@ -87,18 +87,6 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
     ArtifactExecutionInfo peek() { return this.artifactExecutionInfoStack.peekFirst() }
 
     @Override
-    ArtifactExecutionInfo pop() {
-        if (this.artifactExecutionInfoStack.size() > 0) {
-            ArtifactExecutionInfoImpl lastAeii = artifactExecutionInfoStack.removeFirst()
-            lastAeii.setEndTime()
-            return lastAeii
-        } else {
-            logger.warn("Tried to pop from an empty ArtifactExecutionInfo stack", new Exception("Bad pop location"))
-            return null
-        }
-    }
-
-    @Override
     void push(String name, String typeEnumId, String actionEnumId, boolean requiresAuthz) {
         push(new ArtifactExecutionInfoImpl(name, typeEnumId, actionEnumId), requiresAuthz)
     }
@@ -128,6 +116,25 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
 
         // NOTE: if needed the isPermitted method will set additional info in aeii
         this.artifactExecutionInfoStack.addFirst(aeii)
+    }
+
+    @Override
+    ArtifactExecutionInfo pop() { return pop(null) }
+
+    @Override
+    ArtifactExecutionInfo pop(ArtifactExecutionInfo aei) {
+        if (this.artifactExecutionInfoStack.size() > 0) {
+            ArtifactExecutionInfoImpl lastAeii = artifactExecutionInfoStack.removeFirst()
+            // removed this for performance reasons, generally just checking the name is adequate
+            // || aei.typeEnumId != lastAeii.typeEnumId || aei.actionEnumId != lastAeii.actionEnumId
+            if (aei != null && (aei.name != lastAeii.name))
+                throw new IllegalArgumentException("Popped artifact (${aei.name}:${aei.typeEnumId}:${aei.actionEnumId}) did not match top of stack (${lastAeii.name}:${lastAeii.typeEnumId}:${lastAeii.actionEnumId}:${lastAeii.actionDetail})")
+            lastAeii.setEndTime()
+            return lastAeii
+        } else {
+            logger.warn("Tried to pop from an empty ArtifactExecutionInfo stack", new Exception("Bad pop location"))
+            return null
+        }
     }
 
     @Override
