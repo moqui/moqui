@@ -78,7 +78,7 @@ along with this software (see the LICENSE.md file). If not, see
     <moqui.basic.Uom abbreviation="HRD" description="Croatian Dinar" uomId="HRD" uomTypeEnumId="UT_CURRENCY_MEASURE"/>
     <moqui.basic.Uom abbreviation="HTG" description="Haitian Gourde" uomId="HTG" uomTypeEnumId="UT_CURRENCY_MEASURE"/>
     <moqui.basic.Uom abbreviation="HUF" description="Hungarian forint" uomId="HUF" uomTypeEnumId="UT_CURRENCY_MEASURE"/>
-    <moqui.basic.Uom abbreviation="IDR" description="Indeonesian Rupiah" uomId="IDR" uomTypeEnumId="UT_CURRENCY_MEASURE"/>
+    <moqui.basic.Uom abbreviation="IDR" description="Indonesian Rupiah" uomId="IDR" uomTypeEnumId="UT_CURRENCY_MEASURE"/>
     <moqui.basic.Uom abbreviation="ILS" description="Israeli Scheckel" uomId="ILS" uomTypeEnumId="UT_CURRENCY_MEASURE"/>
     <moqui.basic.Uom abbreviation="INR" description="Indian Rupee" uomId="INR" uomTypeEnumId="UT_CURRENCY_MEASURE"/>
     <moqui.basic.Uom abbreviation="IQD" description="Iraqui Dinar" uomId="IQD" uomTypeEnumId="UT_CURRENCY_MEASURE"/>
