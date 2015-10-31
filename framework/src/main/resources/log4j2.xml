@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="ERROR" name="Moqui">
+	<Appenders>
+		<RollingFile name="ErrorFile" fileName="${moqui.runtime}/log/error.log"
+			filePattern="log/moquierror%d{MM-dd-yyyy}-%i.log.gz">
+			<PatternLayout pattern="%d - [%t] %-5p %c %x - %m%n" />
+			<Policies>
+				<TimeBasedTriggeringPolicy />
+				<SizeBasedTriggeringPolicy size="10 MB" />
+			</Policies>
+			<DefaultRolloverStrategy max="20" />
+		</RollingFile>
+		<RollingFile name="LogFile" fileName="${moqui.runtime}/log/moqui.log"
+			filePattern="log/moqui%d{MM-dd-yyyy}-%i.log.gz">
+			<PatternLayout pattern="%d - [%t] %-5p %c %x - %m%n" />
+			<Policies>
+				<TimeBasedTriggeringPolicy />
+				<SizeBasedTriggeringPolicy size="10 MB" />
+			</Policies>
+			<DefaultRolloverStrategy max="20" />
+		</RollingFile>
+		<Async name="AsyncLog">
+			<AppenderRef ref="LogFile" />
+		</Async>
+		<Async name="AsyncErrorLog">
+			<AppenderRef ref="ErrorFile" />
+		</Async>
+
+		<Console name="STDOUT" target="SYSTEM_OUT">
+			<PatternLayout pattern="%d - [%t] %-5p %c %x - %m%n" />
+		</Console>
+	</Appenders>
+	<Loggers>
+		<Logger name="horus.moqui" level="debug">
+			<AppenderRef ref="AsyncLog" />
+		</Logger>
+		<Logger name="org.apache" level="warn">
+			<AppenderRef ref="AsyncLog" />
+		</Logger>
+		<Logger name="org.apache.fop.fo.extensions.svg.SVGElementMapping" level="fatal">
+			<AppenderRef ref="AsyncLog" />
+		</Logger>
+
+		<Logger name="freemarker" level="warn">
+			<AppenderRef ref="AsyncLog" />
+		</Logger>
+
+		<Logger name="net.sf.ehcache" level="warn">
+			<AppenderRef ref="AsyncLog" />
+		</Logger>
+
+		<Logger name="org.quartz" level="info">
+			<AppenderRef ref="AsyncLog" />
+		</Logger>
+		<Logger name="org.quartz.core" level="warn" >
+			<AppenderRef ref="AsyncLog" />
+		</Logger>
+		<Logger name="org.elasticsearch" level="warn">
+			<AppenderRef ref="AsyncLog" />
+		</Logger>
+		<Logger name="org.drools" level="info">
+			<AppenderRef ref="AsyncLog" />
+		</Logger>
+		<Logger name="atomikos" level="warn">
+			<AppenderRef ref="AsyncLog" />
+		</Logger>
+		<Logger name="com.atomikos" level="warn">
+			<AppenderRef ref="AsyncLog" />
+		</Logger>
+		<Logger name="bitronix" level="warn">
+			<AppenderRef ref="AsyncLog" />
+		</Logger>
+		<Logger name="org.moqui" level="debug">
+			<AppenderRef ref="AsyncLog" />
+		</Logger>
+		<Root level="error">
+			<AppenderRef ref="STDOUT" />
+			<AppenderRef ref="ErrorFile" />
+		</Root>
+	</Loggers>
+</Configuration>
