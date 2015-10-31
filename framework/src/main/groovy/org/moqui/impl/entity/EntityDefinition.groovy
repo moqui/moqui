@@ -71,6 +71,7 @@ public class EntityDefinition {
     protected Map<String, RelationshipInfo> relationshipInfoMap = null
     protected List<RelationshipInfo> relationshipInfoList = null
     protected boolean hasReverseRelationships = false
+    protected Map<String, MasterDefinition> masterDefinitionMap = null
 
     EntityDefinition(EntityFacadeImpl efi, Node entityNode) {
         this.efi = efi
@@ -588,6 +589,68 @@ public class EntityDefinition {
         }
 
         String toString() { return "${relationshipName}${shortAlias ? ' (' + shortAlias + ')' : ''}, type ${type}, one? ${isTypeOne}, dependent? ${dependent}" }
+    }
+
+    @CompileStatic
+    MasterDefinition getMasterDefinition(String name) {
+        if (!name) name = "default"
+        if (masterDefinitionMap == null) makeMasterDefinitionMap()
+        return masterDefinitionMap.get(name)
+    }
+
+    private synchronized void makeMasterDefinitionMap() {
+        Map<String, MasterDefinition> defMap = [:]
+        for (Node masterNode in internalEntityNode."master") {
+            MasterDefinition curDef = new MasterDefinition(this, masterNode)
+            defMap.put(curDef.name, curDef)
+        }
+        masterDefinitionMap = defMap
+    }
+
+    @CompileStatic
+    static class MasterDefinition {
+        String name
+        List<MasterDetail> detailList = []
+        MasterDefinition(EntityDefinition ed, Node masterNode) {
+            name = masterNode.attribute("name") ?: "default"
+            List<Node> detailNodeList = masterNode.getAt("detail") as List<Node>
+            for (Node detailNode in detailNodeList) detailList.add(new MasterDetail(ed, detailNode))
+        }
+    }
+    @CompileStatic
+    static class MasterDetail {
+        String relationshipName
+        EntityDefinition parentEd
+        RelationshipInfo relInfo
+        String relatedMasterName
+        List<MasterDetail> internalDetailList = []
+        MasterDetail(EntityDefinition parentEd, Node detailNode) {
+            this.parentEd = parentEd
+            relationshipName = detailNode.attribute("relationship")
+            relInfo = parentEd.getRelationshipInfo(relationshipName)
+            if (relInfo == null) throw new IllegalArgumentException("Invalid relationship name [${relationshipName}] for entity ${parentEd.getFullEntityName()}")
+            // logger.warn("Following relationship ${relationshipName}")
+
+            List<Node> detailNodeList = detailNode.getAt("detail") as List<Node>
+            for (Node childNode in detailNodeList) internalDetailList.add(new MasterDetail(relInfo.relatedEd, childNode))
+
+            relatedMasterName = (String) detailNode.attribute("use-master")
+        }
+
+        List<MasterDetail> getDetailList() {
+            if (relatedMasterName) {
+                List<MasterDetail> combinedList = new ArrayList<>(internalDetailList)
+                MasterDefinition relatedMaster = relInfo.relatedEd.getMasterDefinition(relatedMasterName)
+                if (relatedMaster == null) throw new IllegalArgumentException("Invalid use-master value [${relatedMasterName}], master not found in entity ${relInfo.relatedEntityName}")
+                // logger.warn("Including master ${relatedMasterName} on entity ${relInfo.relatedEd.getFullEntityName()}")
+
+                combinedList.addAll(relatedMaster.detailList)
+
+                return combinedList
+            } else {
+                return internalDetailList
+            }
+        }
     }
 
     EntityDependents getDependentsTree() {

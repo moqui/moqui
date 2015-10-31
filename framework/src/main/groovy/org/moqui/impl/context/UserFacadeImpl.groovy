@@ -461,7 +461,10 @@ class UserFacadeImpl implements UserFacade {
             loggedInAnonymous = false
 
             // after successful login trigger the after-login actions
-            if (eci.getWebImpl() != null) eci.getWebImpl().runAfterLoginActions()
+            if (eci.getWebImpl() != null) {
+                eci.getWebImpl().runAfterLoginActions()
+                eci.getWebImpl().getRequest().setAttribute("moqui.request.authenticated", "true")
+            }
         } catch (AuthenticationException ae) {
             // others to consider handling differently (these all inherit from AuthenticationException):
             //     UnknownAccountException, IncorrectCredentialsException, ExpiredCredentialsException,

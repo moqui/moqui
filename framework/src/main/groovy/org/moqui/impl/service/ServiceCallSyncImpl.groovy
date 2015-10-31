@@ -191,9 +191,9 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         // NOTE: don't require authz if the service def doesn't authenticate
         // NOTE: if no sd then requiresAuthz is false, ie let the authz get handled at the entity level (but still put
         //     the service on the stack)
-        eci.getArtifactExecution().push(new ArtifactExecutionInfoImpl(getServiceName(), "AT_SERVICE",
-                    ServiceDefinition.getVerbAuthzActionId(verb)).setParameters(currentParameters),
-                (sd != null && sd.getAuthenticate() == "true"))
+        ArtifactExecutionInfo aei = new ArtifactExecutionInfoImpl(getServiceName(), "AT_SERVICE",
+                            ServiceDefinition.getVerbAuthzActionId(verb)).setParameters(currentParameters)
+        eci.getArtifactExecution().push(aei, (sd != null && sd.getAuthenticate() == "true"))
 
         // must be done after the artifact execution push so that AEII object to set anonymous authorized is in place
         boolean loggedInAnonymous = false
@@ -214,10 +214,11 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                 sfi.getEcfi().countArtifactHit("service", "entity-implicit", getServiceName(), currentParameters,
                         callStartTime, runningTimeMillis, null)
 
-                eci.artifactExecution.pop()
+                eci.artifactExecution.pop(aei)
                 return result
             } else {
                 logger.info("No service with name ${getServiceName()}, isEntityAutoPattern=${isEntityAutoPattern()}, path=${path}, verb=${verb}, noun=${noun}, noun is entity? ${((EntityFacadeImpl) eci.getEntity()).isEntityDefined(noun)}")
+                eci.artifactExecution.pop(aei)
                 throw new ServiceException("Could not find service with name [${getServiceName()}]")
             }
         }
@@ -333,7 +334,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         }
 
         // all done so pop the artifact info; don't bother making sure this is done on errors/etc like in a finally clause because if there is an error this will help us know how we got there
-        eci.getArtifactExecution().pop()
+        eci.getArtifactExecution().pop(aei)
 
         if (loggedInAnonymous) ((UserFacadeImpl) eci.getUser()).logoutAnonymousOnly()
 

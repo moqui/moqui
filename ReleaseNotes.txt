@@ -11,6 +11,43 @@ TODO
 
 New Features:
 
+- Library Updates
+  - Apache Camel to 2.16.0
+  - Apache Derby to 10.12.1.1
+  - Apache HttpClient to 4.5.1
+  - Apache Jackrabbit to 2.11.1
+  - Ehcache to 2.10.1
+  - ElasticSearch to 1.7.3
+  - Groovy to 2.4.5
+  - H2 to 1.4.190
+  - JNA to 4.2.1
+  - JavaMail to 1.5.4
+  - KIE, Drools to 6.3.0.Final
+  - OrientDB to 2.1.4
+  - Quartz Scheduler to 2.2.2
+- Better protection against CSRF/XSRF attaches with a session token as per
+  https://www.owasp.org/index.php/CSRF_Prevention_Cheat_Sheet;
+  - when enabled (webapp.@require-session-token in Moqui Conf XML file not
+    false) a moquiSessionToken parameter must be passed
+  - applies to all transition requests with actions by all methods except,
+    GET after the first request in a session
+  - for REST/etc API calls with authentication for each call is ignored
+  - can be disabled per screen transition with @require-session-token=false
+- Password reset now sets a reset password separate from the current
+  password that may only be used to change the password; current password
+  stays valid for password change or login (if email-require-change=false)
+- New concept of explicit master entity definitions with details made up of
+  related entities; definitions go in new entity.master element; there are
+  new methods in EntityValue, EntityList, and EntityFind to get value Maps
+  for the master record plus all details
+- Various improvements to email message polling (calling EM-ECA rules)
+  including support for Java System Properties pass through and fix for
+  password pass through for IMAPS/etc
+- Email ECA structure significantly improved, for details see the
+  org.moqui.EmailServices.process#EmailEca service interface
+- Improved sending EmailTemplate with support for reply to and bounce
+  addresses from EmailTemplate and CC/BCC addresses from both EmailTemplate
+  and service parameters
 - Localized strings may now contain a double hash (##) to specify context
   where a single word in the default language (ie English) is ambiguous; at
   runtime if no matching LocalizedMessage is found the text before the
@@ -34,6 +71,10 @@ Bug Fixes:
   dependents (like Enumeration, Uom, etc) caused an out of memory error;
   GitHub issue #149
 - Fixed XML Actions FTL error for entity-find.@having-econditions
+- Fixed issue where ResourceFacadeImpl.setInContext localized values when
+  expanding; caused problems with set elements in widget-template-include
+- Fixed issue with multiple render-mode elements where there is no
+  text.@type attribute; GitHub issue #158
 
 ===========================================================================
 Release 1.5.3 - 11 Sep 2015

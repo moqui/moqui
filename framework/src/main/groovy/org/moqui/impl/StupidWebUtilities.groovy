@@ -37,6 +37,8 @@ import org.owasp.esapi.reference.DefaultValidator
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+import java.nio.charset.Charset
+
 @CompileStatic
 class StupidWebUtilities {
     protected final static Logger logger = LoggerFactory.getLogger(StupidUtilities.class)
@@ -301,7 +303,7 @@ class StupidWebUtilities {
                 nameValuePairs.add(new BasicNameValuePair(requestEntry.key as String, requestEntry.value as String))
 
             HttpPost httpPost = new HttpPost(location)
-            httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs))
+            httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs, Charset.forName("UTF-8")))
 
             CloseableHttpResponse response = httpClient.execute(httpPost)
             try {
