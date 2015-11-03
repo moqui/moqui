@@ -55,6 +55,9 @@ New Features:
 - Added field.@create-only attribute, defaults to entity.@create-only
   value, create only now checked at field level on update (only at entity
   level on delete)
+- When a form-single is rendered the form map is added to a pushed
+  (isolated) context and popped after; field values can now be referenced
+  directly in expressions in @condition, @text, etc attributes
 - All XML Form field widgets now support expanded tooltip
 - Added json-schema for Entity REST API: for all entities get
   /rest/schema.json, for a single entity get /rest/schema/${name}.json
@@ -63,7 +66,7 @@ New Features:
 - Changed receive#SystemMessage to an interface, now use
   receive#IncomingSystemMessage for remote calls, will call the
   SystemMessageType.receiveServiceName service if specified to save message
-- Added EDI handler (parser and generator), examples in Mantle
+- Added EDI handler (parser and generator), used in Mantle for X12 messages
 
 Bug Fixes:
 
