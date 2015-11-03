@@ -1,0 +1,18 @@
+URL of the original project:
+https://code.google.com/p/owasp-esapi-java/
+
+Instructions to build this package:
+
+	Ungzip the patch to any path $GUNZIPPED_PATH
+
+	On a directory, checkout the original project:
+	svn checkout http://owasp-esapi-java.googlecode.com/svn/trunk/ owasp-esapi-java-read-only
+
+
+	Enter the newly created directory and execute the patch:
+	patch -p0 < $GUNZIPPED_PATH/esapi-moqui.patch
+
+	Build it:
+	mvn -Dmaven.test.skip=true -Dskip-tests=true clean install
+
+	You can test it, but about 14 of the tests currently didn't run. Skipping the tests, you can install the jar in your local maven repository.
