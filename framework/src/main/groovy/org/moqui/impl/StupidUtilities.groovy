@@ -531,7 +531,7 @@ class StupidUtilities {
         return newValue.toString()
     }
 
-    public static final String encodeAsciiFilename(String filename) {
+    static final String encodeAsciiFilename(String filename) {
         try {
             URI uri = new URI(null, null, filename, null);
             return uri.toASCIIString();
@@ -551,14 +551,12 @@ class StupidUtilities {
         }
     }
 
-    public static final String escapeElasticQueryString(CharSequence queryString) {
+    static final String escapeElasticQueryString(CharSequence queryString) {
         int length = queryString.length()
         StringBuilder sb = new StringBuilder(length * 2)
         for (int i = 0; i < length; i++) {
             char c = queryString.charAt(i)
-            if ("+-=&|><!(){}[]^\"~*?:\\/".indexOf((int) c.charValue()) != -1) {
-                sb.append("\\")
-            }
+            if ("+-=&|><!(){}[]^\"~*?:\\/".indexOf((int) c.charValue()) != -1) sb.append("\\")
             sb.append(c)
         }
         return sb.toString();
@@ -678,7 +676,7 @@ class StupidUtilities {
      * @param useAnd true if you want to use the word 'and' in the text (eleven thousand and thirteen)
      * @return
      */
-    public static final String numberToWords(long value, boolean useAnd) {
+    static final String numberToWords(long value, boolean useAnd) {
         if (value == 0L) return SUBTWENTY[0]
 
         // break the value down in to sets of three digits (thousands)
@@ -709,7 +707,7 @@ class StupidUtilities {
         return sb.toString()
     }
 
-    public static final String numberToWordsWithDecimal(BigDecimal value) {
+    static final String numberToWordsWithDecimal(BigDecimal value) {
         String integerText = numberToWords(value.longValue(), false)
         String decimalText = value.setScale(2, BigDecimal.ROUND_HALF_UP).toPlainString()
         decimalText = decimalText.substring(decimalText.indexOf('.') + 1)
