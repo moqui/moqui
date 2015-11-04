@@ -551,6 +551,19 @@ class StupidUtilities {
         }
     }
 
+    public static final String escapeElasticQueryString(CharSequence queryString) {
+        int length = queryString.length()
+        StringBuilder sb = new StringBuilder(length * 2)
+        for (int i = 0; i < length; i++) {
+            char c = queryString.charAt(i)
+            if ("+-=&|><!(){}[]^\"~*?:\\/".indexOf((int) c.charValue()) != -1) {
+                sb.append("\\")
+            }
+            sb.append(c)
+        }
+        return sb.toString();
+    }
+
     static String paddedNumber(long number, Integer desiredLength) {
         StringBuilder outStrBfr = new StringBuilder(Long.toString(number))
         if (!desiredLength) return outStrBfr.toString()
@@ -701,22 +714,5 @@ class StupidUtilities {
         String decimalText = value.setScale(2, BigDecimal.ROUND_HALF_UP).toPlainString()
         decimalText = decimalText.substring(decimalText.indexOf('.') + 1)
         return "${integerText} and ${decimalText}/100"
-    }
-
-    public static final String escapeElasticQueryString(String queryString) {
-        if(queryString instanceof CharSequence) {
-            int length = queryString.length()
-            StringBuilder sb = new StringBuilder(length * 2)
-            for (int i = 0; i < length; i++) {
-                char c = queryString.charAt(i)
-                if ("+-=&|><!(){}[]^\"~*?:\\/".indexOf((int) c.charValue()) != -1) {
-                    sb.append("\\")
-                }
-                sb.append(c)
-            }
-            return sb.toString();
-        } else {
-            return queryString
-        }
     }
 }
