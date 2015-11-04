@@ -146,7 +146,7 @@ along with this software (see the LICENSE.md file). If not, see
             <xs:attribute name="transition" type="xs:string">
                 <xs:annotation><xs:documentation>The transition in the current screen to submit the form to.</xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="multi" default="true" type="boolean">
+            <xs:attribute name="multi" default="false" type="boolean">
                 <xs:annotation><xs:documentation>Make the form a multi-submit form where all rows on a page are
                     submitted together in a single request with a "_${rowNumber}" suffix on each field. Also passes a
                     _isMulti=true parameter so the Service Facade knows to run the service (a single service-call in a
