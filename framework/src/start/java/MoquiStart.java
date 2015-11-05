@@ -248,9 +248,9 @@ public class MoquiStart extends ClassLoader {
     }
 
     protected JarFile outerFile = null;
-    protected final ArrayList<JarFile> jarFileList = new ArrayList<>();
-    protected final Map<String, Class<?>> classCache = new HashMap<>();
-    protected final Map<String, URL> resourceCache = new HashMap<>();
+    protected final ArrayList<JarFile> jarFileList = new ArrayList<JarFile>();
+    protected final Map<String, Class<?>> classCache = new HashMap<String, Class<?>>();
+    protected final Map<String, URL> resourceCache = new HashMap<String, URL>();
     protected ProtectionDomain pd;
     protected final boolean loadWebInf;
 
@@ -368,7 +368,7 @@ public class MoquiStart extends ClassLoader {
     @Override
     public Enumeration<URL> findResources(String resourceName) throws IOException {
         String webInfResourceName = "WEB-INF/classes/" + resourceName;
-        List<URL> urlList = new ArrayList<>();
+        List<URL> urlList = new ArrayList<URL>();
         int jarFileListSize = jarFileList.size();
         for (int i = 0; i < jarFileListSize; i++) {
             JarFile jarFile = jarFileList.get(i);
