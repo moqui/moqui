@@ -30,7 +30,6 @@ public interface ArtifactExecutionFacade {
     /** Pop from the artifact stack and verify it is the same artifact name and type. This is generally called internally
      * by the framework and does not need to be used in application code. */
     ArtifactExecutionInfo pop(ArtifactExecutionInfo aei);
-    @Deprecated
     void push(String name, String typeEnumId, String actionEnumId, boolean requiresAuthz);
     @Deprecated
     ArtifactExecutionInfo pop();

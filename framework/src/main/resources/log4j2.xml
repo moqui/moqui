@@ -42,6 +42,7 @@
         <Logger name="atomikos" level="warn"/>
         <Logger name="com.atomikos" level="warn"/>
         <Logger name="bitronix" level="warn"/>
+        <Logger name="net.winstone.core.WebXmlParser" level="error"/>
 
         <!-- show Groovy generated from XML Actions:
         <Logger name="org.moqui.impl.actions.XmlAction" level="debug"/> -->
