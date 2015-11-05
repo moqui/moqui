@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="ERROR" name="Moqui">
     <Appenders>
-        <RollingFile name="ErrorFile" fileName="${sys:moqui.runtime}/log/error.log"
-            filePattern="${sys:moqui.runtime}/log/error%d{MM-dd-yyyy}-%i.log">
-            <PatternLayout pattern="%-8r [%15.15t] %-5p %30.30c [%24F:%-3L] %x - %m%n"/>
+        <RollingFile name="LogFile" fileName="${sys:moqui.runtime}/log/moqui.log"
+                filePattern="${sys:moqui.runtime}/log/moqui%d{yyyy-MM-dd}-%i.log">
+            <PatternLayout pattern="--- %d{yyyy-MM-dd HH:mm:ss.SSS} [%15.15t] %-5p %40.40c %x%n %m%n"/>
             <Policies>
                 <TimeBasedTriggeringPolicy/>
                 <SizeBasedTriggeringPolicy size="10 MB"/>
             </Policies>
             <DefaultRolloverStrategy max="20"/>
         </RollingFile>
-        <RollingFile name="LogFile" fileName="${sys:moqui.runtime}/log/moqui.log"
-            filePattern="${sys:moqui.runtime}/log/moqui%d{MM-dd-yyyy}-%i.log">
-            <PatternLayout pattern="%-8r [%15.15t] %-5p %30.30c %x - %m%n"/>
+        <RollingFile name="ErrorFile" fileName="${sys:moqui.runtime}/log/error.log"
+                filePattern="${sys:moqui.runtime}/log/error%d{yyyy-MM-dd}-%i.log">
+            <PatternLayout pattern="--- %d{yyyy-MM-dd HH:mm:ss.SSS} [%15.15t] %-5p %40.40c [%l] %x%n %m%n"/>
             <Policies>
                 <TimeBasedTriggeringPolicy/>
                 <SizeBasedTriggeringPolicy size="10 MB"/>
@@ -20,6 +20,7 @@
             <DefaultRolloverStrategy max="20"/>
         </RollingFile>
         <Async name="AsyncLog">
+            <AppenderRef ref="STDOUT"/>
             <AppenderRef ref="LogFile"/>
         </Async>
         <Async name="AsyncErrorLog">
@@ -27,27 +28,33 @@
         </Async>
 
         <Console name="STDOUT" target="SYSTEM_OUT">
-            <PatternLayout pattern="--- %-8r [%15.15t] %-5p %40.40c %x%n %m%n"/>
+            <PatternLayout pattern="--- %d{HH:mm:ss.SSS} [%15.15t] %-5p %40.40c %x%n %m%n"/>
         </Console>
     </Appenders>
     <Loggers>
-        <Logger name="org.apache" level="warn"><AppenderRef ref="AsyncLog"/></Logger>
+        <Logger name="org.apache" level="warn" additivity="false"><AppenderRef ref="AsyncLog"/></Logger>
         <Logger name="org.apache.fop.fo.extensions.svg.SVGElementMapping" level="fatal">
             <AppenderRef ref="AsyncLog"/></Logger>
 
-        <Logger name="freemarker" level="warn"><AppenderRef ref="AsyncLog"/></Logger>
-        <Logger name="net.sf.ehcache" level="warn"><AppenderRef ref="AsyncLog"/></Logger>
-        <Logger name="org.quartz" level="info"><AppenderRef ref="AsyncLog"/></Logger>
-        <Logger name="org.quartz.core" level="warn"><AppenderRef ref="AsyncLog"/></Logger>
-        <Logger name="org.elasticsearch" level="warn"><AppenderRef ref="AsyncLog"/></Logger>
-        <Logger name="org.drools" level="info"><AppenderRef ref="AsyncLog"/></Logger>
-        <Logger name="atomikos" level="warn"><AppenderRef ref="AsyncLog"/></Logger>
-        <Logger name="com.atomikos" level="warn"><AppenderRef ref="AsyncLog"/></Logger>
-        <Logger name="bitronix" level="warn"><AppenderRef ref="AsyncLog"/></Logger>
-        <Logger name="org.moqui" level="debug"><AppenderRef ref="AsyncLog"/></Logger>
-        <Root level="error">
-            <AppenderRef ref="STDOUT"/>
-            <AppenderRef ref="ErrorFile"/>
-        </Root>
+        <Logger name="freemarker" level="warn" additivity="false"><AppenderRef ref="AsyncLog"/></Logger>
+        <Logger name="net.sf.ehcache" level="warn" additivity="false"><AppenderRef ref="AsyncLog"/></Logger>
+        <Logger name="org.quartz" level="info" additivity="false"><AppenderRef ref="AsyncLog"/></Logger>
+        <Logger name="org.quartz.core" level="warn" additivity="false"><AppenderRef ref="AsyncLog"/></Logger>
+        <Logger name="org.elasticsearch" level="warn" additivity="false"><AppenderRef ref="AsyncLog"/></Logger>
+        <Logger name="org.drools" level="info" additivity="false"><AppenderRef ref="AsyncLog"/></Logger>
+        <Logger name="atomikos" level="warn" additivity="false"><AppenderRef ref="AsyncLog"/></Logger>
+        <Logger name="com.atomikos" level="warn" additivity="false"><AppenderRef ref="AsyncLog"/></Logger>
+        <Logger name="bitronix" level="warn" additivity="false"><AppenderRef ref="AsyncLog"/></Logger>
+
+        <!-- show Groovy generated from XML Actions:
+        <Logger name="org.moqui.impl.actions.XmlAction" level="debug" additivity="false"><AppenderRef ref="AsyncLog"/></Logger> -->
+        <!-- show SQL generated for finds:
+        <Logger name="org.moqui.impl.entity.EntityFindBuilder" level="debug" additivity="false"><AppenderRef ref="AsyncLog"/></Logger> -->
+        <!-- show SQL generated for crud ops:
+        <Logger name="org.moqui.impl.entity.EntityQueryBuilder" level="debug" additivity="false"><AppenderRef ref="AsyncLog"/></Logger> -->
+
+        <Logger name="org.moqui" level="info" additivity="false"><AppenderRef ref="AsyncLog"/></Logger>
+
+        <Root level="error"><AppenderRef ref="AsyncErrorLog"/></Root>
     </Loggers>
 </Configuration>
