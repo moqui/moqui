@@ -143,10 +143,10 @@ dependencies {
 
     apiCompile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.12'
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.12'
-    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.4.1'
-    compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.4.1'
-    compile group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.4.1'
-    // compile group: 'org.apache.logging.log4j', name: 'log4j-1.2-api', version: '2.4.1'
+    runtime group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.4.1'
+    runtime group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.4.1'
+    runtime group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.4.1'
+    runtime group: 'org.apache.logging.log4j', name: 'log4j-1.2-api', version: '2.4.1'
 
     apiCompile group: 'org.intelligents-ia.winstone', name: 'winstone', version: '1.7.0' // CDDL
     // apiCompile group: 'org.intelligents-ia.winstone', name: 'winstone-jndi', version: '1.7.0' // CDDL
@@ -309,7 +309,7 @@ war {
     from file(projectDir.absolutePath + '/lib/slf4j-api-1.7.12.jar')
     from file(projectDir.absolutePath + '/lib/log4j-api-2.4.1.jar')
     from file(projectDir.absolutePath + '/lib/log4j-core-2.4.1.jar')
-    // from file(projectDir.absolutePath + '/lib/log4j-1.2-api-2.4.1.jar')
+    from file(projectDir.absolutePath + '/lib/log4j-1.2-api-2.4.1.jar')
     from file(projectDir.absolutePath + '/lib/geronimo-servlet_2.5_spec-1.2.jar')
     // setup the manifest for the executable war/jar mode
     manifest { attributes 'Implementation-Title': 'Moqui Start', 'Implementation-Vendor': 'Moqui Framework',
