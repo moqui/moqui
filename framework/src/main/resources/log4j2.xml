@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="ERROR" name="Moqui">
 	<Appenders>
-		<RollingFile name="ErrorFile" fileName="${moqui.runtime}/log/error.log"
-			filePattern="log/moquierror%d{MM-dd-yyyy}-%i.log.gz">
-			<PatternLayout pattern="%d - [%t] %-5p %c %x - %m%n" />
+		<RollingFile name="ErrorFile" fileName="${sys:moqui.runtime}/log/error.log"
+			filePattern="${sys:moqui.runtime}/log/moquierror%d{MM-dd-yyyy}-%i.log.gz">
+			<PatternLayout pattern="%-8r [%15.15t] %-5p %30.30c [%24F:%-3L] %x - %m%n" />
 			<Policies>
 				<TimeBasedTriggeringPolicy />
 				<SizeBasedTriggeringPolicy size="10 MB" />
 			</Policies>
 			<DefaultRolloverStrategy max="20" />
 		</RollingFile>
-		<RollingFile name="LogFile" fileName="${moqui.runtime}/log/moqui.log"
-			filePattern="log/moqui%d{MM-dd-yyyy}-%i.log.gz">
-			<PatternLayout pattern="%d - [%t] %-5p %c %x - %m%n" />
+		<RollingFile name="LogFile" fileName="${sys:moqui.runtime}/log/moqui.log"
+			filePattern="${sys:moqui.runtime}/log/moqui%d{MM-dd-yyyy}-%i.log.gz">
+			<PatternLayout pattern="%-8r [%15.15t] %-5p %30.30c %x - %m%n" />
 			<Policies>
 				<TimeBasedTriggeringPolicy />
 				<SizeBasedTriggeringPolicy size="10 MB" />
@@ -27,13 +27,10 @@
 		</Async>
 
 		<Console name="STDOUT" target="SYSTEM_OUT">
-			<PatternLayout pattern="%d - [%t] %-5p %c %x - %m%n" />
+			<PatternLayout pattern="--- %-8r [%15.15t] %-5p %40.40c %x%n %m%n" />
 		</Console>
 	</Appenders>
 	<Loggers>
-		<Logger name="horus.moqui" level="debug">
-			<AppenderRef ref="AsyncLog" />
-		</Logger>
 		<Logger name="org.apache" level="warn">
 			<AppenderRef ref="AsyncLog" />
 		</Logger>
