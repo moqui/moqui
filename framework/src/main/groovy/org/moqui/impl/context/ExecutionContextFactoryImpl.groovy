@@ -883,8 +883,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     @Override
     @CompileStatic
-    Map<String, String> getComponentBaseLocations() {
-        Map<String, String> compLocMap = [:]
+    LinkedHashMap<String, String> getComponentBaseLocations() {
+        LinkedHashMap<String, String> compLocMap = new LinkedHashMap<String, String>()
         for (ComponentInfo componentInfo in componentInfoMap.values()) {
             compLocMap.put(componentInfo.name, componentInfo.location)
         }

@@ -21,7 +21,7 @@ import org.moqui.BaseException;
 import org.moqui.entity.EntityFacade;
 import org.moqui.service.ServiceFacade;
 
-import java.util.Map;
+import java.util.LinkedHashMap;
 
 /**
  * Interface for the object that will be used to get an ExecutionContext object and manage framework life cycle.
@@ -57,7 +57,7 @@ public interface ExecutionContextFactory {
     void destroyComponent(String componentName) throws BaseException;
 
     /** Get a Map where each key is a component name and each value is the component's base location. */
-    Map<String, String> getComponentBaseLocations();
+    LinkedHashMap<String, String> getComponentBaseLocations();
 
     /** For localization (l10n) functionality, like localizing messages. */
     L10nFacade getL10n();
