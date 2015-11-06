@@ -25,6 +25,10 @@ New Features:
   - KIE, Drools to 6.3.0.Final
   - OrientDB to 2.1.4
   - Quartz Scheduler to 2.2.2
+- Components may now have a component.xml with a single component element,
+  the same component element that is used in the Moqui Conf XML file; if a
+  name is specified it will override the directory name; added a depends-on
+  element which modifies the component order at runtime
 - Component directories (referred to by component-list.component-dir in the
   Moqui Conf XML file) now supports a components.xml file (must use that
   filename) to specify which components to load and in which order

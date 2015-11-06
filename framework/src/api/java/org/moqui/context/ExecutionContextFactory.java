@@ -39,13 +39,12 @@ public interface ExecutionContextFactory {
     void destroy();
 
     /**
-     * Register a component with the framework.
+     * Register a component with the framework. The component name will be the last directory in the location path
+     * unless there is a component.xml file in the directory and the component.@name attribute is specified.
      *
-     * @param componentName Optional name for the component. If not specified the last directory in the location path
-     *     will be used as the name.
-     * @param baseLocation A file system directory or a content repository location (the component base location).
+     * @param location A file system directory or a content repository location (the component base location).
      */
-    void initComponent(String componentName, String baseLocation) throws BaseException;
+    void initComponent(String location) throws BaseException;
 
     /**
      * Destroy a component that has been initialized.
