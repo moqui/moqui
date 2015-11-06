@@ -725,21 +725,48 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     }
 
     protected void initComponentDir(String location) {
-        ResourceReference componentRr = new UrlResourceReference()
-        componentRr.init(location, this)
+        ResourceReference componentRr = getResourceReference(location)
         // if directory doesn't exist skip it, runtime doesn't always have an component directory
         if (componentRr.getExists() && componentRr.isDirectory()) {
-            // get all files in the directory
-            TreeMap<String, ResourceReference> componentDirEntries = new TreeMap<String, ResourceReference>()
-            for (ResourceReference componentSubRr in componentRr.getDirectoryEntries()) {
-                // if it's a directory and doesn't start with a "." then add it as a component dir
-                if (!componentSubRr.isDirectory() || componentSubRr.getFileName().startsWith(".")) continue
-                componentDirEntries.put(componentSubRr.getFileName(), componentSubRr)
-            }
-            for (Map.Entry<String, ResourceReference> componentDirEntry in componentDirEntries) {
-                this.initComponent(null, componentDirEntry.getValue().getLocation())
+            // see if there is a components.xml file, if so load according to it instead of all sub-directories
+            ResourceReference cxmlRr = getResourceReference(location + "/components.xml")
+
+            if (cxmlRr.getExists()) {
+                Node componentList = new XmlParser().parse(cxmlRr.openStream())
+                for (Node childNode in componentList.children()) {
+                    if (childNode.name() == 'component') {
+                        String locAttr = childNode.attribute("location")
+                        ResourceReference compRr = getResourceReference(location + "/" + locAttr)
+                        if (compRr.getExists()) {
+                            // initComponent takes care of empty component name
+                            this.initComponent((String) childNode.attribute("name"), compRr.getLocation())
+                        }
+                    } else if (childNode.name() == 'component-dir') {
+                        String locAttr = childNode.attribute("location")
+                        initComponentDir(location + "/" + locAttr)
+                    }
+                }
+            } else {
+                // get all files in the directory
+                TreeMap<String, ResourceReference> componentDirEntries = new TreeMap<String, ResourceReference>()
+                for (ResourceReference componentSubRr in componentRr.getDirectoryEntries()) {
+                    // if it's a directory and doesn't start with a "." then add it as a component dir
+                    if (!componentSubRr.isDirectory() || componentSubRr.getFileName().startsWith(".")) continue
+                    componentDirEntries.put(componentSubRr.getFileName(), componentSubRr)
+                }
+                for (Map.Entry<String, ResourceReference> componentDirEntry in componentDirEntries) {
+                    this.initComponent(null, componentDirEntry.getValue().getLocation())
+                }
             }
         }
+    }
+
+    protected ResourceReference getResourceReference(String location) {
+        // TODO: somehow support other resource location types
+        // the ResourceFacade inits after components are loaded, so we can't get ResourceReferences from it
+        ResourceReference rr = new UrlResourceReference()
+        rr.init(location, this)
+        return rr
     }
 
     @Override

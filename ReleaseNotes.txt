@@ -25,6 +25,9 @@ New Features:
   - KIE, Drools to 6.3.0.Final
   - OrientDB to 2.1.4
   - Quartz Scheduler to 2.2.2
+- Component directories (referred to by component-list.component-dir in the
+  Moqui Conf XML file) now supports a components.xml file (must use that
+  filename) to specify which components to load and in which order
 - Better protection against CSRF/XSRF attaches with a session token as per
   https://www.owasp.org/index.php/CSRF_Prevention_Cheat_Sheet;
   - when enabled (webapp.@require-session-token in Moqui Conf XML file not
