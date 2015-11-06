@@ -53,7 +53,6 @@ import org.apache.shiro.authc.credential.HashedCredentialsMatcher
 import org.apache.shiro.crypto.hash.SimpleHash
 import org.apache.shiro.config.IniSecurityManagerFactory
 import org.apache.shiro.SecurityUtils
-import org.apache.commons.collections.map.ListOrderedMap
 
 import org.apache.camel.CamelContext
 import org.apache.camel.impl.DefaultCamelContext
@@ -79,7 +78,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     protected StupidClassLoader cachedClassLoader
     protected InetAddress localhostAddress = null
 
-    protected final ListOrderedMap componentLocationMap = new ListOrderedMap()
+    protected final LinkedHashMap componentLocationMap = new LinkedHashMap()
     protected ThreadLocal<ExecutionContextImpl> activeContext = new ThreadLocal<ExecutionContextImpl>()
     protected Map<String, EntityFacadeImpl> entityFacadeByTenantMap = new HashMap<String, EntityFacadeImpl>()
     protected Map<String, WebappInfo> webappInfoMap = new HashMap()
@@ -329,9 +328,9 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         // init components referred to in component-list.component and component-dir elements in the conf file
         for (Node childNode in confXmlRoot."component-list"[0].children()) {
             if (childNode.name() == "component") {
-                initComponent((String) childNode."@name", (String) childNode."@location")
+                addComponent((String) childNode."@name", (String) childNode."@location")
             } else if (childNode.name() == "component-dir") {
-                initComponentDir((String) childNode."@location")
+                addComponentDir((String) childNode."@location")
             }
         }
     }
@@ -707,8 +706,11 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     }
 
     @Override
-    void initComponent(String componentName, String baseLocation) throws BaseException {
-        // NOTE: how to get component name? for now use last directory name
+    void initComponent(String componentName, String baseLocation) {
+        addComponent(componentName, baseLocation)
+    }
+
+    void addComponent(String componentName, String baseLocation) {
         if (baseLocation.endsWith('/')) baseLocation = baseLocation.substring(0, baseLocation.length()-1)
         int lastSlashIndex = baseLocation.lastIndexOf('/')
         if (lastSlashIndex < 0) {
@@ -724,7 +726,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         logger.info("Added component [${componentName}] at [${baseLocation}]")
     }
 
-    protected void initComponentDir(String location) {
+    protected void addComponentDir(String location) {
         ResourceReference componentRr = getResourceReference(location)
         // if directory doesn't exist skip it, runtime doesn't always have an component directory
         if (componentRr.getExists() && componentRr.isDirectory()) {
@@ -738,12 +740,12 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
                         String locAttr = childNode.attribute("location")
                         ResourceReference compRr = getResourceReference(location + "/" + locAttr)
                         if (compRr.getExists()) {
-                            // initComponent takes care of empty component name
-                            this.initComponent((String) childNode.attribute("name"), compRr.getLocation())
+                            // addComponent takes care of empty component name
+                            this.addComponent((String) childNode.attribute("name"), compRr.getLocation())
                         }
                     } else if (childNode.name() == 'component-dir') {
                         String locAttr = childNode.attribute("location")
-                        initComponentDir(location + "/" + locAttr)
+                        addComponentDir(location + "/" + locAttr)
                     }
                 }
             } else {
@@ -755,7 +757,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
                     componentDirEntries.put(componentSubRr.getFileName(), componentSubRr)
                 }
                 for (Map.Entry<String, ResourceReference> componentDirEntry in componentDirEntries) {
-                    this.initComponent(null, componentDirEntry.getValue().getLocation())
+                    this.addComponent(null, componentDirEntry.getValue().getLocation())
                 }
             }
         }
