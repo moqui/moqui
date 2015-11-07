@@ -771,7 +771,7 @@ class ServiceDefinition {
                 } else {
                     compareCal = eci.l10n.parseDateTime(after, format)
                 }
-                if (!cal.after(compareCal)) {
+                if (cal && !cal.after(compareCal)) {
                     eci.message.addValidationError(null, parameterName, getServiceName(), "Value entered (${pv}) is before ${after}.", null)
                     return false
                 }
@@ -786,7 +786,7 @@ class ServiceDefinition {
                 } else {
                     compareCal = eci.l10n.parseDateTime(before, format)
                 }
-                if (!cal.before(compareCal)) {
+                if (cal && !cal.before(compareCal)) {
                     eci.message.addValidationError(null, parameterName, getServiceName(), "Value entered (${pv}) is after ${before}.", null)
                     return false
                 }

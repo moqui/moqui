@@ -13,9 +13,12 @@
 package org.moqui.impl.util
 
 import groovy.transform.CompileStatic
+import org.apache.commons.validator.routines.CalendarValidator
 import org.moqui.impl.StupidUtilities
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+
+import java.sql.Timestamp
 
 /** A Simple SGML parser. Doesn't validate, doesn't support attributes, and has some hacks for easier OFX V1 parsing with
  * the colon separated header. */
@@ -23,6 +26,7 @@ import org.slf4j.LoggerFactory
 class SimpleSgmlReader {
     protected final static Logger logger = LoggerFactory.getLogger(SimpleSgmlReader.class)
 
+    final static CalendarValidator calendarValidator = new CalendarValidator()
 
     protected Map<String, String> headerMap = null
     protected Node rootNode = null
@@ -128,4 +132,27 @@ class SimpleSgmlReader {
     }
 
     protected void skipWhitespace() { while (pos < length && Character.isWhitespace(sgml.charAt(pos))) pos++ }
+
+    /** possible formats include: yyyyMMdd (GMT), yyyyMMddHHmmss (GMT), yyyyMMddHHmmss.SSS (GMT), yyyyMMddHHmmss.SSS[-5:EST] */
+    static Timestamp parseOfxDateTime(String ofxStr) {
+        if (ofxStr.length() <= 18) {
+            while (ofxStr.length() < 14) { ofxStr = ofxStr + "0" }
+            if (ofxStr.length() < 15) { ofxStr = ofxStr + "." }
+            while (ofxStr.length() < 18) { ofxStr = ofxStr + "0" }
+            ofxStr = ofxStr + " +0000"
+        } else {
+            // has a time zone, strip it and create an RFC 822 time zone (like -0500)
+            int openBraceIndex = ofxStr.indexOf('[')
+            String tzStr = ofxStr.substring(openBraceIndex + 1, ofxStr.indexOf(':', openBraceIndex))
+            if (Character.isDigit(tzStr.charAt(0))) tzStr = '+' + tzStr
+            if (tzStr.length() == 2) tzStr = tzStr[0] + '0' + tzStr[1]
+            String dtStr = ofxStr.substring(0, openBraceIndex)
+            while (dtStr.length() < 14) { dtStr = dtStr + "0" }
+            if (dtStr.length() < 15) { dtStr = dtStr + "." }
+            while (dtStr.length() < 18) { dtStr = dtStr + "0" }
+            ofxStr = "${dtStr} ${tzStr}00"
+        }
+        Calendar cal = calendarValidator.validate(ofxStr, 'yyyyMMddHHmmss.SSS Z', null, null)
+        return cal ? new Timestamp(cal.getTimeInMillis()) : null
+    }
 }

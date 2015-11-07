@@ -181,21 +181,25 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                 }
             }
 
-            // if we're loading seed type data, add COMPONENT entity def files to the list of locations to load
-            if (!dataTypes || dataTypes.contains("seed")) {
-                for (ResourceReference entityRr in efi.getComponentEntityFileLocations(componentNameList))
-                    if (!entityRr.location.endsWith(".eecas.xml")) locationList.add(entityRr.location)
+            LinkedHashMap<String, String> loadCompLocations
+            if (componentNameList) {
+                LinkedHashMap<String, String> allLocations = efi.ecfi.getComponentBaseLocations()
+                loadCompLocations = new LinkedHashMap<String, String>()
+                for (String cn in componentNameList) loadCompLocations.put(cn, allLocations.get(cn))
+            } else {
+                loadCompLocations = efi.ecfi.getComponentBaseLocations()
             }
 
-            List<String> componentBaseLocations
-            if (componentNameList) {
-                componentBaseLocations = []
-                for (String cn in componentNameList)
-                    componentBaseLocations.add(efi.ecfi.getComponentBaseLocations().get(cn))
-            } else {
-                componentBaseLocations = new ArrayList(efi.ecfi.getComponentBaseLocations().values())
-            }
-            for (String location in componentBaseLocations) {
+            for (Map.Entry<String, String> compLocEntry in loadCompLocations) {
+
+                // if we're loading seed type data, add COMPONENT entity def files to the list of locations to load
+                if (!dataTypes || dataTypes.contains("seed")) {
+                    for (ResourceReference entityRr in efi.getComponentEntityFileLocations([compLocEntry.key]))
+                        if (!entityRr.location.endsWith(".eecas.xml")) locationList.add(entityRr.location)
+                }
+
+                // load files in component data directory
+                String location = compLocEntry.value
                 ResourceReference dataDirRr = efi.ecfi.resourceFacade.getLocationReference(location + "/data")
                 if (dataDirRr.supportsAll()) {
                     // if directory doesn't exist skip it, component doesn't have a data directory
