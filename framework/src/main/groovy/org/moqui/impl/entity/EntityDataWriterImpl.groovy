@@ -69,7 +69,6 @@ class EntityDataWriterImpl implements EntityDataWriter {
 
         if (filename.endsWith('.json')) fileType(JSON)
         else if (filename.endsWith('.xml')) fileType(XML)
-        else if (filename.endsWith('.csv')) fileType(CSV)
 
         PrintWriter pw = new PrintWriter(outFile)
         // NOTE: don't have to do anything different here for different file types, writer() method will handle that
@@ -215,7 +214,6 @@ class EntityDataWriterImpl implements EntityDataWriter {
             boolean beganTransaction = tf.begin(txTimeout)
             try {
                 if (fileType == JSON) return writerJson(writer)
-                else if (fileType == CSV) return writerCsv(writer)
                 return writerXml(writer)
             } catch (Throwable t) {
                 logger.warn("Error writing data: " + t.toString(), t)
@@ -294,37 +292,6 @@ class EntityDataWriterImpl implements EntityDataWriter {
 
         writer.println("]")
         writer.println("")
-
-        return valuesWritten
-    }
-
-    protected int writerCsv(Writer writer) {
-        int valuesWritten = 0
-
-        for (String en in entityNames) {
-            EntityDefinition ed = efi.getEntityDefinition(en)
-            try {
-                String csvHeader = ed.getAllFieldNames().join(",")
-                writer.println(csvHeader)
-            } catch (Exception e) {
-
-            }
-
-            EntityFind ef = makeEntityFind(en)
-            EntityListIterator eli = ef.iterator()
-            try {
-                EntityValue ev
-                while ((ev = eli.next()) != null) {
-                    String csvStr = ev.values().join(",")
-                    writer.println(csvStr)
-
-                    // TODO: consider including dependent records in the count too... maybe write something to recursively count the nested Maps
-                    valuesWritten++
-                }
-            } finally {
-                eli.close()
-            }
-        }
 
         return valuesWritten
     }

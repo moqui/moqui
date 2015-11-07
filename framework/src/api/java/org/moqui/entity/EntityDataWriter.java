@@ -25,9 +25,8 @@ public interface EntityDataWriter {
 
     public static final FileType XML = FileType.XML;
     public static final FileType JSON = FileType.JSON;
-    public static final FileType CSV = FileType.CSV;
 
-    public enum FileType { XML, JSON, CSV }
+    public enum FileType { XML, JSON }
 
     EntityDataWriter fileType(FileType ft);
 
