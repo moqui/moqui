@@ -35,7 +35,7 @@ along with this software (see the LICENSE.md file). If not, see
                 if (thruDate) edw.thruDate(ec.l10n.parseTimestamp(thruDate, null))
                 if (filterMap) edw.filterMap(ec.resource.expression(filterMap, null))
                 if (orderBy) edw.orderBy([orderBy])
-                edw.fileType(fileType == 'JSON' ? EntityDataWriter.JSON : EntityDataWriter.XML)
+                edw.fileType(fileType == 'JSON' ? EntityDataWriter.JSON : fileType == 'XML' ? EntityDataWriter.XML : EntityDataWriter.CSV)
 
                 noResponse = false
                 if (context.output == "file") {
@@ -45,7 +45,7 @@ along with this software (see the LICENSE.md file). If not, see
                 } else if (context.output == "browser") {
                     // stream to ec.web.response
                     def response = ec.web.response
-                    response.setContentType(fileType == 'JSON' ? 'application/json' : 'text/xml')
+                    response.setContentType(fileType == 'JSON' ? 'application/json' : fileType == 'XML' ? 'text/xml' : 'plain/text')
                     response.setCharacterEncoding("UTF-8")
                     response.addHeader("Cache-Control", "no-cache, must-revalidate, private")
                     edw.writer(response.getWriter())
@@ -72,7 +72,7 @@ along with this software (see the LICENSE.md file). If not, see
             <field name="filterMap"><default-field><text-line size="80" default-value="[:]"/></default-field></field>
             <field name="orderBy"><default-field><text-line size="80"/></default-field></field>
             <field name="fileType"><default-field>
-                <radio no-current-selected-key="XML"><option key="XML"/><option key="JSON"/></radio>
+                <radio no-current-selected-key="XML"><option key="XML"/><option key="JSON"/><option key="CSV"/></radio>
             </default-field></field>
             <field name="output">
                 <default-field><radio no-current-selected-key="browser">
