@@ -570,7 +570,7 @@ class EntityFacadeImpl implements EntityFacade {
                     extendEntityNodes.add(childNode)
                 } else {
                     if (entityNode != null) logger.warn("Entity [${entityName}] was found again at [${location}], so overriding definition from previous location")
-                    entityNode = childNode
+                    entityNode = StupidUtilities.deepCopyNode(childNode)
                 }
             }
         }
