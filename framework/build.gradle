@@ -1,5 +1,5 @@
 /*
- * This software is in the public domain under CC0 1.0 Universal.
+ * This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
  *
  * To the extent possible under law, the author(s) have dedicated all
  * copyright and related and neighboring rights to this software to the
@@ -49,7 +49,7 @@ repositories {
 
 dependencies {
     compile group: 'org.owasp.antisamy', name: 'antisamy', version: '1.5.3' // New BSD
-    compile group: 'org.owasp.esapi', name: 'esapi', version: '2.1.0' // New BSD
+    compile group: 'org.owasp.esapi', name: 'esapi-moqui', version: '2.1.0' // New BSD
 
     compile module(group: 'com.atomikos', name: 'transactions', version: '4.0.0M4') { // Apache 2.0
         dependencies module(group: 'com.atomikos', name: 'atomikos-util', version: '4.0.0M4') } // Apache 2.0
@@ -141,10 +141,12 @@ dependencies {
         dependencies module(group: 'commons-beanutils', name: 'commons-beanutils', version: '1.8.3') }
     compile group: 'org.apache.shiro', name: 'shiro-web', version: '1.2.4' // Apache 2.0
 
-    apiCompile module(group: 'org.slf4j', name: 'slf4j-api', version: '1.7.12') { // MIT license
-        dependencies module(group: 'log4j', name: 'log4j', version: '1.2.17'), module(group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.12') }
-    compile module(group: 'org.slf4j', name: 'slf4j-api', version: '1.7.12') { // MIT license
-        dependencies module(group: 'log4j', name: 'log4j', version: '1.2.17'), module(group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.12') }
+    apiCompile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.12'
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.12'
+    runtime group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.4.1'
+    runtime group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.4.1'
+    runtime group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.4.1'
+    // runtime group: 'org.apache.logging.log4j', name: 'log4j-1.2-api', version: '2.4.1'
 
     apiCompile group: 'org.intelligents-ia.winstone', name: 'winstone', version: '1.7.0' // CDDL
     // apiCompile group: 'org.intelligents-ia.winstone', name: 'winstone-jndi', version: '1.7.0' // CDDL
@@ -204,8 +206,8 @@ dependencies {
     runtime group: 'org.apache.camel', name: 'camel-elasticsearch', version: '2.16.0' // Apache 2.0
     runtime group: 'org.apache.camel', name: 'camel-freemarker', version: '2.16.0' // Apache 2.0
     runtime group: 'org.apache.camel', name: 'camel-groovy', version: '2.16.0' // Apache 2.0
-    // camel-http4 commented until resolution of missing class: org.apache.camel.http.common.HttpMethods
-    // runtime group: 'org.apache.camel', name: 'camel-http4', version: '2.16.0' // Apache 2.0
+    runtime group: 'org.apache.camel', name: 'camel-http-common', version: '2.16.0' // Apache 2.0
+    runtime group: 'org.apache.camel', name: 'camel-http4', version: '2.16.0' // Apache 2.0
     runtime group: 'org.apache.camel', name: 'camel-jms', version: '2.16.0' // Apache 2.0
     runtime group: 'org.apache.camel', name: 'camel-lucene', version: '2.16.0' // Apache 2.0
     runtime group: 'org.apache.camel', name: 'camel-mail', version: '2.16.0' // Apache 2.0
@@ -235,6 +237,7 @@ dependencies {
     // ========== test dependencies ==========
     testCompile group: 'org.spockframework', name: 'spock-core', version: '1.0-groovy-2.4' // Apache 2.0
     testCompile group: 'junit', name: 'junit', version: '4.12' // Apache 2.0
+    testCompile group: 'org.hamcrest', name: 'hamcrest-core', version: '1.3' // BSD 3-Clause
 }
 
 task apiJavadoc(type: Javadoc) {
@@ -304,8 +307,10 @@ war {
     from file(projectDir.absolutePath + '/lib/winstone-1.7.0.jar')
     from file(projectDir.absolutePath + '/lib/winstone-jndi-1.7.0.jar')
     from file(projectDir.absolutePath + '/lib/slf4j-api-1.7.12.jar')
-    from file(projectDir.absolutePath + '/lib/slf4j-log4j12-1.7.12.jar')
-    from file(projectDir.absolutePath + '/lib/log4j-1.2.17.jar')
+    from file(projectDir.absolutePath + '/lib/log4j-api-2.4.1.jar')
+    from file(projectDir.absolutePath + '/lib/log4j-core-2.4.1.jar')
+    from file(projectDir.absolutePath + '/lib/log4j-slf4j-impl-2.4.1.jar')
+    from file(projectDir.absolutePath + '/src/main/resources/log4j2.xml')
     from file(projectDir.absolutePath + '/lib/geronimo-servlet_2.5_spec-1.2.jar')
     // setup the manifest for the executable war/jar mode
     manifest { attributes 'Implementation-Title': 'Moqui Start', 'Implementation-Vendor': 'Moqui Framework',

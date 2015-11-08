@@ -1,5 +1,5 @@
 /*
- * This software is in the public domain under CC0 1.0 Universal.
+ * This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
  * 
  * To the extent possible under law, the author(s) have dedicated all
  * copyright and related and neighboring rights to this software to the
@@ -17,6 +17,7 @@ import groovy.transform.CompileStatic
 import groovy.transform.TypeChecked
 import groovy.transform.TypeCheckingMode
 import org.moqui.context.ArtifactAuthorizationException
+import org.moqui.context.ArtifactExecutionInfo
 import org.moqui.context.ArtifactTarpitException
 import org.moqui.context.WebFacade
 import org.moqui.impl.context.ResourceFacadeImpl
@@ -194,7 +195,8 @@ class ScreenRenderImpl implements ScreenRender {
         ScreenDefinition sd = sdIterator.next()
         // for these authz is not required, as long as something authorizes on the way to the transition, or
         // the transition itself, it's fine
-        ec.getArtifactExecution().push(new ArtifactExecutionInfoImpl(sd.location, "AT_XML_SCREEN", "AUTHZA_VIEW"), false)
+        ArtifactExecutionInfo aei = new ArtifactExecutionInfoImpl(sd.location, "AT_XML_SCREEN", "AUTHZA_VIEW")
+        ec.getArtifactExecution().push(aei, false)
 
         boolean loggedInAnonymous = false
         Node screenNode = sd.getScreenNode()
@@ -222,7 +224,7 @@ class ScreenRenderImpl implements ScreenRender {
             ri = screenUrlInstance.targetTransition.run(this)
         }
 
-        ec.getArtifactExecution().pop()
+        ec.getArtifactExecution().pop(aei)
         if (loggedInAnonymous) ((UserFacadeImpl) ec.getUser()).logoutAnonymousOnly()
 
         return ri
@@ -525,8 +527,8 @@ class ScreenRenderImpl implements ScreenRender {
         // NOTE: don't require authz if the screen doesn't require auth
         Node screenNode = sd.getScreenNode()
         String requireAuthentication = (String) screenNode.attribute('require-authentication')
-        ec.artifactExecution.push(new ArtifactExecutionInfoImpl(sd.location, "AT_XML_SCREEN", "AUTHZA_VIEW"),
-                !screenDefIterator.hasNext() ? (!requireAuthentication || requireAuthentication == "true") : false)
+        ArtifactExecutionInfo aei = new ArtifactExecutionInfoImpl(sd.location, "AT_XML_SCREEN", "AUTHZA_VIEW")
+        ec.artifactExecution.push(aei, !screenDefIterator.hasNext() ? (!requireAuthentication || requireAuthentication == "true") : false)
 
         if (sd.getTenantsAllowed() && !sd.getTenantsAllowed().contains(ec.getTenantId()))
             throw new ArtifactAuthorizationException("The screen ${sd.getScreenName()} is not available to tenant [${ec.getTenantId()}]")
@@ -546,7 +548,7 @@ class ScreenRenderImpl implements ScreenRender {
         if (screenDefIterator.hasNext()) recursiveRunActions(screenDefIterator, runAlwaysActions, runPreActions)
 
         // all done so pop the artifact info; don't bother making sure this is done on errors/etc like in a finally clause because if there is an error this will help us know how we got there
-        ec.artifactExecution.pop()
+        ec.artifactExecution.pop(aei)
         if (loggedInAnonymous) ((UserFacadeImpl) ec.getUser()).logoutAnonymousOnly()
     }
 
@@ -577,14 +579,16 @@ class ScreenRenderImpl implements ScreenRender {
 
             // for inherited permissions to work, walk the screen list before the screenRenderDefList and artifact push
             // them, then pop after
-            int screensPushed = 0
+            ArrayList<ArtifactExecutionInfo> aeiList = null
             if (screenUrlInfo.renderPathDifference > 0) {
+                aeiList = new ArrayList<ArtifactExecutionInfo>(screenUrlInfo.renderPathDifference)
                 for (int i = 0; i < screenUrlInfo.renderPathDifference; i++) {
                     ScreenDefinition permSd = screenUrlInfo.screenPathDefList.get(i)
                     if (permSd.getTenantsAllowed() && !permSd.getTenantsAllowed().contains(ec.getTenantId()))
                         throw new ArtifactAuthorizationException("The screen ${permSd.getScreenName()} is not available to tenant [${ec.getTenantId()}]")
-                    ec.artifactExecution.push(new ArtifactExecutionInfoImpl(permSd.location, "AT_XML_SCREEN", "AUTHZA_VIEW"), false)
-                    screensPushed++
+                    ArtifactExecutionInfo aei = new ArtifactExecutionInfoImpl(permSd.location, "AT_XML_SCREEN", "AUTHZA_VIEW")
+                    ec.artifactExecution.push(aei, false)
+                    aeiList.add(aei)
                 }
             }
 
@@ -601,7 +605,7 @@ class ScreenRenderImpl implements ScreenRender {
             // if dontDoRender then quit now; this should be set during always-actions or pre-actions
             if (dontDoRender) {
                 // pop all screens, then good to go
-                for (int i = screensPushed; i > 0; i--) ec.artifactExecution.pop()
+                if (aeiList) for (int i = (aeiList.size() - 1); i >= 0; i--) ec.artifactExecution.pop(aeiList.get(i))
                 return
             }
 
@@ -629,7 +633,7 @@ class ScreenRenderImpl implements ScreenRender {
                 internalWriter.write("\n</script>\n")
             }
 
-            for (int i = screensPushed; i > 0; i--) ec.artifactExecution.pop()
+            if (aeiList) for (int i = (aeiList.size() - 1); i >= 0; i--) ec.artifactExecution.pop(aeiList.get(i))
         } catch (ArtifactAuthorizationException e) {
             throw e
         } catch (ArtifactTarpitException e) {
@@ -1091,11 +1095,18 @@ class ScreenRenderImpl implements ScreenRender {
     String pushContext() { ec.getContext().push(); return "" }
     String popContext() { ec.getContext().pop(); return "" }
 
-    String setSingleFormMapInContext(FtlNodeWrapper formNodeWrapper) {
+    /** Call this at the beginning of a form-single. Always call popContext() at the end of the form! */
+    String pushSingleFormMapContext(FtlNodeWrapper formNodeWrapper) {
+        ContextStack cs = ec.getContext()
         Node formNode = formNodeWrapper.getGroovyNode()
         String mapName = (String) formNode.attribute('map') ?: "fieldValues"
-        Map valueMap = (Map) ec.getContext().get(mapName)
-        ec.getContext().put("_formMap", valueMap)
+        Map valueMap = (Map) cs.get(mapName)
+
+        cs.push()
+        if (valueMap) cs.putAll(valueMap)
+        cs.put("_formMap", valueMap)
+        cs.put(mapName, valueMap)
+
         return ""
     }
     String getFieldValueString(FtlNodeWrapper fieldNodeWrapper, String defaultValue, String format) {

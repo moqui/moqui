@@ -1,5 +1,5 @@
 /*
- * This software is in the public domain under CC0 1.0 Universal.
+ * This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
  * 
  * To the extent possible under law, the author(s) have dedicated all
  * copyright and related and neighboring rights to this software to the
@@ -927,7 +927,8 @@ class EntityFacadeImpl implements EntityFacade {
 
         List<Map<String, Object>> eil = new LinkedList()
         for (String en in getAllEntityNames()) {
-            if (filterRegexp && !en.matches(filterRegexp)) continue
+            // Added (?i) to ignore the case and '*' in the starting and at ending to match if searched string is sub-part of entity name
+            if (filterRegexp && !en.matches("(?i).*" + filterRegexp + ".*")) continue
             EntityDefinition ed = null
             try { ed = getEntityDefinition(en) } catch (EntityException e) { logger.warn("Problem finding entity definition", e) }
             if (ed == null) continue
