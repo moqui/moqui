@@ -608,13 +608,24 @@ class EntityFacadeImpl implements EntityFacade {
             }
             // add relationship, key-map (copy over, will get child nodes too
             for (Node copyNode in extendEntity."relationship") {
-                if (!entityNode.get("relationship").find({ ((Node) it).attribute('title') == copyNode.attribute('title') }))
+                Node currentNode = (Node) entityNode.get("relationship")
+                        .find({ ((Node) it).attribute('title') == copyNode.attribute('title') &&
+                            ((Node) it).attribute('related-entity-name') == copyNode.attribute('related-entity-name') })
+                if (currentNode) {
+                    currentNode.replaceNode(copyNode)
+                } else {
                     entityNode.append(copyNode)
+                }
             }
             // add index, index-field
             for (Node copyNode in extendEntity."index") {
-                if (!entityNode.get("index").find({ ((Node) it).attribute('name') == copyNode.attribute('name') }))
+                Node currentNode = (Node) entityNode.get("index")
+                        .find({ ((Node) it).attribute('name') == copyNode.attribute('name') })
+                if (currentNode) {
+                    currentNode.replaceNode(copyNode)
+                } else {
                     entityNode.append(copyNode)
+                }
             }
             // copy master nodes (will be merged on parse)
             // TODO: check master/detail existance before append it into entityNode
