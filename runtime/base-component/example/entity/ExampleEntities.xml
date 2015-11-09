@@ -23,6 +23,11 @@ along with this software (see the LICENSE.md file). If not, see
         <field name="encryptedField" type="text-medium" encrypt="true"/>
         <field name="exampleEmail" type="text-medium"/>
         <field name="exampleUrl" type="text-medium"/>
+        <!-- test replace relationship -->
+        <relationship type="one" title="ExampleType" related-entity-name="moqui.basic.Enumeration" short-alias="type">
+            <key-map field-name="exampleTypeEnumId"/></relationship>
+        <!-- test additional relationship -->
+        <relationship type="one" title="Example" related-entity-name="moqui.basic.StatusItem" short-alias="status"/>
     </extend-entity>
     <entity entity-name="Example" package-name="example" short-alias="examples" allow-user-field="true">
         <field name="exampleId" type="id" is-pk="true"><description>primary sequenced ID</description></field>
@@ -42,7 +47,6 @@ along with this software (see the LICENSE.md file). If not, see
         -->
         <relationship type="one" title="ExampleType" related-entity-name="moqui.basic.Enumeration" short-alias="type">
             <key-map field-name="exampleTypeEnumId"/></relationship>
-        <relationship type="one" title="Example" related-entity-name="moqui.basic.StatusItem" short-alias="status"/>
 
         <!-- This is not generally necessary, reverse relationships are created automatically, but needed to specify
             the short-alias for use in entity REST requests and quick path look ups -->
