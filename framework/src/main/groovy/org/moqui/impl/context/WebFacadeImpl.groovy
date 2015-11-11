@@ -261,6 +261,7 @@ class WebFacadeImpl implements WebFacade {
                     if (entry.key.contains("_op")) continue
                     if (entry.key.contains("_not")) continue
                     if (entry.key.contains("_ic")) continue
+                    if (entry.key.contains("moquiSessionToken")) continue
                     if (!entry.value.trim()) continue
                     nameBuilder.append(entry.value)
                     pCount++
