@@ -362,7 +362,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                     long startTime = System.currentTimeMillis()
                     boolean semaphoreCleared = false
                     while (System.currentTimeMillis() < (startTime + timeoutTime)) {
-                        Thread.wait(sleepTime)
+                        Thread.sleep(sleepTime)
                         if (eci.getEntity().find("moqui.service.semaphore.ServiceSemaphore")
                                 .condition("serviceName", getServiceName()).useCache(false).one() == null) {
                             semaphoreCleared = true
