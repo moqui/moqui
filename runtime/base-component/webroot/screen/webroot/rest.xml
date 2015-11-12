@@ -140,9 +140,11 @@ along with this software (see the LICENSE.md file). If not, see
 
     To get the json-schema (see http://json-schema.org) for ALL entities use a request like:
 
-    curl -X GET -u john.doe:moqui http://localhost:8080/rest/schema
     curl -X GET -u john.doe:moqui http://localhost:8080/rest/schema.json
 
+    To get the RAML schema (see http://raml.org) for ALL entities use a request like:
+
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/schema.raml
     -->
     <transition name="schema" read-only="true" method="get">
         <actions><script>ec.web.handleEntityRestSchema(sri.screenUrlInfo.extraPathNameList, sri.buildUrl("schema").getUrl(),
