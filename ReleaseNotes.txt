@@ -2133,7 +2133,8 @@ Features considered, but may not to be included in 1.x series
     - like current but use OData URL structure, query parameters, etc
     - mount on /odata4 as alternative to existing /rest
     - generate EDMX for all entities (and exported services?)
-  x Generate RAML (http://raml.org) with json-schema (http://json-schema.org) (others: Swagger, RSDL) for all entities to use with entity REST API
+  - Generate Swagger schema (http://swagger.io) for all entities to use with entity REST API
+  x Generate RAML (http://raml.org) with json-schema (http://json-schema.org) for all entities to use with entity REST API
     x get: \ queryParameters: \ ${pk/etc}: \ (type:, required:, etc)
     x get: \ responses: \ 200: \ body: \ application/json: \ schema: !include schema/${name}.json
     x nested like: /orders: \ /${orderId}: \ /orderItems: \ ...
@@ -2147,16 +2148,30 @@ Features considered, but may not to be included in 1.x series
   - Update database from Data Document
   - Data Document UI
     - show/edit field, rel alias, condition, link
-    - special form for add (edit?) field with 5 drop-downs for relationships, one for field, all updated based on master entity and previous selections
+    - special form for add (edit?) field with 5 drop-downs for relationships, one for field, all updated based on
+      master entity and previous selections
+  - Data Document REST interface
+    - get single by dataDocumentId and PK values for primary entity
+    - search through ElasticSearch for those with associated feed/index
+    - json-schema, RAML, Swagger API defs
+    - generic service for sending Data Document to REST (or other?) end point
+  - Master Entity REST Interface
+    - like /rest/v1 but only for entities with master definition(s)
+    - generate json-schema, RAML, Swagger for full master def hierarchies
   - Service REST API
     - goal to define service mappings to REST path, method, etc for:
-      - json-schema and RAML descriptors
+      - Swagger, json-schema, RAML descriptors
       - handling service calls through generic transition like /rest/v1, instead of explicit transitions like ExampleApp.xml
     - use structure somewhat similar to RAML (maybe use RAML with extensions?)
     - define resources, sub-resources (including IDs in path)
     - specify method and service name for that method
     - from service: in-parameters (RAML queryParameters, json-schema), description, out-parameters (json-schema)
     - authz at service level, like other interfaces
+    - allow mapping master entity operations as well
+
+- AS2 Client and Server
+  - use OpenAS2 (http://openas2.sourceforge.net, https://github.com/OpenAS2/OpenAs2App)?
+  - tie into SystemMessage for send/receive (with AS2 service for send, code to receive SystemMessage from AS2 server)
 
 - Atomikos
   - http://www.atomikos.com/Main/InstallingTransactionsEssentials
