@@ -1,5 +1,5 @@
 /*
- * This software is in the public domain under CC0 1.0 Universal.
+ * This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
  * 
  * To the extent possible under law, the author(s) have dedicated all
  * copyright and related and neighboring rights to this software to the
@@ -30,7 +30,6 @@ public interface ArtifactExecutionFacade {
     /** Pop from the artifact stack and verify it is the same artifact name and type. This is generally called internally
      * by the framework and does not need to be used in application code. */
     ArtifactExecutionInfo pop(ArtifactExecutionInfo aei);
-    @Deprecated
     void push(String name, String typeEnumId, String actionEnumId, boolean requiresAuthz);
     @Deprecated
     ArtifactExecutionInfo pop();

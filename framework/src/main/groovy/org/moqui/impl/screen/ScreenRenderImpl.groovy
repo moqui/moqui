@@ -1,5 +1,5 @@
 /*
- * This software is in the public domain under CC0 1.0 Universal.
+ * This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
  * 
  * To the extent possible under law, the author(s) have dedicated all
  * copyright and related and neighboring rights to this software to the
@@ -1095,11 +1095,18 @@ class ScreenRenderImpl implements ScreenRender {
     String pushContext() { ec.getContext().push(); return "" }
     String popContext() { ec.getContext().pop(); return "" }
 
-    String setSingleFormMapInContext(FtlNodeWrapper formNodeWrapper) {
+    /** Call this at the beginning of a form-single. Always call popContext() at the end of the form! */
+    String pushSingleFormMapContext(FtlNodeWrapper formNodeWrapper) {
+        ContextStack cs = ec.getContext()
         Node formNode = formNodeWrapper.getGroovyNode()
         String mapName = (String) formNode.attribute('map') ?: "fieldValues"
-        Map valueMap = (Map) ec.getContext().get(mapName)
-        ec.getContext().put("_formMap", valueMap)
+        Map valueMap = (Map) cs.get(mapName)
+
+        cs.push()
+        if (valueMap) cs.putAll(valueMap)
+        cs.put("_formMap", valueMap)
+        cs.put(mapName, valueMap)
+
         return ""
     }
     String getFieldValueString(FtlNodeWrapper fieldNodeWrapper, String defaultValue, String format) {

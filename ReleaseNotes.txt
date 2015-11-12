@@ -23,8 +23,16 @@ New Features:
   - JNA to 4.2.1
   - JavaMail to 1.5.4
   - KIE, Drools to 6.3.0.Final
+  - Log4J to 2.4.1
   - OrientDB to 2.1.4
   - Quartz Scheduler to 2.2.2
+- Components may now have a component.xml with a single component element,
+  the same component element that is used in the Moqui Conf XML file; if a
+  name is specified it will override the directory name; added a depends-on
+  element which modifies the component order at runtime
+- Component directories (referred to by component-list.component-dir in the
+  Moqui Conf XML file) now supports a components.xml file (must use that
+  filename) to specify which components to load and in which order
 - Better protection against CSRF/XSRF attaches with a session token as per
   https://www.owasp.org/index.php/CSRF_Prevention_Cheat_Sheet;
   - when enabled (webapp.@require-session-token in Moqui Conf XML file not
@@ -55,6 +63,9 @@ New Features:
 - Added field.@create-only attribute, defaults to entity.@create-only
   value, create only now checked at field level on update (only at entity
   level on delete)
+- When a form-single is rendered the form map is added to a pushed
+  (isolated) context and popped after; field values can now be referenced
+  directly in expressions in @condition, @text, etc attributes
 - All XML Form field widgets now support expanded tooltip
 - Added json-schema for Entity REST API: for all entities get
   /rest/schema.json, for a single entity get /rest/schema/${name}.json
@@ -63,7 +74,7 @@ New Features:
 - Changed receive#SystemMessage to an interface, now use
   receive#IncomingSystemMessage for remote calls, will call the
   SystemMessageType.receiveServiceName service if specified to save message
-- Added EDI handler (parser and generator), examples in Mantle
+- Added EDI handler (parser and generator), used in Mantle for X12 messages
 
 Bug Fixes:
 
@@ -2122,7 +2133,8 @@ Features considered, but may not to be included in 1.x series
     - like current but use OData URL structure, query parameters, etc
     - mount on /odata4 as alternative to existing /rest
     - generate EDMX for all entities (and exported services?)
-  x Generate RAML (http://raml.org) with json-schema (http://json-schema.org) (others: Swagger, RSDL) for all entities to use with entity REST API
+  - Generate Swagger schema (http://swagger.io) for all entities to use with entity REST API
+  x Generate RAML (http://raml.org) with json-schema (http://json-schema.org) for all entities to use with entity REST API
     x get: \ queryParameters: \ ${pk/etc}: \ (type:, required:, etc)
     x get: \ responses: \ 200: \ body: \ application/json: \ schema: !include schema/${name}.json
     x nested like: /orders: \ /${orderId}: \ /orderItems: \ ...
@@ -2136,16 +2148,30 @@ Features considered, but may not to be included in 1.x series
   - Update database from Data Document
   - Data Document UI
     - show/edit field, rel alias, condition, link
-    - special form for add (edit?) field with 5 drop-downs for relationships, one for field, all updated based on master entity and previous selections
+    - special form for add (edit?) field with 5 drop-downs for relationships, one for field, all updated based on
+      master entity and previous selections
+  - Data Document REST interface
+    - get single by dataDocumentId and PK values for primary entity
+    - search through ElasticSearch for those with associated feed/index
+    - json-schema, RAML, Swagger API defs
+    - generic service for sending Data Document to REST (or other?) end point
+  - Master Entity REST Interface
+    - like /rest/v1 but only for entities with master definition(s)
+    - generate json-schema, RAML, Swagger for full master def hierarchies
   - Service REST API
     - goal to define service mappings to REST path, method, etc for:
-      - json-schema and RAML descriptors
+      - Swagger, json-schema, RAML descriptors
       - handling service calls through generic transition like /rest/v1, instead of explicit transitions like ExampleApp.xml
     - use structure somewhat similar to RAML (maybe use RAML with extensions?)
     - define resources, sub-resources (including IDs in path)
     - specify method and service name for that method
     - from service: in-parameters (RAML queryParameters, json-schema), description, out-parameters (json-schema)
     - authz at service level, like other interfaces
+    - allow mapping master entity operations as well
+
+- AS2 Client and Server
+  - use OpenAS2 (http://openas2.sourceforge.net, https://github.com/OpenAS2/OpenAs2App)?
+  - tie into SystemMessage for send/receive (with AS2 service for send, code to receive SystemMessage from AS2 server)
 
 - Atomikos
   - http://www.atomikos.com/Main/InstallingTransactionsEssentials

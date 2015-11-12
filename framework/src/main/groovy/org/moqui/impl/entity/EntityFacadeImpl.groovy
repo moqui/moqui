@@ -1,5 +1,5 @@
 /*
- * This software is in the public domain under CC0 1.0 Universal.
+ * This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
  * 
  * To the extent possible under law, the author(s) have dedicated all
  * copyright and related and neighboring rights to this software to the
@@ -570,7 +570,7 @@ class EntityFacadeImpl implements EntityFacade {
                     extendEntityNodes.add(childNode)
                 } else {
                     if (entityNode != null) logger.warn("Entity [${entityName}] was found again at [${location}], so overriding definition from previous location")
-                    entityNode = childNode
+                    entityNode = StupidUtilities.deepCopyNode(childNode)
                 }
             }
         }
@@ -607,10 +607,28 @@ class EntityFacadeImpl implements EntityFacade {
                 else entityNode.append(childOverrideNode)
             }
             // add relationship, key-map (copy over, will get child nodes too
-            for (Node copyNode in extendEntity."relationship") entityNode.append(copyNode)
+            for (Node copyNode in extendEntity."relationship") {
+                Node currentNode = (Node) entityNode.get("relationship")
+                        .find({ ((Node) it).attribute('title') == copyNode.attribute('title') &&
+                            ((Node) it).attribute('related-entity-name') == copyNode.attribute('related-entity-name') })
+                if (currentNode) {
+                    currentNode.replaceNode(copyNode)
+                } else {
+                    entityNode.append(copyNode)
+                }
+            }
             // add index, index-field
-            for (Node copyNode in extendEntity."index") entityNode.append(copyNode)
+            for (Node copyNode in extendEntity."index") {
+                Node currentNode = (Node) entityNode.get("index")
+                        .find({ ((Node) it).attribute('name') == copyNode.attribute('name') })
+                if (currentNode) {
+                    currentNode.replaceNode(copyNode)
+                } else {
+                    entityNode.append(copyNode)
+                }
+            }
             // copy master nodes (will be merged on parse)
+            // TODO: check master/detail existance before append it into entityNode
             for (Node copyNode in extendEntity."master") entityNode.append(copyNode)
         }
 
@@ -920,7 +938,8 @@ class EntityFacadeImpl implements EntityFacade {
 
         List<Map<String, Object>> eil = new LinkedList()
         for (String en in getAllEntityNames()) {
-            if (filterRegexp && !en.matches(filterRegexp)) continue
+            // Added (?i) to ignore the case and '*' in the starting and at ending to match if searched string is sub-part of entity name
+            if (filterRegexp && !en.matches("(?i).*" + filterRegexp + ".*")) continue
             EntityDefinition ed = null
             try { ed = getEntityDefinition(en) } catch (EntityException e) { logger.warn("Problem finding entity definition", e) }
             if (ed == null) continue

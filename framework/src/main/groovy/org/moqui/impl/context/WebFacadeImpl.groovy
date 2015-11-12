@@ -1,5 +1,5 @@
 /*
- * This software is in the public domain under CC0 1.0 Universal.
+ * This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
  * 
  * To the extent possible under law, the author(s) have dedicated all
  * copyright and related and neighboring rights to this software to the
@@ -261,6 +261,7 @@ class WebFacadeImpl implements WebFacade {
                     if (entry.key.contains("_op")) continue
                     if (entry.key.contains("_not")) continue
                     if (entry.key.contains("_ic")) continue
+                    if (entry.key.contains("moquiSessionToken")) continue
                     if (!entry.value.trim()) continue
                     nameBuilder.append(entry.value)
                     pCount++
