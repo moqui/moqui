@@ -13,41 +13,33 @@
 package org.moqui.impl.context
 
 import groovy.transform.CompileStatic
-import org.apache.fop.apps.FopConfParser
-import org.apache.fop.apps.FopFactoryBuilder
+import org.apache.fop.apps.*
 import org.apache.fop.apps.io.ResourceResolverFactory
-import org.apache.xmlgraphics.io.Resource
-import org.apache.xmlgraphics.io.ResourceResolver
-import org.moqui.entity.EntityValue
-
-import javax.mail.util.ByteArrayDataSource
-import org.apache.fop.apps.FOUserAgent
-import org.apache.fop.apps.Fop
-import org.apache.fop.apps.FopFactory
 import org.apache.jackrabbit.jcr2dav.Jcr2davRepositoryFactory
 import org.apache.jackrabbit.rmi.repository.URLRemoteRepository
-
+import org.apache.xmlgraphics.io.Resource
+import org.apache.xmlgraphics.io.ResourceResolver
 import org.codehaus.groovy.runtime.InvokerHelper
 
+import org.moqui.context.*
+import org.moqui.entity.EntityValue
 import org.moqui.impl.StupidUtilities
 import org.moqui.impl.context.renderer.FtlTemplateRenderer
 import org.moqui.impl.context.runner.JavaxScriptRunner
 import org.moqui.impl.context.runner.XmlActionsScriptRunner
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 import javax.activation.DataSource
 import javax.activation.MimetypesFileTypeMap
 import javax.jcr.Repository
 import javax.jcr.Session
 import javax.jcr.SimpleCredentials
+import javax.mail.util.ByteArrayDataSource
 import javax.naming.InitialContext
+
 import javax.script.ScriptEngine
 import javax.script.ScriptEngineManager
-
-import org.moqui.context.*
-
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-
 import javax.xml.transform.Source
 import javax.xml.transform.Transformer
 import javax.xml.transform.TransformerFactory
@@ -75,9 +67,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
     protected final ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
     protected FopFactory internalFopFactory = null
 
-
     protected final Map<String, Repository> contentRepositories = new HashMap()
-
     protected final ThreadLocal<Map<String, Session>> contentSessions = new ThreadLocal<Map<String, Session>>()
 
     ResourceFacadeImpl(ExecutionContextFactoryImpl ecfi) {
@@ -114,7 +104,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
                 Class rrClass = Thread.currentThread().getContextClassLoader().loadClass((String) rrNode."@class")
                 resourceReferenceClasses.put((String) rrNode."@scheme", rrClass)
             } catch (ClassNotFoundException e) {
-                logger.warn("Class [${rrNode.'@class'}] not found even with components, skipping. (${e.toString()})")
+                logger.warn("Class [${rrNode.'@class'}] for scheme [${rrNode.'@scheme'}] not found even with components, skipping. (${e.toString()})")
             }
         }
 

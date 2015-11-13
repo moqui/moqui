@@ -89,7 +89,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     protected org.apache.shiro.mgt.SecurityManager internalSecurityManager
 
     /** The central object of the Camel API: CamelContext */
-    protected final CamelContext camelContext
+    protected CamelContext camelContext
     protected MoquiServiceComponent moquiServiceComponent
     protected Map<String, MoquiServiceConsumer> camelConsumerByUriMap = new HashMap<String, MoquiServiceConsumer>()
 
@@ -130,45 +130,30 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         // if there is a system property use that, otherwise from the properties file
         this.runtimePath = System.getProperty("moqui.runtime")
         if (!this.runtimePath) this.runtimePath = moquiInitProperties.getProperty("moqui.runtime")
-        if (!this.runtimePath)
-            throw new IllegalArgumentException("No moqui.runtime property found in MoquiInit.properties or in a system property (with: -Dmoqui.runtime=... on the command line).")
+        if (!this.runtimePath) throw new IllegalArgumentException("No moqui.runtime property found in MoquiInit.properties or in a system property (with: -Dmoqui.runtime=... on the command line)")
 
         if (this.runtimePath.endsWith("/")) this.runtimePath = this.runtimePath.substring(0, this.runtimePath.length()-1)
 
         // setup the runtimeFile
         File runtimeFile = new File(this.runtimePath)
-        if (!runtimeFile.exists()) {
-            throw new IllegalArgumentException("The moqui.runtime path [${this.runtimePath}] was not found.")
-        } else {
-            this.runtimePath = runtimeFile.getCanonicalPath()
-        }
-
-        // always set the full moqui.runtime system property for use in various places
-        System.setProperty("moqui.runtime", this.runtimePath)
+        if (runtimeFile.exists()) { this.runtimePath = runtimeFile.getCanonicalPath() }
+        else { throw new IllegalArgumentException("The moqui.runtime path [${this.runtimePath}] was not found.") }
 
         // get the moqui configuration file path
         String confPartialPath = System.getProperty("moqui.conf")
         if (!confPartialPath) confPartialPath = moquiInitProperties.getProperty("moqui.conf")
-        if (!confPartialPath)
-            throw new IllegalArgumentException("No moqui.conf property found in MoquiInit.properties or in a system property (with: -Dmoqui.conf=... on the command line).")
+        if (!confPartialPath) throw new IllegalArgumentException("No moqui.conf property found in MoquiInit.properties or in a system property (with: -Dmoqui.conf=... on the command line)")
 
         // setup the confFile
         if (confPartialPath.startsWith("/")) confPartialPath = confPartialPath.substring(1)
         String confFullPath = this.runtimePath + "/" + confPartialPath
         File confFile = new File(confFullPath)
-        if (confFile.exists()) {
-            this.confPath = confFullPath
-        } else {
-            this.confPath = null
-            logger.warn("The moqui.conf path [${confFullPath}] was not found.")
-        }
+        if (confFile.exists()) { this.confPath = confFullPath }
+        else { this.confPath = null; logger.warn("The moqui.conf path [${confFullPath}] was not found.") }
 
         confXmlRoot = this.initConfig()
 
         preFacadeInit()
-
-        // setup the CamelContext, but don't init yet
-        camelContext = new DefaultCamelContext()
 
         // this init order is important as some facades will use others
         this.cacheFacade = new CacheFacadeImpl(this)
@@ -200,18 +185,14 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     ExecutionContextFactoryImpl(String runtimePath, String confPath) {
         // setup the runtimeFile
         File runtimeFile = new File(runtimePath)
-        if (!runtimeFile.exists()) {
-            throw new IllegalArgumentException("The moqui.runtime path [${runtimePath}] was not found.")
-        }
+        if (!runtimeFile.exists()) throw new IllegalArgumentException("The moqui.runtime path [${runtimePath}] was not found.")
 
         // setup the confFile
         if (runtimePath.endsWith('/')) runtimePath = runtimePath.substring(0, runtimePath.length()-1)
         if (confPath.startsWith('/')) confPath = confPath.substring(1)
         String confFullPath = runtimePath + '/' + confPath
         File confFile = new File(confFullPath)
-        if (!confFile.exists()) {
-            throw new IllegalArgumentException("The moqui.conf path [${confFullPath}] was not found.")
-        }
+        if (!confFile.exists()) throw new IllegalArgumentException("The moqui.conf path [${confFullPath}] was not found.")
 
         this.runtimePath = runtimePath
         this.confPath = confFullPath
@@ -219,9 +200,6 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         this.confXmlRoot = this.initConfig()
 
         preFacadeInit()
-
-        // setup the CamelContext, but don't init yet
-        camelContext = new DefaultCamelContext()
 
         // this init order is important as some facades will use others
         this.cacheFacade = new CacheFacadeImpl(this)
@@ -268,6 +246,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         initComponents()
         // init ClassLoader early so that classpath:// resources and framework interface impls will work
         initClassLoader()
+        // setup the CamelContext, but don't init yet
+        camelContext = new DefaultCamelContext()
     }
 
     protected void postFacadeInit() {
@@ -307,7 +287,11 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     /** Initialize all permanent framework objects, ie those not sensitive to webapp or user context. */
     protected Node initConfig() {
-        logger.info("Initializing Moqui ExecutionContextFactoryImpl\n - runtime directory [${this.runtimePath}]\n - config file [${this.confPath}]\n - moqui.runtime property [${System.getProperty("moqui.runtime")}]")
+        // always set the full moqui.runtime, moqui.conf system properties for use in various places
+        System.setProperty("moqui.runtime", this.runtimePath)
+        System.setProperty("moqui.conf", this.confPath)
+
+        logger.info("Initializing Moqui ExecutionContextFactoryImpl\n - runtime directory: ${this.runtimePath}\n - config file: ${this.confPath}")
 
         URL defaultConfUrl = this.class.getClassLoader().getResource("MoquiDefaultConf.xml")
         if (!defaultConfUrl) throw new IllegalArgumentException("Could not find MoquiDefaultConf.xml file on the classpath")
@@ -328,9 +312,9 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         // init components referred to in component-list.component and component-dir elements in the conf file
         for (Node childNode in confXmlRoot."component-list"[0].children()) {
             if (childNode.name() == "component") {
-                addComponent((String) childNode."@name", (String) childNode."@location")
+                addComponent(new ComponentInfo(null, childNode, this))
             } else if (childNode.name() == "component-dir") {
-                addComponentDir((String) childNode."@location")
+                addComponentDir((String) childNode.attribute("location"))
             }
         }
         checkSortDependentComponents()
@@ -348,12 +332,10 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         }
         // add runtime/lib jar files to the class loader
         File runtimeLibFile = new File(runtimePath + "/lib")
-        if (runtimeLibFile.exists()) {
-            for (File jarFile: runtimeLibFile.listFiles()) {
-                if (jarFile.getName().endsWith(".jar")) {
-                    cachedClassLoader.addJarFile(new JarFile(jarFile))
-                    logger.info("Added JAR from runtime/lib: ${jarFile.getName()}")
-                }
+        if (runtimeLibFile.exists()) for (File jarFile: runtimeLibFile.listFiles()) {
+            if (jarFile.getName().endsWith(".jar")) {
+                cachedClassLoader.addJarFile(new JarFile(jarFile))
+                logger.info("Added JAR from runtime/lib: ${jarFile.getName()}")
             }
         }
     }
