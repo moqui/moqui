@@ -29,6 +29,7 @@ public interface L10nFacade {
     String localize(String original);
 
     /** Old method, still supported. See localize(). */
+    @Deprecated
     String getLocalizedMessage(String original);
 
     /** Format currency amount for user to view.
@@ -48,6 +49,7 @@ public interface L10nFacade {
      */
     String format(Object value, String format);
     /** Same as the format() method, exists to support code using this older method name. */
+    @Deprecated
     String formatValue(Object value, String format);
 
     java.sql.Time parseTime(String input, String format);
