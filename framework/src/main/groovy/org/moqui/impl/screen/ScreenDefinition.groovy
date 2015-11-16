@@ -380,15 +380,12 @@ class ScreenDefinition {
     List<String> nestedNoReqParmLocations(String currentPath) {
         List<String> locList = []
         List<SubscreensItem> ssiList = getSubscreensItemsSorted()
-        String defaultSubName = getDefaultSubscreensItem()
         for (SubscreensItem ssi in ssiList) {
-            // skip the default subscreen item, assume already handled by a parent
-            if (ssi.name == defaultSubName) continue
-
             ScreenDefinition subSd = sfi.getScreenDefinition(ssi.location)
             if (!subSd.hasRequiredParameters()) {
                 String subPath = (currentPath ? currentPath + "/" : '') + ssi.name
-                locList.add(subPath)
+                // don't add current if a has a default subscreen item
+                if (!subSd.getDefaultSubscreensItem()) locList.add(subPath)
                 locList.addAll(subSd.nestedNoReqParmLocations(subPath))
             }
         }
