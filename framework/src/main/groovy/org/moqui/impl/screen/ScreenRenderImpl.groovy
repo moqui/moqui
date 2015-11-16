@@ -1,5 +1,6 @@
 /*
- * This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
+ * This software is in the public domain under CC0 1.0 Universal plus a
+ * Grant of Patent License.
  * 
  * To the extent possible under law, the author(s) have dedicated all
  * copyright and related and neighboring rights to this software to the
@@ -33,7 +34,7 @@ import org.apache.commons.collections.map.ListOrderedMap
 
 import org.moqui.BaseException
 import org.moqui.context.ExecutionContext
-import org.moqui.context.ScreenRender
+import org.moqui.screen.ScreenRender
 import org.moqui.context.TemplateRenderer
 import org.moqui.entity.EntityException
 import org.moqui.entity.EntityList
@@ -235,6 +236,7 @@ class ScreenRenderImpl implements ScreenRender {
         if (!rootScreenDef) throw new BaseException("Could not find screen at location [${rootScreenLocation}]")
 
         if (logger.traceEnabled) logger.trace("Rendering screen [${rootScreenLocation}] with path list [${originalScreenPathNameList}]")
+        // logger.info("Rendering screen [${rootScreenLocation}] with path list [${originalScreenPathNameList}]")
 
         screenUrlInfo = ScreenUrlInfo.getScreenUrlInfo(this, rootScreenDef, originalScreenPathNameList, null,
                 (ec.getWeb() != null && ec.getWeb().requestParameters.lastStandalone == "true"))

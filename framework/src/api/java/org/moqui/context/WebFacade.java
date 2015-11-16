@@ -41,6 +41,9 @@ public interface WebFacade {
     String getWebappRootUrl(boolean requireFullUrl, Boolean useEncryption);
 
     Map<String, Object> getErrorParameters();
+    List<String> getSavedMessages();
+    List<String> getSavedErrors();
+    List<ValidationError> getSavedValidationErrors();
 
     /** A list of recent screen requests to show to a user (does not include requests to transitions or standalone screens).
      * Map contains 'name' (screen name plus up to 2 parameter values), 'url' (full URL with parameters),

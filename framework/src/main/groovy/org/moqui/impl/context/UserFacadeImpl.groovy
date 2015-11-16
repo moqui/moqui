@@ -112,8 +112,8 @@ class UserFacadeImpl implements UserFacade {
 
         // check for HTTP Basic Authorization for Authentication purposes
         // NOTE: do this even if there is another user logged in, will go on stack
-        Map multiPartParameters = eci.webFacade.multiPartParameters
-        Map jsonParameters = eci.webFacade.jsonParameters
+        Map multiPartParameters = eci.webImpl.multiPartParameters
+        Map jsonParameters = eci.webImpl.jsonParameters
         String authzHeader = request.getHeader("Authorization")
         if (authzHeader && authzHeader.substring(0, 6).equals("Basic ")) {
             String basicAuthEncoded = authzHeader.substring(6).trim()

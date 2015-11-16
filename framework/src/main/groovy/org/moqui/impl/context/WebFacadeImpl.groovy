@@ -1,5 +1,6 @@
 /*
- * This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
+ * This software is in the public domain under CC0 1.0 Universal plus a
+ * Grant of Patent License.
  * 
  * To the extent possible under law, the author(s) have dedicated all
  * copyright and related and neighboring rights to this software to the
@@ -309,13 +310,6 @@ class WebFacadeImpl implements WebFacade {
         declaredPathParameters.put(name, value)
     }
 
-    @CompileStatic
-    List<String> getSavedMessages() { return savedMessages }
-    @CompileStatic
-    List<String> getSavedErrors() { return savedErrors }
-    @CompileStatic
-    List<ValidationError> getSavedValidationErrors() { return savedValidationErrors }
-
     @Override
     @CompileStatic
     Map<String, Object> getParameters() {
@@ -506,7 +500,18 @@ class WebFacadeImpl implements WebFacade {
 
 
     @Override
+    @CompileStatic
     Map<String, Object> getErrorParameters() { return errorParameters }
+    @Override
+    @CompileStatic
+    List<String> getSavedMessages() { return savedMessages }
+    @Override
+    @CompileStatic
+    List<String> getSavedErrors() { return savedErrors }
+    @Override
+    @CompileStatic
+    List<ValidationError> getSavedValidationErrors() { return savedValidationErrors }
+
 
     @Override
     @CompileStatic

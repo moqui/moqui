@@ -229,6 +229,8 @@ class ScreenDefinition {
     Node getScreenNode() { return screenNode }
     @CompileStatic
     Node getSubscreensNode() { return subscreensNode }
+    @CompileStatic
+    String getDefaultSubscreensItem() { return (String) subscreensNode?.attribute('default-item') }
     Node getWebSettingsNode() { return (Node) screenNode."web-settings"[0] }
     @CompileStatic
     String getLocation() { return location }
@@ -373,6 +375,24 @@ class ScreenDefinition {
 
         // nothing found, return null by default
         return null
+    }
+
+    List<String> nestedNoReqParmLocations(String currentPath) {
+        List<String> locList = []
+        List<SubscreensItem> ssiList = getSubscreensItemsSorted()
+        String defaultSubName = getDefaultSubscreensItem()
+        for (SubscreensItem ssi in ssiList) {
+            // skip the default subscreen item, assume already handled by a parent
+            if (ssi.name == defaultSubName) continue
+
+            ScreenDefinition subSd = sfi.getScreenDefinition(ssi.location)
+            if (!subSd.hasRequiredParameters()) {
+                String subPath = (currentPath ? currentPath + "/" : '') + ssi.name
+                locList.add(subPath)
+                locList.addAll(subSd.nestedNoReqParmLocations(subPath))
+            }
+        }
+        return locList
     }
 
     @CompileStatic

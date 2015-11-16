@@ -1,5 +1,6 @@
 /*
- * This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
+ * This software is in the public domain under CC0 1.0 Universal plus a
+ * Grant of Patent License.
  * 
  * To the extent possible under law, the author(s) have dedicated all
  * copyright and related and neighboring rights to this software to the
@@ -311,8 +312,10 @@ class ServiceFacadeImpl implements ServiceFacade {
                 findServicesInDir(baseLocation, entryRr, sns)
             } else if (entryRr.fileName.endsWith(".xml")) {
                 // logger.warn("Finding services in [${entryRr.location}], baseLocation=[${baseLocation}]")
+                if (entryRr.fileName.endsWith(".secas.xml") || entryRr.fileName.endsWith(".emecas.xml")) continue
                 Node serviceRoot = new XmlParser().parse(entryRr.openStream())
-                if (serviceRoot.name() != "services" && serviceRoot.name() != "secas") {
+                if (serviceRoot.name() == "secas" || serviceRoot.name() == "emecas") continue
+                if (serviceRoot.name() != "services") {
                     logger.info("While finding service ignoring XML file [${entryRr.location}] in a services directory because the root element is [${serviceRoot.name()}] and not [services]")
                     continue
                 }

@@ -22,6 +22,7 @@ import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.StatelessKieSession;
 import org.moqui.entity.EntityFacade;
 import org.moqui.entity.EntityValue;
+import org.moqui.screen.ScreenFacade;
 import org.moqui.service.ServiceFacade;
 
 import javax.servlet.http.HttpServletRequest;
