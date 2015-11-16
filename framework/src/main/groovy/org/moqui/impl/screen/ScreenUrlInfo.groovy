@@ -317,19 +317,6 @@ class ScreenUrlInfo {
     Map getPathParameterMap() { return pathParameterMap }
 
     void initUrl() {
-        // if there are any ?... parameters parse them off and remove them from the string
-        if (this.fromScreenPath.contains("?")) {
-            String pathParmString = this.fromScreenPath.substring(this.fromScreenPath.indexOf("?")+1)
-            if (pathParmString) {
-                List<String> nameValuePairs = pathParmString.replaceAll("&amp;", "&").split("&") as List
-                for (String nameValuePair in nameValuePairs) {
-                    String[] nameValue = nameValuePair.substring(0).split("=")
-                    if (nameValue.length == 2) this.pathParameterMap.put(nameValue[0], nameValue[1])
-                }
-            }
-            this.fromScreenPath = this.fromScreenPath.substring(0, this.fromScreenPath.indexOf("?"))
-        }
-
         // TODO: use this in all calling code (expand url before creating/caching so that we have the full/unique one)
         // support string expansion if there is a "${"
         // if (fromScreenPath.contains('${')) fromScreenPath = ec.getResource().expand(fromScreenPath, "")
@@ -549,6 +536,20 @@ class ScreenUrlInfo {
 
     static ArrayList<String> parseSubScreenPath(ScreenDefinition rootSd, ScreenDefinition fromSd, List<String> fromPathList,
                                                 String screenPath, Map inlineParameters, ScreenFacadeImpl sfi) {
+        // if there are any ?... parameters parse them off and remove them from the string
+        int indexOfQuestionMark = screenPath.indexOf("?")
+        if (indexOfQuestionMark > 0) {
+            String pathParmString = screenPath.substring(indexOfQuestionMark + 1)
+            if (inlineParameters != null && pathParmString) {
+                List<String> nameValuePairs = pathParmString.replaceAll("&amp;", "&").split("&") as List
+                for (String nameValuePair in nameValuePairs) {
+                    String[] nameValue = nameValuePair.substring(0).split("=")
+                    if (nameValue.length == 2) inlineParameters.put(nameValue[0], nameValue[1])
+                }
+            }
+            screenPath = screenPath.substring(0, indexOfQuestionMark)
+        }
+
         if (screenPath.startsWith("//")) {
             // find the screen by name
             String trimmedFromPath = screenPath.substring(2)

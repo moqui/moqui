@@ -31,7 +31,11 @@ class ScreenTestImpl implements ScreenTest {
     protected final ScreenFacadeImpl sfi
 
     protected String rootScreenLocation = null
+    protected ScreenDefinition rootScreenDef = null
     protected String baseScreenPath = null
+    protected List<String> baseScreenPathList = null
+    protected ScreenDefinition baseScreenDef = null
+
     protected String outputType = null
     protected String characterEncoding = null
     protected String macroTemplateLocation = null
@@ -47,11 +51,27 @@ class ScreenTestImpl implements ScreenTest {
     }
 
     @Override
-    ScreenTest rootScreen(String screenLocation) { rootScreenLocation = screenLocation; return this }
+    ScreenTest rootScreen(String screenLocation) {
+        rootScreenLocation = screenLocation
+        rootScreenDef = sfi.getScreenDefinition(rootScreenLocation)
+        if (rootScreenDef == null) throw new IllegalArgumentException("Root screen not found: ${rootScreenLocation}")
+        baseScreenDef = rootScreenDef
+        return this
+    }
     @Override
     ScreenTest baseScreenPath(String screenPath) {
+        if (!rootScreenLocation) throw new IllegalStateException("No rootScreen specified")
         baseScreenPath = screenPath
         if (baseScreenPath.endsWith("/")) baseScreenPath = baseScreenPath.substring(0, baseScreenPath.length() - 1)
+        if (baseScreenPath) {
+            baseScreenPathList = ScreenUrlInfo.parseSubScreenPath(rootScreenDef, rootScreenDef, [], baseScreenPath, null, sfi)
+            for (String screenName in baseScreenPathList) {
+                ScreenDefinition.SubscreensItem ssi = baseScreenDef.getSubscreensItem(screenName)
+                if (ssi == null) throw new IllegalArgumentException("Error in baseScreenPath, could not find ${screenName} under ${baseScreenDef.location}")
+                baseScreenDef = sfi.getScreenDefinition(ssi.location)
+                if (baseScreenDef == null) throw new IllegalArgumentException("Error in baseScreenPath, could not find screen ${screenName} at ${ssi.location}")
+            }
+        }
         return this
     }
     @Override
@@ -69,16 +89,7 @@ class ScreenTestImpl implements ScreenTest {
 
     @Override
     List<String> getNoRequiredParameterPaths(Set<String> screensToSkip) {
-        if (!rootScreenLocation) throw new IllegalArgumentException("No rootScreenLocation specified")
-        ScreenDefinition rootScreenDef = sfi.getScreenDefinition(rootScreenLocation)
-        ScreenDefinition baseScreenDef = rootScreenDef
-        if (baseScreenPath) {
-            ArrayList<String> baseScreenList = ScreenUrlInfo.parseSubScreenPath(rootScreenDef, rootScreenDef, [], baseScreenPath, null, sfi)
-            for (String screenName in baseScreenList) {
-                String subLocation = baseScreenDef.getSubscreensItem(screenName).location
-                baseScreenDef = sfi.getScreenDefinition(subLocation)
-            }
-        }
+        if (!rootScreenLocation) throw new IllegalStateException("No rootScreen specified")
 
         List<String> noReqParmLocations = baseScreenDef.nestedNoReqParmLocations("", screensToSkip)
         // logger.info("======= rootScreenLocation=${rootScreenLocation}\nbaseScreenPath=${baseScreenPath}\nbaseScreenDef: ${baseScreenDef.location}\nnoReqParmLocations: ${noReqParmLocations}")
@@ -95,7 +106,7 @@ class ScreenTestImpl implements ScreenTest {
     static class ScreenTestRenderImpl implements ScreenTestRender {
         protected final ScreenTestImpl sti
         String screenPath = null
-        Map<String, Object> parameters = null
+        Map<String, Object> parameters = [:]
         String requestMethod = null
 
         protected ScreenRender screenRender = null
@@ -107,13 +118,18 @@ class ScreenTestImpl implements ScreenTest {
         ScreenTestRenderImpl(ScreenTestImpl sti, String screenPath, Map<String, Object> parameters, String requestMethod) {
             this.sti = sti
             this.screenPath = screenPath
-            this.parameters = parameters
+            if (parameters) this.parameters.putAll(parameters)
             this.requestMethod = requestMethod
         }
 
         ScreenTestRender render() {
             ExecutionContextImpl eci = sti.ecfi.getEci()
             long startTime = System.currentTimeMillis()
+
+            // parse the screenPath
+            ArrayList<String> screenPathList = ScreenUrlInfo.parseSubScreenPath(sti.rootScreenDef, sti.baseScreenDef,
+                    sti.baseScreenPathList, screenPath, parameters, sti.sfi)
+
             // push the context
             ContextStack cs = eci.getContext()
             cs.push()
@@ -132,12 +148,8 @@ class ScreenTestImpl implements ScreenTest {
             if (sti.servletContextPath) screenRender.servletContextPath(sti.servletContextPath)
             screenRender.webappName(sti.webappName ?: 'webroot')
 
-            // TODO: handle requestMethod, will need ScreenRenderImpl and ScreenUrlInfo changes
-
             // set the screenPath
-            if (screenPath.startsWith("/")) screenPath = screenPath.substring(1)
-            if (sti.baseScreenPath) screenPath = sti.baseScreenPath + "/" + screenPath
-            screenRender.screenPath(screenPath.split("/") as List)
+            screenRender.screenPath(screenPathList)
 
             // do the render
             try {
