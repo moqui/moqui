@@ -114,11 +114,9 @@ class EntityFindBuilder extends EntityQueryBuilder {
                 String fieldName = foo.fieldName
                 int typeValue = 1
                 EntityDefinition.FieldInfo fieldInfo = getMainEd().getFieldInfo(fieldName)
-                if (fieldInfo != null) {
-                    typeValue = fieldInfo.typeValue
-                } else {
-                    logger.warn("Making SELECT clause, could not find field [${fieldName}] in entity [${getMainEd().getFullEntityName()}]")
-                }
+                if (fieldInfo == null) throw new EntityException("Making SELECT clause, could not find field [${fieldName}] in entity [${getMainEd().getFullEntityName()}]")
+
+                typeValue = fieldInfo.typeValue
 
                 if (i > 0) this.sqlTopLevel.append(", ")
                 if (foo.caseUpperLower != null && typeValue == 1) this.sqlTopLevel.append(foo.caseUpperLower ? "UPPER(" : "LOWER(")
