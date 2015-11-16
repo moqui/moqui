@@ -54,6 +54,7 @@ public interface ScreenTest {
         ScreenRender getScreenRender();
         String getOutput();
         long getRenderTime();
+        Map getPostRenderContext();
         List<String> getErrorMessages();
         boolean assertContains(String text);
         boolean assertNotContains(String text);

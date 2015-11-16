@@ -112,7 +112,7 @@ class ScreenTestImpl implements ScreenTest {
         protected ScreenRender screenRender = null
         protected String outputString = null
         protected long renderTime = 0
-
+        protected Map postRenderContext = null
         protected List<String> errorMessages = []
 
         ScreenTestRenderImpl(ScreenTestImpl sti, String screenPath, Map<String, Object> parameters, String requestMethod) {
@@ -163,7 +163,7 @@ class ScreenTestImpl implements ScreenTest {
             renderTime = System.currentTimeMillis() - startTime
 
             // pop the context stack, get rid of var space
-            cs.pop()
+            postRenderContext = cs.pop()
 
             if (eci.message.hasError()) {
                 errorMessages.addAll(eci.message.getErrors())
@@ -182,6 +182,8 @@ class ScreenTestImpl implements ScreenTest {
         String getOutput() { return outputString }
         @Override
         long getRenderTime() { return renderTime }
+        @Override
+        Map getPostRenderContext() { return postRenderContext }
         @Override
         List<String> getErrorMessages() { return errorMessages }
 
