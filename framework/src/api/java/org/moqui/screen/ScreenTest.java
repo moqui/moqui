@@ -53,6 +53,7 @@ public interface ScreenTest {
         ScreenRender getScreenRender();
         String getOutput();
         long getRenderTime();
+        List<String> getErrorMessages();
         boolean assertContains(String text);
         boolean assertRegex(String regex);
     }

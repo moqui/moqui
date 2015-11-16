@@ -102,6 +102,8 @@ class ScreenTestImpl implements ScreenTest {
         protected String outputString = null
         protected long renderTime = 0
 
+        protected List<String> errorMessages = []
+
         ScreenTestRenderImpl(ScreenTestImpl sti, String screenPath, Map<String, Object> parameters, String requestMethod) {
             this.sti = sti
             this.screenPath = screenPath
@@ -138,12 +140,26 @@ class ScreenTestImpl implements ScreenTest {
             screenRender.screenPath(screenPath.split("/") as List)
 
             // do the render
-            outputString = screenRender.render()
+            try {
+                outputString = screenRender.render()
+            } catch (Throwable t) {
+                String errMsg = "Exception in render of ${screenPath}: ${t.toString()}"
+                logger.warn(errMsg, t)
+                errorMessages.add(errMsg)
+            }
             // calc renderTime
             renderTime = System.currentTimeMillis() - startTime
 
             // pop the context stack, get rid of var space
             cs.pop()
+
+            if (eci.message.hasError()) {
+                errorMessages.addAll(eci.message.getErrors())
+                eci.message.clearErrors()
+                StringBuilder sb = new StringBuilder("Error messages from ${screenPath}: ")
+                for (String errorMessage in errorMessages) sb.append("\n").append(errorMessage)
+                logger.warn(sb.toString())
+            }
 
             return this
         }
@@ -154,6 +170,8 @@ class ScreenTestImpl implements ScreenTest {
         String getOutput() { return outputString }
         @Override
         long getRenderTime() { return renderTime }
+        @Override
+        List<String> getErrorMessages() { return errorMessages }
 
         @Override
         boolean assertContains(String text) {

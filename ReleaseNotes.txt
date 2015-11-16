@@ -32,7 +32,7 @@ New Features
   - Log4J to 2.4.1
   - OrientDB to 2.1.4
   - Quartz Scheduler to 2.2.2
-- Added ScreenTest interface an implementation; easy tools for testing
+- Added ScreenTest interface and implementation; easy tool for testing
   screens with no Servlet container in place; this uses test stubs for
   WebFacade, ServletContext, HttpSession, and HttpServletRequest
 - Components may now have a component.xml with a single component element,
