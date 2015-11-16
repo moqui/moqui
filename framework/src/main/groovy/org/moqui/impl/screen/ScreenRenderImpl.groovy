@@ -233,7 +233,7 @@ class ScreenRenderImpl implements ScreenRender {
 
     protected void internalRender() {
         rootScreenDef = sfi.getScreenDefinition(rootScreenLocation)
-        if (!rootScreenDef) throw new BaseException("Could not find screen at location [${rootScreenLocation}]")
+        if (rootScreenDef == null) throw new BaseException("Could not find screen at location [${rootScreenLocation}]")
 
         if (logger.traceEnabled) logger.trace("Rendering screen [${rootScreenLocation}] with path list [${originalScreenPathNameList}]")
         // logger.info("Rendering screen [${rootScreenLocation}] with path list [${originalScreenPathNameList}]")
@@ -259,7 +259,7 @@ class ScreenRenderImpl implements ScreenRender {
         }
 
         // check this here after the ScreenUrlInfo (with transition alias, etc) has already been handled
-        if (ec.getWeb() && ec.getWeb().requestParameters.renderMode) {
+        if (ec.getWeb() != null && ec.getWeb().requestParameters.renderMode) {
             // we know this is a web request, set defaults if missing
             renderMode = ec.getWeb().requestParameters.renderMode
             String mimeType = sfi.getMimeTypeByMode(renderMode)
@@ -356,10 +356,11 @@ class ScreenRenderImpl implements ScreenRender {
             String urlType = ri.urlType ?: "screen-path"
 
             // handle screen-last, etc
-            if (ec.getWeb() != null) {
-                WebFacadeImpl wfi = (WebFacadeImpl) ec.getWeb()
+            WebFacadeImpl wfi = null
+            if (ec.getWeb() != null && ec.getWeb() instanceof WebFacadeImpl) wfi = (WebFacadeImpl) ec.getWeb()
+            if (wfi != null) {
                 if (ri.type == "screen-last" || ri.type == "screen-last-noparam") {
-                    String savedUrl = wfi.getRemoveScreenLastPath()
+                    String savedUrl =  wfi.getRemoveScreenLastPath()
                     urlType = "screen-path"
                     // if no saved URL, just go to root/default; avoid getting stuck on Login screen, etc
                     url = savedUrl ?: "/"
@@ -374,10 +375,10 @@ class ScreenRenderImpl implements ScreenRender {
             // either send a redirect for the response, if possible, or just render the response now
             if (this.response != null) {
                 // save messages in session before redirecting so they can be displayed on the next screen
-                if (ec.getWeb() != null) {
-                    ((WebFacadeImpl) ec.getWeb()).saveMessagesToSession()
-                    if (ri.saveParameters) ((WebFacadeImpl) ec.getWeb()).saveRequestParametersToSession()
-                    if (ec.message.hasError()) ((WebFacadeImpl) ec.getWeb()).saveErrorParametersToSession()
+                if (wfi != null) {
+                    wfi.saveMessagesToSession()
+                    if (ri.saveParameters) wfi.saveRequestParametersToSession()
+                    if (ec.message.hasError()) wfi.saveErrorParametersToSession()
                 }
 
                 if (urlType == "plain") {
@@ -401,7 +402,7 @@ class ScreenRenderImpl implements ScreenRender {
                     UrlInstance fullUrl = buildUrl(rootScreenDef, screenUrlInfo.preTransitionPathNameList, url)
                     fullUrl.addParameters(ri.expandParameters(screenUrlInfo.getExtraPathNameList(), ec))
                     // if this was a screen-last and the screen has declared parameters include them in the URL
-                    Map savedParameters = ((WebFacadeImpl) ec.getWeb())?.getSavedParameters()
+                    Map savedParameters = wfi?.getSavedParameters()
                     UrlInstance.copySpecialParameters(savedParameters, fullUrl.getOtherParameterMap())
                     // screen parameters
                     if (ri.type == "screen-last" && savedParameters && fullUrl.sui.getTargetScreen()?.getParameterMap()) {
@@ -463,7 +464,7 @@ class ScreenRenderImpl implements ScreenRender {
 
                         if (screenUrlInfo.targetScreen.screenNode.attribute('track-artifact-hit') != "false") {
                             sfi.ecfi.countArtifactHit("screen-content", fileContentType, screenUrlInfo.fileResourceRef.location,
-                                    (ec.getWeb() ? ec.getWeb().requestParameters : null), resourceStartTime,
+                                    (ec.getWeb() != null ? ec.getWeb().requestParameters : null), resourceStartTime,
                                     (System.nanoTime() - startTimeNanos)/1E6, (long) totalLen)
                         }
                         if (logger.traceEnabled) logger.trace("Sent binary response of length [${totalLen}] with from file [${screenUrlInfo.fileResourceRef.location}] for request to [${screenUrlInstance.url}]")
@@ -507,7 +508,7 @@ class ScreenRenderImpl implements ScreenRender {
 
                         if (screenUrlInfo.targetScreen.screenNode.attribute('track-artifact-hit') != "false") {
                             sfi.ecfi.countArtifactHit("screen-content", fileContentType, screenUrlInfo.fileResourceRef.location,
-                                    (ec.getWeb() ? ec.getWeb().requestParameters : null), resourceStartTime,
+                                    (ec.getWeb() != null ? ec.getWeb().requestParameters : null), resourceStartTime,
                                     (System.nanoTime() - startTimeNanos)/1E6, (long) length)
                         }
                     } else {
@@ -651,12 +652,12 @@ class ScreenRenderImpl implements ScreenRender {
             // track the screen artifact hit
             if (screenUrlInfo.targetScreen.screenNode.attribute('track-artifact-hit') != "false") {
                 sfi.ecfi.countArtifactHit("screen", this.outputContentType, screenUrlInfo.screenRenderDefList.last().getLocation(),
-                        (webFacade ? webFacade.requestParameters : null), screenStartTime,
+                        (webFacade != null ? webFacade.requestParameters : null), screenStartTime,
                         (System.nanoTime() - startTimeNanos)/1E6, null)
             }
             // save the screen history
             if (webFacade != null && webFacade instanceof WebFacadeImpl) {
-                ((WebFacadeImpl) ec.getWeb()).saveScreenHistory(screenUrlInstance)
+                ((WebFacadeImpl) webFacade).saveScreenHistory(screenUrlInstance)
             }
         }
     }
@@ -675,17 +676,19 @@ class ScreenRenderImpl implements ScreenRender {
         // if screen requires auth and there is not active user redirect to login screen, save this request
         if (logger.traceEnabled) logger.trace("Checking screen [${currentSd.location}] for require-authentication, current user is [${ec.user.userId}]")
 
+        WebFacadeImpl wfi = null
+        if (ec.getWeb() != null && ec.getWeb() instanceof WebFacadeImpl) wfi = (WebFacadeImpl) ec.getWeb()
         String requireAuthentication = (String) currentSd.screenNode?.attribute('require-authentication')
         if ((!requireAuthentication || requireAuthentication == "true")
                 && !ec.getUser().getUserId() && !((UserFacadeImpl) ec.getUser()).getLoggedInAnonymous()) {
             logger.info("Screen at location [${currentSd.location}], which is part of [${screenUrlInfo.fullPathNameList}] under screen [${screenUrlInfo.fromSd.location}] requires authentication but no user is currently logged in.")
             // save the request as a save-last to use after login
-            if (ec.getWeb() && screenUrlInfo.fileResourceRef == null) {
+            if (wfi != null && screenUrlInfo.fileResourceRef == null) {
                 StringBuilder screenPath = new StringBuilder()
                 for (String pn in screenUrlInfo.fullPathNameList) screenPath.append("/").append(pn)
-                ((WebFacadeImpl) ec.getWeb()).saveScreenLastInfo(screenPath.toString(), null)
+                wfi.saveScreenLastInfo(screenPath.toString(), null)
                 // save messages in session before redirecting so they can be displayed on the next screen
-                ((WebFacadeImpl) ec.getWeb()).saveMessagesToSession()
+                wfi.saveMessagesToSession()
             }
 
             // find the last login path from screens in path (whether rendered or not)
@@ -723,7 +726,7 @@ class ScreenRenderImpl implements ScreenRender {
                 getWebappNode().attribute('https-enabled') != "false" && !request.isSecure()) {
             logger.info("Screen at location [${currentSd.location}], which is part of [${screenUrlInfo.fullPathNameList}] under screen [${screenUrlInfo.fromSd.location}] requires an encrypted/secure connection but the request is not secure, sending redirect to secure.")
             // save messages in session before redirecting so they can be displayed on the next screen
-            if (ec.getWeb()) ((WebFacadeImpl) ec.getWeb()).saveMessagesToSession()
+            if (wfi != null) wfi.saveMessagesToSession()
             // redirect to the same URL this came to
             response.sendRedirect(screenUrlInstance.getUrlWithParams())
             return false
@@ -1133,9 +1136,9 @@ class ScreenRenderImpl implements ScreenRender {
         String mapName = (String) fieldNode.parent().attribute('map') ?: "fieldValues"
         Object value = null
         // if this is an error situation try parameters first, otherwise try parameters last
-        if (ec.getWeb() != null && ec.getWeb().getErrorParameters() != null &&
-                (ec.getWeb().getErrorParameters().moquiFormName == fieldNode.parent().attribute('name')))
-            value = ec.getWeb().getErrorParameters().get(fieldName)
+        Map<String, Object> errorParameters = ec.getWeb()?.getErrorParameters()
+        if (errorParameters != null && (errorParameters.moquiFormName == fieldNode.parent().attribute('name')))
+            value = errorParameters.get(fieldName)
         Map valueMap = (Map) ec.resource.expression(mapName, "")
         if (StupidUtilities.isEmpty(value)) {
             Node formNode = fieldNode.parent()
