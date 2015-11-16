@@ -15,6 +15,7 @@ package org.moqui.screen;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /** A test harness for screen rendering. Does internal rendering without HTTP request/response */
 public interface ScreenTest {
@@ -39,7 +40,7 @@ public interface ScreenTest {
     ScreenTest webappName(String wan);
 
     /** Get screen name paths to all screens with no required parameters under the rootScreen and (if specified) baseScreenPath */
-    List<String> getNoRequiredParameterPaths();
+    List<String> getNoRequiredParameterPaths(Set<String> screensToSkip);
 
     /** Test render a screen.
      * @param screenPath Path from rootScreen in the sub-screen hierarchy
@@ -55,6 +56,7 @@ public interface ScreenTest {
         long getRenderTime();
         List<String> getErrorMessages();
         boolean assertContains(String text);
+        boolean assertNotContains(String text);
         boolean assertRegex(String regex);
     }
 }

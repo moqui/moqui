@@ -68,7 +68,7 @@ class ScreenTestImpl implements ScreenTest {
     ScreenTest webappName(String wan) { webappName = wan; return this }
 
     @Override
-    List<String> getNoRequiredParameterPaths() {
+    List<String> getNoRequiredParameterPaths(Set<String> screensToSkip) {
         if (!rootScreenLocation) throw new IllegalArgumentException("No rootScreenLocation specified")
         ScreenDefinition rootScreenDef = sfi.getScreenDefinition(rootScreenLocation)
         ScreenDefinition baseScreenDef = rootScreenDef
@@ -80,7 +80,7 @@ class ScreenTestImpl implements ScreenTest {
             }
         }
 
-        List<String> noReqParmLocations = baseScreenDef.nestedNoReqParmLocations("")
+        List<String> noReqParmLocations = baseScreenDef.nestedNoReqParmLocations("", screensToSkip)
         // logger.info("======= rootScreenLocation=${rootScreenLocation}\nbaseScreenPath=${baseScreenPath}\nbaseScreenDef: ${baseScreenDef.location}\nnoReqParmLocations: ${noReqParmLocations}")
         return noReqParmLocations
     }
@@ -178,7 +178,11 @@ class ScreenTestImpl implements ScreenTest {
             if (!outputString) return false
             return outputString.contains(text)
         }
-
+        @Override
+        boolean assertNotContains(String text) {
+            if (!outputString) return true
+            return !outputString.contains(text)
+        }
         @Override
         boolean assertRegex(String regex) {
             if (!outputString) return false
