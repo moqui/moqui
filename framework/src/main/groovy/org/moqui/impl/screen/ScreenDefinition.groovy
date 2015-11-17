@@ -439,11 +439,12 @@ class ScreenDefinition {
             loggedInAnonymous = sri.ec.getUser().loginAnonymousIfNoUser()
         }
 
-        rootSection.render(sri)
-
-        // all done so pop the artifact info; don't bother making sure this is done on errors/etc like in a finally clause because if there is an error this will help us know how we got there
-        sri.ec.artifactExecution.pop(aei)
-        if (loggedInAnonymous) ((UserFacadeImpl) sri.ec.getUser()).logoutAnonymousOnly()
+        try {
+            rootSection.render(sri)
+        } finally {
+            sri.ec.artifactExecution.pop(aei)
+            if (loggedInAnonymous) ((UserFacadeImpl) sri.ec.getUser()).logoutAnonymousOnly()
+        }
     }
 
     @CompileStatic
