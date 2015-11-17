@@ -13,6 +13,7 @@
 package org.moqui.impl.webapp
 
 import org.moqui.context.ArtifactTarpitException
+import org.moqui.impl.StupidUtilities
 
 import javax.servlet.ServletException
 import javax.servlet.http.HttpServlet
@@ -70,7 +71,7 @@ class MoquiFopServlet extends HttpServlet {
             String contentType = ec.web.requestParameters."contentType" ?: "application/pdf"
             response.setContentType(contentType)
 
-            if (filename) response.addHeader("Content-Disposition", "attachment; filename=\"${filename}\"")
+            if (filename) response.addHeader("Content-Disposition", "attachment; filename=\"${filename}\"; filename*=utf-8''${StupidUtilities.encodeAsciiFilename(filename)}")
             else response.addHeader("Content-Disposition", "inline")
 
             // special case disable authz for resource access
