@@ -233,7 +233,7 @@ class ScreenRenderImpl implements ScreenRender {
 
     protected void internalRender() {
         rootScreenDef = sfi.getScreenDefinition(rootScreenLocation)
-        if (rootScreenDef == null) throw new BaseException("Could not find screen at location [${rootScreenLocation}]")
+        if (rootScreenDef == null) throw new BaseException("Could not find root screen at location [${rootScreenLocation}]")
 
         if (logger.traceEnabled) logger.trace("Rendering screen [${rootScreenLocation}] with path list [${originalScreenPathNameList}]")
         // logger.info("Rendering screen [${rootScreenLocation}] with path list [${originalScreenPathNameList}]")
@@ -756,7 +756,9 @@ class ScreenRenderImpl implements ScreenRender {
         // handle case where root screen is first/zero in list versus a standalone screen
         int fullPathIndex = screenUrlInfo.renderPathDifference + screenPathIndex
         if (fullPathIndex == 0) return []
-        return screenUrlInfo.fullPathNameList[0..fullPathIndex-1]
+        List<String> activePath = screenUrlInfo.fullPathNameList[0..fullPathIndex-1]
+        // logger.info("===== activePath=${activePath}, rpd=${screenUrlInfo.renderPathDifference}, spi=${screenPathIndex}, fpi=${fullPathIndex}\nroot: ${screenUrlInfo.rootSd.location}\ntarget: ${screenUrlInfo.targetScreen.location}\nfrom: ${screenUrlInfo.fromSd.location}\nfrom path: ${screenUrlInfo.fromPathList}")
+        return activePath
     }
 
     String renderSubscreen() {
