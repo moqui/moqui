@@ -32,7 +32,8 @@ along with this software (see the LICENSE.md file). If not, see
                         if (printJob.contentType == "application/pdf") fileExtension = "pdf"
                     }
                     if (fileExtension) {
-                        contentDisposition = "attachment; filename=\"${printJob.jobName ?: 'document'}.${fileExtension}\""
+                        fileName = "${printJob.jobName ?: 'document'}.${fileExtension}"
+                        contentDisposition = "attachment; filename=\"${fileName}\"; filename*=utf-8''${StupidUtilities.encodeAsciiFilename(fileName)}"
                     } else {
                         contentDisposition = "attachment"
                     }
