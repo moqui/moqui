@@ -50,6 +50,11 @@ public interface ScreenTest {
      */
     ScreenTestRender render(String screenPath, Map<String, Object> parameters, String requestMethod);
 
+    long getRenderCount();
+    long getErrorCount();
+    long getRenderTotalChars();
+    long getStartTime();
+
     interface ScreenTestRender {
         ScreenRender getScreenRender();
         String getOutput();

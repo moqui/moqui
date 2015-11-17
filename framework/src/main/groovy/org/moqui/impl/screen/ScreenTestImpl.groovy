@@ -43,6 +43,8 @@ class ScreenTestImpl implements ScreenTest {
     protected String servletContextPath = null
     protected String webappName = null
 
+    long renderCount = 0, errorCount = 0, totalChars = 0, startTime = System.currentTimeMillis()
+
     final Map<String, Object> sessionAttributes = [:]
 
     ScreenTestImpl(ExecutionContextFactoryImpl ecfi) {
@@ -102,6 +104,11 @@ class ScreenTestImpl implements ScreenTest {
         return new ScreenTestRenderImpl(this, screenPath, parameters, requestMethod).render()
     }
 
+    long getRenderCount() { return renderCount }
+    long getErrorCount() { return errorCount }
+    long getRenderTotalChars() { return totalChars }
+    long getStartTime() { return startTime }
+
     @CompileStatic
     static class ScreenTestRenderImpl implements ScreenTestRender {
         protected final ScreenTestImpl sti
@@ -158,6 +165,7 @@ class ScreenTestImpl implements ScreenTest {
                 String errMsg = "Exception in render of ${screenPath}: ${t.toString()}"
                 logger.warn(errMsg, t)
                 errorMessages.add(errMsg)
+                sti.errorCount++
             }
             // calc renderTime
             renderTime = System.currentTimeMillis() - startTime
@@ -171,7 +179,11 @@ class ScreenTestImpl implements ScreenTest {
                 StringBuilder sb = new StringBuilder("Error messages from ${screenPath}: ")
                 for (String errorMessage in errorMessages) sb.append("\n").append(errorMessage)
                 logger.warn(sb.toString())
+                sti.errorCount += errorMessages.size()
             }
+
+            sti.renderCount++
+            if (outputString) sti.totalChars += outputString.length()
 
             return this
         }
