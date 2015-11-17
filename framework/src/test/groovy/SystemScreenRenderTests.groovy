@@ -37,6 +37,9 @@ class SystemScreenRenderTests extends Specification {
     }
 
     def cleanupSpec() {
+        long totalTime = System.currentTimeMillis() - screenTest.startTime
+        logger.info("Rendered ${screenTest.renderCount} screens (${screenTest.errorCount} errors) in ${ec.l10n.format(totalTime/1000, "0.000")}s, output ${ec.l10n.format(screenTest.renderTotalChars/1000, "#,##0")}k chars")
+
         ec.destroy()
     }
 
