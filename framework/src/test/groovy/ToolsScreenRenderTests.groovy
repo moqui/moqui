@@ -68,8 +68,10 @@ class ToolsScreenRenderTests extends Specification {
         // AutoScreen screens
         "AutoScreen/MainEntityList" | "" | ""
         "AutoScreen/AutoFind?aen=example.Example" | "Test Example Name" | "In Design [EXST_IN_DESIGN]"
-        "AutoScreen/AutoEdit/AutoEditMaster?exampleId=TEST1&aen=example.Example" | "Test Example Name" | "example1@test.com"
-        "AutoScreen/AutoEdit/AutoEditDetail?exampleId=TEST1&aen=example.Example&den=example.ExampleItem" | "Amount Uom ID" | "Test 1 Item 1"
+        "AutoScreen/AutoEdit/AutoEditMaster?exampleId=TEST1&aen=example.Example" |
+                "Test Example Name" | "example1@test.com"
+        "AutoScreen/AutoEdit/AutoEditDetail?exampleId=TEST1&aen=example.Example&den=example.ExampleItem" |
+                "Amount Uom ID" | "Test 1 Item 1"
         // test example.Example create through transition, then view it
         "AutoScreen/AutoFind/create?aen=example.Example&exampleId=TEST_SCR&exampleName=Screen Test Example&exampleTypeEnumId=EXT_MADE_UP&statusId=EXST_IN_DESIGN" | "" | ""
         "AutoScreen/AutoEdit/AutoEditMaster?exampleId=TEST_SCR&aen=example.Example" | "Screen Test Example" | ""
@@ -84,8 +86,10 @@ class ToolsScreenRenderTests extends Specification {
         "Entity/DataEdit/EntityList" | "ExampleContent" | "example"
         "Entity/DataEdit/EntityDetail?entityName=example.Example" | "text-medium" | "moqui.basic.Enumeration"
         "Entity/DataEdit/EntityDataFind?entityName=example.Example" | "Screen Test Example" | "In Design"
-        "Entity/DataEdit/EntityDataEdit?exampleId=TEST1&entityName=example.Example" | "Test description, with a comma" | "example1@test.com"
-        "Entity/DataEdit/EntityDataFind?exampleId=TEST1&entityName=example.ExampleItem" | "Test 1 Item 1" | "exampleItemSeqId"
+        "Entity/DataEdit/EntityDataEdit?exampleId=TEST1&entityName=example.Example" |
+                "Test description, with a comma" | "example1@test.com"
+        "Entity/DataEdit/EntityDataFind?exampleId=TEST1&entityName=example.ExampleItem" |
+                "Test 1 Item 1" | "exampleItemSeqId"
 
         // Other Entity screens
         "Entity/DataExport" | "example.Example" | ""
@@ -97,12 +101,16 @@ class ToolsScreenRenderTests extends Specification {
         "Entity/SpeedTest?baseCalls=10" | "" | ""
 
         // Service screens
-        "Service/ServiceReference?serviceName=example" | "org.moqui.example.ExampleServices.create#ExampleItem" | "Service Detail"
-        "Service/ServiceDetail?serviceName=org.moqui.example.ExampleServices.consume#ExampleMessage" | "moqui.service.message.SystemMessage" | """ec.service.sync().name("store#example.Example")"""
-        "Service/ServiceRun?serviceName=org.moqui.example.ExampleServices.create#ExampleItem" | "Example ID" | "Cron String"
+        "Service/ServiceReference?serviceName=example" |
+                "org.moqui.example.ExampleServices.create#ExampleItem" | "Service Detail"
+        "Service/ServiceDetail?serviceName=org.moqui.example.ExampleServices.consume#ExampleMessage" |
+                "moqui.service.message.SystemMessage" | """ec.service.sync().name("store#example.Example")"""
+        "Service/ServiceRun?serviceName=org.moqui.example.ExampleServices.create#ExampleItem" |
+                "Example ID" | "Cron String"
         // run the service, then make sure it ran
         "Service/ServiceRun/run?serviceName=org.moqui.example.ExampleServices.create#ExampleItem&exampleId=TEST_SCR&description=ServiceRun Screen Test Item" | "" | ""
-        "Entity/DataEdit/EntityDataFind?exampleId=TEST_SCR&entityName=example.ExampleItem" | "ServiceRun Screen Test Item" | ""
+        "Entity/DataEdit/EntityDataFind?exampleId=TEST_SCR&entityName=example.ExampleItem" |
+                "ServiceRun Screen Test Item" | ""
     }
 
     def "render DataView screens"() {
