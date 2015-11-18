@@ -123,6 +123,8 @@ class SystemScreenRenderTests extends Specification {
         "SystemMessage/Type/MessageTypeDetail?systemMessageTypeId=ExampleMessage" | "Example Message" | "org.moqui.example.ExampleServices.produce#ExampleMessage"
 
         // Visit screens
-        "Visit/VisitList" | "" | ""
+        // NOTE: this relies on demo data in the example component
+        "Visit/VisitList" | "john.doe" | "apps/system/SystemMessage"
+        "Visit/VisitDetail?visitId=EX_VISIT" | "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_1)" | "component://tools/screen/Tools/Service/ServiceRun.xml#run"
     }
 }
