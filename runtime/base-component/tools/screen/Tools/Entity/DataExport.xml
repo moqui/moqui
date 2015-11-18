@@ -15,7 +15,7 @@ along with this software (see the LICENSE.md file). If not, see
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd"
         default-menu-title="Export">
 
-    <transition name="EntityExport.xml" begin-transaction="false">
+    <transition name="EntityExport" begin-transaction="false">
         <actions>
             <script><![CDATA[
                 import org.moqui.entity.EntityDataWriter
@@ -58,7 +58,7 @@ along with this software (see the LICENSE.md file). If not, see
     </transition>
 
     <widgets>
-        <form-single name="ExportData" transition="EntityExport.xml">
+        <form-single name="ExportData" transition="EntityExport">
             <field name="entityNames">
                 <default-field><drop-down allow-multiple="true" size="80">
                     <list-options list="ec.entity.getAllEntitiesInfo('fullEntityName', null, false, true)" key="${fullEntityName}"/>
