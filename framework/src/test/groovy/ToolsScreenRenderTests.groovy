@@ -56,10 +56,14 @@ class ToolsScreenRenderTests extends Specification {
         expect:
         ScreenTestRender str = screenTest.render(screenPath, null, null)
         // logger.info("Rendered ${screenPath} in ${str.getRenderTime()}ms")
-        // if (screenPath.contains("foo")) logger.info("output: ${str.output}")
+        boolean contains1 = containsText1 ? str.assertContains(containsText1) : true
+        boolean contains2 = containsText2 ? str.assertContains(containsText2) : true
+        if (!contains1) logger.info("In ${screenPath} text 1 [${containsText1}] not found:\n${str.output}")
+        if (!contains2) logger.info("In ${screenPath} text 2 [${containsText2}] not found:\n${str.output}")
+        // assertions
         !str.errorMessages
-        containsText1 ? str.assertContains(containsText1) : true
-        containsText2 ? str.assertContains(containsText2) : true
+        contains1
+        contains2
 
         where:
         screenPath | containsText1 | containsText2
