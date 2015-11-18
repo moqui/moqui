@@ -33,7 +33,7 @@ along with this software (see the LICENSE.md file). If not, see
                 ec.logger.info(sb.toString())
 
                 // save the results to display on the screen in the next request (after the transition redirect)
-                ec.web.saveParametersToSession(serviceResults)
+                ec.webImpl?.saveParametersToSession(serviceResults)
             </script>
         </actions>
         <default-response url="." save-parameters="true"/>
