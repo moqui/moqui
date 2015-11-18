@@ -81,8 +81,13 @@ class ToolsScreenRenderTests extends Specification {
         "DataView/EditDbView/setMasterFields?dbViewEntityName_0=ExampleDbView&field_0=example.Example.exampleName&dbViewEntityName_1=ExampleDbView&field_1=Example#moqui.basic.StatusItem.description&dbViewEntityName_2=ExampleDbView&field_2=ExampleType#moqui.basic.Enumeration.description" | "" | ""
         "DataView/ViewDbView?dbViewEntityName=ExampleDbView" | "Screen Test Example" | "In Design"
 
-        "Entity/DataEdit/EntityList" | "" | ""
-        "Entity/DataExport" | "" | ""
+        "Entity/DataEdit/EntityList" | "ExampleContent" | "example"
+        "Entity/DataEdit/EntityDetail?entityName=example.Example" | "text-medium" | "moqui.basic.Enumeration"
+        "Entity/DataEdit/EntityDataFind?entityName=example.Example" | "Screen Test Example" | "In Design"
+        "Entity/DataEdit/EntityDataEdit?exampleId=TEST1&entityName=example.Example" | "Test description, with a comma" | "example1@test.com"
+        "Entity/DataEdit/EntityDataFind?exampleId=TEST1&entityName=example.ExampleItem" | "Test 1 Item 1" | ""
+
+        "Entity/DataExport" | "example.Example" | ""
         "Entity/DataImport" | "" | ""
         "Entity/SqlRunner" | "" | ""
         // run with very few baseCalls so it doesn't take too long
