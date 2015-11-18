@@ -56,6 +56,7 @@ class ToolsScreenRenderTests extends Specification {
         expect:
         ScreenTestRender str = screenTest.render(screenPath, null, null)
         // logger.info("Rendered ${screenPath} in ${str.getRenderTime()}ms")
+        // if (screenPath.contains("foo")) logger.info("output: ${str.output}")
         !str.errorMessages
         containsText1 ? str.assertContains(containsText1) : true
         containsText2 ? str.assertContains(containsText2) : true
@@ -85,15 +86,21 @@ class ToolsScreenRenderTests extends Specification {
         "Entity/DataEdit/EntityDetail?entityName=example.Example" | "text-medium" | "moqui.basic.Enumeration"
         "Entity/DataEdit/EntityDataFind?entityName=example.Example" | "Screen Test Example" | "In Design"
         "Entity/DataEdit/EntityDataEdit?exampleId=TEST1&entityName=example.Example" | "Test description, with a comma" | "example1@test.com"
-        "Entity/DataEdit/EntityDataFind?exampleId=TEST1&entityName=example.ExampleItem" | "Test 1 Item 1" | ""
+        "Entity/DataEdit/EntityDataFind?exampleId=TEST1&entityName=example.ExampleItem" | "Test 1 Item 1" | "exampleItemSeqId"
 
         "Entity/DataExport" | "example.Example" | ""
+        // TODO: support response object with Writer in ScreenTestImpl/WebFacadeStub
+        // "Entity/DataExport/EntityExport?entityNames=example.Example&dependentLevels=1&fileType=JSON&output=browser" | "Test Example Name" | "exampleItemSeqId"
         "Entity/DataImport" | "" | ""
-        "Entity/SqlRunner" | "" | ""
+        "Entity/SqlRunner?groupName=transactional&sql=SELECT * FROM EXAMPLE" | "Test Example Name" | "EXT_MADE_UP"
         // run with very few baseCalls so it doesn't take too long
         "Entity/SpeedTest?baseCalls=10" | "" | ""
 
-        "Service/ServiceReference" | "" | ""
-        "Service/ServiceRun" | "" | ""
+        "Service/ServiceReference?serviceName=example" | "org.moqui.example.ExampleServices.create#ExampleItem" | "Service Detail"
+        "Service/ServiceDetail?serviceName=org.moqui.example.ExampleServices.consume#ExampleMessage" | "moqui.service.message.SystemMessage" | """ec.service.sync().name("store#example.Example")"""
+        "Service/ServiceRun?serviceName=org.moqui.example.ExampleServices.create#ExampleItem" | "Example ID" | "Cron String"
+        // run the service, then make sure it ran
+        "Service/ServiceRun/run?serviceName=org.moqui.example.ExampleServices.create#ExampleItem&exampleId=TEST_SCR&description=ServiceRun Screen Test Item" | "" | ""
+        "Entity/DataEdit/EntityDataFind?exampleId=TEST_SCR&entityName=example.ExampleItem" | "ServiceRun Screen Test Item" | ""
     }
 }
