@@ -51,63 +51,56 @@ class SystemScreenRenderTests extends Specification {
         ec.artifactExecution.enableAuthz()
     }
 
-    /* use @Unroll instead:
+    @Unroll
+    def "render system screen #screenPath (#containsText1, #containsText2)"() {
+        expect:
+        ScreenTestRender str = screenTest.render(screenPath, null, null)
+        // logger.info("Rendered ${screenPath} in ${str.getRenderTime()}ms")
+        !str.errorMessages
+        containsText1 ? str.assertContains(containsText1) : true
+        containsText2 ? str.assertContains(containsText2) : true
+
+        where:
+        screenPath | containsText1 | containsText2
+        "dashboard" | "" | ""
+        "ArtifactHitSummary" | "" | ""
+        "ArtifactHitBins" | "" | ""
+        "AuditLog" | "" | ""
+        "Cache/CacheList" | "" | ""
+        "DataDocument/Search" | "" | ""
+        "DataDocument/Index" | "" | ""
+        "DataDocument/Export" | "" | ""
+        "EntitySync/EntitySyncList" | "" | ""
+        "Localization/Messages" | "" | ""
+        "Localization/EntityFields" | "" | ""
+        "Print/PrintJob/PrintJobList" | "" | ""
+        "Print/Printer/PrinterList" | "" | ""
+        "Resource/ElFinder" | "" | ""
+        "Scheduler/SchedulerDetail" | "" | ""
+        "Scheduler/Jobs" | "" | ""
+        "Scheduler/Triggers" | "" | ""
+        "Scheduler/History" | "" | ""
+        "Security/UserAccount/UserAccountList" | "" | ""
+        "Security/UserGroup/UserGroupList" | "" | ""
+        "Security/ArtifactGroup/ArtifactGroupList" | "" | ""
+        "SystemMessage/Message/SystemMessageList" | "" | ""
+        "SystemMessage/Remote/MessageRemoteList" | "" | ""
+        "SystemMessage/Type/MessageTypeList" | "" | ""
+        "Visit/VisitList" | "" | ""
+    }
+
+    /* use @Unroll approach instead:
     def "render all screens with no required parameters"() {
         when:
-        long startTime = System.currentTimeMillis()
         Set<String> screensToSkip = new HashSet()
         List<String> screenPaths = screenTest.getNoRequiredParameterPaths(screensToSkip)
         for (String screenPath in screenPaths) {
-            // logger.info("Rendering ${screenPath}")
-            try {
-                ScreenTestRender str = screenTest.render(screenPath, null, null)
-                logger.info("Rendered ${screenPath} in ${str.getRenderTime()}ms")
-            } catch (Throwable t) {
-                logger.warn("Error rendering ${screenPath}: ${t.toString()}")
-            }
+            ScreenTestRender str = screenTest.render(screenPath, null, null)
+            logger.info("Rendered ${screenPath} in ${str.getRenderTime()}ms")
         }
 
-        logger.info("Rendered ${screenPaths.size()} screens in ${System.currentTimeMillis() - startTime}ms")
-
         then:
-        true
+        screenTest.errorCount == 0
     }
     */
-
-    @Unroll
-    def "render system screen (#screenPath, #parameters, #containsText)"() {
-        expect:
-        ScreenTestRender str = screenTest.render(screenPath, parameters, null)
-        // logger.info("Rendered ${screenPath} in ${str.getRenderTime()}ms")
-        !str.errorMessages
-        containsText ? str.assertContains(containsText) : true
-
-        where:
-        screenPath | parameters | containsText
-        "dashboard" | null | null
-        "ArtifactHitSummary" | null | null
-        "ArtifactHitBins" | null | null
-        "AuditLog" | null | null
-        "Cache/CacheList" | null | null
-        "DataDocument/Search" | null | null
-        "DataDocument/Index" | null | null
-        "DataDocument/Export" | null | null
-        "EntitySync/EntitySyncList" | null | null
-        "Localization/Messages" | null | null
-        "Localization/EntityFields" | null | null
-        "Print/PrintJob/PrintJobList" | null | null
-        "Print/Printer/PrinterList" | null | null
-        "Resource/ElFinder" | null | null
-        "Scheduler/SchedulerDetail" | null | null
-        "Scheduler/Jobs" | null | null
-        "Scheduler/Triggers" | null | null
-        "Scheduler/History" | null | null
-        "Security/UserAccount/UserAccountList" | null | null
-        "Security/UserGroup/UserGroupList" | null | null
-        "Security/ArtifactGroup/ArtifactGroupList" | null | null
-        "SystemMessage/Message/SystemMessageList" | null | null
-        "SystemMessage/Remote/MessageRemoteList" | null | null
-        "SystemMessage/Type/MessageTypeList" | null | null
-        "Visit/VisitList" | null | null
-    }
 }

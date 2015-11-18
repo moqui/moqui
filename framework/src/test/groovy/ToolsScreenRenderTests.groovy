@@ -52,25 +52,43 @@ class ToolsScreenRenderTests extends Specification {
     }
 
     @Unroll
-    def "render tools screen (#screenPath, #parameters, #containsText)"() {
+    def "render tools screen #screenPath (#containsText1, #containsText2)"() {
         expect:
-        ScreenTestRender str = screenTest.render(screenPath, parameters, null)
+        ScreenTestRender str = screenTest.render(screenPath, null, null)
         // logger.info("Rendered ${screenPath} in ${str.getRenderTime()}ms")
         !str.errorMessages
-        containsText ? str.assertContains(containsText) : true
+        containsText1 ? str.assertContains(containsText1) : true
+        containsText2 ? str.assertContains(containsText2) : true
 
         where:
-        screenPath | parameters | containsText
-        "dashboard" | null | null
-        "AutoScreen/MainEntityList" | null | null
-        // don't run, takes too long: "ArtifactStats" | null | null
-        "DataView/FindDbView" | null | null
-        "Entity/DataEdit/EntityList" | null | null
-        "Entity/DataExport" | null | null
-        "Entity/DataImport" | null | null
-        "Entity/SqlRunner" | null | null
-        "Entity/SpeedTest" | [baseCalls:'10'] | null // run with very few baseCalls so it doesn't take too long
-        "Service/ServiceReference" | null | null
-        "Service/ServiceRun" | null | null
+        screenPath | containsText1 | containsText2
+        "dashboard" | "" | ""
+
+        "AutoScreen/MainEntityList" | "" | ""
+        "AutoScreen/AutoFind?aen=example.Example" | "Test Example Name" | "In Design [EXST_IN_DESIGN]"
+        "AutoScreen/AutoEdit/AutoEditMaster?exampleId=TEST1&aen=example.Example" | "Test Example Name" | "example1@test.com"
+        "AutoScreen/AutoEdit/AutoEditDetail?exampleId=TEST1&aen=example.Example&den=example.ExampleItem" | "Amount Uom ID" | "Test 1 Item 1"
+        // test example.Example create through transition, then view it
+        "AutoScreen/AutoFind/create?aen=example.Example&exampleId=TEST_SCR&exampleName=Screen Test Example&exampleTypeEnumId=EXT_MADE_UP&statusId=EXST_IN_DESIGN" | "" | ""
+        "AutoScreen/AutoEdit/AutoEditMaster?exampleId=TEST_SCR&aen=example.Example" | "Screen Test Example" | ""
+
+        // don't run, takes too long: "ArtifactStats" | "" | ""
+
+        // create a DbViewEntity, set MASTER and fields, view it
+        "DataView/FindDbView/create?dbViewEntityName=ExampleDbView&packageName=example&isDataView=Y" | "" | ""
+        "DataView/FindDbView" | "ExampleDbView" | ""
+        "DataView/EditDbView/setMasterEntity?dbViewEntityName=ExampleDbView&entityAlias=MASTER&entityName=example.Example" | "" | ""
+        "DataView/EditDbView/setMasterFields?dbViewEntityName_0=ExampleDbView&field_0=example.Example.exampleName&dbViewEntityName_1=ExampleDbView&field_1=Example#moqui.basic.StatusItem.description&dbViewEntityName_2=ExampleDbView&field_2=ExampleType#moqui.basic.Enumeration.description" | "" | ""
+        "DataView/ViewDbView?dbViewEntityName=ExampleDbView" | "Screen Test Example" | "In Design"
+
+        "Entity/DataEdit/EntityList" | "" | ""
+        "Entity/DataExport" | "" | ""
+        "Entity/DataImport" | "" | ""
+        "Entity/SqlRunner" | "" | ""
+        // run with very few baseCalls so it doesn't take too long
+        "Entity/SpeedTest?baseCalls=10" | "" | ""
+
+        "Service/ServiceReference" | "" | ""
+        "Service/ServiceRun" | "" | ""
     }
 }
