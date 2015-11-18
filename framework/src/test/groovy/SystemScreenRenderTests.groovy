@@ -112,26 +112,17 @@ class SystemScreenRenderTests extends Specification {
         "Security/ArtifactGroup/ArtifactGroupDetail?artifactGroupId=SYSTEM_APP" | "component://tools/screen/System.xml" | "Administrators (full access)"
 
         // SystemMessage screens
-        "SystemMessage/Message/SystemMessageList" | "" | ""
-        "SystemMessage/Remote/MessageRemoteList" | "" | ""
-        "SystemMessage/Type/MessageTypeList" | "" | ""
+        // send a message using Tools/Service/ServiceRun (note that this does not work as an external URL, gets caught by security stuff)
+        "../tools/Service/ServiceRun/run?serviceName=org.moqui.example.ExampleServices.produce#ExampleMessage&systemMessageRemoteId=Example1Direct&exampleId=TEST1" | "" | ""
+        "SystemMessage/Message/SystemMessageList" | "Example Message" | "Example1Local"
+        "SystemMessage/Message/SystemMessageDetail?systemMessageId=100000" | "Sent" | "100001"
+        "SystemMessage/Message/SystemMessageDetail/EditMessageText?systemMessageId=100000" | "Test Example Name" | "EXST_IN_DESIGN"
+        "SystemMessage/Remote/MessageRemoteList" | "Example Local" | "john.doe"
+        "SystemMessage/Remote/MessageRemoteDetail?systemMessageRemoteId=Example1Local" | "Example Local" | "http://localhost:8080/rpc/json"
+        "SystemMessage/Type/MessageTypeList" | "Example Message" | "org.moqui.example.ExampleServices.consume#ExampleMessage"
+        "SystemMessage/Type/MessageTypeDetail?systemMessageTypeId=ExampleMessage" | "Example Message" | "org.moqui.example.ExampleServices.produce#ExampleMessage"
 
         // Visit screens
         "Visit/VisitList" | "" | ""
     }
-
-    /* use @Unroll approach instead:
-    def "render all screens with no required parameters"() {
-        when:
-        Set<String> screensToSkip = new HashSet()
-        List<String> screenPaths = screenTest.getNoRequiredParameterPaths(screensToSkip)
-        for (String screenPath in screenPaths) {
-            ScreenTestRender str = screenTest.render(screenPath, null, null)
-            logger.info("Rendered ${screenPath} in ${str.getRenderTime()}ms")
-        }
-
-        then:
-        screenTest.errorCount == 0
-    }
-    */
 }
