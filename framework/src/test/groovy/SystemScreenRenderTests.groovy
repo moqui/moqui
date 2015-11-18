@@ -64,44 +64,59 @@ class SystemScreenRenderTests extends Specification {
         screenPath | containsText1 | containsText2
         "dashboard" | "" | ""
 
+        // ArtifactHit screens
         "ArtifactHitSummary?artifactName=example&artifactName_op=contains" | "example.ExampleItem" | "entity"
         "ArtifactHitBins?artifactName=example&artifactName_op=contains" | "example.Example" | "create"
+        // AuditLog screen
         "AuditLog?changedEntityName=example&changedEntityName_op=contains" | "statusId" | "EXST_IN_DESIGN"
+        // Cache screens
         "Cache/CacheList" | "entity.definition" | "screen.location"
         "Cache/CacheElements?orderByField=key&cacheName=l10n.message" | "\${artifactName}::en_US" | "evictionStrategy"
 
+        // DataDocument screens
         // NOTE: nothing specific to test in DataDocument screens unless at least mantle is in place
         "DataDocument/Search" | "" | ""
         "DataDocument/Index" | "" | ""
         "DataDocument/Export" | "" | ""
 
+        // EntitySync screens
         "EntitySync/EntitySyncList" | "Example sync" | ""
         "EntitySync/EntitySyncDetail?entitySyncId=EXAMPLE" | "EXAMPLE1" | "example.ExampleItem"
 
+        // Localization screens
         "Localization/Messages" | "Add" | "Añadir"
         "Localization/EntityFields?entityName=moqui.basic.Enumeration&pkValue=GEOT_STATE" | "moqui.basic.Enumeration" | "GEOT_STATE"
 
+        // Print screens
         // NOTE: without real printers setup and jobs sent through service calls not much to test in Print/* screens
         "Print/PrintJob/PrintJobList" | "" | ""
         "Print/Printer/PrinterList" | "" | ""
 
+        // Resource screen
         // NOTE: without a real browser client not much to test in ElFinder
         "Resource/ElFinder" | "" | ""
 
+        // Scheduler screens
         "Scheduler/SchedulerDetail" | "ServerServices" | "org.moqui.impl.ServerServices.clean#ArtifactData"
         "Scheduler/Jobs" | "clean_ArtifactData_daily" | ""
         "Scheduler/Triggers" | "clean_ArtifactData_single" | ""
         "Scheduler/History" | "Job Scheduled" | "clean_ArtifactData_daily"
 
-        // TODO: here down
-        "Security/UserAccount/UserAccountList" | "" | ""
-        "Security/UserGroup/UserGroupList" | "" | ""
-        "Security/ArtifactGroup/ArtifactGroupList" | "" | ""
+        // Security screens
+        "Security/UserAccount/UserAccountList" | "example.viewer" | "Example Limited User"
+        "Security/UserAccount/UserAccountDetail?userId=EX_JOHN_DOE" | "john.doe@test.com" | "Administrators (full access)"
+        "Security/UserGroup/UserGroupList" | "Administrators (full access)" | "Example Viewers (view only)"
+        "Security/UserGroup/UserGroupDetail?userGroupId=ADMIN" | "ExamplePerm - Example Permission" | "System App (via root screen)"
+        "Security/UserGroup/GroupUsers?userGroupId=ADMIN" | "john.doe - John Doe" | ""
+        "Security/ArtifactGroup/ArtifactGroupList" | "All Screens" | "System App (via root screen)"
+        "Security/ArtifactGroup/ArtifactGroupDetail?artifactGroupId=SYSTEM_APP" | "component://tools/screen/System.xml" | "Administrators (full access)"
 
+        // SystemMessage screens
         "SystemMessage/Message/SystemMessageList" | "" | ""
         "SystemMessage/Remote/MessageRemoteList" | "" | ""
         "SystemMessage/Type/MessageTypeList" | "" | ""
 
+        // Visit screens
         "Visit/VisitList" | "" | ""
     }
 
