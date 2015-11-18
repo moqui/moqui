@@ -63,29 +63,45 @@ class SystemScreenRenderTests extends Specification {
         where:
         screenPath | containsText1 | containsText2
         "dashboard" | "" | ""
-        "ArtifactHitSummary" | "" | ""
-        "ArtifactHitBins" | "" | ""
-        "AuditLog" | "" | ""
-        "Cache/CacheList" | "" | ""
+
+        "ArtifactHitSummary?artifactName=example&artifactName_op=contains" | "example.ExampleItem" | "entity"
+        "ArtifactHitBins?artifactName=example&artifactName_op=contains" | "example.Example" | "create"
+        "AuditLog?changedEntityName=example&changedEntityName_op=contains" | "statusId" | "EXST_IN_DESIGN"
+        "Cache/CacheList" | "entity.definition" | "screen.location"
+        "Cache/CacheElements?orderByField=key&cacheName=l10n.message" | "\${artifactName}::en_US" | "evictionStrategy"
+
+        // NOTE: nothing specific to test in DataDocument screens unless at least mantle is in place
         "DataDocument/Search" | "" | ""
         "DataDocument/Index" | "" | ""
         "DataDocument/Export" | "" | ""
-        "EntitySync/EntitySyncList" | "" | ""
-        "Localization/Messages" | "" | ""
-        "Localization/EntityFields" | "" | ""
+
+        "EntitySync/EntitySyncList" | "Example sync" | ""
+        "EntitySync/EntitySyncDetail?entitySyncId=EXAMPLE" | "EXAMPLE1" | "example.ExampleItem"
+
+        "Localization/Messages" | "Add" | "Añadir"
+        "Localization/EntityFields?entityName=moqui.basic.Enumeration&pkValue=GEOT_STATE" | "moqui.basic.Enumeration" | "GEOT_STATE"
+
+        // NOTE: without real printers setup and jobs sent through service calls not much to test in Print/* screens
         "Print/PrintJob/PrintJobList" | "" | ""
         "Print/Printer/PrinterList" | "" | ""
+
+        // NOTE: without a real browser client not much to test in ElFinder
         "Resource/ElFinder" | "" | ""
-        "Scheduler/SchedulerDetail" | "" | ""
-        "Scheduler/Jobs" | "" | ""
-        "Scheduler/Triggers" | "" | ""
-        "Scheduler/History" | "" | ""
+
+        "Scheduler/SchedulerDetail" | "ServerServices" | "org.moqui.impl.ServerServices.clean#ArtifactData"
+        "Scheduler/Jobs" | "clean_ArtifactData_daily" | ""
+        "Scheduler/Triggers" | "clean_ArtifactData_single" | ""
+        "Scheduler/History" | "Job Scheduled" | "clean_ArtifactData_daily"
+
+        // TODO: here down
         "Security/UserAccount/UserAccountList" | "" | ""
         "Security/UserGroup/UserGroupList" | "" | ""
         "Security/ArtifactGroup/ArtifactGroupList" | "" | ""
+
         "SystemMessage/Message/SystemMessageList" | "" | ""
         "SystemMessage/Remote/MessageRemoteList" | "" | ""
         "SystemMessage/Type/MessageTypeList" | "" | ""
+
         "Visit/VisitList" | "" | ""
     }
 
