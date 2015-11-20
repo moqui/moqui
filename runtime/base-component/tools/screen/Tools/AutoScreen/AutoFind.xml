@@ -79,6 +79,6 @@ along with this software (see the LICENSE.md file). If not, see
             <field name="delete"><default-field title="Delete"><submit confirmation="Are you sure?"/></default-field></field>
             <auto-fields-entity entity-name="${aen}" field-type="find-display"/>
         </form-list>
-        <link url="getFormXml" text="Get Forms XML" link-type="hidden-form-link" target-window="_blank"/>
+        <link url="getFormXml" text="Get Forms XML" link-type="hidden-form-link"/>
     </widgets>
 </screen>
