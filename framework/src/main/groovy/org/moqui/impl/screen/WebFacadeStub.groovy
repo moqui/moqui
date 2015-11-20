@@ -13,10 +13,14 @@
  */
 package org.moqui.impl.screen
 
+import groovy.json.JsonBuilder
 import groovy.transform.CompileStatic
 import org.moqui.context.ContextStack
+import org.moqui.context.ResourceReference
 import org.moqui.context.ValidationError
 import org.moqui.context.WebFacade
+import org.moqui.impl.StupidUtilities
+import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -37,6 +41,7 @@ import java.security.Principal
 class WebFacadeStub implements WebFacade {
     protected final static Logger logger = LoggerFactory.getLogger(WebFacadeStub.class)
 
+    ExecutionContextFactoryImpl ecfi
     ContextStack parameters = null
     Map<String, Object> requestParameters = [:]
     Map<String, Object> sessionAttributes = [:]
@@ -45,8 +50,11 @@ class WebFacadeStub implements WebFacade {
     protected HttpSession httpSession
     protected HttpServletRequest httpServletRequest
     protected ServletContext servletContext
+    protected Writer responseWriter = new StringWriter()
 
-    WebFacadeStub(Map<String, Object> requestParameters, Map<String, Object> sessionAttributes, String requestMethod) {
+    WebFacadeStub(ExecutionContextFactoryImpl ecfi, Map<String, Object> requestParameters,
+                  Map<String, Object> sessionAttributes, String requestMethod) {
+        this.ecfi = ecfi
         if (requestParameters) this.requestParameters.putAll(requestParameters)
         if (sessionAttributes) this.sessionAttributes.putAll(sessionAttributes)
         if (requestMethod) this.requestMethod = requestMethod
@@ -55,6 +63,8 @@ class WebFacadeStub implements WebFacade {
         httpSession = new HttpSessionStub(this)
         httpServletRequest = new HttpServletRequestStub(this)
     }
+
+    String getResponseText() { responseWriter.flush(); return responseWriter.toString() }
 
     @Override
     String getRequestUrl() { return "TestRequestUrl" }
@@ -105,16 +115,45 @@ class WebFacadeStub implements WebFacade {
     List<Map> getScreenHistory() { return (List<Map>) sessionAttributes.get("moqui.screen.history") ?: [] }
 
     @Override
-    void sendJsonResponse(Object responseObj) { logger.info("WebFacadeStub sendJsonResponse: ${responseObj}") }
+    void sendJsonResponse(Object responseObj) {
+        String jsonStr
+        if (responseObj instanceof CharSequence) {
+            jsonStr = responseObj.toString()
+        } else if (responseObj != null) {
+            JsonBuilder jb = new JsonBuilder()
+            if (responseObj instanceof Map) {
+                jb.call((Map) responseObj)
+            } else if (responseObj instanceof List) {
+                jb.call((List) responseObj)
+            } else {
+                jb.call((Object) responseObj)
+            }
+            jsonStr = jb.toPrettyString()
+        } else {
+            jsonStr = ""
+        }
+        responseWriter.append(jsonStr)
+
+        logger.info("WebFacadeStub sendJsonResponse ${jsonStr.length()} chars")
+    }
 
     @Override
-    void sendTextResponse(String text) { logger.info("WebFacadeStub sendTextResponse: ${text}") }
+    void sendTextResponse(String text) { responseWriter.append(text) }
 
     @Override
-    void sendTextResponse(String text, String contentType, String filename) { logger.info("WebFacadeStub sendTextResponse (content type ${contentType}, filename: ${filename}):\n${text}") }
+    void sendTextResponse(String text, String contentType, String filename) {
+        responseWriter.append(text)
+        logger.info("WebFacadeStub sendTextResponse (${text.length()} chars, content type ${contentType}, filename: ${filename})")
+    }
 
     @Override
-    void sendResourceResponse(String location) { logger.info("WebFacadeStub sendResourceResponse location: ${location}") }
+    void sendResourceResponse(String location) {
+        ResourceReference rr = ecfi.getResource().getLocationReference(location)
+        if (rr == null) throw new IllegalArgumentException("Resource not found at: ${location}")
+        String rrText = rr.getText()
+        responseWriter.append(rrText)
+        logger.info("WebFacadeStub sendResourceResponse ${rrText.length()} chars, location: ${location}")
+    }
 
     @Override
     void handleXmlRpcServiceCall() { throw new IllegalArgumentException("WebFacadeStub handleXmlRpcServiceCall not supported") }

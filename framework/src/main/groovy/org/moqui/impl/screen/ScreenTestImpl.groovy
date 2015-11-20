@@ -141,7 +141,7 @@ class ScreenTestImpl implements ScreenTest {
             ContextStack cs = eci.getContext()
             cs.push()
             // create the WebFacadeStub
-            WebFacadeStub wfs = new WebFacadeStub(parameters, sti.sessionAttributes, requestMethod)
+            WebFacadeStub wfs = new WebFacadeStub(sti.ecfi, parameters, sti.sessionAttributes, requestMethod)
             // set stub on eci, will also put parameters in the context
             eci.setWebFacade(wfs)
             // make the ScreenRender
@@ -161,6 +161,9 @@ class ScreenTestImpl implements ScreenTest {
             // do the render
             try {
                 outputString = screenRender.render()
+                // if no text from screen render (especially for transitions that send a text response), get the
+                //     response text from the WebFacadeStub
+                if (!outputString) outputString = wfs.getResponseText()
             } catch (Throwable t) {
                 String errMsg = "Exception in render of ${screenPath}: ${t.toString()}"
                 logger.warn(errMsg, t)
