@@ -72,7 +72,7 @@ along with this software (see the LICENSE.md file). If not, see
             widgetsNode.append(sri.getActiveScreenDef().getForm("UpdateMasterEntityValue").getAutoCleanedNode())
             printer.print(screenNode)
 
-            ec.web.sendTextResponse(xmlWriter.toString())
+            ec.web.sendTextResponse(xmlWriter.toString(), "text/xml", "Edit{ec.entity.getEntityDefinition(aen).entityName}.xml")
         ]]></script></actions>
         <default-response type="none"/>
     </transition>
