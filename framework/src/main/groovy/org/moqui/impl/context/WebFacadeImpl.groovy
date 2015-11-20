@@ -593,10 +593,11 @@ class WebFacadeImpl implements WebFacade {
 
     @Override
     @CompileStatic
-    void sendTextResponse(String text) { sendTextResponse(text, "text/plain") }
+    void sendTextResponse(String text) { sendTextResponse(text, "text/plain", null) }
     @Override
     @CompileStatic
-    void sendTextResponse(String text, String contentType) {
+    void sendTextResponse(String text, String contentType, String filename) {
+        if (!contentType) contentType = "text/plain"
         String responseText
         if (eci.getMessage().hasError()) {
             responseText = eci.message.errorsString
@@ -611,6 +612,12 @@ class WebFacadeImpl implements WebFacade {
         String charset = response.getCharacterEncoding() ?: "UTF-8"
         int length = responseText ? responseText.getBytes(charset).length : 0
         response.setContentLength(length)
+
+        if (!filename) {
+            response.addHeader("Content-Disposition", "inline")
+        } else {
+            response.addHeader("Content-Disposition", "attachment; filename=\"${filename}\"; filename*=utf-8''${StupidUtilities.encodeAsciiFilename(filename)}")
+        }
 
         try {
             if (responseText) response.writer.write(responseText)
@@ -634,8 +641,11 @@ class WebFacadeImpl implements WebFacade {
         ResourceReference rr = eci.resource.getLocationReference(location)
         if (rr == null) throw new IllegalArgumentException("Resource not found at: ${location}")
         response.setContentType(rr.contentType)
-        if (inline) response.addHeader("Content-Disposition", "inline")
-        else response.addHeader("Content-Disposition", "attachment; filename=\"${rr.getFileName()}\"; filename*=utf-8''${StupidUtilities.encodeAsciiFilename(rr.getFileName())}")
+        if (inline) {
+            response.addHeader("Content-Disposition", "inline")
+        } else {
+            response.addHeader("Content-Disposition", "attachment; filename=\"${rr.getFileName()}\"; filename*=utf-8''${StupidUtilities.encodeAsciiFilename(rr.getFileName())}")
+        }
         InputStream is = rr.openStream()
         try {
             OutputStream os = response.outputStream
@@ -782,7 +792,7 @@ class WebFacadeImpl implements WebFacade {
             jb.call(rootMap)
             String jsonStr = jb.toPrettyString()
 
-            sendTextResponse(jsonStr, "application/schema+json")
+            sendTextResponse(jsonStr, "application/schema+json", "MoquiEntities.schema.json")
         } else {
             String entityName = extraPathNameList.get(0)
             if (entityName.endsWith(".json")) entityName = entityName.substring(0, entityName.length() - 5)
@@ -801,7 +811,7 @@ class WebFacadeImpl implements WebFacade {
                 jb.call(schema)
                 String jsonStr = jb.toPrettyString()
 
-                sendTextResponse(jsonStr, "application/schema+json")
+                sendTextResponse(jsonStr, "application/schema+json", "${entityName}.schema.json")
             } catch (EntityNotFoundException e) {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No entity found with name or alias [${entityName}]")
             }
@@ -846,7 +856,7 @@ class WebFacadeImpl implements WebFacade {
         // add beginning line "#%RAML 0.8", more efficient way to do this?
         yamlString = "#%RAML 0.8\n" + yamlString
 
-        sendTextResponse(yamlString, "application/raml+yaml")
+        sendTextResponse(yamlString, "application/raml+yaml", "MoquiEntities.raml")
     }
 
 
