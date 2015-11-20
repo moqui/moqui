@@ -111,7 +111,7 @@ class WebFacadeStub implements WebFacade {
     void sendTextResponse(String text) { logger.info("WebFacadeStub sendTextResponse: ${text}") }
 
     @Override
-    void sendTextResponse(String text, String contentType) { logger.info("WebFacadeStub sendTextResponse (content type ${contentType}): ${text}") }
+    void sendTextResponse(String text, String contentType, String filename) { logger.info("WebFacadeStub sendTextResponse (content type ${contentType}, filename: ${filename}):\n${text}") }
 
     @Override
     void sendResourceResponse(String location) { logger.info("WebFacadeStub sendResourceResponse location: ${location}") }
