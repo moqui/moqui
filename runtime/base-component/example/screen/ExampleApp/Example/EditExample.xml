@@ -148,7 +148,7 @@ along with this software (see the LICENSE.md file). If not, see
                     <field name="statusId">
                         <default-field title="Status" tooltip="This is the status of the example">
                             <drop-down allow-empty="false" current-description="${example?.'Example#moqui.basic.StatusItem'?.description}">
-                                <entity-options key="${toStatusId}" text="TransitionNameTemplate">
+                                <entity-options key="${toStatusId}" text="StatusTransitionNameTemplate">
                                     <entity-find entity-name="moqui.basic.StatusFlowTransitionToDetail">
                                         <econdition field-name="statusId" from="example.statusId"/>
                                     </entity-find>

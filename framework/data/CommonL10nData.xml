@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
+This software is in the public domain under CC0 1.0 Universal plus a
+Grant of Patent License.
 
 To the extent possible under law, the author(s) have dedicated all
 copyright and related and neighboring rights to this software to the
@@ -71,4 +72,14 @@ along with this software (see the LICENSE.md file). If not, see
     <moqui.basic.LocalizedEntityField entityName="moqui.basic.Enumeration" fieldName="description" pkValue="GEOT_COUNTRY" locale="fr" localized="Pays"/>
     <moqui.basic.LocalizedEntityField entityName="moqui.basic.Enumeration" fieldName="description" pkValue="GEOT_COUNTRY" locale="it" localized="Paese"/>
     <moqui.basic.LocalizedEntityField entityName="moqui.basic.Enumeration" fieldName="description" pkValue="GEOT_COUNTRY" locale="zh" localized="国家"/>
+
+    <!-- Message templates for formatting common sets of entity fields (generally for a view-entity) -->
+    <moqui.basic.LocalizedMessage locale="default" original="StatusTransitionNameTemplate"
+                                  localized="${transitionName} (${description})"/>
+    <moqui.basic.LocalizedMessage locale="default" original="UomNameTemplate"
+                                  localized="${description?:''} (${abbreviation?:uomId})"/>
+    <moqui.basic.LocalizedMessage locale="default" original="UserGroupNameTemplate"
+                                  localized="${description} [${userGroupId}]"/>
+    <moqui.basic.LocalizedMessage locale="default" original="UsernameTemplate"
+                                  localized="${userFullName ?: (lastName ? (firstName ? firstName + ' ' : '') + lastName : '')} [${username?:userId?:''}]"/>
 </entity-facade-xml>
