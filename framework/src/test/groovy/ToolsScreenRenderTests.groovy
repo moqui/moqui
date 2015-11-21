@@ -97,8 +97,9 @@ class ToolsScreenRenderTests extends Specification {
 
         // Other Entity screens
         "Entity/DataExport" | "example.Example" | ""
-        // TODO: support response object with Writer in ScreenTestImpl/WebFacadeStub
-        // "Entity/DataExport/EntityExport?entityNames=example.Example&dependentLevels=1&fileType=JSON&output=browser" | "Test Example Name" | "exampleItemSeqId"
+        // test export JSON and XML for example.Example
+        "Entity/DataExport/EntityExport?entityNames=example.Example&dependentLevels=1&fileType=JSON&output=browser" | "Test Example Name" | "exampleItemSeqId"
+        "Entity/DataExport/EntityExport?entityNames=example.Example&dependentLevels=1&fileType=XML&output=browser" | "Test Example Name" | "exampleItemSeqId"
         "Entity/DataImport" | "" | ""
         "Entity/SqlRunner?groupName=transactional&sql=SELECT * FROM EXAMPLE" | "Test Example Name" | "EXT_MADE_UP"
         // run with very few baseCalls so it doesn't take too long
