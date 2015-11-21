@@ -14,6 +14,7 @@ package org.moqui.impl.service
 
 import groovy.transform.CompileStatic
 import org.moqui.service.ServiceCall
+import org.moqui.service.ServiceException
 
 @CompileStatic
 class ServiceCallImpl implements ServiceCall {
@@ -31,6 +32,7 @@ class ServiceCallImpl implements ServiceCall {
     ServiceCallImpl(ServiceFacadeImpl sfi) { this.sfi = sfi }
 
     protected void setServiceName(String serviceName) {
+        if (!serviceName) throw new ServiceException("Service name cannot be empty")
         sd = sfi.getServiceDefinition(serviceName)
         if (sd != null) {
             path = sd.getPath()

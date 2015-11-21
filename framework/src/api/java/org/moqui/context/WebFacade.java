@@ -1,5 +1,6 @@
 /*
- * This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
+ * This software is in the public domain under CC0 1.0 Universal plus a
+ * Grant of Patent License.
  * 
  * To the extent possible under law, the author(s) have dedicated all
  * copyright and related and neighboring rights to this software to the
@@ -41,6 +42,9 @@ public interface WebFacade {
     String getWebappRootUrl(boolean requireFullUrl, Boolean useEncryption);
 
     Map<String, Object> getErrorParameters();
+    List<String> getSavedMessages();
+    List<String> getSavedErrors();
+    List<ValidationError> getSavedValidationErrors();
 
     /** A list of recent screen requests to show to a user (does not include requests to transitions or standalone screens).
      * Map contains 'name' (screen name plus up to 2 parameter values), 'url' (full URL with parameters),
@@ -49,7 +53,7 @@ public interface WebFacade {
 
     void sendJsonResponse(Object responseObj);
     void sendTextResponse(String text);
-    void sendTextResponse(String text, String contentType);
+    void sendTextResponse(String text, String contentType, String filename);
     void sendResourceResponse(String location);
 
     void handleXmlRpcServiceCall();

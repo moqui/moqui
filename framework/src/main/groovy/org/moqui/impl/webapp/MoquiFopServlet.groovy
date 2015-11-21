@@ -21,7 +21,7 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 import org.moqui.context.ExecutionContext
-import org.moqui.context.ScreenRender
+import org.moqui.screen.ScreenRender
 import org.moqui.context.ArtifactAuthorizationException
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 

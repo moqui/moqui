@@ -125,7 +125,8 @@ abstract class EntityValueBase implements EntityValue {
         for (int i = 0; i < allFieldNames.size(); i++) {
             String fieldName = allFieldNames.get(i)
             Object fieldValue = get(fieldName)
-            if (fieldValue != null) theMap.put(fieldName, fieldValue)
+            // NOTE DEJ20151117 also put nulls in Map, make more complete, removed: if (fieldValue != null)
+            theMap.put(fieldName, fieldValue)
         }
         return theMap
     }

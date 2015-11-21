@@ -1,5 +1,6 @@
 /*
- * This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
+ * This software is in the public domain under CC0 1.0 Universal plus a
+ * Grant of Patent License.
  * 
  * To the extent possible under law, the author(s) have dedicated all
  * copyright and related and neighboring rights to this software to the
@@ -20,6 +21,7 @@ import org.kie.api.runtime.StatelessKieSession
 import org.moqui.context.*
 import org.moqui.entity.EntityFacade
 import org.moqui.entity.EntityList
+import org.moqui.screen.ScreenFacade
 import org.moqui.service.ServiceFacade
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -38,7 +40,7 @@ class ExecutionContextImpl implements ExecutionContext {
     protected ContextStack context = new ContextStack()
     protected String tenantId = null
 
-    protected WebFacadeImpl webFacade = null
+    protected WebFacade webFacade = null
     protected UserFacadeImpl userFacade = null
     protected MessageFacadeImpl messageFacade = null
     protected ArtifactExecutionFacadeImpl artifactExecutionFacade = null
@@ -75,7 +77,13 @@ class ExecutionContextImpl implements ExecutionContext {
 
     @Override
     WebFacade getWeb() { webFacade }
-    WebFacadeImpl getWebImpl() { webFacade }
+    WebFacadeImpl getWebImpl() {
+        if (webFacade instanceof WebFacadeImpl) {
+            return (WebFacadeImpl) webFacade
+        } else {
+            return null
+        }
+    }
 
     @Override
     UserFacade getUser() { if (userFacade != null) return userFacade else return (userFacade = new UserFacadeImpl(this)) }
@@ -167,7 +175,8 @@ class ExecutionContextImpl implements ExecutionContext {
 
     @Override
     void initWebFacade(String webappMoquiName, HttpServletRequest request, HttpServletResponse response) {
-        webFacade = new WebFacadeImpl(webappMoquiName, request, response, this)
+        WebFacadeImpl wfi = new WebFacadeImpl(webappMoquiName, request, response, this)
+        webFacade = wfi
 
         tenantId = request.session.getAttribute("moqui.tenantId")
         if (!tenantId) {
@@ -189,11 +198,17 @@ class ExecutionContextImpl implements ExecutionContext {
         // now that we have the webFacade and tenantId in place we can do init UserFacade
         ((UserFacadeImpl) getUser()).initFromHttpRequest(request, response)
 
-        // perhaps debatable whether or not this is a good idea, but makes things much easier
+        // for convenience (and more consistent code in screen actions, services, etc) add all requestParameters to the context
         context.putAll(webFacade.requestParameters)
 
         // this is the beginning of a request, so trigger before-request actions
-        webFacade.runBeforeRequestActions()
+        wfi.runBeforeRequestActions()
+    }
+
+    /** Meant to be used to set a test stub that implements the WebFacade interface */
+    void setWebFacade(WebFacade wf) {
+        webFacade = wf
+        context.putAll(webFacade.requestParameters)
     }
 
     boolean getSkipStats() {
@@ -214,7 +229,8 @@ class ExecutionContextImpl implements ExecutionContext {
     @Override
     void destroy() {
         // if webFacade exists this is the end of a request, so trigger after-request actions
-        if (webFacade) webFacade.runAfterRequestActions()
+        WebFacadeImpl wfi = getWebImpl()
+        if (wfi != null) wfi.runAfterRequestActions()
 
         // make sure there are no transactions open, if any commit them all now
         ecfi.transactionFacade.destroyAllInThread()

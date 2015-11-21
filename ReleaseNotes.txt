@@ -2,14 +2,20 @@
 Moqui Framework Release Notes
 
 ===========================================================================
-Release 1.5.4 - TODO
+Release 1.6.0 - TBD
 ===========================================================================
 
-Moqui Framework 1.5.4 is a minor new feature and bug fix release.
+Moqui Framework 1.6.0 is a major new feature and bug fix release.
 
 TODO
 
-New Features:
+Non Backward Compatible Changes
+
+- The Screen Facade and ScreenRender interfaces are now in the
+  org.moqui.screen package (moved from org.moqui.context); most apps do
+  not use these explicitly, but any code that does needs to be changed
+
+New Features
 
 - Library Updates
   - Apache Camel to 2.16.0
@@ -26,6 +32,10 @@ New Features:
   - Log4J to 2.4.1
   - OrientDB to 2.1.4
   - Quartz Scheduler to 2.2.2
+- Added ScreenTest interface and implementation; easy tool for testing
+  screens with no Servlet container in place; this uses test stubs for
+  WebFacade, ServletContext, HttpSession, HttpServletRequest, and
+  HttpServletResponse
 - Components may now have a component.xml with a single component element,
   the same component element that is used in the Moqui Conf XML file; if a
   name is specified it will override the directory name; added a depends-on
@@ -76,7 +86,7 @@ New Features:
   SystemMessageType.receiveServiceName service if specified to save message
 - Added EDI handler (parser and generator), used in Mantle for X12 messages
 
-Bug Fixes:
+Bug Fixes
 
 - Fixed issue in the Tools EntityDetail screen where entities with many
   dependents (like Enumeration, Uom, etc) caused an out of memory error;

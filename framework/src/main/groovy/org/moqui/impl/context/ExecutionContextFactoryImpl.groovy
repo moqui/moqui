@@ -25,7 +25,7 @@ import org.moqui.context.Cache
 import org.moqui.context.CacheFacade
 import org.moqui.context.LoggerFacade
 import org.moqui.context.ResourceFacade
-import org.moqui.context.ScreenFacade
+import org.moqui.screen.ScreenFacade
 import org.moqui.context.TransactionFacade
 import org.moqui.entity.EntityFacade
 import org.moqui.impl.StupidWebUtilities

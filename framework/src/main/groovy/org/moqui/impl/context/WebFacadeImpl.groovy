@@ -1,5 +1,6 @@
 /*
- * This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
+ * This software is in the public domain under CC0 1.0 Universal plus a
+ * Grant of Patent License.
  * 
  * To the extent possible under law, the author(s) have dedicated all
  * copyright and related and neighboring rights to this software to the
@@ -309,13 +310,6 @@ class WebFacadeImpl implements WebFacade {
         declaredPathParameters.put(name, value)
     }
 
-    @CompileStatic
-    List<String> getSavedMessages() { return savedMessages }
-    @CompileStatic
-    List<String> getSavedErrors() { return savedErrors }
-    @CompileStatic
-    List<ValidationError> getSavedValidationErrors() { return savedValidationErrors }
-
     @Override
     @CompileStatic
     Map<String, Object> getParameters() {
@@ -506,11 +500,27 @@ class WebFacadeImpl implements WebFacade {
 
 
     @Override
+    @CompileStatic
     Map<String, Object> getErrorParameters() { return errorParameters }
+    @Override
+    @CompileStatic
+    List<String> getSavedMessages() { return savedMessages }
+    @Override
+    @CompileStatic
+    List<String> getSavedErrors() { return savedErrors }
+    @Override
+    @CompileStatic
+    List<ValidationError> getSavedValidationErrors() { return savedValidationErrors }
+
 
     @Override
     @CompileStatic
     void sendJsonResponse(Object responseObj) {
+        sendJsonResponseInternal(responseObj, eci, request, response, requestAttributes)
+    }
+    @CompileStatic
+    static void sendJsonResponseInternal(Object responseObj, ExecutionContextImpl eci, HttpServletRequest request,
+                                         HttpServletResponse response, Map<String, Object> requestAttributes) {
         String jsonStr
         if (responseObj instanceof CharSequence) {
             jsonStr = responseObj.toString()
@@ -588,10 +598,19 @@ class WebFacadeImpl implements WebFacade {
 
     @Override
     @CompileStatic
-    void sendTextResponse(String text) { sendTextResponse(text, "text/plain") }
+    void sendTextResponse(String text) {
+        sendTextResponseInternal(text, "text/plain", null, eci, request, response, requestAttributes)
+    }
     @Override
     @CompileStatic
-    void sendTextResponse(String text, String contentType) {
+    void sendTextResponse(String text, String contentType, String filename) {
+        sendTextResponseInternal(text, contentType, filename, eci, request, response, requestAttributes)
+    }
+    @CompileStatic
+    static void sendTextResponseInternal(String text, String contentType, String filename, ExecutionContextImpl eci,
+                                         HttpServletRequest request, HttpServletResponse response,
+                                         Map<String, Object> requestAttributes) {
+        if (!contentType) contentType = "text/plain"
         String responseText
         if (eci.getMessage().hasError()) {
             responseText = eci.message.errorsString
@@ -606,6 +625,12 @@ class WebFacadeImpl implements WebFacade {
         String charset = response.getCharacterEncoding() ?: "UTF-8"
         int length = responseText ? responseText.getBytes(charset).length : 0
         response.setContentLength(length)
+
+        if (!filename) {
+            response.addHeader("Content-Disposition", "inline")
+        } else {
+            response.addHeader("Content-Disposition", "attachment; filename=\"${filename}\"; filename*=utf-8''${StupidUtilities.encodeAsciiFilename(filename)}")
+        }
 
         try {
             if (responseText) response.writer.write(responseText)
@@ -623,25 +648,42 @@ class WebFacadeImpl implements WebFacade {
 
     @Override
     @CompileStatic
-    void sendResourceResponse(String location) { sendResourceResponse(location, false) }
+    void sendResourceResponse(String location) {
+        sendResourceResponseInternal(location, false, eci, response, requestAttributes)
+    }
     @CompileStatic
     void sendResourceResponse(String location, boolean inline) {
+        sendResourceResponseInternal(location, inline, eci, response, requestAttributes)
+    }
+    @CompileStatic
+    static void sendResourceResponseInternal(String location, boolean inline, ExecutionContextImpl eci,
+                                             HttpServletResponse response, Map<String, Object> requestAttributes) {
         ResourceReference rr = eci.resource.getLocationReference(location)
         if (rr == null) throw new IllegalArgumentException("Resource not found at: ${location}")
         response.setContentType(rr.contentType)
-        if (inline) response.addHeader("Content-Disposition", "inline")
-        else response.addHeader("Content-Disposition", "attachment; filename=\"${rr.getFileName()}\"; filename*=utf-8''${StupidUtilities.encodeAsciiFilename(rr.getFileName())}")
-        InputStream is = rr.openStream()
-        try {
-            OutputStream os = response.outputStream
+        if (inline) {
+            response.addHeader("Content-Disposition", "inline")
+        } else {
+            response.addHeader("Content-Disposition", "attachment; filename=\"${rr.getFileName()}\"; filename*=utf-8''${StupidUtilities.encodeAsciiFilename(rr.getFileName())}")
+        }
+        String contentType = rr.getContentType()
+        if (!contentType || ResourceFacadeImpl.isBinaryContentType(contentType)) {
+            InputStream is = rr.openStream()
             try {
-                int totalLen = StupidUtilities.copyStream(is, os)
-                logger.info("Streamed ${totalLen} bytes from contentLocation ${location}")
+                OutputStream os = response.outputStream
+                try {
+                    int totalLen = StupidUtilities.copyStream(is, os)
+                    logger.info("Streamed ${totalLen} bytes from contentLocation ${location}")
+                } finally {
+                    os.close()
+                }
             } finally {
-                os.close()
+                is.close()
             }
-        } finally {
-            is.close()
+        } else {
+            String rrText = rr.getText()
+            if (rrText) response.writer.append(rrText)
+            response.writer.flush()
         }
     }
 
@@ -777,7 +819,7 @@ class WebFacadeImpl implements WebFacade {
             jb.call(rootMap)
             String jsonStr = jb.toPrettyString()
 
-            sendTextResponse(jsonStr, "application/schema+json")
+            sendTextResponse(jsonStr, "application/schema+json", "MoquiEntities.schema.json")
         } else {
             String entityName = extraPathNameList.get(0)
             if (entityName.endsWith(".json")) entityName = entityName.substring(0, entityName.length() - 5)
@@ -796,7 +838,7 @@ class WebFacadeImpl implements WebFacade {
                 jb.call(schema)
                 String jsonStr = jb.toPrettyString()
 
-                sendTextResponse(jsonStr, "application/schema+json")
+                sendTextResponse(jsonStr, "application/schema+json", "${entityName}.schema.json")
             } catch (EntityNotFoundException e) {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No entity found with name or alias [${entityName}]")
             }
@@ -841,7 +883,7 @@ class WebFacadeImpl implements WebFacade {
         // add beginning line "#%RAML 0.8", more efficient way to do this?
         yamlString = "#%RAML 0.8\n" + yamlString
 
-        sendTextResponse(yamlString, "application/raml+yaml")
+        sendTextResponse(yamlString, "application/raml+yaml", "MoquiEntities.raml")
     }
 
 
