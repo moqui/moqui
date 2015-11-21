@@ -93,7 +93,7 @@ class WebFacadeStub implements WebFacade {
     Map<String, Object> getRequestParameters() { return requestParameters }
 
     @Override
-    HttpServletResponse getResponse() { throw new IllegalArgumentException("WebFacadeStub response not supported") }
+    HttpServletResponse getResponse() { return httpServletResponse }
     @Override
     HttpSession getSession() { return httpSession }
     @Override
