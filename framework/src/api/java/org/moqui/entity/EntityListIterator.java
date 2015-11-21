@@ -1,5 +1,6 @@
 /*
- * This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
+ * This software is in the public domain under CC0 1.0 Universal plus a
+ * Grant of Patent License.
  * 
  * To the extent possible under law, the author(s) have dedicated all
  * copyright and related and neighboring rights to this software to the
@@ -27,7 +28,7 @@ public interface EntityListIterator extends ListIterator<EntityValue>, Iterable<
     /** Entity Facade calls this method to tell the ELI additional information for dealing with TX cache, etc */
     void setOrderByFields(List<String> obf);
 
-    /** Close the underlying ResultSet and Connection. This should ALWAYS be called when you are done with an EntityListIterator object. */
+    /** Close the underlying ResultSet and Connection. This must ALWAYS be called when done with an EntityListIterator. */
     void close() throws EntityException;
 
     /** Sets the cursor position to just after the last result so that previous() will return the last result */

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
+This software is in the public domain under CC0 1.0 Universal plus a
+Grant of Patent License.
 
 To the extent possible under law, the author(s) have dedicated all
 copyright and related and neighboring rights to this software to the
@@ -24,8 +25,8 @@ along with this software (see the LICENSE.md file). If not, see
         <field name="userId" type="id-long"/>
         <field name="artifactType" type="text-medium"/>
         <field name="artifactSubType" type="text-medium"/>
-        <field name="artifactName" type="text-medium">
-            <description>The name of the artifact hit. For XML Screens request it is "${webapp-name}.${screen-path}"</description></field>
+        <field name="artifactName" type="text-medium"><description>The name of the artifact hit. For XML Screens
+            request it is "${webapp-name}.${screen-path}"</description></field>
         <field name="parameterString" type="text-long"/>
         <field name="startDateTime" type="date-time"/>
         <field name="runningTimeMillis" type="number-decimal"/>
@@ -52,12 +53,12 @@ along with this software (see the LICENSE.md file). If not, see
         <field name="binEndDateTime" type="date-time"/>
         <field name="hitCount" type="number-integer"/>
         <field name="totalTimeMillis" type="number-decimal"/>
-        <field name="totalSquaredTime" type="number-decimal">
-            <description>Total (sum) of the squared running times for calculating incremental standard deviation.</description></field>
+        <field name="totalSquaredTime" type="number-decimal"><description>Total (sum) of the squared running times for
+            calculating incremental standard deviation.</description></field>
         <field name="minTimeMillis" type="number-decimal"/>
         <field name="maxTimeMillis" type="number-decimal"/>
-        <field name="slowHitCount" type="number-integer">
-            <description>After 100 hits count of hits more that 2.6 standard deviations above average (both avg and std dev adjusted incrementally).</description></field>
+        <field name="slowHitCount" type="number-integer"><description>After 100 hits count of hits more that 2.6
+            standard deviations above average (both avg and std dev adjusted incrementally).</description></field>
     </entity>
     <view-entity entity-name="ArtifactHitReport" package-name="moqui.server">
         <member-entity entity-alias="AHB" entity-name="moqui.server.ArtifactHitBin"/>

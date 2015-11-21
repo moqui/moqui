@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
+This software is in the public domain under CC0 1.0 Universal plus a
+Grant of Patent License.
 
 To the extent possible under law, the author(s) have dedicated all
 copyright and related and neighboring rights to this software to the
@@ -19,7 +20,8 @@ along with this software (see the LICENSE.md file). If not, see
             <entity-find entity-name="moqui.entity.sync.EntitySync" list="entitySyncList">
                 <econdition field-name="statusId" operator="not-equals" value="EsRunning"/></entity-find>
             <iterate list="entitySyncList" entry="entitySync">
-                <!-- NOTE: currently calls async, consider transaction="force-new" if there are multiple large syncs to avoid running out of memory, etc -->
+                <!-- NOTE: currently calls async, consider transaction="force-new" if there are multiple large syncs to
+                    avoid running out of memory, etc -->
                 <service-call name="org.moqui.impl.EntitySyncServices.run#EntitySync"
                         in-map="[entitySyncId:entitySync.entitySyncId]" async="true"/>
             </iterate>

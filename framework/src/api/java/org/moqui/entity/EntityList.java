@@ -1,5 +1,6 @@
 /*
- * This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
+ * This software is in the public domain under CC0 1.0 Universal plus a
+ * Grant of Patent License.
  * 
  * To the extent possible under law, the author(s) have dedicated all
  * copyright and related and neighboring rights to this software to the
@@ -77,7 +78,7 @@ public interface EntityList extends List<EntityValue>, Iterable<EntityValue>, Cl
     Integer getLimit();
     /** For use with filterByLimit when paginated. Equals offset (default 0) divided by page size. */
     int getPageIndex();
-    /** For use with filterByLimit when paginated. Equals limit (default 20; exists for consistency/conveience along with getPageIndex()). */
+    /** For use with filterByLimit when paginated. Equals limit (default 20; for use along with getPageIndex()). */
     int getPageSize();
 
     /** Modify this EntityList so that is ordered by the field names passed in.

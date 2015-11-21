@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
+This software is in the public domain under CC0 1.0 Universal plus a
+Grant of Patent License.
 
 To the extent possible under law, the author(s) have dedicated all
 copyright and related and neighboring rights to this software to the
@@ -13,7 +14,8 @@ along with this software (see the LICENSE.md file). If not, see
 -->
 <entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/entity-definition-1.5.xsd">
 
-    <!-- NOTE: there is no ScheduledService or ScheduledServiceData entity any more because Quartz Scheduler will be used and it has its own data model, etc -->
+    <!-- NOTE: there is no ScheduledService or ScheduledServiceData entity any more because Quartz Scheduler will be
+        used and it has its own data model, etc -->
 
     <!-- ========================================================= -->
     <!-- moqui.service.semaphore -->
@@ -200,7 +202,7 @@ along with this software (see the LICENSE.md file). If not, see
         <field name="processedDate" type="date-time"><description>For incoming the consumed date, for outgoing the sent date</description></field>
         <field name="lastAttemptDate" type="date-time"/>
         <field name="failCount" type="number-integer"/>
-        <field name="parentMessageId" type="id"><description>If a received message is split this is the original combined message</description></field>
+        <field name="parentMessageId" type="id"><description>If a received message is split this is the original message</description></field>
         <field name="ackMessageId" type="id"><description>The message received or sent to acknowledge this message</description></field>
         <field name="remoteMessageId" type="text-medium"><description>For messages to/from another Moqui system, the
             systemMessageId on the remote system; may also be used for other system level message IDs (as opposed to
@@ -227,7 +229,8 @@ along with this software (see the LICENSE.md file). If not, see
             GS06 in EDI X12 messages)</description></field>
         <field name="docSubControl" type="text-short"><description>Sub-Control number of the message when applicable (such as
             ST02 in EDI X12 messages)</description></field>
-        <field name="docVersion" type="text-short"><description>The document version (for OAGIS BSR Revision, for X12 GS08 (version/revision))</description></field>
+        <field name="docVersion" type="text-short"><description>The document version (for OAGIS BSR Revision, for X12
+            GS08 (version/revision))</description></field>
 
         <!-- the follow may be useful for other types of messages, but come specifically from the OAGIS specification;
             leave out for now, senderId and messageId with combined fields may be adequate and are more generic
@@ -332,22 +335,30 @@ along with this software (see the LICENSE.md file). If not, see
         <!-- potential future use, restrict receive message: <field name="authorizedIpAddresses" type="text-long"/> -->
         <field name="sendServiceName" type="text-medium"><description>Override for SystemMessageType.sendServiceName</description></field>
         <field name="username" type="text-medium"><description>This user needs permission to run the remote service or
-            whatever on the remote system receives the message. For the the Moqui receive#IncomingSystemMessage service the user
-            should be in a group that has authz for the SystemMessageServices ArtifactGroup (see SecurityTypeData.xml).</description></field>
+            whatever on the remote system receives the message. For the the Moqui receive#IncomingSystemMessage service
+            the user should be in a group that has authz for the SystemMessageServices ArtifactGroup
+            (see SecurityTypeData.xml).</description></field>
         <field name="password" type="text-short" encrypt="true"/>
         <field name="tenantId" type="text-short"/>
 
-        <field name="systemMessageTypeId" type="id"><description>Optional. May be used when this remote is for one type of message.</description></field>
+        <field name="systemMessageTypeId" type="id"><description>Optional. May be used when this remote is for one
+            type of message.</description></field>
         <!-- for incoming message internal is the receiver, remote the sender; for outgoing messages internal is the sender, remote the receiver -->
-        <field name="internalId" type="text-short"><description>Sender (outgoing) or receiver (incoming) ID (EDI: in ISA06/08; OAGIS in ApplicationArea.Sender/Receiver.ID)</description></field>
+        <field name="internalId" type="text-short"><description>Sender (outgoing) or receiver (incoming) ID (EDI: in
+            ISA06/08; OAGIS in ApplicationArea.Sender/Receiver.ID)</description></field>
         <field name="internalIdType" type="text-short"/>
-        <field name="internalAppCode" type="text-medium"><description>Application code (EDI: in GS02/03; OAGIS: in ApplicationArea.Sender/Receiver elements, split among sub-elements)</description></field>
-        <field name="remoteId" type="text-short"><description>Sender (outgoing) or receiver (incoming) ID (EDI: in ISA06/08; OAGIS in ApplicationArea.Sender/Receiver.ID)</description></field>
+        <field name="internalAppCode" type="text-medium"><description>Application code (EDI: in GS02/03; OAGIS: in
+            ApplicationArea.Sender/Receiver elements, split among sub-elements)</description></field>
+        <field name="remoteId" type="text-short"><description>Sender (outgoing) or receiver (incoming) ID (EDI: in
+            ISA06/08; OAGIS in ApplicationArea.Sender/Receiver.ID)</description></field>
         <field name="remoteIdType" type="text-short"/>
-        <field name="remoteAppCode" type="text-medium"><description>Application code (EDI: in GS02/03; OAGIS: in ApplicationArea.Sender/Receiver elements, split among sub-elements)</description></field>
+        <field name="remoteAppCode" type="text-medium"><description>Application code (EDI: in GS02/03; OAGIS: in
+            ApplicationArea.Sender/Receiver elements, split among sub-elements)</description></field>
 
-        <field name="ackRequested" type="text-short"><description>Request acknowledgement? Possible values dependent on message standard.</description></field>
-        <field name="usageCode" type="text-short"><description>Used for production versus test/etc. Possible values dependent on message standard.</description></field>
+        <field name="ackRequested" type="text-short"><description>Request acknowledgement? Possible values dependent on
+            message standard.</description></field>
+        <field name="usageCode" type="text-short"><description>Used for production versus test/etc. Possible values
+            dependent on message standard.</description></field>
 
         <!-- for formatting EDI and other character delimited files -->
         <field name="segmentTerminator" type="text-indicator"/>
