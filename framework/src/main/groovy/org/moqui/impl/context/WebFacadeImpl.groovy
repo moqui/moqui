@@ -516,6 +516,11 @@ class WebFacadeImpl implements WebFacade {
     @Override
     @CompileStatic
     void sendJsonResponse(Object responseObj) {
+        sendJsonResponseInternal(responseObj, eci, request, response, requestAttributes)
+    }
+    @CompileStatic
+    static void sendJsonResponseInternal(Object responseObj, ExecutionContextImpl eci, HttpServletRequest request,
+                                         HttpServletResponse response, Map<String, Object> requestAttributes) {
         String jsonStr
         if (responseObj instanceof CharSequence) {
             jsonStr = responseObj.toString()
@@ -593,10 +598,18 @@ class WebFacadeImpl implements WebFacade {
 
     @Override
     @CompileStatic
-    void sendTextResponse(String text) { sendTextResponse(text, "text/plain", null) }
+    void sendTextResponse(String text) {
+        sendTextResponseInternal(text, "text/plain", null, eci, request, response, requestAttributes)
+    }
     @Override
     @CompileStatic
     void sendTextResponse(String text, String contentType, String filename) {
+        sendTextResponseInternal(text, contentType, filename, eci, request, response, requestAttributes)
+    }
+    @CompileStatic
+    static void sendTextResponseInternal(String text, String contentType, String filename, ExecutionContextImpl eci,
+                                         HttpServletRequest request, HttpServletResponse response,
+                                         Map<String, Object> requestAttributes) {
         if (!contentType) contentType = "text/plain"
         String responseText
         if (eci.getMessage().hasError()) {
@@ -635,9 +648,16 @@ class WebFacadeImpl implements WebFacade {
 
     @Override
     @CompileStatic
-    void sendResourceResponse(String location) { sendResourceResponse(location, false) }
+    void sendResourceResponse(String location) {
+        sendResourceResponseInternal(location, false, eci, response, requestAttributes)
+    }
     @CompileStatic
     void sendResourceResponse(String location, boolean inline) {
+        sendResourceResponseInternal(location, inline, eci, response, requestAttributes)
+    }
+    @CompileStatic
+    static void sendResourceResponseInternal(String location, boolean inline, ExecutionContextImpl eci,
+                                             HttpServletResponse response, Map<String, Object> requestAttributes) {
         ResourceReference rr = eci.resource.getLocationReference(location)
         if (rr == null) throw new IllegalArgumentException("Resource not found at: ${location}")
         response.setContentType(rr.contentType)
@@ -646,17 +666,24 @@ class WebFacadeImpl implements WebFacade {
         } else {
             response.addHeader("Content-Disposition", "attachment; filename=\"${rr.getFileName()}\"; filename*=utf-8''${StupidUtilities.encodeAsciiFilename(rr.getFileName())}")
         }
-        InputStream is = rr.openStream()
-        try {
-            OutputStream os = response.outputStream
+        String contentType = rr.getContentType()
+        if (!contentType || ResourceFacadeImpl.isBinaryContentType(contentType)) {
+            InputStream is = rr.openStream()
             try {
-                int totalLen = StupidUtilities.copyStream(is, os)
-                logger.info("Streamed ${totalLen} bytes from contentLocation ${location}")
+                OutputStream os = response.outputStream
+                try {
+                    int totalLen = StupidUtilities.copyStream(is, os)
+                    logger.info("Streamed ${totalLen} bytes from contentLocation ${location}")
+                } finally {
+                    os.close()
+                }
             } finally {
-                os.close()
+                is.close()
             }
-        } finally {
-            is.close()
+        } else {
+            String rrText = rr.getText()
+            if (rrText) response.writer.append(rrText)
+            response.writer.flush()
         }
     }
 

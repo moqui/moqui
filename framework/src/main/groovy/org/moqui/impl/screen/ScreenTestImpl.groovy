@@ -14,6 +14,8 @@
 package org.moqui.impl.screen
 
 import groovy.transform.CompileStatic
+import groovy.transform.TypeChecked
+import groovy.transform.TypeCheckingMode
 import org.moqui.context.ContextStack
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.impl.context.ExecutionContextImpl
@@ -42,6 +44,7 @@ class ScreenTestImpl implements ScreenTest {
     protected String baseLinkUrl = null
     protected String servletContextPath = null
     protected String webappName = null
+    protected static final String hostname = "localhost"
 
     long renderCount = 0, errorCount = 0, totalChars = 0, startTime = System.currentTimeMillis()
 
@@ -50,6 +53,9 @@ class ScreenTestImpl implements ScreenTest {
     ScreenTestImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
         sfi = ecfi.screenFacade
+
+        // init default webapp, root screen
+        webappName('webroot')
     }
 
     @Override
@@ -86,8 +92,25 @@ class ScreenTestImpl implements ScreenTest {
     ScreenTest baseLinkUrl(String baseLinkUrl) { this.baseLinkUrl = baseLinkUrl; return this }
     @Override
     ScreenTest servletContextPath(String scp) { this.servletContextPath = scp; return this }
+
     @Override
-    ScreenTest webappName(String wan) { webappName = wan; return this }
+    @TypeChecked(TypeCheckingMode.SKIP)
+    ScreenTest webappName(String wan) {
+        webappName = wan
+
+        // set a default root screen based on config for "localhost"
+        Node webappNode = (Node) ecfi.confXmlRoot."webapp-list"[0]."webapp".find({ it.@name == webappName })
+        for (Object rootScreenObj in (NodeList) webappNode.get("root-screen")) {
+            Node rootScreenNode = (Node) rootScreenObj
+            if (hostname.matches((String) rootScreenNode.attribute('host'))) {
+                String rsLoc = (String) rootScreenNode.attribute('location')
+                rootScreen(rsLoc)
+                break
+            }
+        }
+
+        return this
+    }
 
     @Override
     List<String> getNoRequiredParameterPaths(Set<String> screensToSkip) {
@@ -153,17 +176,16 @@ class ScreenTestImpl implements ScreenTest {
             if (sti.macroTemplateLocation) screenRender.macroTemplate(sti.macroTemplateLocation)
             if (sti.baseLinkUrl) screenRender.baseLinkUrl(sti.baseLinkUrl)
             if (sti.servletContextPath) screenRender.servletContextPath(sti.servletContextPath)
-            screenRender.webappName(sti.webappName ?: 'webroot')
+            screenRender.webappName(sti.webappName)
 
             // set the screenPath
             screenRender.screenPath(screenPathList)
 
             // do the render
             try {
-                outputString = screenRender.render()
-                // if no text from screen render (especially for transitions that send a text response), get the
-                //     response text from the WebFacadeStub
-                if (!outputString) outputString = wfs.getResponseText()
+                screenRender.render(wfs.httpServletRequest, wfs.httpServletResponse)
+                // get the response text from the WebFacadeStub
+                outputString = wfs.getResponseText()
             } catch (Throwable t) {
                 String errMsg = "Exception in render of ${screenPath}: ${t.toString()}"
                 logger.warn(errMsg, t)

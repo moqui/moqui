@@ -13,14 +13,12 @@
  */
 package org.moqui.impl.screen
 
-import groovy.json.JsonBuilder
 import groovy.transform.CompileStatic
 import org.moqui.context.ContextStack
-import org.moqui.context.ResourceReference
 import org.moqui.context.ValidationError
 import org.moqui.context.WebFacade
-import org.moqui.impl.StupidUtilities
 import org.moqui.impl.context.ExecutionContextFactoryImpl
+import org.moqui.impl.context.WebFacadeImpl
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -29,6 +27,7 @@ import javax.servlet.Servlet
 import javax.servlet.ServletContext
 import javax.servlet.ServletException
 import javax.servlet.ServletInputStream
+import javax.servlet.ServletOutputStream
 import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -47,10 +46,13 @@ class WebFacadeStub implements WebFacade {
     Map<String, Object> sessionAttributes = [:]
     String requestMethod = "get"
 
-    protected HttpSession httpSession
-    protected HttpServletRequest httpServletRequest
-    protected ServletContext servletContext
-    protected Writer responseWriter = new StringWriter()
+    protected HttpSessionStub httpSession
+    protected HttpServletRequestStub httpServletRequest
+    protected ServletContextStub servletContext
+    protected HttpServletResponseStub httpServletResponse
+
+    protected StringWriter responseWriter = new StringWriter()
+    protected PrintWriter responsePrintWriter = new PrintWriter(responseWriter)
 
     WebFacadeStub(ExecutionContextFactoryImpl ecfi, Map<String, Object> requestParameters,
                   Map<String, Object> sessionAttributes, String requestMethod) {
@@ -62,9 +64,11 @@ class WebFacadeStub implements WebFacade {
         servletContext = new ServletContextStub(this)
         httpSession = new HttpSessionStub(this)
         httpServletRequest = new HttpServletRequestStub(this)
+        httpServletResponse = new HttpServletResponseStub(this)
     }
 
     String getResponseText() { responseWriter.flush(); return responseWriter.toString() }
+    HttpServletResponseStub getHttpServletResponseStub() { return httpServletResponse }
 
     @Override
     String getRequestUrl() { return "TestRequestUrl" }
@@ -116,6 +120,8 @@ class WebFacadeStub implements WebFacade {
 
     @Override
     void sendJsonResponse(Object responseObj) {
+        WebFacadeImpl.sendJsonResponseInternal(responseObj, ecfi.eci, httpServletRequest, httpServletResponse, requestAttributes)
+        /*
         String jsonStr
         if (responseObj instanceof CharSequence) {
             jsonStr = responseObj.toString()
@@ -133,26 +139,29 @@ class WebFacadeStub implements WebFacade {
             jsonStr = ""
         }
         responseWriter.append(jsonStr)
-
         logger.info("WebFacadeStub sendJsonResponse ${jsonStr.length()} chars")
+        */
     }
 
     @Override
-    void sendTextResponse(String text) { responseWriter.append(text) }
-
+    void sendTextResponse(String text) { sendTextResponse(text, "text/plain", null) }
     @Override
     void sendTextResponse(String text, String contentType, String filename) {
-        responseWriter.append(text)
-        logger.info("WebFacadeStub sendTextResponse (${text.length()} chars, content type ${contentType}, filename: ${filename})")
+        WebFacadeImpl.sendTextResponseInternal(text, contentType, filename, ecfi.eci, httpServletRequest, httpServletResponse, requestAttributes)
+        // responseWriter.append(text)
+        // logger.info("WebFacadeStub sendTextResponse (${text.length()} chars, content type ${contentType}, filename: ${filename})")
     }
 
     @Override
     void sendResourceResponse(String location) {
+        WebFacadeImpl.sendResourceResponseInternal(location, false, ecfi.eci, httpServletResponse, requestAttributes)
+        /*
         ResourceReference rr = ecfi.getResource().getLocationReference(location)
         if (rr == null) throw new IllegalArgumentException("Resource not found at: ${location}")
         String rrText = rr.getText()
         responseWriter.append(rrText)
         logger.info("WebFacadeStub sendResourceResponse ${rrText.length()} chars, location: ${location}")
+        */
     }
 
     @Override
@@ -413,5 +422,88 @@ class WebFacadeStub implements WebFacade {
         void removeAttribute(String s) { wfs.sessionAttributes.remove(s) }
         @Override
         String getServletContextName() { return "Moqui Root Webapp" }
+    }
+
+    static class HttpServletResponseStub implements HttpServletResponse {
+        WebFacadeStub wfs
+
+        String characterEncoding = null
+        int contentLength = 0
+        String contentType = null
+        Locale locale = Locale.default
+        int status = SC_OK
+        Map<String, Object> headers = [:]
+
+        HttpServletResponseStub(WebFacadeStub wfs) {
+            this.wfs = wfs
+        }
+
+        @Override
+        void addCookie(Cookie cookie) { }
+
+        @Override
+        boolean containsHeader(String s) { return headers.containsKey(s) }
+
+        @Override
+        String encodeURL(String s) { return null }
+        @Override
+        String encodeRedirectURL(String s) { return null }
+        @Override
+        String encodeUrl(String s) { return null }
+        @Override
+        String encodeRedirectUrl(String s) { return null }
+
+        @Override
+        void sendError(int i, String s) throws IOException { status = i; wfs.responseWriter.append(s) }
+        @Override
+        void sendError(int i) throws IOException { status = i }
+        @Override
+        void sendRedirect(String s) throws IOException { logger.info("HttpServletResponseStub sendRedirect to: ${s}") }
+
+        @Override
+        void setDateHeader(String s, long l) { headers.put(s, l) }
+        @Override
+        void addDateHeader(String s, long l) { headers.put(s, l) }
+        @Override
+        void setHeader(String s, String s1) { headers.put(s, s1) }
+        @Override
+        void addHeader(String s, String s1) { headers.put(s, s1) }
+        @Override
+        void setIntHeader(String s, int i) { headers.put(s, i) }
+        @Override
+        void addIntHeader(String s, int i) { headers.put(s, i) }
+
+        @Override
+        void setStatus(int i, String s) { status = i; wfs.responseWriter.append(s) }
+
+        @Override
+        String getCharacterEncoding() { return characterEncoding }
+        @Override
+        String getContentType() { return contentType }
+
+        @Override
+        ServletOutputStream getOutputStream() throws IOException {
+            throw new UnsupportedOperationException("Using WebFacadeStub getOutputStream is not supported")
+        }
+        @Override
+        PrintWriter getWriter() throws IOException { return wfs.responsePrintWriter }
+
+        @Override
+        void setBufferSize(int i) { }
+        @Override
+        int getBufferSize() { return wfs.responseWriter.getBuffer().length() }
+
+        @Override
+        void flushBuffer() throws IOException { wfs.responseWriter.flush() }
+        @Override
+        void resetBuffer() { wfs.responseWriter = new StringWriter() }
+        @Override
+        boolean isCommitted() { return false }
+        @Override
+        void reset() { resetBuffer(); status = SC_OK; headers.clear() }
+        @Override
+        void setLocale(Locale locale) { this.locale = locale }
+        @Override
+        Locale getLocale() { return locale }
     }
 }
