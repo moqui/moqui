@@ -33,7 +33,7 @@ class SystemScreenRenderTests extends Specification {
     def setupSpec() {
         ec = Moqui.getExecutionContext()
         ec.user.loginUser("john.doe", "moqui", null)
-        screenTest = ec.screen.makeTest().rootScreen("component://webroot/screen/webroot.xml").baseScreenPath("apps/system")
+        screenTest = ec.screen.makeTest().baseScreenPath("apps/system")
     }
 
     def cleanupSpec() {
