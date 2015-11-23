@@ -537,6 +537,7 @@ class StupidUtilities {
             URI uri = new URI(null, null, filename, null);
             return uri.toASCIIString();
         } catch (URISyntaxException e) {
+            logger.warn("Error encoding ASCII filename: ${e.toString()}")
             return filename;
         }
     }

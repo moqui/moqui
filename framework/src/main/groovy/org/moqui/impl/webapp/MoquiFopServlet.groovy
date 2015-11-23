@@ -72,8 +72,12 @@ class MoquiFopServlet extends HttpServlet {
             String contentType = ec.web.requestParameters."contentType" ?: "application/pdf"
             response.setContentType(contentType)
 
-            if (filename) response.addHeader("Content-Disposition", "attachment; filename=\"${filename}\"; filename*=utf-8''${StupidUtilities.encodeAsciiFilename(filename)}")
-            else response.addHeader("Content-Disposition", "inline")
+            if (filename) {
+                String utfFilename = StupidUtilities.encodeAsciiFilename(filename)
+                response.addHeader("Content-Disposition", "attachment; filename=\"${filename}\"; filename*=utf-8''${utfFilename}")
+            } else {
+                response.addHeader("Content-Disposition", "inline")
+            }
 
             // special case disable authz for resource access
             boolean enableAuthz = !ecfi.getExecutionContext().getArtifactExecution().disableAuthz()
