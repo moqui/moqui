@@ -224,12 +224,12 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
      */
     static boolean isPermitted(String username, String resourceAccess, Timestamp nowTimestamp, ExecutionContextImpl eci) {
         int firstColon = resourceAccess.indexOf(":")
-        int secondColon = resourceAccess.indexOf(":", firstColon+1)
+        int secondColon = resourceAccess.indexOf(":", firstColon + 1)
         if (firstColon == -1 || secondColon == -1) throw new ArtifactAuthorizationException("Resource access string does not have two colons (':'), must be formatted like: \"\${typeEnumId}:\${actionEnumId}:\${name}\"")
 
         String typeEnumId = resourceAccess.substring(0, firstColon)
-        String actionEnumId = resourceAccess.substring(firstColon+1, secondColon)
-        String name = resourceAccess.substring(secondColon+1)
+        String actionEnumId = resourceAccess.substring(firstColon + 1, secondColon)
+        String name = resourceAccess.substring(secondColon + 1)
 
         return eci.artifactExecutionFacade.isPermitted(username,
                 new ArtifactExecutionInfoImpl(name, typeEnumId, actionEnumId), null, true, true, nowTimestamp)
@@ -272,7 +272,8 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                             artifactTarpitCheckList.add(atEv)
                     }
                 }
-                // if (aeii.getTypeEnumId() == "AT_XML_SCREEN") logger.warn("TOREMOVE about to check tarpit [${tarpitKey}], userGroupIdSet=${userGroupIdSet}, artifactTarpitList=${artifactTarpitList}")
+                // if (aeii.getTypeEnumId() == "AT_XML_SCREEN")
+                //     logger.warn("TOREMOVE about to check tarpit [${tarpitKey}], userGroupIdSet=${userGroupIdSet}, artifactTarpitList=${artifactTarpitList}")
                 if (artifactTarpitCheckList) {
                     String tarpitKey = userId + '@' + aeii.getTypeEnumId() + ':' + aeii.getName()
                     List<Long> hitTimeList = null
@@ -330,7 +331,8 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
 
         // tarpit enabled already checked, if authz not enabled return true immediately
         if (!isAuthzEnabled(aeii.getTypeEnumId())) {
-            // if ("AT_XML_SCREEN" == aeii.typeEnumId && aeii.getName().contains("FOO")) logger.warn("TOREMOVE artifact isPermitted authz disabled - ${aeii}")
+            // if ("AT_XML_SCREEN" == aeii.typeEnumId && aeii.getName().contains("FOO"))
+            //     logger.warn("TOREMOVE artifact isPermitted authz disabled - ${aeii}")
             return true
         }
 
@@ -339,7 +341,8 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                 'AUTHZT_ALWAYS'.equals(lastAeii.getAuthorizedAuthzTypeId()) &&
                 ('AUTHZA_ALL'.equals(lastAeii.getAuthorizedActionEnumId()) || aeii.getActionEnumId().equals(lastAeii.getAuthorizedActionEnumId()))) {
             aeii.copyAuthorizedInfo(lastAeii)
-            // if ("AT_XML_SCREEN" == aeii.typeEnumId && aeii.getName().contains("FOO")) logger.warn("TOREMOVE artifact isPermitted already authorized for user ${userId} - ${aeii}")
+            // if ("AT_XML_SCREEN" == aeii.typeEnumId && aeii.getName().contains("FOO"))
+            //     logger.warn("TOREMOVE artifact isPermitted already authorized for user ${userId} - ${aeii}")
             return true
         }
 
@@ -384,29 +387,52 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                             .condition('artifactAuthzId', aacv.get('artifactAuthzId')).useCache(true).one()
                     EntityDefinition ed = efi.getEntityDefinition((String) aacv.get('viewEntityName'))
                     EntityFind ef = efi.find((String) aacv.get('viewEntityName'))
+
                     // add condition for the userId field
                     if (artifactAuthzRecord.userIdField) {
                         ef.condition((String) artifactAuthzRecord.get('userIdField'), userId)
                     } else if (ed.isField('userId')) {
                         ef.condition('userId', userId)
                     }
+                    // filter by date if configured to do so
                     if (artifactAuthzRecord.filterByDate == 'Y') {
                         ef.conditionDate((String) artifactAuthzRecord.get('filterByDateFromField'),
                                 (String) artifactAuthzRecord.get('filterByDateThruField'), nowTimestamp)
                     }
+
+                    // add explicit conditions
                     EntityList condList = efi.find('moqui.security.ArtifactAuthzRecordCond')
                             .condition('artifactAuthzId', aacv.get('artifactAuthzId')).useCache(true).list()
-                    for (EntityValue cond in condList) {
-                        String expCondValue = eci.resource.expand((String) cond.get('condValue'),
-                                "moqui.security.ArtifactAuthzRecordCond.${cond.artifactAuthzId}.${cond.artifactAuthzCondSeqId}")
-                        if (expCondValue) {
-                            ef.condition((String) cond.fieldName,
-                                    efi.conditionFactory.comparisonOperatorFromEnumId((String) cond.operatorEnumId),
-                                    expCondValue)
+                    if (condList) {
+                        if (aeii.parameters) eci.context.push(aeii.parameters)
+                        try {
+                            for (EntityValue cond in condList) {
+                                String expCondValue = eci.resource.expand((String) cond.get('condValue'),
+                                        "moqui.security.ArtifactAuthzRecordCond.${cond.artifactAuthzId}.${cond.artifactAuthzCondSeqId}")
+                                if (expCondValue) {
+                                    ef.condition((String) cond.fieldName,
+                                            efi.conditionFactory.comparisonOperatorFromEnumId((String) cond.operatorEnumId),
+                                            expCondValue)
+                                }
+                            }
+                        } finally {
+                            if (aeii.parameters) eci.context.pop()
                         }
                     }
 
-                    // anything found? if not it fails this condition, so skip the authz
+                    // add condition for each main entity PK field in the parameters
+                    if (aeii.getTypeEnumId() == 'AT_ENTITY') {
+                        EntityDefinition mainEd = efi.getEntityDefinition(aeii.getName())
+                        ArrayList<String> pkFieldNames = mainEd.getPkFieldNames()
+                        for (int i = 0; i < pkFieldNames.size(); i++) {
+                            String pkFieldName = pkFieldNames[i]
+                            if (!ed.isField(pkFieldName)) continue
+                            Object pkParmValue = aeii.parameters.get(pkFieldName)
+                            if (pkParmValue != null) ef.condition(pkFieldName, pkParmValue)
+                        }
+                    }
+
+                    // do the count query; anything found? if not it fails this condition, so skip the authz
                     if (ef.useCache(true).count() == 0) continue
                 }
 
@@ -509,7 +535,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
             alreadyDisabled = disableAuthz()
             try {
                 // NOTE: this is called sync because failures should be rare and not as performance sensitive, and
-                //  because this is still in a disableAuthz block (if async a service would have to be written for that)
+                //    because this is still in a disableAuthz block (if async a service would have to be written for that)
                 eci.service.sync().name("create", "moqui.security.ArtifactAuthzFailure").parameters(
                         [artifactName:aeii.getName(), artifactTypeEnumId:aeii.getTypeEnumId(),
                         authzActionEnumId:aeii.getActionEnumId(), userId:userId,
