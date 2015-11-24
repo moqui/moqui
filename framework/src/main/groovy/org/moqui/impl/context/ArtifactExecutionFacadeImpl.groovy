@@ -14,14 +14,13 @@
 package org.moqui.impl.context
 
 import groovy.transform.CompileStatic
-import org.moqui.context.ArtifactTarpitException
-import org.moqui.impl.entity.EntityValueBase
-
 import java.sql.Timestamp
 
+import org.moqui.BaseException
 import org.moqui.context.ArtifactAuthorizationException
 import org.moqui.context.ArtifactExecutionFacade
 import org.moqui.context.ArtifactExecutionInfo
+import org.moqui.context.ArtifactTarpitException
 import org.moqui.context.Cache
 import org.moqui.entity.EntityList
 import org.moqui.entity.EntityFind
@@ -29,6 +28,7 @@ import org.moqui.entity.EntityCondition.ComparisonOperator
 import org.moqui.entity.EntityValue
 import org.moqui.impl.entity.EntityDefinition
 import org.moqui.impl.entity.EntityFacadeImpl
+import org.moqui.impl.entity.EntityValueBase
 import org.moqui.entity.EntityCondition
 
 import org.slf4j.Logger
@@ -128,8 +128,11 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
             ArtifactExecutionInfoImpl lastAeii = artifactExecutionInfoStack.removeFirst()
             // removed this for performance reasons, generally just checking the name is adequate
             // || aei.typeEnumId != lastAeii.typeEnumId || aei.actionEnumId != lastAeii.actionEnumId
-            if (aei != null && (aei.name != lastAeii.name))
-                throw new IllegalArgumentException("Popped artifact (${aei.name}:${aei.typeEnumId}:${aei.actionEnumId}) did not match top of stack (${lastAeii.name}:${lastAeii.typeEnumId}:${lastAeii.actionEnumId}:${lastAeii.actionDetail})")
+            if (aei != null && (aei.name != lastAeii.name)) {
+                String popMessage = "Popped artifact (${aei.name}:${aei.typeEnumId}:${aei.actionEnumId}) did not match top of stack (${lastAeii.name}:${lastAeii.typeEnumId}:${lastAeii.actionEnumId}:${lastAeii.actionDetail})"
+                logger.warn(popMessage, new BaseException("Pop Error Location"))
+                //throw new IllegalArgumentException(popMessage)
+            }
             lastAeii.setEndTime()
             return lastAeii
         } else {
