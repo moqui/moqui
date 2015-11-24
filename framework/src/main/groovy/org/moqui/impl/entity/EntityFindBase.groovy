@@ -183,7 +183,7 @@ abstract class EntityFindBase implements EntityFind {
     @Override
     EntityFind searchFormInputs(String inputFieldsMapName, String defaultOrderBy, boolean alwaysPaginate) {
         ExecutionContext ec = efi.getEcfi().getExecutionContext()
-        Map inf = inputFieldsMapName ? (Map) ec.context.get(inputFieldsMapName) : efi.ecfi.executionContext.context
+        Map inf = inputFieldsMapName ? (Map) ec.resource.expression(inputFieldsMapName, "") : efi.ecfi.executionContext.context
         return searchFormMap(inf, defaultOrderBy, alwaysPaginate)
     }
 
@@ -195,7 +195,7 @@ abstract class EntityFindBase implements EntityFind {
         // to avoid issues with entities that have cache=true, if no cache value is specified for this set it to false (avoids pagination errors, etc)
         if (useCache == null) useCache(false)
 
-        for (String fn in ed.getAllFieldNames()) {
+        if (inf) for (String fn in ed.getAllFieldNames()) {
             // NOTE: do we need to do type conversion here?
 
             // this will handle text-find
@@ -282,20 +282,20 @@ abstract class EntityFindBase implements EntityFind {
         }
 
         // always look for an orderByField parameter too
-        String orderByString = inf.get("orderByField") ?: defaultOrderBy
+        String orderByString = inf?.get("orderByField") ?: defaultOrderBy
         ec.context.put("orderByField", orderByString)
         this.orderBy(orderByString)
 
         // look for the pageIndex and optional pageSize parameters; don't set these if should cache as will disable the cached query
-        if ((alwaysPaginate || inf.get("pageIndex") || inf.get("pageSize")) && !shouldCache()) {
-            int pageIndex = (inf.get("pageIndex") ?: 0) as int
-            int pageSize = (inf.get("pageSize") ?: (this.limit ?: 20)) as int
+        if ((alwaysPaginate || inf?.get("pageIndex") || inf?.get("pageSize")) && !shouldCache()) {
+            int pageIndex = (inf?.get("pageIndex") ?: 0) as int
+            int pageSize = (inf?.get("pageSize") ?: (this.limit ?: 20)) as int
             offset(pageIndex, pageSize)
             limit(pageSize)
         }
 
         // if there is a pageNoLimit clear out the limit regardless of other settings
-        if (inf.get("pageNoLimit") == "true" || inf.get("pageNoLimit") == true) {
+        if (inf?.get("pageNoLimit") == "true" || inf?.get("pageNoLimit") == true) {
             this.offset = null
             this.limit = null
         }
