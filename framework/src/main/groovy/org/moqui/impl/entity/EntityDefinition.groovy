@@ -1583,19 +1583,23 @@ public class EntityDefinition {
         for (Node econdition in conditionsParent."econdition") {
             EntityConditionImplBase cond;
             ConditionField field
+            EntityDefinition condEd;
             if (econdition."@entity-alias") {
                 Node memberEntity = (Node) this.internalEntityNode."member-entity".find({ it."@entity-alias" == econdition."@entity-alias"})
                 if (!memberEntity) throw new EntityException("The entity-alias [${econdition."@entity-alias"}] was not found in view-entity [${this.internalEntityName}]")
                 EntityDefinition aliasEntityDef = this.efi.getEntityDefinition((String) memberEntity."@entity-name")
                 field = new ConditionField((String) econdition."@entity-alias", (String) econdition."@field-name", aliasEntityDef)
+                condEd = aliasEntityDef;
             } else {
                 field = new ConditionField((String) econdition."@field-name")
+                condEd = this;
             }
             if (econdition."@value" != null) {
                 // NOTE: may need to convert value from String to object for field
-                String condValue = econdition."@value" ?: null
+                Object condValue = econdition."@value" ?: null
                 // NOTE: only expand if contains "${", expanding normal strings does l10n and messes up key values; hopefully this won't result in a similar issue
                 if (condValue && condValue.contains("\${")) condValue = efi.getEcfi().getResourceFacade().expand(condValue, "")
+                condValue = condEd.convertFieldString(field.fieldName, condValue);
                 cond = new FieldValueCondition((EntityConditionFactoryImpl) this.efi.conditionFactory, field,
                         EntityConditionFactoryImpl.getComparisonOperator((String) econdition."@operator"), condValue)
             } else {
