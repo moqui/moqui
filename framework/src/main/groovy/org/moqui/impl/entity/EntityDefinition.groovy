@@ -1594,15 +1594,7 @@ public class EntityDefinition {
                 field = new ConditionField((String) econdition."@field-name")
                 condEd = this;
             }
-            if (econdition."@value" != null) {
-                // NOTE: may need to convert value from String to object for field
-                Object condValue = econdition."@value" ?: null
-                // NOTE: only expand if contains "${", expanding normal strings does l10n and messes up key values; hopefully this won't result in a similar issue
-                if (condValue && condValue.contains("\${")) condValue = efi.getEcfi().getResourceFacade().expand(condValue, "")
-                condValue = condEd.convertFieldString(field.fieldName, condValue);
-                cond = new FieldValueCondition((EntityConditionFactoryImpl) this.efi.conditionFactory, field,
-                        EntityConditionFactoryImpl.getComparisonOperator((String) econdition."@operator"), condValue)
-            } else {
+            if (econdition."@to-field-name" != null) {
                 ConditionField toField
                 if (econdition."@to-entity-alias") {
                     Node memberEntity = (Node) this.internalEntityNode."member-entity".find({ it."@entity-alias" == econdition."@to-entity-alias"})
@@ -1614,6 +1606,14 @@ public class EntityDefinition {
                 }
                 cond = new FieldToFieldCondition((EntityConditionFactoryImpl) this.efi.conditionFactory, field,
                         EntityConditionFactoryImpl.getComparisonOperator((String) econdition."@operator"), toField)
+            } else {
+                // NOTE: may need to convert value from String to object for field
+                Object condValue = econdition."@value" ?: null
+                // NOTE: only expand if contains "${", expanding normal strings does l10n and messes up key values; hopefully this won't result in a similar issue
+                if (condValue && condValue.contains("\${")) condValue = efi.getEcfi().getResourceFacade().expand(condValue, "")
+                condValue = condEd.convertFieldString(field.fieldName, condValue);
+                cond = new FieldValueCondition((EntityConditionFactoryImpl) this.efi.conditionFactory, field,
+                        EntityConditionFactoryImpl.getComparisonOperator((String) econdition."@operator"), condValue)
             }
             if (cond && econdition."@ignore-case" == "true") cond.ignoreCase()
 
