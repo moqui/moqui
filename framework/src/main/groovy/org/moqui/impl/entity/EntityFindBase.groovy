@@ -514,7 +514,8 @@ abstract class EntityFindBase implements EntityFind {
             ExecutionContext ec = efi.getEcfi().getExecutionContext()
 
             String authorizeSkip = (String) entityNode.attribute('authorize-skip')
-            ArtifactExecutionInfo aei = new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW").setActionDetail("one")
+            ArtifactExecutionInfo aei = new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW")
+                    .setActionDetail("one").setParameters(simpleAndMap)
             ec.getArtifactExecution().push(aei, (authorizeSkip != "true" && !authorizeSkip?.contains("view")))
 
             try {
