@@ -210,6 +210,8 @@ class StupidUtilities {
 
         @Override
         public int compare(Map map1, Map map2) {
+            if (!map1) return -1
+            if (!map2) return 1
             for (String fieldName in this.fieldNameList) {
                 boolean ascending = true
                 if (fieldName.charAt(0) == (char) '-') {
