@@ -15,6 +15,7 @@ package org.moqui.impl.entity
 
 import groovy.transform.CompileStatic
 import org.apache.commons.codec.binary.Base64
+import org.moqui.entity.EntityNotFoundException
 import org.moqui.impl.StupidUtilities
 
 import javax.sql.rowset.serial.SerialBlob
@@ -491,6 +492,7 @@ public class EntityDefinition {
             relatedEntityName = relNode.attribute('related-entity-name')
             this.fromEd = fromEd
             relatedEd = efi.getEntityDefinition(relatedEntityName)
+            if (relatedEd == null) throw new EntityNotFoundException("Invalid entity relationship, ${relatedEntityName} not found in definition for entity ${getFullEntityName()}")
             relatedEntityName = relatedEd.getFullEntityName()
 
             relationshipName = (title ? title + '#' : '') + relatedEntityName

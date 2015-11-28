@@ -244,7 +244,7 @@ along with this software (see the LICENSE.md file). If not, see
         <relationship type="one" related-entity-name="moqui.service.message.SystemMessageType"/>
         <relationship type="one" title="SystemMessage" related-entity-name="moqui.basic.StatusItem"/>
         <relationship type="one" title="Parent" related-entity-name="moqui.service.message.SystemMessage">
-            <key-map field-name="parentMessageId"/></relationship>
+            <key-map field-name="parentMessageId" related-field-name="systemMessageId"/></relationship>
         <relationship type="one" related-entity-name="moqui.service.message.SystemMessageRemote"/>
         <seed-data>
             <moqui.basic.StatusType description="System Message" statusTypeId="SystemMessage"/>
