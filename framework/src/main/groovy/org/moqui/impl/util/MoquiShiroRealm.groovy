@@ -139,10 +139,12 @@ class MoquiShiroRealm implements Realm {
             // check time since password was last changed, if it has been too long (user-facade.password.@change-weeks default 12) then fail
             if (newUserAccount.passwordSetDate) {
                 int changeWeeks = (ecfi.confXmlRoot."user-facade"[0]."password"[0]."@change-weeks" ?: 12) as int
-                int wksSinceChange = (ecfi.executionContext.user.nowTimestamp.time - newUserAccount.passwordSetDate.time) / (7*24*60*60*1000)
-                if (wksSinceChange > changeWeeks) {
-                    // NOTE: don't call incrementUserAccountFailedLogins here (don't need compounding reasons to stop access)
-                    throw new ExpiredCredentialsException("Authenticate failed for user [${username}] because password was changed [${wksSinceChange}] weeks ago and must be changed every [${changeWeeks}] weeks [PWDTIM].")
+                if (changeWeeks > 0) {
+                    int wksSinceChange = (ecfi.executionContext.user.nowTimestamp.time - newUserAccount.passwordSetDate.time) / (7*24*60*60*1000)
+                    if (wksSinceChange > changeWeeks) {
+                        // NOTE: don't call incrementUserAccountFailedLogins here (don't need compounding reasons to stop access)
+                        throw new ExpiredCredentialsException("Authenticate failed for user [${username}] because password was changed [${wksSinceChange}] weeks ago and must be changed every [${changeWeeks}] weeks [PWDTIM].")
+                    }
                 }
             }
 
