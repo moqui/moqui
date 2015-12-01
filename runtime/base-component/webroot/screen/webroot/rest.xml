@@ -45,6 +45,11 @@ along with this software (see the LICENSE.md file). If not, see
 
     curl -X GET -u john.doe:moqui -i http://localhost:8080/rest/v1/examples/TEST2?master=default
 
+    Or for operations ONLY on entities by master definition use the "m1" path instead of "v1" and put the master name
+    (default is 'default') after the entity name or alias in the path. For example:
+
+    curl -X GET -u john.doe:moqui -i http://localhost:8080/rest/m1/examples/default/TEST2
+
     Parameters can also be used for searching, which supports the per-field extensions (_op, _ic, etc) of
     EntityFind.searchFormInputs(), the orderByField parameter for comma-separated fields to sort the results by,
     and pageIndex, pageSize for pagination; parameters can be in the URL (preferred) or in request body as JSON.
@@ -128,7 +133,11 @@ along with this software (see the LICENSE.md file). If not, see
     -->
     <!-- NOTE: read-only=true to disable check for URL parameters for transitions with actions -->
     <transition name="v1" read-only="true">
-        <actions><script>ec.web.handleEntityRestCall(sri.screenUrlInfo.extraPathNameList)</script></actions>
+        <actions><script>ec.web.handleEntityRestCall(sri.screenUrlInfo.extraPathNameList, false)</script></actions>
+        <default-response type="none"/>
+    </transition>
+    <transition name="m1" read-only="true">
+        <actions><script>ec.web.handleEntityRestCall(sri.screenUrlInfo.extraPathNameList, true)</script></actions>
         <default-response type="none"/>
     </transition>
 

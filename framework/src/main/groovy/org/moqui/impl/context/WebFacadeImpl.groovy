@@ -697,7 +697,7 @@ class WebFacadeImpl implements WebFacade {
 
     @Override
     @CompileStatic
-    void handleEntityRestCall(List<String> extraPathNameList) {
+    void handleEntityRestCall(List<String> extraPathNameList, boolean masterNameInPath) {
         ContextStack parmStack = (ContextStack) getParameters()
 
         // check for parsing error, send a 400 response
@@ -732,14 +732,14 @@ class WebFacadeImpl implements WebFacade {
                     // logger.warn("========== REST ${request.getMethod()} ${request.getPathInfo()} ${extraPathNameList}; body list object: ${bodyListObj}")
                     parmStack.push()
                     parmStack.putAll((Map) bodyListObj)
-                    Object responseObj = eci.getEntity().rest(request.getMethod(), extraPathNameList, parmStack)
+                    Object responseObj = eci.getEntity().rest(request.getMethod(), extraPathNameList, parmStack, masterNameInPath)
                     responseList.add(responseObj ?: [:])
                     parmStack.pop()
                 }
                 sendJsonResponse(responseList)
             } else {
                 long startTime = System.currentTimeMillis()
-                Object responseObj = eci.getEntity().rest(request.getMethod(), extraPathNameList, parmStack)
+                Object responseObj = eci.getEntity().rest(request.getMethod(), extraPathNameList, parmStack, masterNameInPath)
                 long endTime = System.currentTimeMillis()
                 response.addIntHeader('X-Run-Time-ms', (endTime - startTime) as int)
 

@@ -59,6 +59,9 @@ New Features
   related entities; definitions go in new entity.master element; there are
   new methods in EntityValue, EntityList, and EntityFind to get value Maps
   for the master record plus all details
+- Entity REST API supports master definitions through
+  /rest/m1/${entity}/${master} or /rest/v1/${entity}?master=${master};
+  see comments in the rest.xml screen defintion XML file for examples
 - Various improvements to email message polling (calling EM-ECA rules)
   including support for Java System Properties pass through and fix for
   password pass through for IMAPS/etc
@@ -2167,7 +2170,9 @@ Features considered, but may not to be included in 1.x series
     - json-schema, RAML, Swagger API defs
     - generic service for sending Data Document to REST (or other?) end point
   - Master Entity REST Interface
-    - like /rest/v1 but only for entities with master definition(s)
+    x like /rest/v1 but only for entities with master definition(s)
+      x through /rest/m1/${entity}/${master}
+      x /rest/v1/${entity}?master=${master}
     - generate json-schema, RAML, Swagger for full master def hierarchies
   - Service REST API
     - goal to define service mappings to REST path, method, etc for:
