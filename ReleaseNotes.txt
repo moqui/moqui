@@ -19,6 +19,7 @@ New Features
 
 - Library Updates
   - Apache Camel to 2.16.1
+  - Apache Commons Validator to 1.5.0
   - Apache Derby to 10.12.1.1
   - Apache HttpClient to 4.5.1
   - Apache HttpCore to 4.4.4
