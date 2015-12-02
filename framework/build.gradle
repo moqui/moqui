@@ -103,7 +103,7 @@ dependencies {
     compile group: 'net.java.dev.jna', name: 'jna', version: '4.2.1' // Apache 2.0
     compile group: 'net.java.dev.jna', name: 'jna-platform', version: '4.2.1' // Apache 2.0
     compile group: 'jaxb', name: 'jsr173_1.0_api', version: '' // ???
-    compile group: 'org.liquibase', name: 'liquibase-core', version: '3.4.1' // Apache 2.0
+    compile group: 'org.liquibase', name: 'liquibase-core', version: '3.4.2' // Apache 2.0
 
     compile group: 'org.commonjava.googlecode.markdown4j', name: 'markdown4j', version: '2.2' // BSD
     compile name: 'org.eclipse.mylyn.wikitext.core_1.8.0.I20121130-0624', version: '' // EPL
