@@ -18,7 +18,7 @@ Non Backward Compatible Changes
 New Features
 
 - Library Updates
-  - Apache Camel to 2.16.0
+  - Apache Camel to 2.16.1
   - Apache Derby to 10.12.1.1
   - Apache HttpClient to 4.5.1
   - Apache Jackrabbit to 2.11.1
