@@ -22,7 +22,7 @@ New Features
   - Apache Derby to 10.12.1.1
   - Apache HttpClient to 4.5.1
   - Apache HttpCore to 4.4.4
-  - Apache Jackrabbit to 2.11.1
+  - Apache Jackrabbit to 2.11.2
   - Ehcache to 2.10.1
   - ElasticSearch to 1.7.3
   - Groovy to 2.4.5
