@@ -61,8 +61,9 @@ public interface EntityFacade {
      *                   and delete operations these parameters are for non-PK fields and as an alternative to the
      *                   entity path for PK field values. For find operations also supports a "dependents" parameter
      *                   that if true will get dependent values of the record referenced in the entity path.
+     * @param masterNameInPath If true the second entityPath entry must be the name of a master entity definition
      */
-    Object rest(String operation, List<String> entityPath, Map parameters);
+    Object rest(String operation, List<String> entityPath, Map parameters, boolean masterNameInPath);
 
     /** Do a database query with the given SQL and return the results as an EntityList for the given entity and with
      * selected columns mapped to the listed fields.

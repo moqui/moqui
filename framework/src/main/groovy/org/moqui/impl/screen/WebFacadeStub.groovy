@@ -169,7 +169,8 @@ class WebFacadeStub implements WebFacade {
     @Override
     void handleJsonRpcServiceCall() { throw new IllegalArgumentException("WebFacadeStub handleJsonRpcServiceCall not supported") }
     @Override
-    void handleEntityRestCall(List<String> extraPathNameList) { throw new IllegalArgumentException("WebFacadeStub handleEntityRestCall not supported") }
+    void handleEntityRestCall(List<String> extraPathNameList, boolean masterNameInPath) {
+        throw new IllegalArgumentException("WebFacadeStub handleEntityRestCall not supported") }
     @Override
     void handleEntityRestSchema(List<String> extraPathNameList, String schemaUri, String linkPrefix, String schemaLinkPrefix) {
         throw new IllegalArgumentException("WebFacadeStub handleEntityRestSchema not supported")
