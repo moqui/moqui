@@ -50,6 +50,11 @@ along with this software (see the LICENSE.md file). If not, see
 
     curl -X GET -u john.doe:moqui -i http://localhost:8080/rest/m1/examples/default/TEST2
 
+    Under the "m1" path if the path element after the entity name or alias is not the name of a master for the entity
+    it uses the "default" master definition. Because of that the following also works:
+
+    curl -X GET -u john.doe:moqui -i http://localhost:8080/rest/m1/examples/TEST2
+
     Parameters can also be used for searching, which supports the per-field extensions (_op, _ic, etc) of
     EntityFind.searchFormInputs(), the orderByField parameter for comma-separated fields to sort the results by,
     and pageIndex, pageSize for pagination; parameters can be in the URL (preferred) or in request body as JSON.

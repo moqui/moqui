@@ -1114,8 +1114,15 @@ class EntityFacadeImpl implements EntityFacade {
 
         // look for a master definition name as the next path element
         if (masterNameInPath) {
-            if (localPath.size() == 0) throw new EntityException("No entity master definition name found in path")
-            masterName = localPath.remove(0)
+            if (!masterName) {
+                if (localPath.size() > 0 && firstEd.getMasterDefinition(localPath.get(0)) != null) {
+                    masterName = localPath.remove(0)
+                } else {
+                    masterName = "default"
+                }
+            }
+            if (firstEd.getMasterDefinition(masterName) == null)
+                throw new EntityException("Mster definition not found for entity [${firstEd.getFullEntityName()}], tried master name [${masterName}]")
         }
 
         // if there are more path elements use one for each PK field of the entity
