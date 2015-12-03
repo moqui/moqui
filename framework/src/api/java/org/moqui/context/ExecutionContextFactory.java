@@ -1,5 +1,6 @@
 /*
- * This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
+ * This software is in the public domain under CC0 1.0 Universal plus a
+ * Grant of Patent License.
  * 
  * To the extent possible under law, the author(s) have dedicated all
  * copyright and related and neighboring rights to this software to the
@@ -19,6 +20,7 @@ import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.StatelessKieSession;
 import org.moqui.BaseException;
 import org.moqui.entity.EntityFacade;
+import org.moqui.screen.ScreenFacade;
 import org.moqui.service.ServiceFacade;
 
 import java.util.LinkedHashMap;
@@ -50,7 +52,7 @@ public interface ExecutionContextFactory {
      * Destroy a component that has been initialized.
      *
      * All initialized components will be destroyed when the framework is destroyed, but this can be used to destroy
-     * a component while the framework is still running in order to re-initilize or simple disable it.
+     * a component while the framework is still running.
      *
      * @param componentName A component name.
      */

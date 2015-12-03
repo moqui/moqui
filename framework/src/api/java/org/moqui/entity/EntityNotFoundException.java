@@ -1,5 +1,6 @@
 /*
- * This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
+ * This software is in the public domain under CC0 1.0 Universal plus a
+ * Grant of Patent License.
  * 
  * To the extent possible under law, the author(s) have dedicated all
  * copyright and related and neighboring rights to this software to the
@@ -13,11 +14,9 @@
 package org.moqui.entity;
 
 public class EntityNotFoundException extends EntityException {
-
     public EntityNotFoundException(String str) {
         super(str);
     }
-
     public EntityNotFoundException(String str, Throwable nested) {
         super(str, nested);
     }

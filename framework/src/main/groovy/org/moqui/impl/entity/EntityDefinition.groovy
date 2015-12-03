@@ -1,5 +1,6 @@
 /*
- * This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
+ * This software is in the public domain under CC0 1.0 Universal plus a 
+ * Grant of Patent License.
  * 
  * To the extent possible under law, the author(s) have dedicated all
  * copyright and related and neighboring rights to this software to the
@@ -14,6 +15,7 @@ package org.moqui.impl.entity
 
 import groovy.transform.CompileStatic
 import org.apache.commons.codec.binary.Base64
+import org.moqui.entity.EntityNotFoundException
 import org.moqui.impl.StupidUtilities
 
 import javax.sql.rowset.serial.SerialBlob
@@ -388,76 +390,6 @@ public class EntityDefinition {
 
         return fieldNode
     }
-    /*
-    Node getRelationshipNode(String relationshipName) {
-        Node relNode = relationshipNodeMap.get(relationshipName)
-        if (relNode != null) return relNode
-
-        String relatedEntityName = relationshipName.contains("#") ? relationshipName.substring(relationshipName.indexOf("#") + 1) : relationshipName
-        String title = relationshipName.contains("#") ? relationshipName.substring(0, relationshipName.indexOf("#")) : null
-
-        // if no 'title' see if relationshipName is actually a short-alias
-        if (!title) {
-            relNode = (Node) this.internalEntityNode."relationship".find({ it."@short-alias" == relationshipName })
-            if (relNode != null) {
-                // this isn't really necessary, we already found the relationship Node, but may be useful
-                relatedEntityName = relNode."@related-entity-name"
-                title = relNode."@title"
-            }
-        }
-
-        if (relNode == null) {
-            EntityDefinition relatedEd = null
-            try {
-                relatedEd = efi.getEntityDefinition(relatedEntityName)
-            } catch (EntityException e) {
-                // ignore if entity doesn't exist
-                if (logger.isTraceEnabled()) logger.trace("Ignoring entity not found exception: ${e.toString()}")
-                return null
-            }
-
-            relNode = (Node) this.internalEntityNode."relationship"
-                    .find({ ((it."@title" ?: "") + it."@related-entity-name") == relationshipName ||
-                        ((it."@title" ?: "") + "#" + it."@related-entity-name") == relationshipName ||
-                        (relatedEd != null && it."@title" == title &&
-                            (it."@related-entity-name" == relatedEd.getEntityName() ||
-                                    it."@related-entity-name" == relatedEd.getFullEntityName())) })
-        }
-
-        // handle automatic reverse-many nodes (based on one node coming the other way)
-        if (relNode == null) {
-            // see if there is an entity matching the relationship name that has a relationship coming this way
-            EntityDefinition relEd = null
-            try {
-                relEd = efi.getEntityDefinition(relatedEntityName)
-            } catch (EntityException e) {
-                // probably means not a valid entity name, which may happen a lot since we're checking here to see, so just ignore
-                if (logger.isTraceEnabled()) logger.trace("Ignoring entity not found exception: ${e.toString()}")
-            }
-            if (relEd != null) {
-                // don't call ed.getRelationshipNode(), may result in infinite recursion
-                Node reverseRelNode = (Node) relEd.internalEntityNode."relationship".find(
-                        { ((it."@related-entity-name" == this.internalEntityName || it."@related-entity-name" == this.fullEntityName)
-                            && (it."@type" == "one" || it."@type" == "one-nofk") && ((!title && !it."@title") || it."@title" == title)) })
-                if (reverseRelNode != null) {
-                    Map keyMap = getRelationshipExpandedKeyMapInternal(reverseRelNode, this)
-                    String relType = (this.getPkFieldNames() == relEd.getPkFieldNames()) ? "one-nofk" : "many"
-                    Node newRelNode = this.internalEntityNode.appendNode("relationship",
-                            ["related-entity-name":relatedEntityName, "type":relType])
-                    if (title) newRelNode.attributes().put("title", title)
-                    for (Map.Entry keyEntry in keyMap) {
-                        // add a key-map with the reverse fields
-                        newRelNode.appendNode("key-map", ["field-name":keyEntry.value, "related-field-name":keyEntry.key])
-                    }
-                    relNode = newRelNode
-                }
-            }
-        }
-
-        relationshipNodeMap.put(relationshipName, relNode)
-        return relNode
-    }
-    */
 
     @CompileStatic
     static Map<String, String> getRelationshipExpandedKeyMapInternal(Node relationship, EntityDefinition relEd) {
@@ -560,6 +492,7 @@ public class EntityDefinition {
             relatedEntityName = relNode.attribute('related-entity-name')
             this.fromEd = fromEd
             relatedEd = efi.getEntityDefinition(relatedEntityName)
+            if (relatedEd == null) throw new EntityNotFoundException("Invalid entity relationship, ${relatedEntityName} not found in definition for entity ${getFullEntityName()}")
             relatedEntityName = relatedEd.getFullEntityName()
 
             relationshipName = (title ? title + '#' : '') + relatedEntityName
@@ -1582,22 +1515,18 @@ public class EntityDefinition {
         for (Node econdition in conditionsParent."econdition") {
             EntityConditionImplBase cond;
             ConditionField field
+            EntityDefinition condEd;
             if (econdition."@entity-alias") {
                 Node memberEntity = (Node) this.internalEntityNode."member-entity".find({ it."@entity-alias" == econdition."@entity-alias"})
                 if (!memberEntity) throw new EntityException("The entity-alias [${econdition."@entity-alias"}] was not found in view-entity [${this.internalEntityName}]")
                 EntityDefinition aliasEntityDef = this.efi.getEntityDefinition((String) memberEntity."@entity-name")
                 field = new ConditionField((String) econdition."@entity-alias", (String) econdition."@field-name", aliasEntityDef)
+                condEd = aliasEntityDef;
             } else {
                 field = new ConditionField((String) econdition."@field-name")
+                condEd = this;
             }
-            if (econdition."@value" != null) {
-                // NOTE: may need to convert value from String to object for field
-                String condValue = econdition."@value" ?: null
-                // NOTE: only expand if contains "${", expanding normal strings does l10n and messes up key values; hopefully this won't result in a similar issue
-                if (condValue && condValue.contains("\${")) condValue = efi.getEcfi().getResourceFacade().expand(condValue, "")
-                cond = new FieldValueCondition((EntityConditionFactoryImpl) this.efi.conditionFactory, field,
-                        EntityConditionFactoryImpl.getComparisonOperator((String) econdition."@operator"), condValue)
-            } else {
+            if (econdition."@to-field-name" != null) {
                 ConditionField toField
                 if (econdition."@to-entity-alias") {
                     Node memberEntity = (Node) this.internalEntityNode."member-entity".find({ it."@entity-alias" == econdition."@to-entity-alias"})
@@ -1609,6 +1538,14 @@ public class EntityDefinition {
                 }
                 cond = new FieldToFieldCondition((EntityConditionFactoryImpl) this.efi.conditionFactory, field,
                         EntityConditionFactoryImpl.getComparisonOperator((String) econdition."@operator"), toField)
+            } else {
+                // NOTE: may need to convert value from String to object for field
+                Object condValue = econdition."@value" ?: null
+                // NOTE: only expand if contains "${", expanding normal strings does l10n and messes up key values; hopefully this won't result in a similar issue
+                if (condValue && condValue.contains("\${")) condValue = efi.getEcfi().getResourceFacade().expand(condValue, "")
+                condValue = condEd.convertFieldString(field.fieldName, condValue);
+                cond = new FieldValueCondition((EntityConditionFactoryImpl) this.efi.conditionFactory, field,
+                        EntityConditionFactoryImpl.getComparisonOperator((String) econdition."@operator"), condValue)
             }
             if (cond && econdition."@ignore-case" == "true") cond.ignoreCase()
 

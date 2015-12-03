@@ -1,5 +1,6 @@
 /*
- * This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
+ * This software is in the public domain under CC0 1.0 Universal plus a 
+ * Grant of Patent License.
  * 
  * To the extent possible under law, the author(s) have dedicated all
  * copyright and related and neighboring rights to this software to the
@@ -112,8 +113,8 @@ class UserFacadeImpl implements UserFacade {
 
         // check for HTTP Basic Authorization for Authentication purposes
         // NOTE: do this even if there is another user logged in, will go on stack
-        Map multiPartParameters = eci.webFacade.multiPartParameters
-        Map jsonParameters = eci.webFacade.jsonParameters
+        Map multiPartParameters = eci.webImpl.multiPartParameters
+        Map jsonParameters = eci.webImpl.jsonParameters
         String authzHeader = request.getHeader("Authorization")
         if (authzHeader && authzHeader.substring(0, 6).equals("Basic ")) {
             String basicAuthEncoded = authzHeader.substring(6).trim()

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
+This software is in the public domain under CC0 1.0 Universal plus a 
+Grant of Patent License.
 
 To the extent possible under law, the author(s) have dedicated all
 copyright and related and neighboring rights to this software to the
@@ -33,7 +34,7 @@ along with this software (see the LICENSE.md file). If not, see
                 ec.logger.info(sb.toString())
 
                 // save the results to display on the screen in the next request (after the transition redirect)
-                ec.web.saveParametersToSession(serviceResults)
+                ec.webImpl?.saveParametersToSession(serviceResults)
             </script>
         </actions>
         <default-response url="." save-parameters="true"/>
@@ -49,8 +50,7 @@ along with this software (see the LICENSE.md file). If not, see
             <field name="submitButton"><default-field title="Select Service"><submit/></default-field></field>
             <field-layout><field-row-big><field-ref name="serviceName"/><field-ref name="submitButton"/></field-row-big></field-layout>
         </form-single>
-        <section name="ServiceResultsSection">
-            <condition><expression><![CDATA[serviceName && doingRun=="Y"]]></expression></condition>
+        <section name="ServiceResultsSection" condition="serviceName &amp;&amp; doingRun == 'Y'">
             <widgets>
                 <label text="Results for Service: ${serviceName}" type="h3"/>
                 <form-single name="ServiceResults" dynamic="true">

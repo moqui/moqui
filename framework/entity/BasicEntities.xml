@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
+This software is in the public domain under CC0 1.0 Universal plus a
+Grant of Patent License.
 
 To the extent possible under law, the author(s) have dedicated all
 copyright and related and neighboring rights to this software to the
@@ -42,9 +43,12 @@ along with this software (see the LICENSE.md file). If not, see
         <field name="enumCode" type="text-medium"/>
         <field name="sequenceNum" type="number-integer"/>
         <field name="description" type="text-medium" enable-localization="true"/>
+        <field name="relatedEnumId" type="id"/>
         <relationship type="one" related-entity-name="moqui.basic.EnumerationType"/>
         <relationship type="one-nofk" title="Parent" related-entity-name="moqui.basic.Enumeration">
             <key-map field-name="parentEnumId"/></relationship>
+        <relationship type="one-nofk" title="Related" related-entity-name="moqui.basic.Enumeration">
+            <key-map field-name="relatedEnumId"/></relationship>
         <seed-data>
             <moqui.basic.EnumerationType enumTypeId="_NA_" description="Not Applicable"/>
             <moqui.basic.Enumeration enumId="_NA_" enumTypeId="_NA_" description="Not Applicable"/>

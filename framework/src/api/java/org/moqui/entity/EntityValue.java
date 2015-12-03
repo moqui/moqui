@@ -1,5 +1,6 @@
 /*
- * This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
+ * This software is in the public domain under CC0 1.0 Universal plus a
+ * Grant of Patent License.
  * 
  * To the extent possible under law, the author(s) have dedicated all
  * copyright and related and neighboring rights to this software to the
@@ -43,8 +44,8 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
 
     /** Get the named field.
      *
-     * If there is a matching entry in the moqui.basic.LocalizedEntityField entity using the Locale in the current ExecutionContext
-     * then that will be returned instead.
+     * If there is a matching entry in the moqui.basic.LocalizedEntityField entity using the Locale in the current
+     * ExecutionContext then that will be returned instead.
      *
      * This method also supports getting related entities using their relationship name, formatted as
      * "${title}${related-entity-name}". When doing so it is like calling

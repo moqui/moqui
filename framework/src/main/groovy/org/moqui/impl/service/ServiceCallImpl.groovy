@@ -1,5 +1,6 @@
 /*
- * This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
+ * This software is in the public domain under CC0 1.0 Universal plus a 
+ * Grant of Patent License.
  * 
  * To the extent possible under law, the author(s) have dedicated all
  * copyright and related and neighboring rights to this software to the
@@ -14,6 +15,7 @@ package org.moqui.impl.service
 
 import groovy.transform.CompileStatic
 import org.moqui.service.ServiceCall
+import org.moqui.service.ServiceException
 
 @CompileStatic
 class ServiceCallImpl implements ServiceCall {
@@ -31,6 +33,7 @@ class ServiceCallImpl implements ServiceCall {
     ServiceCallImpl(ServiceFacadeImpl sfi) { this.sfi = sfi }
 
     protected void setServiceName(String serviceName) {
+        if (!serviceName) throw new ServiceException("Service name cannot be empty")
         sd = sfi.getServiceDefinition(serviceName)
         if (sd != null) {
             path = sd.getPath()

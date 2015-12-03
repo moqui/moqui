@@ -1,5 +1,6 @@
 /*
- * This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
+ * This software is in the public domain under CC0 1.0 Universal plus a 
+ * Grant of Patent License.
  * 
  * To the extent possible under law, the author(s) have dedicated all
  * copyright and related and neighboring rights to this software to the
@@ -13,6 +14,7 @@
 package org.moqui.impl.webapp
 
 import org.moqui.context.ArtifactTarpitException
+import org.moqui.impl.StupidUtilities
 
 import javax.servlet.ServletException
 import javax.servlet.http.HttpServlet
@@ -20,7 +22,7 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 import org.moqui.context.ExecutionContext
-import org.moqui.context.ScreenRender
+import org.moqui.screen.ScreenRender
 import org.moqui.context.ArtifactAuthorizationException
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 
@@ -70,7 +72,7 @@ class MoquiFopServlet extends HttpServlet {
             String contentType = ec.web.requestParameters."contentType" ?: "application/pdf"
             response.setContentType(contentType)
 
-            if (filename) response.addHeader("Content-Disposition", "attachment; filename=\"${filename}\"")
+            if (filename) response.addHeader("Content-Disposition", "attachment; filename=\"${filename}\"; filename*=utf-8''${StupidUtilities.encodeAsciiFilename(filename)}")
             else response.addHeader("Content-Disposition", "inline")
 
             // special case disable authz for resource access

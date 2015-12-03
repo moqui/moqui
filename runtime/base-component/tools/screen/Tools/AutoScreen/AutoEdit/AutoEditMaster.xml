@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
+This software is in the public domain under CC0 1.0 Universal plus a 
+Grant of Patent License.
 
 To the extent possible under law, the author(s) have dedicated all
 copyright and related and neighboring rights to this software to the
@@ -72,7 +73,7 @@ along with this software (see the LICENSE.md file). If not, see
             widgetsNode.append(sri.getActiveScreenDef().getForm("UpdateMasterEntityValue").getAutoCleanedNode())
             printer.print(screenNode)
 
-            ec.web.sendTextResponse(xmlWriter.toString())
+            ec.web.sendTextResponse(xmlWriter.toString(), "text/xml", "Edit${ec.entity.getEntityDefinition(aen).entityName}.xml")
         ]]></script></actions>
         <default-response type="none"/>
     </transition>
@@ -111,6 +112,6 @@ along with this software (see the LICENSE.md file). If not, see
                 <field-ref name="submitButton"/>
             </field-row-big></field-layout>
         </form-single>
-        <link url="getFormXml" text="Get Form XML" link-type="hidden-form-link" target-window="_blank"/>
+        <link url="getFormXml" text="Get Form XML" link-type="hidden-form-link"/>
     </widgets>
 </screen>

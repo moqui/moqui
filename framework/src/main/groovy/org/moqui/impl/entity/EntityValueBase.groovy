@@ -1,5 +1,6 @@
 /*
- * This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
+ * This software is in the public domain under CC0 1.0 Universal plus a 
+ * Grant of Patent License.
  * 
  * To the extent possible under law, the author(s) have dedicated all
  * copyright and related and neighboring rights to this software to the
@@ -125,7 +126,8 @@ abstract class EntityValueBase implements EntityValue {
         for (int i = 0; i < allFieldNames.size(); i++) {
             String fieldName = allFieldNames.get(i)
             Object fieldValue = get(fieldName)
-            if (fieldValue != null) theMap.put(fieldName, fieldValue)
+            // NOTE DEJ20151117 also put nulls in Map, make more complete, removed: if (fieldValue != null)
+            theMap.put(fieldName, fieldValue)
         }
         return theMap
     }

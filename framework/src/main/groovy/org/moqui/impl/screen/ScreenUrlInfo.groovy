@@ -1,5 +1,6 @@
 /*
- * This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
+ * This software is in the public domain under CC0 1.0 Universal plus a 
+ * Grant of Patent License.
  * 
  * To the extent possible under law, the author(s) have dedicated all
  * copyright and related and neighboring rights to this software to the
@@ -104,7 +105,7 @@ class ScreenUrlInfo {
     static ScreenUrlInfo getScreenUrlInfo(ScreenFacadeImpl sfi, ScreenDefinition rootSd, ScreenDefinition fromScreenDef,
                                           List<String> fpnl, String subscreenPath, Boolean lastStandalone) {
         Cache screenUrlCache = sfi.screenUrlCache
-        String cacheKey = makeCacheKey(rootSd, fpnl, subscreenPath, lastStandalone)
+        String cacheKey = makeCacheKey(rootSd, fromScreenDef, fpnl, subscreenPath, lastStandalone)
         ScreenUrlInfo cached = (ScreenUrlInfo) screenUrlCache.get(cacheKey)
         if (cached != null) return cached
 
@@ -122,7 +123,7 @@ class ScreenUrlInfo {
         if (fromPathList == null) fromPathList = sri.getActiveScreenPath()
 
         Cache screenUrlCache = sri.getSfi().screenUrlCache
-        String cacheKey = makeCacheKey(rootSd, fromPathList, subscreenPath, lastStandalone)
+        String cacheKey = makeCacheKey(rootSd, fromSd, fromPathList, subscreenPath, lastStandalone)
         ScreenUrlInfo cached = (ScreenUrlInfo) screenUrlCache.get(cacheKey)
         if (cached != null) return cached
 
@@ -132,11 +133,12 @@ class ScreenUrlInfo {
     }
 
     final static char slashChar = (char) '/'
-    static String makeCacheKey(ScreenDefinition rootSd, List<String> fpnl, String subscreenPath, Boolean lastStandalone) {
+    static String makeCacheKey(ScreenDefinition rootSd, ScreenDefinition fromScreenDef, List<String> fpnl,
+                               String subscreenPath, Boolean lastStandalone) {
         StringBuilder sb = new StringBuilder()
         // shouldn't be too many root screens, so the screen name (filename) should be sufficiently unique and much shorter
         sb.append(rootSd.getScreenName()).append(":")
-        // if (fromScreenDef != null) sb.append(fromScreenDef.getScreenName()).append(":")
+        if (fromScreenDef != null) sb.append(fromScreenDef.getScreenName()).append(":")
         boolean hasSsp = subscreenPath != null && subscreenPath.length() > 0
         boolean skipFpnl = hasSsp && subscreenPath.charAt(0) == slashChar
         // NOTE: we will get more cache hits (less cache redundancy) if we combine with fpnl and use cleanupPathNameList,
@@ -317,63 +319,26 @@ class ScreenUrlInfo {
     Map getPathParameterMap() { return pathParameterMap }
 
     void initUrl() {
-        // if there are any ?... parameters parse them off and remove them from the string
-        if (this.fromScreenPath.contains("?")) {
-            String pathParmString = this.fromScreenPath.substring(this.fromScreenPath.indexOf("?")+1)
-            if (pathParmString) {
-                List<String> nameValuePairs = pathParmString.replaceAll("&amp;", "&").split("&") as List
-                for (String nameValuePair in nameValuePairs) {
-                    String[] nameValue = nameValuePair.substring(0).split("=")
-                    if (nameValue.length == 2) this.pathParameterMap.put(nameValue[0], nameValue[1])
-                }
-            }
-            this.fromScreenPath = this.fromScreenPath.substring(0, this.fromScreenPath.indexOf("?"))
-        }
-
         // TODO: use this in all calling code (expand url before creating/caching so that we have the full/unique one)
         // support string expansion if there is a "${"
         // if (fromScreenPath.contains('${')) fromScreenPath = ec.getResource().expand(fromScreenPath, "")
 
+        ArrayList<String> subScreenPath = parseSubScreenPath(rootSd, fromSd, fromPathList, fromScreenPath, pathParameterMap, sfi)
+        // logger.info("initUrl BEFORE fromPathList=${fromPathList}, fromScreenPath=${fromScreenPath}, subScreenPath=${subScreenPath}")
         if (fromScreenPath.startsWith("//")) {
             // find the screen by name
             fromSd = rootSd
-            fromPathList = []
-
-            String trimmedFromPath = fromScreenPath.substring(2)
-            ArrayList<String> originalPathNameList = new ArrayList<String>(trimmedFromPath.split("/") as List)
-            originalPathNameList = cleanupPathNameList(originalPathNameList, pathParameterMap)
-
-            if (sfi.screenFindPathCache.containsKey(fromScreenPath)) {
-                ArrayList<String> cachedPathList = (ArrayList<String>) sfi.screenFindPathCache.get(fromScreenPath)
-                if (cachedPathList) {
-                    fromPathList = cachedPathList
-                    fullPathNameList = cachedPathList
-                } else {
-                    throw new ScreenResourceNotFoundException(fromSd, originalPathNameList, fromSd, fromScreenPath, null,
-                            new Exception("Could not find screen, transition or content matching path"))
-                }
-            } else {
-                ArrayList<String> expandedPathNameList = rootSd.findSubscreenPath(originalPathNameList)
-                sfi.screenFindPathCache.put(fromScreenPath, expandedPathNameList)
-                if (expandedPathNameList) {
-                    fromPathList = expandedPathNameList
-                    fullPathNameList = expandedPathNameList
-                } else {
-                    throw new ScreenResourceNotFoundException(fromSd, originalPathNameList, fromSd, fromScreenPath, null,
-                            new Exception("Could not find screen, transition or content matching path"))
-                }
-            }
+            fromPathList = subScreenPath
+            fullPathNameList = subScreenPath
         } else {
             if (this.fromScreenPath.startsWith("/")) {
                 this.fromSd = rootSd
                 this.fromPathList = new ArrayList<String>()
             }
 
-            ArrayList<String> tempPathNameList = new ArrayList<String>()
-            tempPathNameList.addAll(fromPathList)
-            if (fromScreenPath) tempPathNameList.addAll(fromScreenPath.split("/") as List)
-            fullPathNameList = cleanupPathNameList(tempPathNameList, pathParameterMap)
+            fullPathNameList = subScreenPath
         }
+        // logger.info("initUrl fromScreenPath=${fromScreenPath}, fromPathList=${fromPathList}, fullPathNameList=${fullPathNameList}")
 
         // encrypt is the default loop through screens if all are not secure/etc use http setting, otherwise https
         requireEncryption = false
@@ -453,8 +418,8 @@ class ScreenUrlInfo {
 
         // beyond the last screenPathName, see if there are any screen.default-item values (keep following until none found)
         int defaultSubScreenCount = 0
-        while (targetTransitionActualName == null && fileResourceRef == null && (String) lastSd.getSubscreensNode()?.attribute('default-item')) {
-            String subscreenName = (String) lastSd.getSubscreensNode()?.attribute('default-item')
+        while (targetTransitionActualName == null && fileResourceRef == null && lastSd.getDefaultSubscreensItem()) {
+            String subscreenName = lastSd.getDefaultSubscreensItem()
             if (lastSd.getSubscreensNode()?.attribute('always-use-full-path') == "true") alwaysUseFullPath = true
             // logger.warn("TOREMOVE lastSd ${minimalPathNameList} subscreens: ${lastSd.screenNode?.subscreens}, alwaysUseFullPath=${alwaysUseFullPath}, from ${lastSd.screenNode."subscreens"?."@always-use-full-path"?.getAt(0)}, subscreenName=${subscreenName}")
 
@@ -569,6 +534,56 @@ class ScreenUrlInfo {
         sui.targetScreen = this.targetScreen
         sui.targetTransitionActualName = this.targetTransitionActualName
         sui.preTransitionPathNameList = this.preTransitionPathNameList!=null ? new ArrayList<String>(this.preTransitionPathNameList) : null
+    }
+
+    static ArrayList<String> parseSubScreenPath(ScreenDefinition rootSd, ScreenDefinition fromSd, List<String> fromPathList,
+                                                String screenPath, Map inlineParameters, ScreenFacadeImpl sfi) {
+        // if there are any ?... parameters parse them off and remove them from the string
+        int indexOfQuestionMark = screenPath.indexOf("?")
+        if (indexOfQuestionMark > 0) {
+            String pathParmString = screenPath.substring(indexOfQuestionMark + 1)
+            if (inlineParameters != null && pathParmString) {
+                List<String> nameValuePairs = pathParmString.replaceAll("&amp;", "&").split("&") as List
+                for (String nameValuePair in nameValuePairs) {
+                    String[] nameValue = nameValuePair.substring(0).split("=")
+                    if (nameValue.length == 2) inlineParameters.put(nameValue[0], nameValue[1])
+                }
+            }
+            screenPath = screenPath.substring(0, indexOfQuestionMark)
+        }
+
+        if (screenPath.startsWith("//")) {
+            // find the screen by name
+            String trimmedFromPath = screenPath.substring(2)
+            ArrayList<String> originalPathNameList = new ArrayList<String>(trimmedFromPath.split("/") as List)
+            originalPathNameList = cleanupPathNameList(originalPathNameList, inlineParameters)
+
+            if (sfi.screenFindPathCache.containsKey(screenPath)) {
+                ArrayList<String> cachedPathList = (ArrayList<String>) sfi.screenFindPathCache.get(screenPath)
+                if (cachedPathList) {
+                    return cachedPathList
+                } else {
+                    throw new ScreenResourceNotFoundException(fromSd, originalPathNameList, fromSd, screenPath, null,
+                            new Exception("Could not find screen, transition or content matching path"))
+                }
+            } else {
+                ArrayList<String> expandedPathNameList = rootSd.findSubscreenPath(originalPathNameList)
+                sfi.screenFindPathCache.put(screenPath, expandedPathNameList)
+                if (expandedPathNameList) {
+                    return expandedPathNameList
+                } else {
+                    throw new ScreenResourceNotFoundException(fromSd, originalPathNameList, fromSd, screenPath, null,
+                            new Exception("Could not find screen, transition or content matching path"))
+                }
+            }
+        } else {
+            if (screenPath.startsWith("/")) fromPathList = new ArrayList<String>()
+
+            ArrayList<String> tempPathNameList = new ArrayList<String>()
+            tempPathNameList.addAll(fromPathList)
+            tempPathNameList.addAll(screenPath.split("/") as List)
+            return cleanupPathNameList(tempPathNameList, inlineParameters)
+        }
     }
 
     static ArrayList<String> cleanupPathNameList(ArrayList<String> inputPathNameList, Map inlineParameters) {

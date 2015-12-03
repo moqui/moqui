@@ -1,5 +1,6 @@
 /*
- * This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
+ * This software is in the public domain under CC0 1.0 Universal plus a
+ * Grant of Patent License.
  * 
  * To the extent possible under law, the author(s) have dedicated all
  * copyright and related and neighboring rights to this software to the
@@ -11,6 +12,9 @@
  * <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
+
+import groovy.transform.CompileStatic
+
 import java.util.concurrent.Callable
 import java.util.concurrent.CyclicBarrier
 import java.util.concurrent.ExecutionException
@@ -18,8 +22,8 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Future
 
+@CompileStatic
 class ConcurrentExecution {
-
     def static executeConcurrently(int threads, Closure closure) {
         ExecutorService executor = Executors.newFixedThreadPool(threads)
         CyclicBarrier barrier = new CyclicBarrier(threads)
@@ -46,5 +50,4 @@ class ConcurrentExecution {
 
         return values
     }
-
 }

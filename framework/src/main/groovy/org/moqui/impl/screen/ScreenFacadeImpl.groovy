@@ -1,5 +1,6 @@
 /*
- * This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
+ * This software is in the public domain under CC0 1.0 Universal plus a
+ * Grant of Patent License.
  * 
  * To the extent possible under law, the author(s) have dedicated all
  * copyright and related and neighboring rights to this software to the
@@ -15,12 +16,13 @@ package org.moqui.impl.screen
 import freemarker.template.Template
 import groovy.transform.CompileStatic
 import org.moqui.context.ResourceReference
-import org.moqui.context.ScreenFacade
-import org.moqui.context.ScreenRender
+import org.moqui.screen.ScreenFacade
+import org.moqui.screen.ScreenRender
 import org.moqui.context.Cache
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.impl.screen.ScreenDefinition.SubscreensItem
 import org.moqui.impl.screen.ScreenDefinition.TransitionItem
+import org.moqui.screen.ScreenTest
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -448,7 +450,8 @@ public class ScreenFacadeImpl implements ScreenFacade {
     }
 
     @Override
-    ScreenRender makeRender() {
-        return new ScreenRenderImpl(this)
-    }
+    ScreenRender makeRender() { return new ScreenRenderImpl(this) }
+
+    @Override
+    ScreenTest makeTest() { return new ScreenTestImpl(ecfi) }
 }

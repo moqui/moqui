@@ -1,5 +1,6 @@
 /*
- * This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
+ * This software is in the public domain under CC0 1.0 Universal plus a
+ * Grant of Patent License.
  * 
  * To the extent possible under law, the author(s) have dedicated all
  * copyright and related and neighboring rights to this software to the
@@ -1092,11 +1093,13 @@ class EntityFacadeImpl implements EntityFacade {
     final static Map<String, String> operationByMethod = [get:'find', post:'create', put:'store', patch:'update', delete:'delete']
     @Override
     @CompileStatic
-    Object rest(String operation, List<String> entityPath, Map parameters) {
+    Object rest(String operation, List<String> entityPath, Map parameters, boolean masterNameInPath) {
         if (!operation) throw new EntityException("Operation (method) must be specified")
         operation = operationByMethod.get(operation.toLowerCase()) ?: operation
         if (!(operation in ['find', 'create', 'store', 'update', 'delete']))
             throw new EntityException("Operation [${operation}] not supported, must be one of: get, post, put, patch, or delete for HTTP request methods or find, create, store, update, or delete for direct entity operations")
+
+        if (!entityPath) throw new EntityException("No entity name or alias specified in path")
 
         boolean dependents = (parameters.dependents == 'true' || parameters.dependents == 'Y')
         int dependentLevels = (parameters.dependentLevels ?: (dependents ? '2' : '0')) as int
@@ -1108,6 +1111,12 @@ class EntityFacadeImpl implements EntityFacade {
         EntityDefinition firstEd = getEntityDefinition(firstEntityName)
         // this exception will be thrown at lower levels, but just in case check it again here
         if (firstEd == null) throw new EntityNotFoundException("No entity found with name or alias [${firstEntityName}]")
+
+        // look for a master definition name as the next path element
+        if (masterNameInPath) {
+            if (localPath.size() == 0) throw new EntityException("No entity master definition name found in path")
+            masterName = localPath.remove(0)
+        }
 
         // if there are more path elements use one for each PK field of the entity
         if (localPath) {

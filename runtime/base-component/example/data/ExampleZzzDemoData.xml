@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
+This software is in the public domain under CC0 1.0 Universal plus a 
+Grant of Patent License.
 
 To the extent possible under law, the author(s) have dedicated all
 copyright and related and neighboring rights to this software to the
@@ -105,4 +106,63 @@ along with this software (see the LICENSE.md file). If not, see
             username="john.doe" password="moqui"/><!-- to try a different tenant: tenantId="EXAMPLE1" -->
     <moqui.service.message.SystemMessageRemote systemMessageRemoteId="Example1Direct" description="Example Direct"
             sendServiceName="org.moqui.impl.SystemMessageServices.send#SystemMessageDirectLocal"/>
+    
+    <!-- ========== Visit Example ========== -->
+    <moqui.server.Visitor lastUpdatedStamp="1447864356288" createdDate="1447864356287" visitorId="EX_VISITOR"/>
+    <moqui.server.Visit visitId="EX_VISIT" visitorId="EX_VISITOR" clientIpAddress="0:0:0:0:0:0:0:1" serverIpAddress="172.16.0.8"
+            initialUserAgent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_1) AppleWebKit/601.2.7 (KHTML, like Gecko) Version/9.0.1 Safari/601.2.7" 
+            sessionId="1337fa294b5c4e65ace6f7bab55096ec" userId="EX_JOHN_DOE" fromDate="1447864356159" webappName="ROOT"
+            initialLocale="en_US" initialRequest="http://localhost:8080/apps/system/SystemMessage"
+            clientHostName="0:0:0:0:0:0:0:1" serverHostName="localhost">
+        <moqui.server.ArtifactHit artifactType="screen" hitId="EX_100100" artifactSubType="text/html" runningTimeMillis="2158.383938"
+                serverHostName="localhost" startDateTime="1447864357031" isSlowHit="N" wasError="N" serverIpAddress="172.16.0.8"
+                artifactName="component://webroot/screen/webroot/Login.xml" requestUrl="http://localhost:8080/Login"/>
+        <moqui.server.ArtifactHit artifactType="transition" hitId="EX_100101" artifactSubType="screen-last" runningTimeMillis="43.232891" 
+                userId="EX_JOHN_DOE" serverHostName="localhost" startDateTime="1447864361026" isSlowHit="N"
+                artifactName="component://webroot/screen/webroot/Login.xml#login" requestUrl="http://localhost:8080/Login/login"
+                wasError="N" serverIpAddress="172.16.0.8" parameterString="username=john.doe"/>
+        <moqui.server.ArtifactHit artifactType="screen" hitId="EX_100102" artifactSubType="text/html" runningTimeMillis="3492.642925" 
+                userId="EX_JOHN_DOE" serverHostName="localhost" startDateTime="1447864361103" isSlowHit="N"
+                artifactName="component://tools/screen/System/SystemMessage/Message/SystemMessageList.xml"
+                requestUrl="http://localhost:8080/apps/system/SystemMessage/Message/SystemMessageList" wasError="N" serverIpAddress="172.16.0.8"/>
+        <moqui.server.ArtifactHit artifactType="screen-content" hitId="EX_100103" artifactSubType="image/png" runningTimeMillis="4.582866" 
+                userId="EX_JOHN_DOE" serverHostName="localhost" outputSize="813" startDateTime="1447864652115" isSlowHit="N"
+                artifactName="component://webroot/screen/webroot/assets/img/pattern/arches.png"
+                requestUrl="http://localhost:8080/assets/img/pattern/arches.png" wasError="N" serverIpAddress="172.16.0.8"/>
+        <moqui.server.ArtifactHit artifactType="screen" hitId="EX_100104" artifactSubType="text/html" runningTimeMillis="538.611634" 
+                userId="EX_JOHN_DOE" serverHostName="localhost" startDateTime="1447864651870" isSlowHit="N"
+                artifactName="component://tools/screen/Tools/dashboard.xml" requestUrl="http://localhost:8080/apps/tools"
+                wasError="N" serverIpAddress="172.16.0.8"/>
+        <moqui.server.ArtifactHit artifactType="screen" hitId="EX_100105" artifactSubType="text/html" runningTimeMillis="224.330744" 
+                userId="EX_JOHN_DOE" serverHostName="localhost" startDateTime="1447864654956" isSlowHit="N"
+                artifactName="component://tools/screen/Tools/Service/ServiceReference.xml"
+                requestUrl="http://localhost:8080/apps/tools/Service/ServiceReference" wasError="N" serverIpAddress="172.16.0.8"/>
+        <moqui.server.ArtifactHit artifactType="screen" hitId="EX_100106" artifactSubType="text/html" runningTimeMillis="166.809616" 
+                userId="EX_JOHN_DOE" serverHostName="localhost" startDateTime="1447864661424" isSlowHit="N"
+                artifactName="component://tools/screen/Tools/Service/ServiceRun.xml" requestUrl="http://localhost:8080/apps/tools/Service/ServiceRun"
+                wasError="N" serverIpAddress="172.16.0.8" parameterString="moquiFormName=SelectServiceInput,serviceName=org.moqui.example.ExampleServices.produce#ExampleMessage"/>
+        <moqui.server.ArtifactHit artifactType="service" hitId="EX_100108" artifactSubType="inline" runningTimeMillis="88.968414" 
+                userId="EX_JOHN_DOE" serverHostName="localhost" startDateTime="1447864665223" isSlowHit="N"
+                artifactName="org.moqui.example.ExampleServices.produce#ExampleMessage"
+                requestUrl="http://localhost:8080/apps/tools/Service/ServiceRun/run" wasError="N" serverIpAddress="172.16.0.8"
+                parameterString="exampleId=TEST1,systemMessageRemoteId=Example1Local,sendNow=true"/>
+        <moqui.server.ArtifactHit artifactType="transition" hitId="EX_100109" artifactSubType="url" runningTimeMillis="100.39878" 
+                userId="EX_JOHN_DOE" serverHostName="localhost" startDateTime="1447864665220" isSlowHit="N"
+                artifactName="component://tools/screen/Tools/Service/ServiceRun.xml#run"
+                requestUrl="http://localhost:8080/apps/tools/Service/ServiceRun/run" wasError="N" serverIpAddress="172.16.0.8"
+                parameterString="serviceName=org.moqui.example.ExampleServices.produce#ExampleMessage,systemMessageRemoteId=Example1Local,doingRun=Y,exampleId=TEST1,moquiSessionToken=z9uYVgMdsKF4aoyQsyd5WRbIhyk,moquiFormName=ServiceParameters,submitButton=submitButton"/>
+        <moqui.server.ArtifactHit artifactType="screen" hitId="EX_100110" artifactSubType="text/html" runningTimeMillis="56.769109" 
+                userId="EX_JOHN_DOE" serverHostName="localhost" startDateTime="1447864665330" isSlowHit="N"
+                artifactName="component://tools/screen/Tools/Service/ServiceRun.xml"
+                requestUrl="http://localhost:8080/apps/tools/Service/ServiceRun?doingRun=Y&amp;serviceName=org.moqui.example.ExampleServices.produce%23ExampleMessage"
+                wasError="N" serverIpAddress="172.16.0.8" parameterString="systemMessageId=100000,submitButton=submitButton,moquiFormName=ServiceParameters,moquiSessionToken=z9uYVgMdsKF4aoyQsyd5WRbIhyk,doingRun=Y,systemMessageRemoteId=Example1Local,exampleId=TEST1,serviceName=org.moqui.example.ExampleServices.produce#ExampleMess"/>
+        <moqui.server.ArtifactHit artifactType="screen-content" hitId="EX_100116" artifactSubType="text/css" runningTimeMillis="0.652743" 
+                userId="EX_JOHN_DOE" serverHostName="localhost" outputSize="17780" startDateTime="1447864669212" isSlowHit="N"
+                artifactName="component://webroot/screen/webroot/assets/lib/Font-Awesome/css/font-awesome.min.css"
+                requestUrl="http://localhost:8080/assets/lib/Font-Awesome/css/font-awesome.min.css" wasError="N" serverIpAddress="172.16.0.8"/>
+        <moqui.server.ArtifactHit artifactType="screen-content" hitId="EX_100128" artifactSubType="application/javascript" runningTimeMillis="7.94136" 
+                userId="EX_JOHN_DOE" serverHostName="localhost" outputSize="237548" startDateTime="1447864669233" isSlowHit="N"
+                artifactName="component://webroot/screen/webroot/assets/lib/jquery-ui/jquery-ui.min.js"
+                requestUrl="http://localhost:8080/assets/lib/jquery-ui/jquery-ui.min.js" wasError="N" serverIpAddress="172.16.0.8"/>
+    </moqui.server.Visit>
 </entity-facade-xml>

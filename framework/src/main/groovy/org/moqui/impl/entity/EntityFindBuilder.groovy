@@ -1,5 +1,6 @@
 /*
- * This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
+ * This software is in the public domain under CC0 1.0 Universal plus a 
+ * Grant of Patent License.
  * 
  * To the extent possible under law, the author(s) have dedicated all
  * copyright and related and neighboring rights to this software to the
@@ -114,11 +115,9 @@ class EntityFindBuilder extends EntityQueryBuilder {
                 String fieldName = foo.fieldName
                 int typeValue = 1
                 EntityDefinition.FieldInfo fieldInfo = getMainEd().getFieldInfo(fieldName)
-                if (fieldInfo != null) {
-                    typeValue = fieldInfo.typeValue
-                } else {
-                    logger.warn("Making SELECT clause, could not find field [${fieldName}] in entity [${getMainEd().getFullEntityName()}]")
-                }
+                if (fieldInfo == null) throw new EntityException("Making SELECT clause, could not find field [${fieldName}] in entity [${getMainEd().getFullEntityName()}]")
+
+                typeValue = fieldInfo.typeValue
 
                 if (i > 0) this.sqlTopLevel.append(", ")
                 if (foo.caseUpperLower != null && typeValue == 1) this.sqlTopLevel.append(foo.caseUpperLower ? "UPPER(" : "LOWER(")

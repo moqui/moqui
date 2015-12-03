@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
+This software is in the public domain under CC0 1.0 Universal plus a
+Grant of Patent License.
 
 To the extent possible under law, the author(s) have dedicated all
 copyright and related and neighboring rights to this software to the
@@ -114,7 +115,8 @@ along with this software (see the LICENSE.md file). If not, see
                     <econdition field-name="enumTypeId"/>
                     <order-by field-name="sequenceNum,description"/>
                 </entity-find>
-                <script>for (def enumEntry in enumList) resultList.add([enumId:enumEntry.enumId, label:"${enumEntry.description} [${enumEntry.enumId}]"])</script>
+                <script>for (def enumEntry in enumList)
+                    resultList.add([enumId:enumEntry.enumId, label:"${enumEntry.description} [${enumEntry.enumId}]"])</script>
             </if>
         </actions>
     </service>
@@ -155,8 +157,10 @@ along with this software (see the LICENSE.md file). If not, see
             <if condition="uomConversionList">
                 <set field="uomConversion" from="uomConversionList.first"/>
                 <set field="convertedAmount" from="amount"/>
-                <if condition="uomConversion.conversionFactor"><set field="convertedAmount" from="convertedAmount * uomConversion.conversionFactor"/></if>
-                <if condition="uomConversion.conversionOffset"><set field="convertedAmount" from="convertedAmount + uomConversion.conversionOffset"/></if>
+                <if condition="uomConversion.conversionFactor"><set field="convertedAmount"
+                        from="convertedAmount * uomConversion.conversionFactor"/></if>
+                <if condition="uomConversion.conversionOffset"><set field="convertedAmount"
+                        from="convertedAmount + uomConversion.conversionOffset"/></if>
                 <return/>
             </if>
             <if condition="!uomConversionList">
@@ -169,12 +173,15 @@ along with this software (see the LICENSE.md file). If not, see
                 <if condition="uomConversionList">
                     <set field="uomConversion" from="uomConversionList.first"/>
                     <set field="convertedAmount" from="amount"/>
-                    <if condition="uomConversion.conversionOffset"><set field="convertedAmount" from="convertedAmount - uomConversion.conversionOffset"/></if>
-                    <if condition="uomConversion.conversionFactor"><set field="convertedAmount" from="convertedAmount / uomConversion.conversionFactor"/></if>
+                    <if condition="uomConversion.conversionOffset"><set field="convertedAmount"
+                            from="convertedAmount - uomConversion.conversionOffset"/></if>
+                    <if condition="uomConversion.conversionFactor"><set field="convertedAmount"
+                            from="convertedAmount / uomConversion.conversionFactor"/></if>
                     <return/>
                 </if>
             </if>
-            <if condition="!uomConversionList"><return error="true" message="Could not convert from [${uomId}] to [${toUomId}], no UOM Conversion found."/></if>
+            <if condition="!uomConversionList">
+                <return error="true" message="Could not convert from [${uomId}] to [${toUomId}], no UOM Conversion found."/></if>
         </actions>
     </service>
 </services>

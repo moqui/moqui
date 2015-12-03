@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
+This software is in the public domain under CC0 1.0 Universal plus a 
+Grant of Patent License.
 
 To the extent possible under law, the author(s) have dedicated all
 copyright and related and neighboring rights to this software to the
@@ -61,7 +62,7 @@ along with this software (see the LICENSE.md file). If not, see
                 <div id="elfinder"></div>
                 <script>
 $(document).ready(function() {
-    var elf_options = { url:'${sri.buildUrl('command').url}', customData:{ resourceRoot:'${resourceRoot}' },
+    var elf_options = { url:'${sri.buildUrl('command').url}', customData:{ moquiSessionToken:'${ec.web.sessionToken}', resourceRoot:'${resourceRoot}' },
         lang:'en', defaultView:'list', requestType:'post', rememberLastDir:false, height:600,
         commands : [ 'open', 'reload', 'home', 'up', 'back', 'forward', 'getfile', 'quicklook',
             'download', 'rm', 'rename', 'mkdir', 'mkfile', 'upload', 'edit', 'info', 'view', 'help',

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
+This software is in the public domain under CC0 1.0 Universal plus a
+Grant of Patent License.
 
 To the extent possible under law, the author(s) have dedicated all
 copyright and related and neighboring rights to this software to the
@@ -12,7 +13,8 @@ along with this software (see the LICENSE.md file). If not, see
 <http://creativecommons.org/publicdomain/zero/1.0/>.
   -->
 <entity-facade-xml type="seed">
-    <!-- For currency code reference see: http://www.iso.org/iso/support/faqs/faqs_widely_used_standards/widely_used_standards_other/currency_codes/currency_codes_list-1.htm -->
+    <!-- For currency code reference see:
+        http://www.iso.org/iso/support/faqs/faqs_widely_used_standards/widely_used_standards_other/currency_codes/currency_codes_list-1.htm -->
     <moqui.basic.Uom abbreviation="BTC" description="Bitcoin" uomId="BTC" uomTypeEnumId="UT_CURRENCY_MEASURE"/>
     <moqui.basic.Uom abbreviation="CRC" description="Costa Rica Colon" uomId="CRC" uomTypeEnumId="UT_CURRENCY_MEASURE"/>
     <moqui.basic.Uom abbreviation="COP" description="Colombian Peso" uomId="COP" uomTypeEnumId="UT_CURRENCY_MEASURE"/>

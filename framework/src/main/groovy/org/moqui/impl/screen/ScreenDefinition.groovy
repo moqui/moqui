@@ -1,5 +1,6 @@
 /*
- * This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
+ * This software is in the public domain under CC0 1.0 Universal plus a 
+ * Grant of Patent License.
  * 
  * To the extent possible under law, the author(s) have dedicated all
  * copyright and related and neighboring rights to this software to the
@@ -229,6 +230,8 @@ class ScreenDefinition {
     Node getScreenNode() { return screenNode }
     @CompileStatic
     Node getSubscreensNode() { return subscreensNode }
+    @CompileStatic
+    String getDefaultSubscreensItem() { return (String) subscreensNode?.attribute('default-item') }
     Node getWebSettingsNode() { return (Node) screenNode."web-settings"[0] }
     @CompileStatic
     String getLocation() { return location }
@@ -375,6 +378,23 @@ class ScreenDefinition {
         return null
     }
 
+    List<String> nestedNoReqParmLocations(String currentPath, Set<String> screensToSkip) {
+        if (!screensToSkip) screensToSkip = new HashSet<String>()
+        List<String> locList = []
+        List<SubscreensItem> ssiList = getSubscreensItemsSorted()
+        for (SubscreensItem ssi in ssiList) {
+            if (screensToSkip.contains(ssi.name)) continue
+            ScreenDefinition subSd = sfi.getScreenDefinition(ssi.location)
+            if (!subSd.hasRequiredParameters()) {
+                String subPath = (currentPath ? currentPath + "/" : '') + ssi.name
+                // don't add current if a has a default subscreen item
+                if (!subSd.getDefaultSubscreensItem()) locList.add(subPath)
+                locList.addAll(subSd.nestedNoReqParmLocations(subPath, screensToSkip))
+            }
+        }
+        return locList
+    }
+
     @CompileStatic
     List<SubscreensItem> getSubscreensItemsSorted() {
         if (subscreensItemsSorted != null) return subscreensItemsSorted
@@ -420,11 +440,12 @@ class ScreenDefinition {
             loggedInAnonymous = sri.ec.getUser().loginAnonymousIfNoUser()
         }
 
-        rootSection.render(sri)
-
-        // all done so pop the artifact info; don't bother making sure this is done on errors/etc like in a finally clause because if there is an error this will help us know how we got there
-        sri.ec.artifactExecution.pop(aei)
-        if (loggedInAnonymous) ((UserFacadeImpl) sri.ec.getUser()).logoutAnonymousOnly()
+        try {
+            rootSection.render(sri)
+        } finally {
+            sri.ec.artifactExecution.pop(aei)
+            if (loggedInAnonymous) ((UserFacadeImpl) sri.ec.getUser()).logoutAnonymousOnly()
+        }
     }
 
     @CompileStatic

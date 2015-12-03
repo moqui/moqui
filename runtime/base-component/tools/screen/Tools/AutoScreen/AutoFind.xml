@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
+This software is in the public domain under CC0 1.0 Universal plus a
+Grant of Patent License.
 
 To the extent possible under law, the author(s) have dedicated all
 copyright and related and neighboring rights to this software to the
@@ -39,7 +40,7 @@ along with this software (see the LICENSE.md file). If not, see
             widgetsNode.append(sri.getActiveScreenDef().getForm("CreateEntityValue").getAutoCleanedNode())
             widgetsNode.append(sri.getActiveScreenDef().getForm("ListEntityValue").getAutoCleanedNode())
             printer.print(screenNode)
-            ec.web.sendTextResponse(xmlWriter.toString())
+            ec.web.sendTextResponse(xmlWriter.toString(), "text/xml", "Find${ec.entity.getEntityDefinition(aen).entityName}.xml")
         ]]></script></actions>
         <default-response type="none"/>
     </transition>
@@ -78,6 +79,6 @@ along with this software (see the LICENSE.md file). If not, see
             <field name="delete"><default-field title="Delete"><submit confirmation="Are you sure?"/></default-field></field>
             <auto-fields-entity entity-name="${aen}" field-type="find-display"/>
         </form-list>
-        <link url="getFormXml" text="Get Forms XML" link-type="hidden-form-link" target-window="_blank"/>
+        <link url="getFormXml" text="Get Forms XML" link-type="hidden-form-link"/>
     </widgets>
 </screen>
