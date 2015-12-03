@@ -1122,7 +1122,7 @@ class EntityFacadeImpl implements EntityFacade {
                 }
             }
             if (firstEd.getMasterDefinition(masterName) == null)
-                throw new EntityException("Mster definition not found for entity [${firstEd.getFullEntityName()}], tried master name [${masterName}]")
+                throw new EntityException("Master definition not found for entity [${firstEd.getFullEntityName()}], tried master name [${masterName}]")
         }
 
         // if there are more path elements use one for each PK field of the entity
