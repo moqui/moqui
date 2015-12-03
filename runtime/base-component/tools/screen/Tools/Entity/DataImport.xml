@@ -28,6 +28,9 @@ along with this software (see the LICENSE.md file). If not, see
                 } else if (context.location) {
                     edl.location(context.location)
                     source = context.location
+                } else if (context.csvText) {
+                    edl.csvText(context.csvText)
+                    source = "CSV Text Box"
                 } else if (context.jsonText) {
                     edl.jsonText(context.jsonText)
                     source = "JSON Text Box"
@@ -74,6 +77,9 @@ along with this software (see the LICENSE.md file). If not, see
             <field name="jsonText"><default-field title="Text">
                 <text-area rows="10" cols="80" default-value=""/>
             </default-field></field>
+            <field name="csvText"><default-field title="Text">
+                <text-area rows="10" cols="80" default-value=""/>
+            </default-field></field>
 
             <field name="submitButton"><default-field title="Import"><submit/></default-field></field>
 
@@ -85,6 +91,7 @@ along with this software (see the LICENSE.md file). If not, see
                 <field-group title="Resource Location"><field-ref name="location"/></field-group>
                 <field-group title="XML Text"><field-ref name="xmlText"/></field-group>
                 <field-group title="JSON Text"><field-ref name="jsonText"/></field-group>
+                <field-group title="CSV Text"><field-ref name="csvText"/></field-group>
 
                 <field-ref name="submitButton"/>
             </field-layout>

@@ -419,7 +419,7 @@ class ScreenRenderImpl implements ScreenRender {
                         }
                     }
                     String fullUrlString = fullUrl.getUrlWithParams()
-                    logger.info("Finished transition [${getScreenUrlInfo().getFullPathNameList()}], redirecting to [${fullUrlString}]")
+                    logger.info("Finished transition [${getScreenUrlInfo().getFullPathNameList()}] in [${(System.currentTimeMillis() - transitionStartTime)/1000}] seconds , redirecting to [${fullUrlString}]")
                     response.sendRedirect(fullUrlString)
                 }
             } else {
