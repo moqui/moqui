@@ -530,7 +530,11 @@ public class EntityDefinition {
         if (masterDefinitionMap == null) makeMasterDefinitionMap()
         return masterDefinitionMap.get(name)
     }
-
+    @CompileStatic
+    Map<String, MasterDefinition> getMasterDefinitionMap() {
+        if (masterDefinitionMap == null) makeMasterDefinitionMap()
+        return masterDefinitionMap
+    }
     private synchronized void makeMasterDefinitionMap() {
         Map<String, MasterDefinition> defMap = [:]
         for (Node masterNode in internalEntityNode."master") {
@@ -1023,9 +1027,9 @@ public class EntityDefinition {
                 String relatedRefName = relInfo.relatedEd.shortAlias ?: relInfo.relatedEd.getFullEntityName()
 
                 // recurse, let it put itself in the definitionsMap
+                // linkPrefix and schemaLinkPrefix are null so that no links are added for master dependents
                 if (definitionsMap != null && !definitionsMap.containsKey(relatedRefName))
-                    relInfo.relatedEd.getJsonSchema(false, definitionsMap, schemaUri, linkPrefix, schemaLinkPrefix,
-                            null, childMasterDetail)
+                    relInfo.relatedEd.getJsonSchema(false, definitionsMap, schemaUri, null, null, null, childMasterDetail)
 
                 if (relInfo.type == "many") {
                     properties.put(entryName, [type:'array', items:['$ref':('#/definitions/' + relatedRefName)]])
@@ -1054,27 +1058,32 @@ public class EntityDefinition {
         }
 
         // add links (for Entity REST API)
-        if (linkPrefix) {
+        if (linkPrefix || schemaLinkPrefix) {
             List<String> pkNameList = getPkFieldNames()
             StringBuilder idSb = new StringBuilder()
             for (String pkName in pkNameList) idSb.append('/{').append(pkName).append('}')
             String idString = idSb.toString()
 
-            List linkList = [
-                [rel:'self', method:'GET', href:"${linkPrefix}/${refName}${idString}", title:"Get single ${prettyName}",
-                    targetSchema:['$ref':"#/definitions/${name}"]],
-                [rel:'instances', method:'GET', href:"${linkPrefix}/${refName}", title:"Get list of ${prettyName}",
-                    schema:[allOf:[['$ref':'#/definitions/paginationParameters'], ['$ref':"#/definitions/${name}"]]],
-                    targetSchema:[type:'array', items:['$ref':"#/definitions/${name}"]]],
-                [rel:'create', method:'POST', href:"${linkPrefix}/${refName}", title:"Create ${prettyName}",
-                    schema:['$ref':"#/definitions/${name}"]],
-                [rel:'update', method:'PATCH', href:"${linkPrefix}/${refName}${idString}", title:"Update ${prettyName}",
-                    schema:['$ref':"#/definitions/${name}"]],
-                [rel:'store', method:'PUT', href:"${linkPrefix}/${refName}${idString}", title:"Create or Update ${prettyName}",
-                    schema:['$ref':"#/definitions/${name}"]],
-                [rel:'destroy', method:'DELETE', href:"${linkPrefix}/${refName}${idString}", title:"Delete ${prettyName}",
-                    schema:['$ref':"#/definitions/${name}"]]
-            ]
+            List linkList
+            if (linkPrefix) {
+                linkList = [
+                    [rel:'self', method:'GET', href:"${linkPrefix}/${refName}${idString}", title:"Get single ${prettyName}",
+                        targetSchema:['$ref':"#/definitions/${name}"]],
+                    [rel:'instances', method:'GET', href:"${linkPrefix}/${refName}", title:"Get list of ${prettyName}",
+                        schema:[allOf:[['$ref':'#/definitions/paginationParameters'], ['$ref':"#/definitions/${name}"]]],
+                        targetSchema:[type:'array', items:['$ref':"#/definitions/${name}"]]],
+                    [rel:'create', method:'POST', href:"${linkPrefix}/${refName}", title:"Create ${prettyName}",
+                        schema:['$ref':"#/definitions/${name}"]],
+                    [rel:'update', method:'PATCH', href:"${linkPrefix}/${refName}${idString}", title:"Update ${prettyName}",
+                        schema:['$ref':"#/definitions/${name}"]],
+                    [rel:'store', method:'PUT', href:"${linkPrefix}/${refName}${idString}", title:"Create or Update ${prettyName}",
+                        schema:['$ref':"#/definitions/${name}"]],
+                    [rel:'destroy', method:'DELETE', href:"${linkPrefix}/${refName}${idString}", title:"Delete ${prettyName}",
+                        schema:['$ref':"#/definitions/${name}"]]
+                ]
+            } else {
+                linkList = []
+            }
             if (schemaLinkPrefix) linkList.add([rel:'describedBy', method:'GET', href:"${schemaLinkPrefix}/${refName}", title:"Get schema for ${prettyName}"])
 
             schema.put('links', linkList)

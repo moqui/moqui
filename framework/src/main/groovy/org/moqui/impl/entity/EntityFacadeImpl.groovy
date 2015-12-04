@@ -843,6 +843,15 @@ class EntityFacadeImpl implements EntityFacade {
         }
         return nonViewNames
     }
+    Set<String> getAllEntityNamesWithMaster() {
+        Set<String> allNames = getAllEntityNames()
+        Set<String> masterNames = new TreeSet<>()
+        for (String name in allNames) {
+            EntityDefinition ed = getEntityDefinition(name)
+            if (ed != null && !ed.isViewEntity() && ed.masterDefinitionMap) masterNames.add(name)
+        }
+        return masterNames
+    }
 
     List<Map> getAllEntityInfo(int levels, boolean excludeViewEntities) {
         Map<String, Map> entityInfoMap = [:]

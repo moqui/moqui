@@ -806,14 +806,32 @@ class WebFacadeImpl implements WebFacade {
                     anyOf:allRefList, definitions:definitionsMap]
             if (schemaUri) rootMap.put('id', schemaUri)
 
-            Set<String> entityNameSet = efi.getAllNonViewEntityNames()
+            Set<String> entityNameSet
+            if (getMaster) {
+                // if getMaster and no entity name in path, just get entities with master definitions
+                entityNameSet = efi.getAllEntityNamesWithMaster()
+            } else {
+                entityNameSet = efi.getAllNonViewEntityNames()
+            }
             for (String entityName in entityNameSet) {
                 EntityDefinition ed = efi.getEntityDefinition(entityName)
                 String refName = ed.getShortAlias() ?: ed.getFullEntityName()
-                allRefList.add(['$ref':"#/definitions/${refName}"])
+                if (getMaster) {
+                    Map<String, EntityDefinition.MasterDefinition> masterDefMap = ed.getMasterDefinitionMap()
+                    Map entityPathMap = [:]
+                    for (String masterName in masterDefMap.keySet()) {
+                        allRefList.add(['$ref':"#/definitions/${refName}/${masterName}"])
 
-                Map schema = ed.getJsonSchema(false, null, schemaUri, linkPrefix, schemaLinkPrefix, null, null)
-                definitionsMap.put(refName, schema)
+                        Map schema = ed.getJsonSchema(false, definitionsMap, schemaUri, linkPrefix, schemaLinkPrefix, masterName, null)
+                        entityPathMap.put(masterName, schema)
+                    }
+                    definitionsMap.put(refName, entityPathMap)
+                } else {
+                    allRefList.add(['$ref':"#/definitions/${refName}"])
+
+                    Map schema = ed.getJsonSchema(false, null, schemaUri, linkPrefix, schemaLinkPrefix, null, null)
+                    definitionsMap.put(refName, schema)
+                }
             }
 
             JsonBuilder jb = new JsonBuilder()
@@ -883,21 +901,40 @@ class WebFacadeImpl implements WebFacade {
                 masterName = extraPathNameList.get(1)
                 if (masterName.endsWith(".raml")) masterName = masterName.substring(0, masterName.length() - 5)
             }
-            if (getMaster && !masterName) masterName = "default"
 
             entityNameSet = new TreeSet<String>()
             entityNameSet.add(entityName)
+        } else if (getMaster) {
+            // if getMaster and no entity name in path, just get entities with master definitions
+            entityNameSet = efi.getAllEntityNamesWithMaster()
         } else {
             entityNameSet = efi.getAllNonViewEntityNames()
         }
         for (String entityName in entityNameSet) {
             EntityDefinition ed = efi.getEntityDefinition(entityName)
             String refName = ed.getShortAlias() ?: ed.getFullEntityName()
-            if (masterName) refName = refName + "/" + masterName
-            schemasList.add([(refName):"!include ${schemaLinkPrefix}/${refName}.json".toString()])
+            if (getMaster) {
+                Set<String> masterNameSet = new LinkedHashSet<String>()
+                if (masterName) {
+                    masterNameSet.add(masterName)
+                } else {
+                    Map<String, EntityDefinition.MasterDefinition> masterDefMap = ed.getMasterDefinitionMap()
+                    masterNameSet.addAll(masterDefMap.keySet())
+                }
+                Map entityPathMap = [:]
+                for (String curMasterName in masterNameSet) {
+                    schemasList.add([("${refName}/${curMasterName}".toString()):"!include ${schemaLinkPrefix}/${refName}/${curMasterName}.json".toString()])
 
-            Map ramlApi = ed.getRamlApi(masterName)
-            rootMap.put('/' + refName, ramlApi)
+                    Map ramlApi = ed.getRamlApi(masterName)
+                    entityPathMap.put("/" + curMasterName, ramlApi)
+                }
+                rootMap.put("/" + refName, entityPathMap)
+            } else {
+                schemasList.add([(refName):"!include ${schemaLinkPrefix}/${refName}.json".toString()])
+
+                Map ramlApi = ed.getRamlApi(null)
+                rootMap.put('/' + refName, ramlApi)
+            }
         }
 
         DumperOptions options = new DumperOptions()

@@ -179,7 +179,7 @@ along with this software (see the LICENSE.md file). If not, see
 
     <!--
     To get the json-schema (see http://json-schema.org) for a master entity use a path with the entity name then the
-    master definition name (optional, defaults to 'default'). Note that the .json extension is optional.
+    master definition name (optional, get all if not specified). Note that the .json extension is optional.
 
     curl -X GET -u john.doe:moqui http://localhost:8080/rest/mschema.json/examples/default
     curl -X GET -u john.doe:moqui http://localhost:8080/rest/mschema.json/examples/default.json
