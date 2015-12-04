@@ -785,7 +785,8 @@ class WebFacadeImpl implements WebFacade {
 
     @Override
     @CompileStatic
-    void handleEntityRestSchema(List<String> extraPathNameList, String schemaUri, String linkPrefix, String schemaLinkPrefix) {
+    void handleEntityRestSchema(List<String> extraPathNameList, String schemaUri, String linkPrefix,
+                                String schemaLinkPrefix, boolean getMaster) {
         // make sure a user is logged in, screen/etc that calls will generally be configured to not require auth
         if (!eci.getUser().getUsername()) {
             // if there was a login error there will be a MessageFacade error message
@@ -797,7 +798,7 @@ class WebFacadeImpl implements WebFacade {
 
         EntityFacadeImpl efi = eci.getEcfi().getEntityFacade()
 
-        if (extraPathNameList.size() < 1) {
+        if (extraPathNameList.size() == 0) {
             List allRefList = []
             Map definitionsMap = [:]
             definitionsMap.put('paginationParameters', EntityDefinition.paginationParameters)
@@ -811,7 +812,7 @@ class WebFacadeImpl implements WebFacade {
                 String refName = ed.getShortAlias() ?: ed.getFullEntityName()
                 allRefList.add(['$ref':"#/definitions/${refName}"])
 
-                Map schema = ed.getJsonSchema(false, null, schemaUri, linkPrefix, schemaLinkPrefix)
+                Map schema = ed.getJsonSchema(false, null, schemaUri, linkPrefix, schemaLinkPrefix, null, null)
                 definitionsMap.put(refName, schema)
             }
 
@@ -823,6 +824,14 @@ class WebFacadeImpl implements WebFacade {
         } else {
             String entityName = extraPathNameList.get(0)
             if (entityName.endsWith(".json")) entityName = entityName.substring(0, entityName.length() - 5)
+
+            String masterName = null
+            if (extraPathNameList.size() > 1) {
+                masterName = extraPathNameList.get(1)
+                if (masterName.endsWith(".json")) masterName = masterName.substring(0, masterName.length() - 5)
+            }
+            if (getMaster && !masterName) masterName = "default"
+
             try {
                 EntityDefinition ed = efi.getEntityDefinition(entityName)
                 if (ed == null) {
@@ -830,7 +839,7 @@ class WebFacadeImpl implements WebFacade {
                     return
                 }
 
-                Map schema = ed.getJsonSchema(true, null, schemaUri, linkPrefix, schemaLinkPrefix)
+                Map schema = ed.getJsonSchema(true, null, schemaUri, linkPrefix, schemaLinkPrefix, masterName, null)
                 // TODO: support array wrapper (different URL? suffix?) with [type:'array', items:schema]
 
                 // sendJsonResponse(schema)
@@ -847,7 +856,7 @@ class WebFacadeImpl implements WebFacade {
 
     @Override
     @CompileStatic
-    void handleEntityRestRaml(List<String> extraPathNameList, String linkPrefix, String schemaLinkPrefix) {
+    void handleEntityRestRaml(List<String> extraPathNameList, String linkPrefix, String schemaLinkPrefix, boolean getMaster) {
         // make sure a user is logged in, screen/etc that calls will generally be configured to not require auth
         if (!eci.getUser().getUsername()) {
             // if there was a login error there will be a MessageFacade error message
@@ -864,13 +873,30 @@ class WebFacadeImpl implements WebFacade {
                                        mediaType:'application/json', schemas:schemasList] as Map<String, Object>
         rootMap.put('traits', [[paged:[queryParameters:EntityDefinition.ramlPaginationParameters]]])
 
-        Set<String> entityNameSet = efi.getAllNonViewEntityNames()
+        Set<String> entityNameSet
+        String masterName = null
+        if (extraPathNameList.size() > 0) {
+            String entityName = extraPathNameList.get(0)
+            if (entityName.endsWith(".raml")) entityName = entityName.substring(0, entityName.length() - 5)
+
+            if (extraPathNameList.size() > 1) {
+                masterName = extraPathNameList.get(1)
+                if (masterName.endsWith(".raml")) masterName = masterName.substring(0, masterName.length() - 5)
+            }
+            if (getMaster && !masterName) masterName = "default"
+
+            entityNameSet = new TreeSet<String>()
+            entityNameSet.add(entityName)
+        } else {
+            entityNameSet = efi.getAllNonViewEntityNames()
+        }
         for (String entityName in entityNameSet) {
             EntityDefinition ed = efi.getEntityDefinition(entityName)
             String refName = ed.getShortAlias() ?: ed.getFullEntityName()
+            if (masterName) refName = refName + "/" + masterName
             schemasList.add([(refName):"!include ${schemaLinkPrefix}/${refName}.json".toString()])
 
-            Map ramlApi = ed.getRamlApi()
+            Map ramlApi = ed.getRamlApi(masterName)
             rootMap.put('/' + refName, ramlApi)
         }
 

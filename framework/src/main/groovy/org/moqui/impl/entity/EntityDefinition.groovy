@@ -971,9 +971,15 @@ public class EntityDefinition {
     }
 
     @CompileStatic
-    Map getJsonSchema(boolean standalone, Map<String, Object> definitionsMap, String schemaUri, String linkPrefix, String schemaLinkPrefix) {
+    Map getJsonSchema(boolean standalone, Map<String, Object> definitionsMap, String schemaUri, String linkPrefix,
+                      String schemaLinkPrefix, String masterName, MasterDetail masterDetail) {
         String name = getShortAlias() ?: getFullEntityName()
         String prettyName = getPrettyName(null, null)
+        String refName = name
+        if (masterName) {
+            refName = "${name}/${masterName}"
+            prettyName = prettyName + " (Master: ${masterName})"
+        }
 
         Map<String, Object> properties = [:]
         properties.put('_entity', [type:'string', default:name])
@@ -1001,21 +1007,49 @@ public class EntityDefinition {
         if (definitionsMap != null && !definitionsMap.containsKey(name))
             definitionsMap.put(name, schema)
 
-        // add all relationships, nest
-        List<RelationshipInfo> relInfoList = getRelationshipsInfo(true)
-        for (RelationshipInfo relInfo in relInfoList) {
-            String relationshipName = relInfo.relationshipName
-            String entryName = relInfo.shortAlias ?: relationshipName
-            String relatedRefName = relInfo.relatedEd.shortAlias ?: relInfo.relatedEd.getFullEntityName()
-
-            // recurse, let it put itself in the definitionsMap
-            if (definitionsMap != null && !definitionsMap.containsKey(relatedRefName))
-                relInfo.relatedEd.getJsonSchema(false, definitionsMap, schemaUri, linkPrefix, schemaLinkPrefix)
-
-            if (relInfo.type == "many") {
-                properties.put(entryName, [type:'array', items:['$ref':('#/definitions/' + relatedRefName)]])
+        if (masterName || masterDetail != null) {
+            // add only relationships from master definition or detail
+            List<MasterDetail> detailList
+            if (masterName) {
+                MasterDefinition masterDef = getMasterDefinition(masterName)
+                detailList = masterDef.detailList
             } else {
-                properties.put(entryName, ['$ref':('#/definitions/' + relatedRefName)])
+                detailList = masterDetail.getDetailList()
+            }
+            for (MasterDetail childMasterDetail in detailList) {
+                RelationshipInfo relInfo = childMasterDetail.relInfo
+                String relationshipName = relInfo.relationshipName
+                String entryName = relInfo.shortAlias ?: relationshipName
+                String relatedRefName = relInfo.relatedEd.shortAlias ?: relInfo.relatedEd.getFullEntityName()
+
+                // recurse, let it put itself in the definitionsMap
+                if (definitionsMap != null && !definitionsMap.containsKey(relatedRefName))
+                    relInfo.relatedEd.getJsonSchema(false, definitionsMap, schemaUri, linkPrefix, schemaLinkPrefix,
+                            null, childMasterDetail)
+
+                if (relInfo.type == "many") {
+                    properties.put(entryName, [type:'array', items:['$ref':('#/definitions/' + relatedRefName)]])
+                } else {
+                    properties.put(entryName, ['$ref':('#/definitions/' + relatedRefName)])
+                }
+            }
+        } else {
+            // add all relationships, nest
+            List<RelationshipInfo> relInfoList = getRelationshipsInfo(true)
+            for (RelationshipInfo relInfo in relInfoList) {
+                String relationshipName = relInfo.relationshipName
+                String entryName = relInfo.shortAlias ?: relationshipName
+                String relatedRefName = relInfo.relatedEd.shortAlias ?: relInfo.relatedEd.getFullEntityName()
+
+                // recurse, let it put itself in the definitionsMap
+                if (definitionsMap != null && !definitionsMap.containsKey(relatedRefName))
+                    relInfo.relatedEd.getJsonSchema(false, definitionsMap, schemaUri, linkPrefix, schemaLinkPrefix, null, null)
+
+                if (relInfo.type == "many") {
+                    properties.put(entryName, [type:'array', items:['$ref':('#/definitions/' + relatedRefName)]])
+                } else {
+                    properties.put(entryName, ['$ref':('#/definitions/' + relatedRefName)])
+                }
             }
         }
 
@@ -1027,27 +1061,27 @@ public class EntityDefinition {
             String idString = idSb.toString()
 
             List linkList = [
-                [rel:'self', method:'GET', href:"${linkPrefix}/${name}${idString}", title:"Get single ${prettyName}",
+                [rel:'self', method:'GET', href:"${linkPrefix}/${refName}${idString}", title:"Get single ${prettyName}",
                     targetSchema:['$ref':"#/definitions/${name}"]],
-                [rel:'instances', method:'GET', href:"${linkPrefix}/${name}", title:"Get list of ${prettyName}",
+                [rel:'instances', method:'GET', href:"${linkPrefix}/${refName}", title:"Get list of ${prettyName}",
                     schema:[allOf:[['$ref':'#/definitions/paginationParameters'], ['$ref':"#/definitions/${name}"]]],
                     targetSchema:[type:'array', items:['$ref':"#/definitions/${name}"]]],
-                [rel:'create', method:'POST', href:"${linkPrefix}/${name}", title:"Create ${prettyName}",
+                [rel:'create', method:'POST', href:"${linkPrefix}/${refName}", title:"Create ${prettyName}",
                     schema:['$ref':"#/definitions/${name}"]],
-                [rel:'update', method:'PATCH', href:"${linkPrefix}/${name}${idString}", title:"Update ${prettyName}",
+                [rel:'update', method:'PATCH', href:"${linkPrefix}/${refName}${idString}", title:"Update ${prettyName}",
                     schema:['$ref':"#/definitions/${name}"]],
-                [rel:'store', method:'PUT', href:"${linkPrefix}/${name}${idString}", title:"Create or Update ${prettyName}",
+                [rel:'store', method:'PUT', href:"${linkPrefix}/${refName}${idString}", title:"Create or Update ${prettyName}",
                     schema:['$ref':"#/definitions/${name}"]],
-                [rel:'destroy', method:'DELETE', href:"${linkPrefix}/${name}${idString}", title:"Delete ${prettyName}",
+                [rel:'destroy', method:'DELETE', href:"${linkPrefix}/${refName}${idString}", title:"Delete ${prettyName}",
                     schema:['$ref':"#/definitions/${name}"]]
             ]
-            if (schemaLinkPrefix) linkList.add([rel:'describedBy', method:'GET', href:"${schemaLinkPrefix}/${name}", title:"Get schema for ${prettyName}"])
+            if (schemaLinkPrefix) linkList.add([rel:'describedBy', method:'GET', href:"${schemaLinkPrefix}/${refName}", title:"Get schema for ${prettyName}"])
 
             schema.put('links', linkList)
         }
 
         if (standalone) {
-            return ['$schema':'http://json-schema.org/draft-04/hyper-schema#', id:"${schemaUri}/${name}",
+            return ['$schema':'http://json-schema.org/draft-04/hyper-schema#', id:"${schemaUri}/${refName}",
                     '$ref':"#/definitions/${name}", definitions:definitionsMap]
         } else {
             return schema
@@ -1063,8 +1097,9 @@ public class EntityDefinition {
             ]
 
     @CompileStatic
-    Map getRamlApi() {
+    Map getRamlApi(String masterName) {
         String name = getShortAlias() ?: getFullEntityName()
+        if (masterName) name = "${name}/${masterName}"
         String prettyName = getPrettyName(null, null)
 
         Map<String, Object> ramlMap = [:]
