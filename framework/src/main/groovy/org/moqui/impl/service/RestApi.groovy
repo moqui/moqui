@@ -16,6 +16,7 @@ package org.moqui.impl.service
 import groovy.transform.CompileStatic
 import org.moqui.BaseException
 import org.moqui.context.ExecutionContext
+import org.moqui.context.ResourceReference
 import org.moqui.entity.EntityFind
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.slf4j.Logger
@@ -31,7 +32,22 @@ class RestApi {
     RestApi(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
 
-        // TODO: find *.rest.xml files in component/service directories, put in rootResourceMap
+        // find *.rest.xml files in component/service directories, put in rootResourceMap
+        for (String location in this.ecfi.getComponentBaseLocations().values()) {
+            ResourceReference serviceDirRr = this.ecfi.resourceFacade.getLocationReference(location + "/service")
+            if (serviceDirRr.supportsAll()) {
+                // if for some weird reason this isn't a directory, skip it
+                if (!serviceDirRr.isDirectory()) continue
+                for (ResourceReference rr in serviceDirRr.directoryEntries) {
+                    if (!rr.fileName.endsWith(".rest.xml")) continue
+                    Node rootNode = new XmlParser().parseText(rr.getText())
+                    ResourceNode rn = new ResourceNode(rootNode)
+                    rootResourceMap.put(rn.name, rn)
+                }
+            } else {
+                logger.warn("Can't load REST APIs from component at [${serviceDirRr.location}] because it doesn't support exists/directory/etc")
+            }
+        }
 
     }
 
