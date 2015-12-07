@@ -212,8 +212,8 @@ along with this software (see the LICENSE.md file). If not, see
 
     For example to call methods on resources in the example.rest.xml file:
 
-    curl -X GET -u john.doe:moqui http://localhost:8080/rest/s1/example/examples
-    curl -X GET -u john.doe:moqui http://localhost:8080/rest/s1/example/examples?exampleTypeEnumId=EXT_MADE_UP
+    curl -X GET -u john.doe:moqui -i http://localhost:8080/rest/s1/example/examples
+    curl -X GET -u john.doe:moqui -i http://localhost:8080/rest/s1/example/examples?exampleTypeEnumId=EXT_MADE_UP
     curl -X GET -u john.doe:moqui http://localhost:8080/rest/s1/example/examples/TEST2
     curl -X GET -u john.doe:moqui http://localhost:8080/rest/s1/example/examples/TEST2/items
     curl -X GET -u john.doe:moqui http://localhost:8080/rest/s1/example/examples/TEST2/items/01

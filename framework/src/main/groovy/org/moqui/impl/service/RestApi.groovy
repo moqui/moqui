@@ -22,6 +22,8 @@ import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+import javax.servlet.http.HttpServletResponse
+
 @CompileStatic
 class RestApi {
     protected final static Logger logger = LoggerFactory.getLogger(RestApi.class)
@@ -52,7 +54,7 @@ class RestApi {
         }
     }
 
-    Object run(List<String> pathList, ExecutionContext ec) {
+    RestResult run(List<String> pathList, ExecutionContext ec) {
         if (!pathList) throw new ResourceNotFoundException("Cannot run REST service with no path")
         String firstPath = pathList[0]
         ResourceNode resourceNode = rootResourceMap.get(firstPath)
@@ -63,7 +65,7 @@ class RestApi {
     static abstract class MethodHandler {
         String method
         MethodHandler(String method) { this.method = method }
-        abstract Object run(List<String> pathList, ExecutionContext ec)
+        abstract RestResult run(List<String> pathList, ExecutionContext ec)
         abstract void toString(int level, StringBuilder sb)
     }
     static class MethodService extends MethodHandler {
@@ -72,9 +74,9 @@ class RestApi {
             super(method)
             serviceName = serviceNode.attribute("name")
         }
-        Object run(List<String> pathList, ExecutionContext ec) {
+        RestResult run(List<String> pathList, ExecutionContext ec) {
             Map result = ec.getService().sync().name(serviceName).parameters(ec.context).call()
-            return result
+            return new RestResult(result, null)
         }
         void toString(int level, StringBuilder sb) {
             for (int i=0; i < (level * 4); i++) sb.append(" ")
@@ -89,29 +91,42 @@ class RestApi {
             masterName = entityNode.attribute("masterName")
             operation = entityNode.attribute("operation")
         }
-        Object run(List<String> pathList, ExecutionContext ec) {
+        RestResult run(List<String> pathList, ExecutionContext ec) {
             if (operation == 'one') {
                 EntityFind ef = ec.entity.find(entityName).searchFormMap(ec.context, null, false)
                 if (masterName) {
-                    return ef.oneMaster(masterName)
+                    return new RestResult(ef.oneMaster(masterName), null)
                 } else {
-                    return ef.one()
+                    return new RestResult(ef.one(), null)
                 }
             } else if (operation == 'list') {
                 EntityFind ef = ec.entity.find(entityName).searchFormMap(ec.context, null, false)
                 // we don't want to go overboard with these requests, never do an unlimited find, if no limit use 100
                 if (!ef.getLimit()) ef.limit(100)
+
+                int count = ef.count() as int
+                int pageIndex = ef.getPageIndex()
+                int pageSize = ef.getPageSize()
+                int pageMaxIndex = ((count - 1) as BigDecimal).divide(pageSize as BigDecimal, 0, BigDecimal.ROUND_DOWN).intValue()
+                int pageRangeLow = pageIndex * pageSize + 1
+                int pageRangeHigh = (pageIndex * pageSize) + pageSize
+                if (pageRangeHigh > count) pageRangeHigh = count
+                Map<String, Object> headers = ['X-Total-Count':count, 'X-Page-Index':pageIndex, 'X-Page-Size':pageSize,
+                    'X-Page-Max-Index':pageMaxIndex, 'X-Page-Range-Low':pageRangeLow, 'X-Page-Range-High':pageRangeHigh] as Map<String, Object>
+
                 if (masterName) {
-                    return ef.listMaster(masterName)
+                    return new RestResult(ef.listMaster(masterName), headers)
                 } else {
-                    return ef.list()
+                    return new RestResult(ef.list(), headers)
                 }
             } else if (operation == 'count') {
                 EntityFind ef = ec.entity.find(entityName).searchFormMap(ec.context, null, false)
-                return ef.count()
+                long count = ef.count()
+                Map<String, Object> headers = ['X-Total-Count':count] as Map<String, Object>
+                return new RestResult(count, headers)
             } else if (operation in ['create', 'update', 'store', 'delete']) {
                 Map result = ec.getService().sync().name(operation, entityName).parameters(ec.context).call()
-                return result
+                return new RestResult(result, null)
             } else {
                 throw new IllegalArgumentException("Entity operation ${operation} not supported, must be one of: one, list, count, create, update, store, delete")
             }
@@ -155,14 +170,14 @@ class RestApi {
             }
         }
 
-        Object runByMethod(List<String> pathList, ExecutionContext ec) {
+        RestResult runByMethod(List<String> pathList, ExecutionContext ec) {
             String method = ec.web.getRequest().getMethod().toLowerCase()
             MethodHandler mh = methodMap.get(method)
             if (mh == null) throw new MethodNotSupportedException("Method ${method} not supported at ${pathList}")
             return mh.run(pathList, ec)
         }
 
-        Object visitChildOrRun(List<String> pathList, int pathIndex, ExecutionContext ec) {
+        RestResult visitChildOrRun(List<String> pathList, int pathIndex, ExecutionContext ec) {
             // more in path? visit the next, otherwise run by request method
             int nextPathIndex = pathIndex + 1
             if (pathList.size() > nextPathIndex) {
@@ -184,9 +199,7 @@ class RestApi {
         }
 
         void toStringChildren(int level, StringBuilder sb) {
-            for (MethodHandler mh in methodMap.values()) {
-                mh.toString(level + 1, sb)
-            }
+            for (MethodHandler mh in methodMap.values()) mh.toString(level + 1, sb)
             for (ResourceNode rn in resourceMap.values()) rn.toString(level + 1, sb)
             if (idNode != null) idNode.toString(level + 1, sb)
         }
@@ -201,7 +214,7 @@ class RestApi {
             displayName = node.attribute("displayName")
             description = node.attribute("description")
         }
-        Object visit(List<String> pathList, int pathIndex, ExecutionContext ec) {
+        RestResult visit(List<String> pathList, int pathIndex, ExecutionContext ec) {
             logger.info("Visit resource ${name}")
             // do nothing else but visit child or run here
             visitChildOrRun(pathList, pathIndex, ec)
@@ -225,7 +238,7 @@ class RestApi {
             super(node)
             name = node.attribute("name")
         }
-        Object visit(List<String> pathList, int pathIndex, ExecutionContext ec) {
+        RestResult visit(List<String> pathList, int pathIndex, ExecutionContext ec) {
             logger.info("Visit id ${name}")
             // set ID value in context
             ec.context.put(name, pathList[pathIndex])
@@ -236,6 +249,28 @@ class RestApi {
             for (int i=0; i < (level * 4); i++) sb.append(" ")
             sb.append("/{").append(name).append("}\n")
             toStringChildren(level, sb)
+        }
+    }
+
+    static class RestResult {
+        Object responseObj
+        Map<String, Object> headers = [:]
+        RestResult(Object responseObj, Map<String, Object> headers) {
+            this.responseObj = responseObj
+            if (headers) this.headers.putAll(headers)
+        }
+        void setHeaders(HttpServletResponse response) {
+            for (Map.Entry<String, Object> entry in headers) {
+                Object value = entry.value
+                if (value == null) continue
+                if (value instanceof Integer) {
+                    response.setIntHeader(entry.key, (int) value)
+                } else if (value instanceof Date) {
+                    response.setDateHeader(entry.key, value.getTime())
+                } else {
+                    response.setHeader(entry.key, value.toString())
+                }
+            }
         }
     }
 

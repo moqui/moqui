@@ -718,6 +718,7 @@ class WebFacadeImpl implements WebFacade {
 
         try {
             // logger.warn("====== parameters: ${parmStack.toString()}")
+            long startTime = System.currentTimeMillis()
             // if _requestBodyJsonList do multiple calls
             if (parmStack._requestBodyJsonList) {
                 // TODO: Consider putting all of this in a transaction for non-find operations (currently each is run in
@@ -737,12 +738,11 @@ class WebFacadeImpl implements WebFacade {
                     responseList.add(responseObj ?: [:])
                     parmStack.pop()
                 }
+                response.addIntHeader('X-Run-Time-ms', (System.currentTimeMillis() - startTime) as int)
                 sendJsonResponse(responseList)
             } else {
-                long startTime = System.currentTimeMillis()
                 Object responseObj = eci.getEntity().rest(request.getMethod(), extraPathNameList, parmStack, masterNameInPath)
-                long endTime = System.currentTimeMillis()
-                response.addIntHeader('X-Run-Time-ms', (endTime - startTime) as int)
+                response.addIntHeader('X-Run-Time-ms', (System.currentTimeMillis() - startTime) as int)
 
                 if (parmStack.xTotalCount != null) response.addIntHeader('X-Total-Count', parmStack.xTotalCount as int)
                 if (parmStack.xPageIndex != null) response.addIntHeader('X-Page-Index', parmStack.xPageIndex as int)
@@ -972,6 +972,7 @@ class WebFacadeImpl implements WebFacade {
         }
 
         try {
+            long startTime = System.currentTimeMillis()
             // if _requestBodyJsonList do multiple calls
             if (parmStack._requestBodyJsonList) {
                 // TODO: Consider putting all of this in a transaction for non-find operations (currently each is run in
@@ -989,33 +990,24 @@ class WebFacadeImpl implements WebFacade {
                     parmStack.putAll((Map) bodyListObj)
                     eci.context.push(parmStack)
 
-                    Object responseObj = eci.getEcfi().getServiceFacade().getRestApi().run(extraPathNameList, eci)
-                    responseList.add(responseObj ?: [:])
+                    RestApi.RestResult restResult = eci.getEcfi().getServiceFacade().getRestApi().run(extraPathNameList, eci)
+                    responseList.add(restResult.responseObj ?: [:])
 
                     eci.context.pop()
                     parmStack.pop()
                 }
+                response.addIntHeader('X-Run-Time-ms', (System.currentTimeMillis() - startTime) as int)
                 sendJsonResponse(responseList)
             } else {
-                long startTime = System.currentTimeMillis()
                 eci.context.push(parmStack)
-                Object responseObj = eci.getEcfi().getServiceFacade().getRestApi().run(extraPathNameList, eci)
+                RestApi.RestResult restResult = eci.getEcfi().getServiceFacade().getRestApi().run(extraPathNameList, eci)
                 eci.context.pop()
-                long endTime = System.currentTimeMillis()
-                response.addIntHeader('X-Run-Time-ms', (endTime - startTime) as int)
-
-                /* TODO: support these for entity find operations, maybe some services too
-                if (parmStack.xTotalCount != null) response.addIntHeader('X-Total-Count', parmStack.xTotalCount as int)
-                if (parmStack.xPageIndex != null) response.addIntHeader('X-Page-Index', parmStack.xPageIndex as int)
-                if (parmStack.xPageSize != null) response.addIntHeader('X-Page-Size', parmStack.xPageSize as int)
-                if (parmStack.xPageMaxIndex != null) response.addIntHeader('X-Page-Max-Index', parmStack.xPageMaxIndex as int)
-                if (parmStack.xPageRangeLow != null) response.addIntHeader('X-Page-Range-Low', parmStack.xPageRangeLow as int)
-                if (parmStack.xPageRangeHigh != null) response.addIntHeader('X-Page-Range-High', parmStack.xPageRangeHigh as int)
-                */
+                response.addIntHeader('X-Run-Time-ms', (System.currentTimeMillis() - startTime) as int)
+                restResult.setHeaders(response)
 
                 // NOTE: This will always respond with 200 OK, consider using 201 Created (for successful POST, create PUT)
                 //     and 204 No Content (for DELETE and other when no content is returned)
-                sendJsonResponse(responseObj)
+                sendJsonResponse(restResult.responseObj)
             }
         } catch (ArtifactAuthorizationException e) {
             // SC_UNAUTHORIZED 401 used when authc/login fails, use SC_FORBIDDEN 403 for authz failures
