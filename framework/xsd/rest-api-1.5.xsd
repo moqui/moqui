@@ -20,7 +20,7 @@ along with this software (see the LICENSE.md file). If not, see
             <xs:sequence>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="method"/>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="resource"/>
-                <xs:element minOccurs="0" maxOccurs="unbounded" ref="id"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="id"/>
             </xs:sequence>
             <xs:attribute name="name" type="xs:string" use="required"/>
             <xs:attribute name="displayName" type="xs:string"/>
@@ -32,7 +32,7 @@ along with this software (see the LICENSE.md file). If not, see
             <xs:sequence>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="method"/>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="resource"/>
-                <xs:element minOccurs="0" maxOccurs="unbounded" ref="id"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="id"/>
             </xs:sequence>
             <xs:attribute name="name" type="xs:string" use="required"/>
         </xs:complexType>
@@ -75,6 +75,7 @@ along with this software (see the LICENSE.md file). If not, see
                         <xs:enumeration value="count"/>
                         <xs:enumeration value="create"/>
                         <xs:enumeration value="update"/>
+                        <xs:enumeration value="store"/>
                         <xs:enumeration value="delete"/>
                     </xs:restriction>
                 </xs:simpleType>
