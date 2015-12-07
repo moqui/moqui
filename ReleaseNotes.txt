@@ -2157,16 +2157,6 @@ Features considered, but may not to be included in 1.x series
     - mount on /odata4 as alternative to existing /rest
     - generate EDMX for all entities (and exported services?)
   - Generate Swagger schema (http://swagger.io) for all entities to use with entity REST API
-  x Generate RAML (http://raml.org) with json-schema (http://json-schema.org) for all entities to use with entity REST API
-    x get: \ queryParameters: \ ${pk/etc}: \ (type:, required:, etc)
-    x get: \ responses: \ 200: \ body: \ application/json: \ schema: !include schema/${name}.json
-    x nested like: /orders: \ /${orderId}: \ /orderItems: \ ...
-    - see MuleSoft, other tools
-  x Generate json-schema (http://json-schema.org) documents, make available through entity REST API
-    x URL pattern? maybe /rest/schema (or /rest/schema.json) for all
-    x for particular entity: /rest/schema/${name}.json or just /rest/schema/${name}
-    x MIME type: application/schema+json
-    x use hyper schema links to describe API options
   - Generate minimal Data Document based on changes (per TX possible, runs async so not really; from existing doc, like current ES doc)
   - Update database from Data Document
   - Data Document UI
@@ -2179,21 +2169,10 @@ Features considered, but may not to be included in 1.x series
     - json-schema, RAML, Swagger API defs
     - generic service for sending Data Document to REST (or other?) end point
   - Master Entity REST Interface
-    x like /rest/v1 but only for entities with master definition(s)
-      x through /rest/m1/${entity}/${master}
-      x /rest/v1/${entity}?master=${master}
-    x generate json-schema, RAML for full master def hierarchies
     - generate Swagger (http://swagger.io) for full master def hierarchies
   - Service REST API
-    x goal to define service mappings to REST path, method, etc for:
-      - Swagger, json-schema, RAML descriptors
-      - from service: in-parameters (RAML queryParameters, json-schema), description, out-parameters (json-schema)
-      x handling service calls through generic transition like /rest/v1, instead of explicit transitions like ExampleApp.xml
-    x use structure somewhat similar to RAML (maybe use RAML with extensions?)
-    x define resources, sub-resources (including IDs in path)
-    x specify method and service name for that method
-    x authz at service level, like other interfaces
-    x allow mapping master entity operations as well
+    - Swagger, json-schema, RAML descriptors
+    - from service: in-parameters (RAML queryParameters, json-schema), description, out-parameters (json-schema)
     - allow mapping DataDocument operations as well
 
 - AS2 Client and Server
@@ -2248,17 +2227,11 @@ Features considered, but may not to be included in 1.x series
       - maybe have a more general way to configure details of topics, including emailTemplateId and screenLocation...
 
 - Data Document and Feed
-  x API get outstanding data changes (EntityDataFeed.getFeedLatestDocuments())
-  X need external API for EntityDataFeed.getFeedLatestDocuments()? - done as service
-  x API push matching data change
   - API (or service?) push outstanding data changes (registration/connection, time trigger; tie to SystemMessage)
   - API (or service?) receive/persist data change messages - going reverse of generation for DataDocuments... should be interesting
   - Consumer System Registry
-    x register service for push (service to call, ID), another for pull (ID) (in DataFeed entity)
-    x per DataDocument alreadySentDateTime
     - feed transport (for each: supports confirmation?)
       - WebSocket (use Notification system, based on notificationName (and userId?))
-      x Moqui Service with receive#DataFeed service interface
   - Service to send email from DataFeed (ie receive#DataFeed implementation), use XML Screen for email content
     - don't do this directly, do through NotificationMessage, ie the next item... or maybe not, too many parameters for
       email from too many places related to a DataDocument, may not be flexible enough and may be quite messy
@@ -2266,11 +2239,3 @@ Features considered, but may not to be included in 1.x series
     is probably the best way to tie a feed to WebSocket notifications for data updates
     - Use the dataFeedId as the NotificationMessage topic
     - Use this in HiveMind to send notifications of project, task, and wiki changes (maybe?)
-
-- System-System Message
-  - System-System Message Receiving
-    - identify/link duplicate/retry messages (how?)
-    n send async success/fail confirmation (maybe best left to consume service)
-  - Camel endpoint for sending and receiving (custom, or use service facade endpoint?)
-  - Useful for OAGIS and many other system-to-system messages; idea similar to OAGIS services and entities in OFBiz
-  - Message purge after time period service and schedule for it
