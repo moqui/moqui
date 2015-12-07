@@ -47,6 +47,12 @@ New Features
 - Component directories (referred to by component-list.component-dir in the
   Moqui Conf XML file) now supports a components.xml file (must use that
   filename) to specify which components to load and in which order
+- New Service REST API tool
+  - define REST resources and methods in XML files (see rest-api-1.6.xsd)
+  - map methods under resources to service calls and entity operations
+  - see example Service REST API in example.rest.xml
+  - call REST methods through the /rest/s1 transition
+  - see example client calls in the rest.xml screen definition file
 - Better protection against CSRF/XSRF attaches with a session token as per
   https://www.owasp.org/index.php/CSRF_Prevention_Cheat_Sheet;
   - when enabled (webapp.@require-session-token in Moqui Conf XML file not
@@ -2179,15 +2185,15 @@ Features considered, but may not to be included in 1.x series
     x generate json-schema, RAML for full master def hierarchies
     - generate Swagger (http://swagger.io) for full master def hierarchies
   - Service REST API
-    - goal to define service mappings to REST path, method, etc for:
+    x goal to define service mappings to REST path, method, etc for:
       - Swagger, json-schema, RAML descriptors
-      - handling service calls through generic transition like /rest/v1, instead of explicit transitions like ExampleApp.xml
-    - use structure somewhat similar to RAML (maybe use RAML with extensions?)
-    - define resources, sub-resources (including IDs in path)
-    - specify method and service name for that method
-    - from service: in-parameters (RAML queryParameters, json-schema), description, out-parameters (json-schema)
-    - authz at service level, like other interfaces
-    - allow mapping master entity operations as well
+      - from service: in-parameters (RAML queryParameters, json-schema), description, out-parameters (json-schema)
+      x handling service calls through generic transition like /rest/v1, instead of explicit transitions like ExampleApp.xml
+    x use structure somewhat similar to RAML (maybe use RAML with extensions?)
+    x define resources, sub-resources (including IDs in path)
+    x specify method and service name for that method
+    x authz at service level, like other interfaces
+    x allow mapping master entity operations as well
     - allow mapping DataDocument operations as well
 
 - AS2 Client and Server

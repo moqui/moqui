@@ -12,7 +12,7 @@ You should have received a copy of the CC0 Public Domain Dedication
 along with this software (see the LICENSE.md file). If not, see
 <http://creativecommons.org/publicdomain/zero/1.0/>.
 -->
-<emecas xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/email-eca-1.5.xsd">
+<emecas xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/email-eca-1.6.xsd">
     <!-- NOTE: see org.moqui.EmailServices.process#EmailEca interface for fields derived from message, all available for conditions too -->
     <emeca rule-name="SaveEcaEmailMessage">
         <!-- simple example condition: if message not seen and has a subject save it (note that if EmailServer.storeSkipSeen=Y seen are skipped anyway) -->
