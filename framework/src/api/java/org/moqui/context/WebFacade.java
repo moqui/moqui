@@ -62,4 +62,5 @@ public interface WebFacade {
     void handleEntityRestSchema(List<String> extraPathNameList, String schemaUri, String linkPrefix,
                                 String schemaLinkPrefix, boolean getMaster);
     void handleEntityRestRaml(List<String> extraPathNameList, String linkPrefix, String schemaLinkPrefix, boolean getMaster);
+    void handleServiceRestCall(List<String> extraPathNameList);
 }

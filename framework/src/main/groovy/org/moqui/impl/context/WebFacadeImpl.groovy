@@ -33,6 +33,7 @@ import org.moqui.impl.entity.EntityDefinition
 import org.moqui.impl.entity.EntityFacadeImpl
 import org.moqui.impl.screen.ScreenDefinition
 import org.moqui.impl.screen.ScreenUrlInfo
+import org.moqui.impl.service.RestApi
 import org.moqui.impl.service.ServiceJsonRpcDispatcher
 import org.moqui.impl.service.ServiceXmlRpcDispatcher
 
@@ -949,6 +950,105 @@ class WebFacadeImpl implements WebFacade {
         sendTextResponse(yamlString, "application/raml+yaml", "MoquiEntities.raml")
     }
 
+
+    @Override
+    @CompileStatic
+    void handleServiceRestCall(List<String> extraPathNameList) {
+        ContextStack parmStack = (ContextStack) getParameters()
+
+        // check for parsing error, send a 400 response
+        if (parmStack._requestBodyJsonParseError) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, (String) parmStack._requestBodyJsonParseError)
+            return
+        }
+
+        // make sure a user is logged in, screen/etc that calls will generally be configured to not require auth
+        if (!eci.getUser().getUsername()) {
+            // if there was a login error there will be a MessageFacade error message
+            String errorMessage = eci.message.errorsString
+            if (!errorMessage) errorMessage = "Authentication required for Service REST API operations"
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, errorMessage)
+            return
+        }
+
+        try {
+            // if _requestBodyJsonList do multiple calls
+            if (parmStack._requestBodyJsonList) {
+                // TODO: Consider putting all of this in a transaction for non-find operations (currently each is run in
+                // TODO:     a separate transaction); or handle errors per-row instead of blowing up the whole request
+                List responseList = []
+                for (Object bodyListObj in parmStack._requestBodyJsonList) {
+                    if (!(bodyListObj instanceof Map)) {
+                        String errMsg = "If request body JSON is a list/array it must contain only object/map values, found non-map entry of type ${bodyListObj.getClass().getName()} with value: ${bodyListObj}"
+                        logger.warn(errMsg)
+                        response.sendError(HttpServletResponse.SC_BAD_REQUEST, errMsg)
+                        return
+                    }
+                    // logger.warn("========== REST ${request.getMethod()} ${request.getPathInfo()} ${extraPathNameList}; body list object: ${bodyListObj}")
+                    parmStack.push()
+                    parmStack.putAll((Map) bodyListObj)
+                    eci.context.push(parmStack)
+
+                    Object responseObj = eci.getEcfi().getServiceFacade().getRestApi().run(extraPathNameList, eci)
+                    responseList.add(responseObj ?: [:])
+
+                    eci.context.pop()
+                    parmStack.pop()
+                }
+                sendJsonResponse(responseList)
+            } else {
+                long startTime = System.currentTimeMillis()
+                eci.context.push(parmStack)
+                Object responseObj = eci.getEcfi().getServiceFacade().getRestApi().run(extraPathNameList, eci)
+                eci.context.pop()
+                long endTime = System.currentTimeMillis()
+                response.addIntHeader('X-Run-Time-ms', (endTime - startTime) as int)
+
+                /* TODO: support these for entity find operations, maybe some services too
+                if (parmStack.xTotalCount != null) response.addIntHeader('X-Total-Count', parmStack.xTotalCount as int)
+                if (parmStack.xPageIndex != null) response.addIntHeader('X-Page-Index', parmStack.xPageIndex as int)
+                if (parmStack.xPageSize != null) response.addIntHeader('X-Page-Size', parmStack.xPageSize as int)
+                if (parmStack.xPageMaxIndex != null) response.addIntHeader('X-Page-Max-Index', parmStack.xPageMaxIndex as int)
+                if (parmStack.xPageRangeLow != null) response.addIntHeader('X-Page-Range-Low', parmStack.xPageRangeLow as int)
+                if (parmStack.xPageRangeHigh != null) response.addIntHeader('X-Page-Range-High', parmStack.xPageRangeHigh as int)
+                */
+
+                // NOTE: This will always respond with 200 OK, consider using 201 Created (for successful POST, create PUT)
+                //     and 204 No Content (for DELETE and other when no content is returned)
+                sendJsonResponse(responseObj)
+            }
+        } catch (ArtifactAuthorizationException e) {
+            // SC_UNAUTHORIZED 401 used when authc/login fails, use SC_FORBIDDEN 403 for authz failures
+            logger.warn("REST Access Forbidden (no authz): " + e.message)
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, e.message)
+        } catch (ArtifactTarpitException e) {
+            logger.warn("REST Too Many Requests (tarpit): " + e.message)
+            if (e.getRetryAfterSeconds()) response.addIntHeader("Retry-After", e.getRetryAfterSeconds())
+            // NOTE: there is no constant on HttpServletResponse for 429; see RFC 6585 for details
+            response.sendError(429, e.message)
+        } catch (RestApi.ResourceNotFoundException e) {
+            logger.warn((String) "REST Resource Not Found: " + e.getMessage(), e)
+            // send bad request (400), reserve 404 Not Found for records that don't exist
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.message)
+        } catch (RestApi.MethodNotSupportedException e) {
+            logger.warn((String) "REST Method Not Supported: " + e.getMessage(), e)
+            // send bad request (400), reserve 404 Not Found for records that don't exist
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.message)
+        } catch (EntityValueNotFoundException e) {
+            logger.warn("REST Entity Value Not Found: " + e.getMessage())
+            // record doesn't exist, send 404 Not Found
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, e.message)
+        } catch (Throwable t) {
+            String errorMessage = t.toString()
+            if (eci.message.hasError()) {
+                String errorsString = eci.message.errorsString
+                logger.error(errorsString, t)
+                errorMessage = errorMessage + ' ' + errorsString
+            }
+            logger.warn((String) "General error in Service REST API: " + t.toString(), t)
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, errorMessage)
+        }
+    }
 
     void saveScreenLastInfo(String screenPath, Map parameters) {
         session.setAttribute("moqui.screen.last.path", screenPath ?: request.getPathInfo())

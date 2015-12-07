@@ -43,12 +43,13 @@ class RestApi {
                     Node rootNode = new XmlParser().parseText(rr.getText())
                     ResourceNode rn = new ResourceNode(rootNode)
                     rootResourceMap.put(rn.name, rn)
+                    logger.info("Loaded REST API from ${rr.getLocation()}")
+                    // logger.info(rn.toString())
                 }
             } else {
                 logger.warn("Can't load REST APIs from component at [${serviceDirRr.location}] because it doesn't support exists/directory/etc")
             }
         }
-
     }
 
     Object run(List<String> pathList, ExecutionContext ec) {
@@ -56,13 +57,14 @@ class RestApi {
         String firstPath = pathList[0]
         ResourceNode resourceNode = rootResourceMap.get(firstPath)
         if (resourceNode == null) throw new ResourceNotFoundException("Root resource not found with name ${firstPath}")
-        return resourceNode.visit(pathList, 1, ec)
+        return resourceNode.visit(pathList, 0, ec)
     }
 
     static abstract class MethodHandler {
         String method
         MethodHandler(String method) { this.method = method }
         abstract Object run(List<String> pathList, ExecutionContext ec)
+        abstract void toString(int level, StringBuilder sb)
     }
     static class MethodService extends MethodHandler {
         String serviceName
@@ -73,6 +75,10 @@ class RestApi {
         Object run(List<String> pathList, ExecutionContext ec) {
             Map result = ec.getService().sync().name(serviceName).parameters(ec.context).call()
             return result
+        }
+        void toString(int level, StringBuilder sb) {
+            for (int i=0; i < (level * 4); i++) sb.append(" ")
+            sb.append(method).append(": service - ").append(serviceName).append("\n")
         }
     }
     static class MethodEntity extends MethodHandler {
@@ -109,6 +115,12 @@ class RestApi {
             } else {
                 throw new IllegalArgumentException("Entity operation ${operation} not supported, must be one of: one, list, count, create, update, store, delete")
             }
+        }
+        void toString(int level, StringBuilder sb) {
+            for (int i=0; i < (level * 4); i++) sb.append(" ")
+            sb.append(method).append(": entity - ").append(operation).append(" - ").append(entityName)
+            if (masterName) sb.append(" (master: ").append(masterName).append(")")
+            sb.append("\n")
         }
     }
 
@@ -171,6 +183,14 @@ class RestApi {
             }
         }
 
+        void toStringChildren(int level, StringBuilder sb) {
+            for (MethodHandler mh in methodMap.values()) {
+                mh.toString(level + 1, sb)
+            }
+            for (ResourceNode rn in resourceMap.values()) rn.toString(level + 1, sb)
+            if (idNode != null) idNode.toString(level + 1, sb)
+        }
+
         abstract Object visit(List<String> pathList, int pathIndex, ExecutionContext ec)
     }
     static class ResourceNode extends PathNode {
@@ -182,8 +202,21 @@ class RestApi {
             description = node.attribute("description")
         }
         Object visit(List<String> pathList, int pathIndex, ExecutionContext ec) {
+            logger.info("Visit resource ${name}")
             // do nothing else but visit child or run here
             visitChildOrRun(pathList, pathIndex, ec)
+        }
+        String toString() {
+            StringBuilder sb = new StringBuilder()
+            toString(0, sb)
+            return sb.toString()
+        }
+        void toString(int level, StringBuilder sb) {
+            for (int i=0; i < (level * 4); i++) sb.append(" ")
+            sb.append("/").append(name)
+            if (displayName) sb.append(" - ").append(displayName)
+            sb.append("\n")
+            toStringChildren(level, sb)
         }
     }
     static class IdNode extends PathNode {
@@ -193,10 +226,16 @@ class RestApi {
             name = node.attribute("name")
         }
         Object visit(List<String> pathList, int pathIndex, ExecutionContext ec) {
+            logger.info("Visit id ${name}")
             // set ID value in context
             ec.context.put(name, pathList[pathIndex])
             // visit child or run here
             visitChildOrRun(pathList, pathIndex, ec)
+        }
+        void toString(int level, StringBuilder sb) {
+            for (int i=0; i < (level * 4); i++) sb.append(" ")
+            sb.append("/{").append(name).append("}\n")
+            toStringChildren(level, sb)
         }
     }
 

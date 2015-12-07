@@ -179,6 +179,10 @@ class WebFacadeStub implements WebFacade {
     void handleEntityRestRaml(List<String> extraPathNameList, String linkPrefix, String schemaLinkPrefix, boolean getMaster) {
         throw new IllegalArgumentException("WebFacadeStub handleEntityRestRaml not supported")
     }
+    @Override
+    void handleServiceRestCall(List<String> extraPathNameList) {
+        throw new IllegalArgumentException("WebFacadeStub handleServiceRestCall not supported")
+    }
 
     static class HttpServletRequestStub implements HttpServletRequest {
         WebFacadeStub wfs

@@ -61,6 +61,7 @@ class ServiceFacadeImpl implements ServiceFacade {
 
     protected final Map<String, List<ServiceEcaRule>> secaRulesByServiceName = new HashMap()
     protected final List<EmailEcaRule> emecaRuleList = new ArrayList()
+    protected RestApi restApi
 
     protected final Map<String, ServiceRunner> serviceRunners = new HashMap()
 
@@ -77,6 +78,8 @@ class ServiceFacadeImpl implements ServiceFacade {
         loadSecaRulesAll()
         // load Email ECA rules
         loadEmecaRulesAll()
+        // load REST API
+        restApi = new RestApi(ecfi)
 
         // load service runners from configuration
         for (Node serviceType in ecfi.confXmlRoot."service-facade"[0]."service-type") {
@@ -125,6 +128,8 @@ class ServiceFacadeImpl implements ServiceFacade {
 
     @CompileStatic
     ServiceRunner getServiceRunner(String type) { return serviceRunners.get(type) }
+    @CompileStatic
+    RestApi getRestApi() { return restApi }
 
     @CompileStatic
     boolean isServiceDefined(String serviceName) {
