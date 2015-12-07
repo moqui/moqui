@@ -267,12 +267,12 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                 }
             }
 
-            // load the CSV text in its own transaction
+            // load the JSON text in its own transaction
             if (this.jsonText) {
                 boolean beganTransaction = tf.begin(transactionTimeout)
                 InputStream jsonInputStream = new ByteArrayInputStream(jsonText.getBytes("UTF-8"))
                 try {
-                    ejh.loadFile("csvText", jsonInputStream)
+                    ejh.loadFile("jsonText", jsonInputStream)
                 } catch (Throwable t) {
                     tf.rollback(beganTransaction, "Error loading JSON entity data", t)
                     throw t

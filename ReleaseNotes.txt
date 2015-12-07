@@ -2156,7 +2156,7 @@ Features considered, but may not to be included in 1.x series
     x get: \ responses: \ 200: \ body: \ application/json: \ schema: !include schema/${name}.json
     x nested like: /orders: \ /${orderId}: \ /orderItems: \ ...
     - see MuleSoft, other tools
-  - Generate json-schema (http://json-schema.org) documents, make available through entity REST API
+  x Generate json-schema (http://json-schema.org) documents, make available through entity REST API
     x URL pattern? maybe /rest/schema (or /rest/schema.json) for all
     x for particular entity: /rest/schema/${name}.json or just /rest/schema/${name}
     x MIME type: application/schema+json
@@ -2176,7 +2176,8 @@ Features considered, but may not to be included in 1.x series
     x like /rest/v1 but only for entities with master definition(s)
       x through /rest/m1/${entity}/${master}
       x /rest/v1/${entity}?master=${master}
-    - generate json-schema, RAML, Swagger for full master def hierarchies
+    x generate json-schema, RAML for full master def hierarchies
+    - generate Swagger (http://swagger.io) for full master def hierarchies
   - Service REST API
     - goal to define service mappings to REST path, method, etc for:
       - Swagger, json-schema, RAML descriptors
@@ -2187,6 +2188,7 @@ Features considered, but may not to be included in 1.x series
     - from service: in-parameters (RAML queryParameters, json-schema), description, out-parameters (json-schema)
     - authz at service level, like other interfaces
     - allow mapping master entity operations as well
+    - allow mapping DataDocument operations as well
 
 - AS2 Client and Server
   - use OpenAS2 (http://openas2.sourceforge.net, https://github.com/OpenAS2/OpenAs2App)?
