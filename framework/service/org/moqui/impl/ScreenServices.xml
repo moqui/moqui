@@ -20,21 +20,23 @@ along with this software (see the LICENSE.md file). If not, see
             <parameter name="formId"/>
             <parameter name="userId" default="ec.user.userId"/>
             <parameter name="responseDate" type="Timestamp" default="ec.user.nowTimestamp"/>
-            <parameter name="responseMap" type="Map" required="true"/>
+            <parameter name="responseMap" type="Map"/>
         </in-parameters>
         <out-parameters><parameter name="formResponseId"/></out-parameters>
         <actions>
             <service-call name="create#moqui.screen.form.FormResponse" in-map="context" out-map="context"/>
 
-            <set field="formNode" from="ec.screen.getFormNode(formLocation)"/>
-            <iterate list="formNode.field" entry="fieldNode">
-                <set field="fieldName" from="fieldNode.'@name'"/>
-                <if condition="responseMap.containsKey(fieldName)">
-                    <service-call name="create#moqui.screen.form.FormResponseAnswer"
-                            in-map="[formResponseId:formResponseId, formId:formId, fieldName:fieldName,
-                                valueText:StupidUtilities.toPlainString(responseMap.get(fieldName))]"/>
-                </if>
-            </iterate>
+            <if condition="responseMap">
+                <set field="formNode" from="ec.screen.getFormNode(formLocation)"/>
+                <iterate list="formNode.field" entry="fieldNode">
+                    <set field="fieldName" from="fieldNode.'@name'"/>
+                    <if condition="responseMap.containsKey(fieldName)">
+                        <service-call name="create#moqui.screen.form.FormResponseAnswer"
+                                in-map="[formResponseId:formResponseId, formId:formId, fieldName:fieldName,
+                                    valueText:StupidUtilities.toPlainString(responseMap.get(fieldName))]"/>
+                    </if>
+                </iterate>
+            </if>
         </actions>
     </service>
     <service verb="update" noun="FormResponse">
