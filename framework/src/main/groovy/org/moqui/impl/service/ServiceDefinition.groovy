@@ -14,6 +14,7 @@
 package org.moqui.impl.service
 
 import groovy.transform.CompileStatic
+import groovy.xml.QName
 import org.apache.commons.validator.routines.CreditCardValidator
 import org.apache.commons.validator.routines.EmailValidator
 import org.apache.commons.validator.routines.UrlValidator
@@ -957,4 +958,39 @@ class ServiceDefinition {
         }
     }
     */
+
+    Map<String, Object> getJsonSchemaMapIn() {
+        // add a definition for service in parameters
+        List<String> requiredParms = []
+        Map<String, Object> properties = [:]
+        Map<String, Object> defMap = [type:'object', required:requiredParms, properties:properties]
+        for (String parmName in getInParameterNames()) {
+            Node parmNode = getInParameter(parmName)
+            if (parmNode.attribute("required") == "true") requiredParms.add(parmName)
+            properties.put(parmName, getJsonSchemaPropMap(parmNode))
+        }
+        return defMap
+    }
+    Map<String, Object> getJsonSchemaMapOut() {
+        List<String> requiredParms = []
+        Map<String, Object> properties = [:]
+        Map<String, Object> defMap = [type:'object', required:requiredParms, properties:properties]
+        for (String parmName in getOutParameterNames()) {
+            Node parmNode = getOutParameter(parmName)
+            if (parmNode.attribute("required") == "true") requiredParms.add(parmName)
+            properties.put(parmName, getJsonSchemaPropMap(parmNode))
+        }
+        return defMap
+    }
+    protected static Map getJsonSchemaPropMap(Node parmNode) {
+        String objectType = (String) parmNode?.attribute('type')
+        Map propMap = [type:RestApi.getJsonType(objectType)]
+        String format = RestApi.getJsonFormat(objectType)
+        if (format) propMap.put("format", format)
+        String description = StupidUtilities.nodeText(parmNode.get("description"))
+        if (description) propMap.put("description", description)
+        if (parmNode.attribute("default-value")) propMap.put("default", (String) parmNode.attribute("default-value"))
+        if (parmNode.attribute("default")) propMap.put("default", "{${parmNode.attribute("default")}}")
+        return propMap
+    }
 }

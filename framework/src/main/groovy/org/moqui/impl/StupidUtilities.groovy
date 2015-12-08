@@ -430,7 +430,16 @@ class StupidUtilities {
 
         return newNode
     }
-    static String nodeText(Node theNode) {
+    static String nodeText(Object nodeObj) {
+        if (!nodeObj) return ""
+        Node theNode
+        if (nodeObj instanceof Node) {
+            theNode = (Node) nodeObj
+        } else if (nodeObj instanceof NodeList) {
+            NodeList nl = (NodeList) nodeObj
+            if (nl.size() > 0) theNode = nl.get(0)
+        }
+        if (theNode == null) return ""
         List<String> textList = theNode.localText()
         if (textList) {
             if (textList.size() == 1) {

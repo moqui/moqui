@@ -14,11 +14,14 @@
 package org.moqui.impl.service
 
 import groovy.transform.CompileStatic
+import groovy.xml.QName
 import org.moqui.BaseException
 import org.moqui.context.ExecutionContext
 import org.moqui.context.ResourceReference
 import org.moqui.entity.EntityFind
+import org.moqui.impl.StupidUtilities
 import org.moqui.impl.context.ExecutionContextFactoryImpl
+import org.moqui.impl.entity.EntityDefinition
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -43,7 +46,7 @@ class RestApi {
                 for (ResourceReference rr in serviceDirRr.directoryEntries) {
                     if (!rr.fileName.endsWith(".rest.xml")) continue
                     Node rootNode = new XmlParser().parseText(rr.getText())
-                    ResourceNode rn = new ResourceNode(rootNode)
+                    ResourceNode rn = new ResourceNode(rootNode, null, ecfi)
                     rootResourceMap.put(rn.name, rn)
                     logger.info("Loaded REST API from ${rr.getLocation()}")
                     // logger.info(rn.toString())
@@ -62,31 +65,106 @@ class RestApi {
         return resourceNode.visit(pathList, 0, ec)
     }
 
+    Map<String, Object> getSwaggerMap(String rootResourceName, String hostName, String basePath) {
+        ResourceNode resourceNode = rootResourceMap.get(rootResourceName)
+        if (resourceNode == null) throw new ResourceNotFoundException("Root resource not found with name ${rootResourceName}")
+
+        Map<String, Object> swaggerMap = [swagger:'2.0',
+            info:[title:(resourceNode.displayName ?: 'Service REST API'), version:(resourceNode.version ?: '1.0'), description:(resourceNode.description ?: '')],
+            host:hostName, basePath:basePath, schemes:['http', 'https'],
+            consumes:['application/json', 'multipart/form-data'], produces:['application/json'],
+            paths:[:], definitions:[:]
+        ]
+
+        resourceNode.addToSwaggerMap(swaggerMap)
+
+        return swaggerMap
+    }
+
     static abstract class MethodHandler {
+        ExecutionContextFactoryImpl ecfi
         String method
-        MethodHandler(String method) { this.method = method }
+        PathNode pathNode
+        MethodHandler(String method, PathNode pathNode, ExecutionContextFactoryImpl ecfi) {
+            this.ecfi = ecfi
+            this.method = method
+            this.pathNode = pathNode
+        }
         abstract RestResult run(List<String> pathList, ExecutionContext ec)
+        abstract void addToSwaggerMap(Map<String, Object> swaggerMap, Map<String, Map<String, Object>> resourceMap)
         abstract void toString(int level, StringBuilder sb)
     }
+
+    protected static final Map<String, String> objectTypeJsonMap = [
+            Integer:"integer", Long:"integer", Short:"integer", Float:"number", Double:"number",
+            BigDecimal:"number", BigInteger:"integer",
+            Boolean:"boolean", List:"array", Set:"array", Collection:"array", Map:"object" ]
+    static String getJsonType(String javaType) {
+        if (!javaType) return "string"
+        if (javaType.contains(".")) javaType = javaType.substring(javaType.lastIndexOf(".") + 1)
+        return objectTypeJsonMap.get(javaType) ?: "string"
+    }
+    protected static final Map<String, String> objectJsonFormatMap = [
+            Integer:"int32", Long:"int64", Short:"int32", Float:"float", Double:"double",
+            BigDecimal:"", BigInteger:"int64", Date:"date", Timestamp:"date-time",
+            Boolean:"", List:"", Set:"", Collection:"", Map:"" ]
+    static String getJsonFormat(String javaType) {
+        if (!javaType) return ""
+        if (javaType.contains(".")) javaType = javaType.substring(javaType.lastIndexOf(".") + 1)
+        return objectJsonFormatMap.get(javaType) ?: ""
+    }
+
     static class MethodService extends MethodHandler {
         String serviceName
-        MethodService(String method, Node serviceNode) {
-            super(method)
+        MethodService(String method, Node serviceNode, PathNode pathNode, ExecutionContextFactoryImpl ecfi) {
+            super(method, pathNode, ecfi)
             serviceName = serviceNode.attribute("name")
         }
         RestResult run(List<String> pathList, ExecutionContext ec) {
             Map result = ec.getService().sync().name(serviceName).parameters(ec.context).call()
             return new RestResult(result, null)
         }
+
+        void addToSwaggerMap(Map<String, Object> swaggerMap, Map<String, Map<String, Object>> resourceMap) {
+            ServiceDefinition sd = ecfi.getServiceFacade().getServiceDefinition(serviceName)
+            if (sd == null) throw new IllegalArgumentException("Service ${serviceName} not found")
+            Node serviceNode = sd.getServiceNode()
+
+            // add parameters, including path parameters
+            List<Map> parameters = []
+            for (String pathParm in pathNode.pathParameters) {
+                Node parmNode = sd.getInParameter(pathParm)
+                if (parmNode == null) throw new IllegalArgumentException("No in parameter found for path parameter ${pathParm} in service ${sd.getServiceName()}")
+                parameters.add([name:pathParm, in:'path', required:true, type:getJsonType((String) parmNode?.attribute('type')),
+                                description:StupidUtilities.nodeText(parmNode.get("description"))])
+            }
+            if (sd.getInParameterNames()) {
+                parameters.add([name:'body', in:'body', required:true, schema:['$ref':"#/definitions/${sd.getServiceName()}.In".toString()]])
+                // add a definition for service in parameters
+                ((Map) swaggerMap.definitions).put("${sd.getServiceName()}.In".toString(), sd.getJsonSchemaMapIn())
+            }
+
+            // add responses
+            Map responses = ["403":[description:"Access Forbidden (no authz)"], "429":[description:"Too Many Requests (tarpit)"],
+                             "500":[description:"General Error"]]
+            if (sd.getOutParameterNames()) {
+                responses.put("200", [description:'Success', schema:['$ref':"#/definitions/${sd.getServiceName()}.Out".toString()]])
+                ((Map) swaggerMap.definitions).put("${sd.getServiceName()}.Out".toString(), sd.getJsonSchemaMapOut())
+            }
+
+            resourceMap.put(method, [summary:(serviceNode.attribute("displayName") ?: "${sd.verb} ${sd.noun}".toString()),
+                    description:StupidUtilities.nodeText(serviceNode.get("description")), parameters:parameters, responses:responses])
+        }
         void toString(int level, StringBuilder sb) {
             for (int i=0; i < (level * 4); i++) sb.append(" ")
             sb.append(method).append(": service - ").append(serviceName).append("\n")
         }
     }
+
     static class MethodEntity extends MethodHandler {
         String entityName, masterName, operation
-        MethodEntity(String method, Node entityNode) {
-            super(method)
+        MethodEntity(String method, Node entityNode, PathNode pathNode, ExecutionContextFactoryImpl ecfi) {
+            super(method, pathNode, ecfi)
             entityName = entityNode.attribute("name")
             masterName = entityNode.attribute("masterName")
             operation = entityNode.attribute("operation")
@@ -123,13 +201,50 @@ class RestApi {
                 EntityFind ef = ec.entity.find(entityName).searchFormMap(ec.context, null, false)
                 long count = ef.count()
                 Map<String, Object> headers = ['X-Total-Count':count] as Map<String, Object>
-                return new RestResult(count, headers)
+                return new RestResult([count:count], headers)
             } else if (operation in ['create', 'update', 'store', 'delete']) {
                 Map result = ec.getService().sync().name(operation, entityName).parameters(ec.context).call()
                 return new RestResult(result, null)
             } else {
                 throw new IllegalArgumentException("Entity operation ${operation} not supported, must be one of: one, list, count, create, update, store, delete")
             }
+        }
+
+        void addToSwaggerMap(Map<String, Object> swaggerMap, Map<String, Map<String, Object>> resourceMap) {
+            EntityDefinition ed = ecfi.getEntityFacade().getEntityDefinition(entityName)
+            if (ed == null) throw new IllegalArgumentException("Entity ${entityName} not found")
+            Node entityNode = ed.getEntityNode()
+
+            // add parameters, including path parameters
+            List<Map> parameters = []
+            for (String pathParm in pathNode.pathParameters) {
+                EntityDefinition.FieldInfo fi = ed.getFieldInfo(pathParm)
+                if (fi == null) throw new IllegalArgumentException("No field found for path parameter ${pathParm} in entity ${ed.getFullEntityName()}")
+                parameters.add([name:pathParm, in:'path', required:true, type:(EntityDefinition.fieldTypeJsonMap.get(fi.type) ?: "string"),
+                                description:StupidUtilities.nodeText(fi.fieldNode.get("description"))])
+            }
+            String refDefName = ed.getShortAlias() ?: ed.getFullEntityName()
+            parameters.add([name:'body', in:'body', required:false, schema:['$ref':"#/definitions/${refDefName}".toString()]])
+            // add a definition for entity fields
+            ((Map) swaggerMap.definitions).put(refDefName, ed.getJsonSchema(false,
+                    masterName ? (Map) swaggerMap.definitions : null, null, null, null, masterName, null))
+
+            // add responses
+            Map responses = ["403":[description:"Access Forbidden (no authz)"], "404":[description:"Value Not Found"],
+                             "429":[description:"Too Many Requests (tarpit)"], "500":[description:"General Error"]]
+
+            // TODO: better to just include PKs for response for create/store, body for one, etc
+            if (operation in ['one', 'create', 'store']) {
+                responses.put("200", [description:'Success', schema:['$ref':"#/definitions/${refDefName}".toString()]])
+            } else if (operation == 'list') {
+                responses.put("200", [description:'Success', schema:[type:"array", items:['$ref':"#/definitions/${refDefName}".toString()]]])
+            } else if (operation == 'count') {
+                // TODO
+            }
+
+            resourceMap.put(method, [summary:("${operation} ${ed.getFullEntityName()}".toString()),
+                    description:StupidUtilities.nodeText(ed.getEntityNode().get("description")),
+                    parameters:parameters, responses:responses])
         }
         void toString(int level, StringBuilder sb) {
             for (int i=0; i < (level * 4); i++) sb.append(" ")
@@ -140,11 +255,24 @@ class RestApi {
     }
 
     static abstract class PathNode {
-        Map<String, MethodHandler> methodMap = [:]
-        Map<String, ResourceNode> resourceMap = [:]
-        IdNode idNode = null
+        ExecutionContextFactoryImpl ecfi
 
-        PathNode(Node node) {
+        Map<String, MethodHandler> methodMap = [:]
+        IdNode idNode = null
+        Map<String, ResourceNode> resourceMap = [:]
+
+        String name
+        PathNode parent
+        String fullPath
+        Set<String> pathParameters = new LinkedHashSet<String>()
+
+        PathNode(Node node, PathNode parent, ExecutionContextFactoryImpl ecfi, boolean isId) {
+            this.ecfi = ecfi
+            this.parent = parent
+            if (parent != null) this.pathParameters.addAll(parent.pathParameters)
+            name = node.attribute("name")
+            fullPath = isId ? "${parent?.fullPath ?: ''}/{${name}}" : "${parent?.fullPath ?: ''}/${name}"
+
             for (Object childObj in node.children()) {
                 if (childObj instanceof Node) {
                     Node childNode = (Node) childObj
@@ -155,16 +283,16 @@ class RestApi {
                         if (methodObj instanceof Node) {
                             Node methodNode = (Node) methodObj
                             if (methodNode.name() == "service") {
-                                methodMap.put(method, new MethodService(method, methodNode))
+                                methodMap.put(method, new MethodService(method, methodNode, this, ecfi))
                             } else if (methodNode.name() == "entity") {
-                                methodMap.put(method, new MethodEntity(method, methodNode))
+                                methodMap.put(method, new MethodEntity(method, methodNode, this, ecfi))
                             }
                         }
                     } else if (childNode.name() == "resource") {
-                        ResourceNode resourceNode = new ResourceNode(childNode)
+                        ResourceNode resourceNode = new ResourceNode(childNode, this, ecfi)
                         resourceMap.put(resourceNode.name, resourceNode)
                     } else if (childNode.name() == "id") {
-                        idNode = new IdNode(childNode)
+                        idNode = new IdNode(childNode, this, ecfi)
                     }
                 }
             }
@@ -198,6 +326,19 @@ class RestApi {
             }
         }
 
+        void addToSwaggerMap(Map<String, Object> swaggerMap) {
+            // if we have method handlers add this, otherwise just do children
+            if (methodMap) {
+                Map<String, Map<String, Object>> rsMap = [:]
+                for (MethodHandler mh in methodMap.values()) mh.addToSwaggerMap(swaggerMap, rsMap)
+                ((Map) swaggerMap.paths).put(fullPath, rsMap)
+            }
+            // add the id node if there is one
+            if (idNode != null) idNode.addToSwaggerMap(swaggerMap)
+            // add any resource nodes there might be
+            for (ResourceNode rn in resourceMap.values()) rn.addToSwaggerMap(swaggerMap)
+        }
+
         void toStringChildren(int level, StringBuilder sb) {
             for (MethodHandler mh in methodMap.values()) mh.toString(level + 1, sb)
             for (ResourceNode rn in resourceMap.values()) rn.toString(level + 1, sb)
@@ -207,12 +348,12 @@ class RestApi {
         abstract Object visit(List<String> pathList, int pathIndex, ExecutionContext ec)
     }
     static class ResourceNode extends PathNode {
-        String name, displayName, description
-        ResourceNode(Node node) {
-            super(node)
-            name = node.attribute("name")
+        String displayName, description, version
+        ResourceNode(Node node, PathNode parent, ExecutionContextFactoryImpl ecfi) {
+            super(node, parent, ecfi, false)
             displayName = node.attribute("displayName")
             description = node.attribute("description")
+            version = node.attribute("version")
         }
         RestResult visit(List<String> pathList, int pathIndex, ExecutionContext ec) {
             logger.info("Visit resource ${name}")
@@ -233,10 +374,9 @@ class RestApi {
         }
     }
     static class IdNode extends PathNode {
-        String name
-        IdNode(Node node) {
-            super(node)
-            name = node.attribute("name")
+        IdNode(Node node, PathNode parent, ExecutionContextFactoryImpl ecfi) {
+            super(node, parent, ecfi, true)
+            pathParameters.add(name)
         }
         RestResult visit(List<String> pathList, int pathIndex, ExecutionContext ec) {
             logger.info("Visit id ${name}")

@@ -47,6 +47,7 @@ along with this software (see the LICENSE.md file). If not, see
                     the best way to describe what is being acted on, but this can really be anything.
                 </xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="displayName" type="xs:string" use="optional"/>
             <xs:attribute name="type" default="inline">
                 <xs:annotation><xs:documentation>
                     The service type specifies how the service is implemented. Additional types can be added by
