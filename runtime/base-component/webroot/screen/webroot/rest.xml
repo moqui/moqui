@@ -152,26 +152,26 @@ along with this software (see the LICENSE.md file). If not, see
     <!--
     To get the json-schema (see http://json-schema.org) for an entity use a request like:
 
-    curl -X GET -u john.doe:moqui http://localhost:8080/rest/eschema.json/examples
-    curl -X GET -u john.doe:moqui http://localhost:8080/rest/eschema.json/examples.json
-    curl -X GET -u john.doe:moqui http://localhost:8080/rest/eschema.json/example.Example
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/entity.json/examples
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/entity.json/examples.json
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/entity.json/example.Example
 
     To get the json-schema (see http://json-schema.org) for ALL entities use a request like:
 
-    curl -X GET -u john.doe:moqui http://localhost:8080/rest/eschema.json
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/entity.json
 
     To get the RAML schema (see http://raml.org) for ALL entities use a request like:
 
-    curl -X GET -u john.doe:moqui http://localhost:8080/rest/eschema.raml
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/entity.raml
     -->
-    <transition name="eschema.json" read-only="true" method="get">
-        <actions><script>ec.web.handleEntityRestSchema(sri.screenUrlInfo.extraPathNameList, sri.buildUrl("eschema.json").getUrl(),
-                sri.buildUrl("e1").getUrl(), sri.buildUrl("eschema.json").getUrl(), false)</script></actions>
+    <transition name="entity.json" read-only="true" method="get">
+        <actions><script>ec.web.handleEntityRestSchema(sri.screenUrlInfo.extraPathNameList, sri.buildUrl("entity.json").getUrl(),
+                sri.buildUrl("e1").getUrl(), sri.buildUrl("entity.json").getUrl(), false)</script></actions>
         <default-response type="none"/>
     </transition>
-    <transition name="eschema.raml" read-only="true" method="get">
+    <transition name="entity.raml" read-only="true" method="get">
         <actions><script>ec.web.handleEntityRestRaml(sri.screenUrlInfo.extraPathNameList,
-                sri.buildUrl("e1").getUrl(), sri.buildUrl("eschema.json").getUrl(), false)</script></actions>
+                sri.buildUrl("e1").getUrl(), sri.buildUrl("entity.json").getUrl(), false)</script></actions>
         <default-response type="none"/>
     </transition>
 
@@ -179,31 +179,31 @@ along with this software (see the LICENSE.md file). If not, see
     To get the json-schema (see http://json-schema.org) for a master entity use a path with the entity name then the
     master definition name (optional, get all if not specified). Note that the .json extension is optional.
 
-    curl -X GET -u john.doe:moqui http://localhost:8080/rest/mschema.json/examples/default
-    curl -X GET -u john.doe:moqui http://localhost:8080/rest/mschema.json/examples/default.json
-    curl -X GET -u john.doe:moqui http://localhost:8080/rest/mschema.json/examples.json
-    curl -X GET -u john.doe:moqui http://localhost:8080/rest/mschema.json/example.Example
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/master.json/examples/default
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/master.json/examples/default.json
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/master.json/examples.json
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/master.json/example.Example
 
     To get the json-schema (see http://json-schema.org) for ALL master entities simply leave off the entity name and
     master name:
 
-    curl -X GET -u john.doe:moqui http://localhost:8080/rest/mschema.json
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/master.json
 
-    To get the RAML schema (see http://raml.org) follow the same pattern except with mschema.raml instead of mschema.json:
+    To get the RAML schema (see http://raml.org) follow the same pattern except with master.raml instead of master.json:
 
-    curl -X GET -u john.doe:moqui http://localhost:8080/rest/mschema.raml/examples/default
-    curl -X GET -u john.doe:moqui http://localhost:8080/rest/mschema.raml/examples.raml
-    curl -X GET -u john.doe:moqui http://localhost:8080/rest/mschema.raml/example.Example
-    curl -X GET -u john.doe:moqui http://localhost:8080/rest/mschema.raml
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/master.raml/examples/default
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/master.raml/examples.raml
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/master.raml/example.Example
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/master.raml
     -->
-    <transition name="mschema.json" read-only="true" method="get">
-        <actions><script>ec.web.handleEntityRestSchema(sri.screenUrlInfo.extraPathNameList, sri.buildUrl("mschema.json").getUrl(),
-                sri.buildUrl("m1").getUrl(), sri.buildUrl("mschema.json").getUrl(), true)</script></actions>
+    <transition name="master.json" read-only="true" method="get">
+        <actions><script>ec.web.handleEntityRestSchema(sri.screenUrlInfo.extraPathNameList, sri.buildUrl("master.json").getUrl(),
+                sri.buildUrl("m1").getUrl(), sri.buildUrl("master.json").getUrl(), true)</script></actions>
         <default-response type="none"/>
     </transition>
-    <transition name="mschema.raml" read-only="true" method="get">
+    <transition name="master.raml" read-only="true" method="get">
         <actions><script>ec.web.handleEntityRestRaml(sri.screenUrlInfo.extraPathNameList,
-                sri.buildUrl("m1").getUrl(), sri.buildUrl("mschema.raml").getUrl(), true)</script></actions>
+                sri.buildUrl("m1").getUrl(), sri.buildUrl("master.raml").getUrl(), true)</script></actions>
         <default-response type="none"/>
     </transition>
 
