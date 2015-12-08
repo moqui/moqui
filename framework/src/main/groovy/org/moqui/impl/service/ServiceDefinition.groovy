@@ -983,14 +983,12 @@ class ServiceDefinition {
         return defMap
     }
     protected static Map getJsonSchemaPropMap(Node parmNode) {
-        NodeList pdescNodeList = parmNode.getAt(new QName("description"))
-        Node pdescNode = pdescNodeList.size() > 0 ? (Node) pdescNodeList.get(0) : null
-
         String objectType = (String) parmNode?.attribute('type')
         Map propMap = [type:RestApi.getJsonType(objectType)]
         String format = RestApi.getJsonFormat(objectType)
         if (format) propMap.put("format", format)
-        if (pdescNode != null) propMap.put("description", pdescNode.text())
+        String description = StupidUtilities.nodeText(parmNode.get("description"))
+        if (description) propMap.put("description", description)
         if (parmNode.attribute("default-value")) propMap.put("default", (String) parmNode.attribute("default-value"))
         if (parmNode.attribute("default")) propMap.put("default", "{${parmNode.attribute("default")}}")
         return propMap

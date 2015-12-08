@@ -19,7 +19,9 @@ import org.moqui.BaseException
 import org.moqui.context.ExecutionContext
 import org.moqui.context.ResourceReference
 import org.moqui.entity.EntityFind
+import org.moqui.impl.StupidUtilities
 import org.moqui.impl.context.ExecutionContextFactoryImpl
+import org.moqui.impl.entity.EntityDefinition
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -125,20 +127,16 @@ class RestApi {
 
         void addToSwaggerMap(Map<String, Object> swaggerMap, Map<String, Map<String, Object>> resourceMap) {
             ServiceDefinition sd = ecfi.getServiceFacade().getServiceDefinition(serviceName)
+            if (sd == null) throw new IllegalArgumentException("Service ${serviceName} not found")
             Node serviceNode = sd.getServiceNode()
-
-            NodeList descNodeList = serviceNode.getAt(new QName("description"))
-            Node descNode = descNodeList.size() > 0 ? (Node) descNodeList.get(0) : null
 
             // add parameters, including path parameters
             List<Map> parameters = []
             for (String pathParm in pathNode.pathParameters) {
                 Node parmNode = sd.getInParameter(pathParm)
                 if (parmNode == null) throw new IllegalArgumentException("No in parameter found for path parameter ${pathParm} in service ${sd.getServiceName()}")
-                NodeList pdescNodeList = parmNode.getAt(new QName("description"))
-                Node pdescNode = pdescNodeList.size() > 0 ? (Node) pdescNodeList.get(0) : null
                 parameters.add([name:pathParm, in:'path', required:true, type:getJsonType((String) parmNode?.attribute('type')),
-                                description:(pdescNode?.text() ?: '')])
+                                description:StupidUtilities.nodeText(parmNode.get("description"))])
             }
             if (sd.getInParameterNames()) {
                 parameters.add([name:'body', in:'body', required:true, schema:['$ref':"#/definitions/${sd.getServiceName()}.In".toString()]])
@@ -155,7 +153,7 @@ class RestApi {
             }
 
             resourceMap.put(method, [summary:(serviceNode.attribute("displayName") ?: "${sd.verb} ${sd.noun}"),
-                    description:(descNode?.text() ?: ''), parameters:parameters, responses:responses])
+                    description:StupidUtilities.nodeText(serviceNode.get("description")), parameters:parameters, responses:responses])
         }
         void toString(int level, StringBuilder sb) {
             for (int i=0; i < (level * 4); i++) sb.append(" ")
@@ -213,7 +211,40 @@ class RestApi {
         }
 
         void addToSwaggerMap(Map<String, Object> swaggerMap, Map<String, Map<String, Object>> resourceMap) {
-            // TODO
+            EntityDefinition ed = ecfi.getEntityFacade().getEntityDefinition(entityName)
+            if (ed == null) throw new IllegalArgumentException("Entity ${entityName} not found")
+            Node entityNode = ed.getEntityNode()
+            /*
+            NodeList descNodeList = entityNode.getAt(new QName("description"))
+            Node descNode = descNodeList.size() > 0 ? (Node) descNodeList.get(0) : null
+
+            // add parameters, including path parameters
+            List<Map> parameters = []
+            for (String pathParm in pathNode.pathParameters) {
+                Node parmNode = sd.getInParameter(pathParm)
+                if (parmNode == null) throw new IllegalArgumentException("No in parameter found for path parameter ${pathParm} in service ${sd.getServiceName()}")
+                NodeList pdescNodeList = parmNode.getAt(new QName("description"))
+                Node pdescNode = pdescNodeList.size() > 0 ? (Node) pdescNodeList.get(0) : null
+                parameters.add([name:pathParm, in:'path', required:true, type:getJsonType((String) parmNode?.attribute('type')),
+                                description:(pdescNode?.text() ?: '')])
+            }
+            if (sd.getInParameterNames()) {
+                parameters.add([name:'body', in:'body', required:true, schema:['$ref':"#/definitions/${sd.getServiceName()}.In".toString()]])
+                // add a definition for service in parameters
+                ((Map) swaggerMap.definitions).put("${sd.getServiceName()}.In".toString(), sd.getJsonSchemaMapIn())
+            }
+
+            // add responses
+            Map responses = ["403":[description:"Access Forbidden (no authz)"], "429":[description:"Too Many Requests (tarpit)"],
+                             "500":[description:"General Error"]]
+            if (sd.getOutParameterNames()) {
+                responses.put("200", [description:'Success', schema:['$ref':"#/definitions/${sd.getServiceName()}.Out".toString()]])
+                ((Map) swaggerMap.definitions).put("${sd.getServiceName()}.Out".toString(), sd.getJsonSchemaMapOut())
+            }
+
+            resourceMap.put(method, [summary:(serviceNode.attribute("displayName") ?: "${sd.verb} ${sd.noun}"),
+                    description:(descNode?.text() ?: ''), parameters:parameters, responses:responses])
+            */
         }
         void toString(int level, StringBuilder sb) {
             for (int i=0; i < (level * 4); i++) sb.append(" ")
