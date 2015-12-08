@@ -929,6 +929,9 @@ public class EntityDefinition {
             "date":"string", "number-integer":"number", "number-float":"number",
             "number-decimal":"number", "currency-amount":"number", "currency-precise":"number",
             "binary-very-long":"string" ] // NOTE: binary-very-long may need hyper-schema stuff
+    protected static final Map<String, String> fieldTypeJsonFormatMap = [
+            "date-time":"date-time", "date":"date", "number-integer":"int64", "number-float":"double",
+            "number-decimal":"", "currency-amount":"", "currency-precise":"", "binary-very-long":"" ]
     static final Map paginationParameters =
             [type:'object', properties:
                     [pageIndex:[type:'number', description:'Page number to return, starting with zero'],
@@ -995,7 +998,8 @@ public class EntityDefinition {
             FieldInfo fi = getFieldInfo(allFields.get(i))
             Map<String, Object> propMap = [:]
             propMap.put('type', fieldTypeJsonMap.get(fi.type))
-            if (fi.type == 'date-time') propMap.put('format', 'date-time')
+            String format = fieldTypeJsonFormatMap.get(fi.type)
+            if (format) propMap.put('format', format)
             properties.put(fi.getName(), propMap)
 
             List enumList = getFieldEnums(fi)
