@@ -923,13 +923,13 @@ public class EntityDefinition {
         return nonPkFieldDefaults
     }
 
-    protected static final Map<String, String> fieldTypeJsonMap = [
+    static final Map<String, String> fieldTypeJsonMap = [
             "id":"string", "id-long":"string", "text-indicator":"string", "text-short":"string", "text-medium":"string",
             "text-long":"string", "text-very-long":"string", "date-time":"string", "time":"string",
             "date":"string", "number-integer":"number", "number-float":"number",
             "number-decimal":"number", "currency-amount":"number", "currency-precise":"number",
             "binary-very-long":"string" ] // NOTE: binary-very-long may need hyper-schema stuff
-    protected static final Map<String, String> fieldTypeJsonFormatMap = [
+    static final Map<String, String> fieldTypeJsonFormatMap = [
             "date-time":"date-time", "date":"date", "number-integer":"int64", "number-float":"double",
             "number-decimal":"", "currency-amount":"", "currency-precise":"", "binary-very-long":"" ]
     static final Map paginationParameters =

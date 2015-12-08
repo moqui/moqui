@@ -152,7 +152,7 @@ class RestApi {
                 ((Map) swaggerMap.definitions).put("${sd.getServiceName()}.Out".toString(), sd.getJsonSchemaMapOut())
             }
 
-            resourceMap.put(method, [summary:(serviceNode.attribute("displayName") ?: "${sd.verb} ${sd.noun}"),
+            resourceMap.put(method, [summary:(serviceNode.attribute("displayName") ?: "${sd.verb} ${sd.noun}".toString()),
                     description:StupidUtilities.nodeText(serviceNode.get("description")), parameters:parameters, responses:responses])
         }
         void toString(int level, StringBuilder sb) {
@@ -201,7 +201,7 @@ class RestApi {
                 EntityFind ef = ec.entity.find(entityName).searchFormMap(ec.context, null, false)
                 long count = ef.count()
                 Map<String, Object> headers = ['X-Total-Count':count] as Map<String, Object>
-                return new RestResult(count, headers)
+                return new RestResult([count:count], headers)
             } else if (operation in ['create', 'update', 'store', 'delete']) {
                 Map result = ec.getService().sync().name(operation, entityName).parameters(ec.context).call()
                 return new RestResult(result, null)
@@ -214,37 +214,37 @@ class RestApi {
             EntityDefinition ed = ecfi.getEntityFacade().getEntityDefinition(entityName)
             if (ed == null) throw new IllegalArgumentException("Entity ${entityName} not found")
             Node entityNode = ed.getEntityNode()
-            /*
-            NodeList descNodeList = entityNode.getAt(new QName("description"))
-            Node descNode = descNodeList.size() > 0 ? (Node) descNodeList.get(0) : null
 
             // add parameters, including path parameters
             List<Map> parameters = []
             for (String pathParm in pathNode.pathParameters) {
-                Node parmNode = sd.getInParameter(pathParm)
-                if (parmNode == null) throw new IllegalArgumentException("No in parameter found for path parameter ${pathParm} in service ${sd.getServiceName()}")
-                NodeList pdescNodeList = parmNode.getAt(new QName("description"))
-                Node pdescNode = pdescNodeList.size() > 0 ? (Node) pdescNodeList.get(0) : null
-                parameters.add([name:pathParm, in:'path', required:true, type:getJsonType((String) parmNode?.attribute('type')),
-                                description:(pdescNode?.text() ?: '')])
+                EntityDefinition.FieldInfo fi = ed.getFieldInfo(pathParm)
+                if (fi == null) throw new IllegalArgumentException("No field found for path parameter ${pathParm} in entity ${ed.getFullEntityName()}")
+                parameters.add([name:pathParm, in:'path', required:true, type:(EntityDefinition.fieldTypeJsonMap.get(fi.type) ?: "string"),
+                                description:StupidUtilities.nodeText(fi.fieldNode.get("description"))])
             }
-            if (sd.getInParameterNames()) {
-                parameters.add([name:'body', in:'body', required:true, schema:['$ref':"#/definitions/${sd.getServiceName()}.In".toString()]])
-                // add a definition for service in parameters
-                ((Map) swaggerMap.definitions).put("${sd.getServiceName()}.In".toString(), sd.getJsonSchemaMapIn())
-            }
+            String refDefName = ed.getShortAlias() ?: ed.getFullEntityName()
+            parameters.add([name:'body', in:'body', required:false, schema:['$ref':"#/definitions/${refDefName}".toString()]])
+            // add a definition for entity fields
+            ((Map) swaggerMap.definitions).put(refDefName, ed.getJsonSchema(false,
+                    masterName ? (Map) swaggerMap.definitions : null, null, null, null, masterName, null))
 
             // add responses
-            Map responses = ["403":[description:"Access Forbidden (no authz)"], "429":[description:"Too Many Requests (tarpit)"],
-                             "500":[description:"General Error"]]
-            if (sd.getOutParameterNames()) {
-                responses.put("200", [description:'Success', schema:['$ref':"#/definitions/${sd.getServiceName()}.Out".toString()]])
-                ((Map) swaggerMap.definitions).put("${sd.getServiceName()}.Out".toString(), sd.getJsonSchemaMapOut())
+            Map responses = ["403":[description:"Access Forbidden (no authz)"], "404":[description:"Value Not Found"],
+                             "429":[description:"Too Many Requests (tarpit)"], "500":[description:"General Error"]]
+
+            // TODO: better to just include PKs for response for create/store, body for one, etc
+            if (operation in ['one', 'create', 'store']) {
+                responses.put("200", [description:'Success', schema:['$ref':"#/definitions/${refDefName}".toString()]])
+            } else if (operation == 'list') {
+                responses.put("200", [description:'Success', schema:[type:"array", items:['$ref':"#/definitions/${refDefName}".toString()]]])
+            } else if (operation == 'count') {
+                // TODO
             }
 
-            resourceMap.put(method, [summary:(serviceNode.attribute("displayName") ?: "${sd.verb} ${sd.noun}"),
-                    description:(descNode?.text() ?: ''), parameters:parameters, responses:responses])
-            */
+            resourceMap.put(method, [summary:("${operation} ${ed.getFullEntityName()}".toString()),
+                    description:StupidUtilities.nodeText(ed.getEntityNode().get("description")),
+                    parameters:parameters, responses:responses])
         }
         void toString(int level, StringBuilder sb) {
             for (int i=0; i < (level * 4); i++) sb.append(" ")
