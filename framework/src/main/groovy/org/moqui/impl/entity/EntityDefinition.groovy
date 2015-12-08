@@ -932,15 +932,16 @@ public class EntityDefinition {
     static final Map<String, String> fieldTypeJsonFormatMap = [
             "date-time":"date-time", "date":"date", "number-integer":"int64", "number-float":"double",
             "number-decimal":"", "currency-amount":"", "currency-precise":"", "binary-very-long":"" ]
-    static final Map paginationParameters =
-            [type:'object', properties:
-                    [pageIndex:[type:'number', description:'Page number to return, starting with zero'],
-                     pageSize:[type:'number', description:'Number of records per page (default 100)'],
-                     orderByField:[type:'string', description:'Field name to order by (or comma separated names)'],
-                     pageNoLimit:[type:'string', description:'If true don\'t limit page size (no pagination)'],
-                     dependentLevels:[type:'number', description:'Levels of dependent child records to include']
-                    ]
+    static final Map jsonPaginationProperties =
+            [pageIndex:[type:'number', format:'int32', description:'Page number to return, starting with zero'],
+             pageSize:[type:'number', format:'int32', description:'Number of records per page (default 100)'],
+             orderByField:[type:'string', description:'Field name to order by (or comma separated names)'],
+             pageNoLimit:[type:'string', description:'If true don\'t limit page size (no pagination)'],
+             dependentLevels:[type:'number', format:'int32', description:'Levels of dependent child records to include']
             ]
+    static final Map jsonPaginationParameters = [type:'object', properties: jsonPaginationProperties]
+    static final Map jsonCountParameters = [type:'object', properties: [count:[type:'number', format:'int64', description:'Count of results']]]
+
 
     @CompileStatic
     List<String> getFieldEnums(FieldInfo fi) {
@@ -978,14 +979,18 @@ public class EntityDefinition {
     }
 
     @CompileStatic
-    Map getJsonSchema(boolean standalone, Map<String, Object> definitionsMap, String schemaUri, String linkPrefix,
+    Map getJsonSchema(boolean pkOnly, boolean standalone, Map<String, Object> definitionsMap, String schemaUri, String linkPrefix,
                       String schemaLinkPrefix, String masterName, MasterDetail masterDetail) {
         String name = getShortAlias() ?: getFullEntityName()
         String prettyName = getPrettyName(null, null)
         String refName = name
         if (masterName) {
-            refName = "${name}/${masterName}"
+            refName = "${name}.${masterName}"
             prettyName = prettyName + " (Master: ${masterName})"
+        }
+        if (pkOnly) {
+            name = name + ".PK"
+            refName = refName + ".PK"
         }
 
         Map<String, Object> properties = [:]
@@ -993,7 +998,7 @@ public class EntityDefinition {
         Map<String, Object> schema = [id:name, title:prettyName, type:'object', properties:properties] as Map<String, Object>
 
         // add all fields
-        ArrayList<String> allFields = getAllFieldNames(true)
+        ArrayList<String> allFields = pkOnly ? getPkFieldNames() : getAllFieldNames(true)
         for (int i = 0; i < allFields.size(); i++) {
             FieldInfo fi = getFieldInfo(allFields.get(i))
             Map<String, Object> propMap = [:]
@@ -1010,7 +1015,7 @@ public class EntityDefinition {
         // put current schema in Map before nesting for relationships, avoid infinite recursion with entity rel loops
         if (standalone && definitionsMap == null) {
             definitionsMap = [:]
-            definitionsMap.put('paginationParameters', paginationParameters)
+            definitionsMap.put('paginationParameters', jsonPaginationParameters)
         }
         if (definitionsMap != null && !definitionsMap.containsKey(name))
             definitionsMap.put(name, schema)
@@ -1029,11 +1034,12 @@ public class EntityDefinition {
                 String relationshipName = relInfo.relationshipName
                 String entryName = relInfo.shortAlias ?: relationshipName
                 String relatedRefName = relInfo.relatedEd.shortAlias ?: relInfo.relatedEd.getFullEntityName()
+                if (pkOnly) relatedRefName = relatedRefName + ".PK"
 
                 // recurse, let it put itself in the definitionsMap
                 // linkPrefix and schemaLinkPrefix are null so that no links are added for master dependents
                 if (definitionsMap != null && !definitionsMap.containsKey(relatedRefName))
-                    relInfo.relatedEd.getJsonSchema(false, definitionsMap, schemaUri, null, null, null, childMasterDetail)
+                    relInfo.relatedEd.getJsonSchema(pkOnly, false, definitionsMap, schemaUri, null, null, null, childMasterDetail)
 
                 if (relInfo.type == "many") {
                     properties.put(entryName, [type:'array', items:['$ref':('#/definitions/' + relatedRefName)]])
@@ -1048,10 +1054,11 @@ public class EntityDefinition {
                 String relationshipName = relInfo.relationshipName
                 String entryName = relInfo.shortAlias ?: relationshipName
                 String relatedRefName = relInfo.relatedEd.shortAlias ?: relInfo.relatedEd.getFullEntityName()
+                if (pkOnly) relatedRefName = relatedRefName + ".PK"
 
                 // recurse, let it put itself in the definitionsMap
                 if (definitionsMap != null && !definitionsMap.containsKey(relatedRefName))
-                    relInfo.relatedEd.getJsonSchema(false, definitionsMap, schemaUri, linkPrefix, schemaLinkPrefix, null, null)
+                    relInfo.relatedEd.getJsonSchema(pkOnly, false, definitionsMap, schemaUri, linkPrefix, schemaLinkPrefix, null, null)
 
                 if (relInfo.type == "many") {
                     properties.put(entryName, [type:'array', items:['$ref':('#/definitions/' + relatedRefName)]])

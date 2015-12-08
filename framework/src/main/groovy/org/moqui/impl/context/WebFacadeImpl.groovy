@@ -803,7 +803,7 @@ class WebFacadeImpl implements WebFacade {
         if (extraPathNameList.size() == 0) {
             List allRefList = []
             Map definitionsMap = [:]
-            definitionsMap.put('paginationParameters', EntityDefinition.paginationParameters)
+            definitionsMap.put('paginationParameters', EntityDefinition.jsonPaginationParameters)
             Map rootMap = ['$schema':'http://json-schema.org/draft-04/hyper-schema#', title:'Moqui Entity REST API',
                     anyOf:allRefList, definitions:definitionsMap]
             if (schemaUri) rootMap.put('id', schemaUri)
@@ -824,14 +824,14 @@ class WebFacadeImpl implements WebFacade {
                     for (String masterName in masterDefMap.keySet()) {
                         allRefList.add(['$ref':"#/definitions/${refName}/${masterName}"])
 
-                        Map schema = ed.getJsonSchema(false, definitionsMap, schemaUri, linkPrefix, schemaLinkPrefix, masterName, null)
+                        Map schema = ed.getJsonSchema(false, false, definitionsMap, schemaUri, linkPrefix, schemaLinkPrefix, masterName, null)
                         entityPathMap.put(masterName, schema)
                     }
                     definitionsMap.put(refName, entityPathMap)
                 } else {
                     allRefList.add(['$ref':"#/definitions/${refName}"])
 
-                    Map schema = ed.getJsonSchema(false, null, schemaUri, linkPrefix, schemaLinkPrefix, null, null)
+                    Map schema = ed.getJsonSchema(false, false, null, schemaUri, linkPrefix, schemaLinkPrefix, null, null)
                     definitionsMap.put(refName, schema)
                 }
             }
@@ -859,7 +859,7 @@ class WebFacadeImpl implements WebFacade {
                     return
                 }
 
-                Map schema = ed.getJsonSchema(true, null, schemaUri, linkPrefix, schemaLinkPrefix, masterName, null)
+                Map schema = ed.getJsonSchema(false, true, null, schemaUri, linkPrefix, schemaLinkPrefix, masterName, null)
                 // TODO: support array wrapper (different URL? suffix?) with [type:'array', items:schema]
 
                 // sendJsonResponse(schema)
