@@ -29,6 +29,7 @@ public interface WebFacade {
     HttpServletRequest getRequest();
     Map<String, Object> getRequestAttributes();
     Map<String, Object> getRequestParameters();
+    String getHostName();
 
     HttpServletResponse getResponse();
 

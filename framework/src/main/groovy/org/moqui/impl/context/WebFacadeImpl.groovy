@@ -360,6 +360,24 @@ class WebFacadeImpl implements WebFacade {
         requestParameters = new StupidWebUtilities.CanonicalizeMap(cs)
         return requestParameters
     }
+    @Override
+    @CompileStatic
+    String getHostName() {
+        String hostName = null
+        try {
+            hostName = new URL(getRequest().getRequestURL().toString()).getHost()
+            // logger.info("Got hostName [${hostName}] from getRequestURL [${webFacade.getRequest().getRequestURL()}]")
+        } catch (Exception e) {
+            /* ignore it, default to getServerName() result */
+            logger.trace("Error getting hostName from getRequestURL: ", e)
+        }
+        if (!hostName) {
+            hostName = getRequest().getServerName()
+            // logger.info("Got hostName [${hostName}] from getServerName")
+        }
+        return hostName
+    }
+
 
     @Override
     HttpServletResponse getResponse() { return response }
@@ -432,11 +450,7 @@ class WebFacadeImpl implements WebFacade {
                     urlBuilder.append(webappNode."@https-host")
                 } else {
                     if (webFacade != null) {
-                        String hostName = null
-                        try { hostName = new URL(webFacade.getRequest().getRequestURL().toString()).getHost() }
-                        catch (Exception e) { /* ignore it, default to getServerName() result */ }
-                        if (!hostName) hostName = webFacade.getRequest().getServerName()
-                        urlBuilder.append(hostName)
+                        urlBuilder.append(webFacade.getHostName())
                     } else {
                         // uh-oh, no web context, default to localhost
                         urlBuilder.append("localhost")
@@ -453,19 +467,7 @@ class WebFacadeImpl implements WebFacade {
                     urlBuilder.append(webappNode."@http-host")
                 } else {
                     if (webFacade) {
-                        String hostName = null
-                        try {
-                            hostName = new URL(webFacade.getRequest().getRequestURL().toString()).getHost()
-                            // logger.info("Got hostName [${hostName}] from getRequestURL [${webFacade.getRequest().getRequestURL()}]")
-                        } catch (Exception e) {
-                            /* ignore it, default to getServerName() result */
-                            logger.trace("Error getting hostName from getRequestURL: ", e)
-                        }
-                        if (!hostName) {
-                            hostName = webFacade.getRequest().getServerName()
-                            // logger.info("Got hostName [${hostName}] from getServerName")
-                        }
-                        urlBuilder.append(hostName)
+                        urlBuilder.append(webFacade.getHostName())
                     } else {
                         // uh-oh, no web context, default to localhost
                         urlBuilder.append("localhost")
@@ -498,7 +500,6 @@ class WebFacadeImpl implements WebFacade {
         String urlValue = urlBuilder.toString()
         return urlValue
     }
-
 
     @Override
     @CompileStatic
@@ -1039,6 +1040,38 @@ class WebFacadeImpl implements WebFacade {
             }
             logger.warn((String) "General error in Service REST API: " + t.toString(), t)
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, errorMessage)
+        }
+    }
+    // @Override
+    @CompileStatic
+    void handleServiceRestSwagger(List<String> extraPathNameList, String hostName, String basePath) {
+        if (extraPathNameList.size() == 0) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No root resource name specified in path")
+            return
+        }
+        String rootResourceName = extraPathNameList.get(0)
+        String outputType = "application/json"
+        if (rootResourceName.endsWith(".yaml")) outputType = "application/yaml"
+        if (rootResourceName.endsWith(".json") || rootResourceName.endsWith(".yaml"))
+            rootResourceName = rootResourceName.substring(0, rootResourceName.length() - 5)
+
+        Map swaggerMap = eci.ecfi.serviceFacade.restApi.getSwaggerMap(rootResourceName, hostName, basePath)
+        if (outputType == "application/json") {
+            JsonBuilder jb = new JsonBuilder()
+            jb.call(swaggerMap)
+            String jsonStr = jb.toPrettyString()
+            sendTextResponse(jsonStr, "application/json", "${rootResourceName}.swagger.json")
+        } else if (outputType == "application/yaml") {
+            DumperOptions options = new DumperOptions()
+            options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK)
+            // default: options.setDefaultScalarStyle(DumperOptions.ScalarStyle.PLAIN)
+            options.setPrettyFlow(true)
+            Yaml yaml = new Yaml(options)
+            String yamlString = yaml.dump(swaggerMap)
+
+            sendTextResponse(yamlString, "application/yaml", "${rootResourceName}.swagger.yaml")
+        } else {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Output type ${outputType} not supported")
         }
     }
 

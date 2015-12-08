@@ -91,6 +91,8 @@ class WebFacadeStub implements WebFacade {
     Map<String, Object> getRequestAttributes() { return requestParameters }
     @Override
     Map<String, Object> getRequestParameters() { return requestParameters }
+    @Override
+    String getHostName() { return "localhost" }
 
     @Override
     HttpServletResponse getResponse() { return httpServletResponse }

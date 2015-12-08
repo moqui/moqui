@@ -19,20 +19,21 @@ along with this software (see the LICENSE.md file). If not, see
         <xs:complexType>
             <xs:sequence>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="method"/>
-                <xs:element minOccurs="0" maxOccurs="unbounded" ref="resource"/>
                 <xs:element minOccurs="0" maxOccurs="1" ref="id"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="resource"/>
             </xs:sequence>
             <xs:attribute name="name" type="xs:string" use="required"/>
             <xs:attribute name="displayName" type="xs:string"/>
             <xs:attribute name="description" type="xs:string"/>
+            <xs:attribute name="version" type="xs:string"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="id">
         <xs:complexType>
             <xs:sequence>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="method"/>
-                <xs:element minOccurs="0" maxOccurs="unbounded" ref="resource"/>
                 <xs:element minOccurs="0" maxOccurs="1" ref="id"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="resource"/>
             </xs:sequence>
             <xs:attribute name="name" type="xs:string" use="required"/>
         </xs:complexType>

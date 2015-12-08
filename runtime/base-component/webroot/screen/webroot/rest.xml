@@ -226,6 +226,17 @@ along with this software (see the LICENSE.md file). If not, see
         <actions><script>ec.web.handleServiceRestCall(sri.screenUrlInfo.extraPathNameList)</script></actions>
         <default-response type="none"/>
     </transition>
+    <!--
+    Use the service.swagger transition to get the Swagger API definition for a particular API by the root resource name.
+    Can output in JSON or YAML (using .json or .yaml extension, default to JSON output).
+
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/service.swagger/example
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/service.swagger/example.yaml
+    -->
+    <transition name="service.swagger" read-only="true" method="get">
+        <actions><script>ec.web.handleServiceRestSwagger(sri.screenUrlInfo.extraPathNameList, ec.web.getHostName(), "/rest/s1")</script></actions>
+        <default-response type="none"/>
+    </transition>
 
     <widgets><!-- this should never be viewed... --></widgets>
 </screen>
