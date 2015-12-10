@@ -73,7 +73,7 @@ class RestApi {
             info:[title:(resourceNode.displayName ?: 'Service REST API'), version:(resourceNode.version ?: '1.0'), description:(resourceNode.description ?: '')],
             host:hostName, basePath:basePath, schemes:['http', 'https'],
             consumes:['application/json', 'multipart/form-data'], produces:['application/json'],
-            paths:[:], definitions:[:]
+            paths:[:], definitions:(new TreeMap())
         ]
 
         resourceNode.addToSwaggerMap(swaggerMap)
@@ -129,19 +129,22 @@ class RestApi {
             ServiceDefinition sd = ecfi.getServiceFacade().getServiceDefinition(serviceName)
             if (sd == null) throw new IllegalArgumentException("Service ${serviceName} not found")
             Node serviceNode = sd.getServiceNode()
+            Map definitionsMap = (Map) swaggerMap.definitions
 
             // add parameters, including path parameters
             List<Map> parameters = []
+            Set<String> remainingInParmNames = new LinkedHashSet<String>(sd.getInParameterNames())
             for (String pathParm in pathNode.pathParameters) {
                 Node parmNode = sd.getInParameter(pathParm)
                 if (parmNode == null) throw new IllegalArgumentException("No in parameter found for path parameter ${pathParm} in service ${sd.getServiceName()}")
                 parameters.add([name:pathParm, in:'path', required:true, type:getJsonType((String) parmNode?.attribute('type')),
                                 description:StupidUtilities.nodeText(parmNode.get("description"))])
+                remainingInParmNames.remove(pathParm)
             }
-            if (sd.getInParameterNames()) {
+            if (remainingInParmNames) {
                 parameters.add([name:'body', in:'body', required:true, schema:['$ref':"#/definitions/${sd.getServiceName()}.In".toString()]])
                 // add a definition for service in parameters
-                ((Map) swaggerMap.definitions).put("${sd.getServiceName()}.In".toString(), sd.getJsonSchemaMapIn())
+                definitionsMap.put("${sd.getServiceName()}.In".toString(), sd.getJsonSchemaMapIn())
             }
 
             // add responses
@@ -149,7 +152,7 @@ class RestApi {
                              "500":[description:"General Error"]]
             if (sd.getOutParameterNames()) {
                 responses.put("200", [description:'Success', schema:['$ref':"#/definitions/${sd.getServiceName()}.Out".toString()]])
-                ((Map) swaggerMap.definitions).put("${sd.getServiceName()}.Out".toString(), sd.getJsonSchemaMapOut())
+                definitionsMap.put("${sd.getServiceName()}.Out".toString(), sd.getJsonSchemaMapOut())
             }
 
             resourceMap.put(method, [summary:(serviceNode.attribute("displayName") ?: "${sd.verb} ${sd.noun}".toString()),
@@ -222,31 +225,46 @@ class RestApi {
 
             // add path parameters
             List<Map> parameters = []
+            ArrayList<String> remainingPkFields = new ArrayList<String>(ed.getPkFieldNames())
             for (String pathParm in pathNode.pathParameters) {
                 EntityDefinition.FieldInfo fi = ed.getFieldInfo(pathParm)
                 if (fi == null) throw new IllegalArgumentException("No field found for path parameter ${pathParm} in entity ${ed.getFullEntityName()}")
                 parameters.add([name:pathParm, in:'path', required:true, type:(EntityDefinition.fieldTypeJsonMap.get(fi.type) ?: "string"),
                                 description:StupidUtilities.nodeText(fi.fieldNode.get("description"))])
+                remainingPkFields.remove(pathParm)
             }
 
             // add responses
             Map responses = ["403":[description:"Access Forbidden (no authz)"], "404":[description:"Value Not Found"],
                              "429":[description:"Too Many Requests (tarpit)"], "500":[description:"General Error"]]
 
+            boolean addEntityDef = false
+            boolean addPkDef = false
             if (operation  == 'one') {
-                parameters.add([name:'body', in:'body', required:false, schema:['$ref':"#/definitions/${refDefNamePk}".toString()]])
-                responses.put("200", [description:'Success', schema:['$ref':"#/definitions/${refDefName}".toString()]])
+                if (remainingPkFields) {
+                    parameters.add([name:'body', in:'body', required:false, schema:['$ref':"#/definitions/${refDefNamePk}".toString()]])
+                    addPkDef = true
+                    responses.put("200", [description:'Success', schema:['$ref':"#/definitions/${refDefName}".toString()]])
+                    addEntityDef = true
+                }
             } else if (operation == 'list') {
                 parameters.add([name:'body', in:'body', required:false, schema:[allOf:[['$ref':'#/definitions/paginationParameters'], ['$ref':"#/definitions/${refDefName}"]]]])
                 responses.put("200", [description:'Success', schema:[type:"array", items:['$ref':"#/definitions/${refDefName}".toString()]]])
+                addEntityDef = true
             } else if (operation == 'count') {
                 parameters.add([name:'body', in:'body', required:false, schema:['$ref':"#/definitions/${refDefName}".toString()]])
+                addEntityDef = true
                 responses.put("200", [description:'Success', schema:EntityDefinition.jsonCountParameters])
             } else if (operation in ['create', 'update', 'store']) {
                 parameters.add([name:'body', in:'body', required:false, schema:['$ref':"#/definitions/${refDefName}".toString()]])
+                addEntityDef = true
                 responses.put("200", [description:'Success', schema:[type:"array", items:['$ref':"#/definitions/${refDefNamePk}".toString()]]])
+                addPkDef = true
             } else if (operation == 'delete') {
-                parameters.add([name:'body', in:'body', required:false, schema:['$ref':"#/definitions/${refDefNamePk}".toString()]])
+                if (remainingPkFields) {
+                    parameters.add([name:'body', in:'body', required:false, schema:['$ref':"#/definitions/${refDefNamePk}".toString()]])
+                    addPkDef = true
+                }
             }
 
             resourceMap.put(method, [summary:("${operation} ${ed.getFullEntityName()}".toString()),
@@ -254,12 +272,8 @@ class RestApi {
                     parameters:parameters, responses:responses])
 
             // add a definition for entity fields
-            if (operation != 'delete') {
-                definitionsMap.put(refDefName, ed.getJsonSchema(false, false, definitionsMap, null, null, null, masterName, null))
-            }
-            if (operation in ['one', 'create', 'update', 'store', 'delete']) {
-                definitionsMap.put(refDefNamePk, ed.getJsonSchema(true, false, definitionsMap, null, null, null, masterName, null))
-            }
+            if (addEntityDef) definitionsMap.put(refDefName, ed.getJsonSchema(false, false, definitionsMap, null, null, null, masterName, null))
+            if (addPkDef) definitionsMap.put(refDefNamePk, ed.getJsonSchema(true, false, null, null, null, null, masterName, null))
         }
         void toString(int level, StringBuilder sb) {
             for (int i=0; i < (level * 4); i++) sb.append(" ")

@@ -995,7 +995,7 @@ public class EntityDefinition {
 
         Map<String, Object> properties = [:]
         properties.put('_entity', [type:'string', default:name])
-        Map<String, Object> schema = [id:name, title:prettyName, type:'object', properties:properties] as Map<String, Object>
+        Map<String, Object> schema = [id:refName, title:prettyName, type:'object', properties:properties] as Map<String, Object>
 
         // add all fields
         ArrayList<String> allFields = pkOnly ? getPkFieldNames() : getAllFieldNames(true)
@@ -1018,9 +1018,9 @@ public class EntityDefinition {
             definitionsMap.put('paginationParameters', jsonPaginationParameters)
         }
         if (definitionsMap != null && !definitionsMap.containsKey(name))
-            definitionsMap.put(name, schema)
+            definitionsMap.put(refName, schema)
 
-        if (masterName || masterDetail != null) {
+        if (!pkOnly && (masterName || masterDetail != null)) {
             // add only relationships from master definition or detail
             List<MasterDetail> detailList
             if (masterName) {
@@ -1048,7 +1048,7 @@ public class EntityDefinition {
                     properties.put(entryName, ['$ref':('#/definitions/' + relatedRefName)])
                 }
             }
-        } else {
+        } else if (!pkOnly) {
             // add all relationships, nest
             List<RelationshipInfo> relInfoList = getRelationshipsInfo(true)
             for (RelationshipInfo relInfo in relInfoList) {
