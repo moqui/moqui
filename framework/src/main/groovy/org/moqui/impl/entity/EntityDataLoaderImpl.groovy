@@ -71,6 +71,10 @@ class EntityDataLoaderImpl implements EntityDataLoader {
     char csvCommentStart = '#'
     char csvQuoteChar = '"'
 
+    String csvEntityName = null
+    List<String> csvFieldNames = null
+    Map<String, Object> defaultValues = null
+
     EntityDataLoaderImpl(EntityFacadeImpl efi) {
         this.efi = efi
         this.sfi = efi.getEcfi().getServiceFacade()
@@ -114,6 +118,23 @@ class EntityDataLoaderImpl implements EntityDataLoader {
     EntityDataLoader csvCommentStart(char commentStart) { this.csvCommentStart = commentStart; return this }
     @Override
     EntityDataLoader csvQuoteChar(char quoteChar) { this.csvQuoteChar = quoteChar; return this }
+
+    @Override
+    EntityDataLoader csvEntityName(String entityName) {
+        if (!efi.isEntityDefined(entityName) && !sfi.isServiceDefined(entityName))
+            throw new IllegalArgumentException("Name ${entityName} is not a valid entity or service name")
+        this.csvEntityName = entityName
+        return this
+    }
+    @Override
+    EntityDataLoader csvFieldNames(List<String> fieldNames) { this.csvFieldNames = fieldNames; return this }
+    @Override
+    EntityDataLoader defaultValues(Map<String, Object> defaultValues) {
+        if (this.defaultValues == null) this.defaultValues = [:]
+        this.defaultValues.putAll(defaultValues)
+        return this
+    }
+
 
     @Override
     List<String> check() {
@@ -629,6 +650,10 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                 relatedEdStack.remove(0)
                 valuesRead++
             } else {
+                Map<String, Object> valueMap = [:]
+                if (edli.defaultValues) valueMap.putAll(edli.defaultValues)
+                valueMap.putAll(rootValueMap)
+
                 if (currentEntityDef != null) {
                     // before we write currentValue check to see if PK is there, if not and it is one field, generate it from a sequence using the entity name
                     /* Don't need to do this here any more, now calling the store service which will handle it
@@ -643,7 +668,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
 
                     try {
                         // if (currentEntityDef.getFullEntityName().contains("DbForm")) logger.warn("========= DbForm rootValueMap: ${rootValueMap}")
-                        valueHandler.handlePlainMap(currentEntityDef.getFullEntityName(), rootValueMap)
+                        valueHandler.handlePlainMap(currentEntityDef.getFullEntityName(), valueMap)
                         valuesRead++
                         currentEntityDef = null
                     } catch (EntityException e) {
@@ -651,7 +676,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                     }
                 } else if (currentServiceDef != null) {
                     try {
-                        ServiceCallSync currentScs = edli.sfi.sync().name(currentServiceDef.getServiceName()).parameters(rootValueMap)
+                        ServiceCallSync currentScs = edli.sfi.sync().name(currentServiceDef.getServiceName()).parameters(valueMap)
                         valueHandler.handleService(currentScs)
                         valuesRead++
                         currentServiceDef = null
@@ -698,30 +723,42 @@ class EntityDataLoaderImpl implements EntityDataLoader {
 
             if (!iterator.hasNext()) throw new BaseException("Not loading file [${location}], no data found")
 
-            CSVRecord firstLineRecord = iterator.next()
-            String entityName = firstLineRecord.get(0)
+            String entityName
             boolean isService
-            if (edli.efi.isEntityDefined(entityName)) {
-                isService = false
-            } else if (edli.sfi.isServiceDefined(entityName)) {
-                isService = true
+            if (edli.csvEntityName) {
+                entityName = edli.csvEntityName
+                // NOTE: when csvEntityName set it is checked to make sure it is a valid entity or service name, so
+                //     just check to see if it is a service
+                isService = edli.sfi.isServiceDefined(entityName)
             } else {
-                throw new BaseException("CSV first line first field [${entityName}] is not a valid entity name or service name")
-            }
+                CSVRecord firstLineRecord = iterator.next()
+                entityName = firstLineRecord.get(0)
+                if (edli.efi.isEntityDefined(entityName)) {
+                    isService = false
+                } else if (edli.sfi.isServiceDefined(entityName)) {
+                    isService = true
+                } else {
+                    throw new BaseException("CSV first line first field [${entityName}] is not a valid entity name or service name")
+                }
 
-            if (firstLineRecord.size() > 1) {
-                // second field is data type
-                String type = firstLineRecord.get(1)
-                if (type && edli.dataTypes && !edli.dataTypes.contains(type)) {
-                    if (logger.isInfoEnabled()) logger.info("Skipping file [${location}], is a type to skip (${type})")
-                    return false
+                if (firstLineRecord.size() > 1) {
+                    // second field is data type
+                    String type = firstLineRecord.get(1)
+                    if (type && edli.dataTypes && !edli.dataTypes.contains(type)) {
+                        if (logger.isInfoEnabled()) logger.info("Skipping file [${location}], is a type to skip (${type})")
+                        return false
+                    }
                 }
             }
 
-            if (!iterator.hasNext()) throw new BaseException("Not loading file [${location}], no second (header) line found")
-            CSVRecord headerRecord = iterator.next()
             Map<String, Integer> headerMap = [:]
-            for (int i = 0; i < headerRecord.size(); i++) headerMap.put(headerRecord.get(i), i)
+            if (edli.csvFieldNames) {
+                for (int i = 0; i < edli.csvFieldNames.size(); i++) headerMap.put(edli.csvFieldNames.get(i), i)
+            } else {
+                if (!iterator.hasNext()) throw new BaseException("Not loading file [${location}], no second (header) line found")
+                CSVRecord headerRecord = iterator.next()
+                for (int i = 0; i < headerRecord.size(); i++) headerMap.put(headerRecord.get(i), i)
+            }
 
             // logger.warn("======== CSV entity/service [${entityName}] headerMap: ${headerMap}")
             while (iterator.hasNext()) {
@@ -729,14 +766,19 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                 // logger.warn("======== CSV record: ${record.toString()}")
                 if (isService) {
                     ServiceCallSyncImpl currentScs = (ServiceCallSyncImpl) edli.sfi.sync().name(entityName)
-                    for (Map.Entry<String, Integer> header in headerMap)
-                        currentScs.parameter(header.key, record.get((int) header.value))
+                    if (edli.defaultValues) currentScs.parameters(edli.defaultValues)
+                    for (Map.Entry<String, Integer> header in headerMap) {
+                        // if not enough elements in the record for the index, skip it
+                        if (header.value >= record.size()) continue
+                        currentScs.parameter(header.key, record.get(header.value))
+                    }
                     valueHandler.handleService(currentScs)
                     valuesRead++
                 } else {
                     EntityValueImpl currentEntityValue = (EntityValueImpl) edli.efi.makeValue(entityName)
+                    if (edli.defaultValues) currentEntityValue.setFields(edli.defaultValues, true, null, null)
                     for (Map.Entry<String, Integer> header in headerMap)
-                        currentEntityValue.setString(header.key, record.get((int) header.value))
+                        currentEntityValue.setString(header.key, record.get(header.value))
 
                     if (!currentEntityValue.containsPrimaryKey()) {
                         if (currentEntityValue.getEntityDefinition().getPkFieldNames().size() == 1) {
@@ -811,7 +853,9 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                     continue
                 }
 
-                Map value = (Map) valueObj
+                Map value = [:]
+                if (edli.defaultValues) value.putAll(edli.defaultValues)
+                value.putAll((Map) valueObj)
 
                 String entityName = value."_entity"
                 boolean isService
