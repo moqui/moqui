@@ -52,12 +52,13 @@ New Features
     - see example Service REST API in example.rest.xml
     - call REST methods through the /rest/s1 transition
     - see example client calls in the rest.xml screen definition file
+    - get Swagger API definition from /rest/service.swagger
   - Added json-schema for Entity REST API: for all entities get
-    /rest/schema.json, for a single entity get /rest/schema/${name}.json
-  - Added RAML API definition for Entity REST API at /rest/schema.raml
+    /rest/entity.json, for a single entity get /rest/entity.json/${name}.json
+  - Added RAML API definition for Entity REST API at /rest/entity.raml
   - Entity REST API supports master definitions through
     /rest/m1/${entity}/${master} or /rest/v1/${entity}?master=${master};
-    see comments in the rest.xml screen defintion XML file for examples
+    see comments in the rest.xml screen definition XML file for examples
   - SystemMessage entity has additional fields to identify messages
   - Changed receive#SystemMessage to an interface, now use
     receive#IncomingSystemMessage for remote calls, will call the
