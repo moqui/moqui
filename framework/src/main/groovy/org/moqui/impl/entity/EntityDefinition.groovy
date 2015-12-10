@@ -1025,6 +1025,7 @@ public class EntityDefinition {
             List<MasterDetail> detailList
             if (masterName) {
                 MasterDefinition masterDef = getMasterDefinition(masterName)
+                if (masterDef == null) throw new IllegalArgumentException("Master name ${masterName} not valid for entity ${getFullEntityName()}")
                 detailList = masterDef.detailList
             } else {
                 detailList = masterDetail.getDetailList()
