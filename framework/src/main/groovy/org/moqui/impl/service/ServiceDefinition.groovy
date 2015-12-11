@@ -14,7 +14,6 @@
 package org.moqui.impl.service
 
 import groovy.transform.CompileStatic
-import groovy.xml.QName
 import org.apache.commons.validator.routines.CreditCardValidator
 import org.apache.commons.validator.routines.EmailValidator
 import org.apache.commons.validator.routines.UrlValidator
@@ -179,7 +178,7 @@ class ServiceDefinition {
         }
     }
 
-    static void mergeParameter(Node parametersNode, Node overrideParameterNode, EntityDefinition ed) {
+    void mergeParameter(Node parametersNode, Node overrideParameterNode, EntityDefinition ed) {
         Node baseParameterNode = mergeParameter(parametersNode, (String) overrideParameterNode."@name",
                 overrideParameterNode.attributes())
         // merge description, subtype, ParameterValidations
@@ -187,14 +186,19 @@ class ServiceDefinition {
             if (childNode.name() == "description" || childNode.name() == "subtype") {
                 if (baseParameterNode[(String) childNode.name()]) baseParameterNode.remove((Node) baseParameterNode[(String) childNode.name()].getAt(0))
             }
+            if (childNode.name() == "auto-parameters") {
+                mergeAutoParameters(baseParameterNode, childNode)
+            } else if (childNode.name() == "parameter") {
+                mergeParameter(baseParameterNode, childNode, ed)
+            }
             // is a validation, just add it in, or the original has been removed so add the new one
             baseParameterNode.append(childNode)
         }
-        if (baseParameterNode."@entity-name") {
-            if (!baseParameterNode."@field-name") baseParameterNode.attributes().put("field-name", baseParameterNode."@name")
-        } else if (ed != null && ed.isField(baseParameterNode."@name")) {
+        if (baseParameterNode.attribute("entity-name")) {
+            if (!baseParameterNode.attribute("field-name")) baseParameterNode.attributes().put("field-name", baseParameterNode.attribute("name"))
+        } else if (ed != null && ed.isField((String) baseParameterNode.attribute("name"))) {
             baseParameterNode.attributes().put("entity-name", ed.getFullEntityName())
-            baseParameterNode.attributes().put("field-name", baseParameterNode."@name")
+            baseParameterNode.attributes().put("field-name", baseParameterNode.attribute("name"))
         }
     }
 
@@ -987,7 +991,7 @@ class ServiceDefinition {
         return defMap
     }
     @CompileStatic
-    protected static Map<String, Object> getJsonSchemaPropMap(Node parmNode) {
+    protected Map<String, Object> getJsonSchemaPropMap(Node parmNode) {
         String objectType = (String) parmNode?.attribute('type')
         String jsonType = RestApi.getJsonType(objectType)
         Map<String, Object> propMap = [type:jsonType] as Map<String, Object>
@@ -996,19 +1000,25 @@ class ServiceDefinition {
         String description = StupidUtilities.nodeText(parmNode.get("description"))
         if (description) propMap.put("description", description)
         if (parmNode.attribute("default-value")) propMap.put("default", (String) parmNode.attribute("default-value"))
-        if (parmNode.attribute("default")) propMap.put("default", "\${${parmNode.attribute("default")}}".toString())
+        if (parmNode.attribute("default")) propMap.put("default", "{${parmNode.attribute("default")}}".toString())
 
         List childList = (List) parmNode.get("parameter")
-        if (childList) {
-            if (jsonType == 'array') {
+        if (jsonType == 'array') {
+            if (childList) {
                 propMap.put("items", getJsonSchemaPropMap((Node) childList[0]))
-            } else if (jsonType == 'object') {
+            } else {
+                logger.warn("Parameter ${parmNode.attribute('name')} of service ${getServiceName()} is an array type but has no child parameter (should have one, name ignored), may cause error in Swagger, etc")
+            }
+        } else if (jsonType == 'object') {
+            if (childList) {
                 Map properties = [:]
                 propMap.put("properties", properties)
                 for (Object childObj in childList) {
                     Node childNode = (Node) childObj
                     properties.put(childNode.attribute("name"), getJsonSchemaPropMap(childNode))
                 }
+            } else {
+                logger.warn("Parameter ${parmNode.attribute('name')} of service ${getServiceName()} is an object type but has no child parameters, may cause error in Swagger, etc")
             }
         }
 
@@ -1044,7 +1054,7 @@ class ServiceDefinition {
         if (description) propMap.put("description", description)
         if (parmNode.attribute("required") == "true") propMap.put("required", true)
         if (parmNode.attribute("default-value")) propMap.put("default", (String) parmNode.attribute("default-value"))
-        if (parmNode.attribute("default")) propMap.put("default", "\${${parmNode.attribute("default")}}".toString())
+        if (parmNode.attribute("default")) propMap.put("default", "{${parmNode.attribute("default")}}".toString())
 
         List childList = (List) parmNode.get("parameter")
         if (childList) {

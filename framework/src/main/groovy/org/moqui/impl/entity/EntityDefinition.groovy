@@ -961,7 +961,7 @@ public class EntityDefinition {
                 EntityList enumList = efi.find("moqui.basic.Enumeration").condition("enumTypeId", oneRelInfo.title)
                         .orderBy("sequenceNum,enumId").disableAuthz().list()
                 if (enumList) {
-                    List<String> enumIdList = [null]
+                    List<String> enumIdList = []
                     for (EntityValue ev in enumList) enumIdList.add((String) ev.enumId)
                     return enumIdList
                 }
@@ -969,7 +969,7 @@ public class EntityDefinition {
                 EntityList statusList = efi.find("moqui.basic.StatusItem").condition("statusTypeId", oneRelInfo.title)
                         .orderBy("sequenceNum,statusId").disableAuthz().list()
                 if (statusList) {
-                    List<String> statusIdList = [null]
+                    List<String> statusIdList = []
                     for (EntityValue ev in statusList) statusIdList.add((String) ev.statusId)
                     return statusIdList
                 }

@@ -97,7 +97,7 @@ class RestApi {
         ResourceNode resourceNode = rootResourceMap.get(rootResourceName)
         if (resourceNode == null) throw new ResourceNotFoundException("Root resource not found with name ${rootResourceName}")
 
-        Map<String, Object> swaggerMap = [swagger:'2.0',
+        Map<String, Object> swaggerMap = [swagger:2.0,
             info:[title:(resourceNode.displayName ?: rootResourceName + ' REST API'), version:(resourceNode.version ?: '1.0'),
                   description:(resourceNode.description ?: '')],
             host:hostName, basePath:basePath, schemes:['http', 'https'],
@@ -127,8 +127,8 @@ class RestApi {
 
     protected static final Map<String, String> objectTypeJsonMap = [
             Integer:"integer", Long:"integer", Short:"integer", Float:"number", Double:"number",
-            BigDecimal:"number", BigInteger:"integer",
-            Boolean:"boolean", List:"array", Set:"array", Collection:"array", Map:"object" ]
+            BigDecimal:"number", BigInteger:"integer", Boolean:"boolean", List:"array", Set:"array", Collection:"array",
+            Map:"object", EntityValue:"object", EntityList:"array" ]
     static String getJsonType(String javaType) {
         if (!javaType) return "string"
         if (javaType.contains(".")) javaType = javaType.substring(javaType.lastIndexOf(".") + 1)
@@ -146,8 +146,8 @@ class RestApi {
 
     protected static final Map<String, String> objectTypeRamlMap = [
             Integer:"integer", Long:"integer", Short:"integer", Float:"number", Double:"number",
-            BigDecimal:"number", BigInteger:"integer",
-            Boolean:"boolean", List:"array", Set:"array", Collection:"array", Map:"object" ]
+            BigDecimal:"number", BigInteger:"integer", Boolean:"boolean", List:"array", Set:"array", Collection:"array",
+            Map:"object", EntityValue:"object", EntityList:"array" ]
     static String getRamlType(String javaType) {
         if (!javaType) return "string"
         if (javaType.contains(".")) javaType = javaType.substring(javaType.lastIndexOf(".") + 1)

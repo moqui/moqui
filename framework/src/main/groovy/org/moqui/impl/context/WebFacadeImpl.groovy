@@ -1052,6 +1052,10 @@ class WebFacadeImpl implements WebFacade {
         if (rootResourceName.endsWith(".json") || rootResourceName.endsWith(".yaml"))
             rootResourceName = rootResourceName.substring(0, rootResourceName.length() - 5)
 
+        response.addHeader("Access-Control-Allow-Origin", "*")
+        response.addHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, PATCH, OPTIONS")
+        response.addHeader("Access-Control-Allow-Headers", "Content-Type, api_key, Authorization")
+
         Map swaggerMap = eci.ecfi.serviceFacade.restApi.getSwaggerMap(rootResourceName, hostName, basePath)
         if (outputType == "application/json") {
             JsonBuilder jb = new JsonBuilder()
