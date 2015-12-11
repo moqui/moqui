@@ -13,6 +13,8 @@
  */
 package org.moqui.impl
 
+import groovy.json.JsonBuilder
+import groovy.json.JsonSlurper
 import groovy.transform.CompileStatic
 import org.apache.http.HttpEntity
 import org.apache.http.NameValuePair
@@ -25,6 +27,7 @@ import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.message.BasicNameValuePair
 import org.apache.http.util.EntityUtils
+import org.moqui.BaseException
 
 import javax.servlet.ServletRequest
 import javax.servlet.http.HttpSession
@@ -300,11 +303,11 @@ class StupidWebUtilities {
         CloseableHttpClient httpClient = HttpClients.createDefault()
         try {
             List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>()
-            for (Map.Entry requestEntry in requestMap.entrySet())
+            if (requestMap) for (Map.Entry requestEntry in requestMap.entrySet())
                 nameValuePairs.add(new BasicNameValuePair(requestEntry.key as String, requestEntry.value as String))
 
             HttpPost httpPost = new HttpPost(location)
-            httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs, Charset.forName("UTF-8")))
+            if (nameValuePairs) httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs, Charset.forName("UTF-8")))
 
             CloseableHttpResponse response = httpClient.execute(httpPost)
             try {

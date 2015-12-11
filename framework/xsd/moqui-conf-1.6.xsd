@@ -83,6 +83,7 @@ along with this software (see the LICENSE.md file). If not, see
                     divisible into an hour, the default is 900 seconds (15 minutes)</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="visit-enabled" type="boolean" default="true"/>
+            <xs:attribute name="visit-ip-info-on-login" type="boolean" default="true"/>
             <xs:attribute name="visitor-enabled" type="boolean" default="true"/>
             <xs:attribute name="stats-skip-condition" type="xs:string">
                 <xs:annotation><xs:documentation>If evaluates to true skips creating visit and visitor, and doesn't

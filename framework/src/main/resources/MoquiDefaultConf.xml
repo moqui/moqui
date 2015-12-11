@@ -51,7 +51,7 @@
         <!-- this is a count of all artifact hits, expire once idle for over 15 minutes -->
         <cache name="artifact.tarpit.hits" expire-time-idle="900" expire-time-live="0" max-elements="10000"/>
     </cache-list>
-    <server-stats bin-length-seconds="900" visit-enabled="true" visitor-enabled="true">
+    <server-stats bin-length-seconds="900" visit-enabled="true" visit-ip-info-on-login="true" visitor-enabled="true">
         <artifact-stats type="screen" persist-bin="true" persist-hit="true"/>
         <artifact-stats type="screen-content" persist-bin="true" persist-hit="true"/>
         <artifact-stats type="transition" persist-bin="true" persist-hit="true"/>

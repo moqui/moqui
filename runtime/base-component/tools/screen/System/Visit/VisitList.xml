@@ -56,12 +56,21 @@ along with this software (see the LICENSE.md file). If not, see
                 <header-field title="Client IP"><text-find hide-options="true" size="8"/></header-field>
                 <default-field><display/></default-field>
             </field>
+            <field name="clientIpCountryGeoId"><default-field title="Client Country">
+                <display-entity entity-name="moqui.basic.Geo" text="${geoId} - ${geoName}"/></default-field></field>
             <field name="initialRequest">
                 <header-field show-order-by="true"><text-find hide-options="true" size="20"/></header-field>
                 <default-field><display/></default-field>
             </field>
             <field name="hitCount"><default-field><display/></default-field></field>
             <field name="find"><header-field title="Find"><submit/></header-field></field>
+            
+            <form-list-column><field-ref name="visitId"/><field-ref name="fromDate"/></form-list-column>
+            <form-list-column><field-ref name="visitorId"/><field-ref name="userId"/></form-list-column>
+            <form-list-column><field-ref name="clientIpAddress"/><field-ref name="clientIpCountryGeoId"/></form-list-column>
+            <form-list-column><field-ref name="serverIpAddress"/><field-ref name="initialRequest"/></form-list-column>
+            <form-list-column><field-ref name="hitCount"/></form-list-column>
+            <form-list-column><field-ref name="find"/></form-list-column>
         </form-list>
     </widgets>
 </screen>
