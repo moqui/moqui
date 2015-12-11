@@ -230,11 +230,19 @@ along with this software (see the LICENSE.md file). If not, see
     Use the service.swagger transition to get the Swagger API definition for a particular API by the root resource name.
     Can output in JSON or YAML (using .json or .yaml extension, default to JSON output).
 
-    curl -X GET -u john.doe:moqui http://localhost:8080/rest/service.swagger/example
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/service.swagger/example.json
     curl -X GET -u john.doe:moqui http://localhost:8080/rest/service.swagger/example.yaml
+
+    For a RAML API definition use something like (.raml extension optional):
+
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/service.raml/example.raml
     -->
     <transition name="service.swagger" read-only="true" method="get">
         <actions><script>ec.web.handleServiceRestSwagger(sri.screenUrlInfo.extraPathNameList, ec.web.getHostName(), "/rest/s1")</script></actions>
+        <default-response type="none"/>
+    </transition>
+    <transition name="service.raml" read-only="true" method="get">
+        <actions><script>ec.web.handleServiceRestRaml(sri.screenUrlInfo.extraPathNameList, sri.buildUrl("s1").getUrl())</script></actions>
         <default-response type="none"/>
     </transition>
 
