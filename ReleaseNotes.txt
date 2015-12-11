@@ -53,6 +53,8 @@ New Features
     - call REST methods through the /rest/s1 transition
     - see example client calls in the rest.xml screen definition file
     - get Swagger API definition from /rest/service.swagger
+  - New RestClient API, available through ec.service.rest(), with various
+    options for doing HTTP requests and parsing response
   - Added json-schema for Entity REST API: for all entities get
     /rest/entity.json, for a single entity get /rest/entity.json/${name}.json
   - Added RAML API definition for Entity REST API at /rest/entity.raml
