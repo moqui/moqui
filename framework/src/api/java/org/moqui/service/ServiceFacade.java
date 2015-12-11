@@ -34,6 +34,8 @@ public interface ServiceFacade {
     /** Call a JSON remote service. For Moqui services the location will be something like "http://hostname/rpc/json". */
     Map<String, Object> callJsonRpc(String location, String method, Map<String, Object> parameters);
 
+    /** Get a RestClient instance to call remote REST services */
+    RestClient rest();
 
     /** Register a callback listener on a specific service.
      * @param serviceName Name of the service to run. The combined service name, like: "${path}.${verb}${noun}". To

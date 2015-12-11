@@ -21,6 +21,7 @@ import org.moqui.impl.StupidJavaUtilities
 import org.moqui.impl.StupidUtilities
 import org.moqui.impl.service.runner.EntityAutoServiceRunner
 import org.moqui.impl.service.runner.RemoteJsonRpcServiceRunner
+import org.moqui.service.RestClient
 import org.moqui.service.ServiceFacade
 import org.moqui.service.ServiceCallback
 import org.moqui.service.ServiceCallSync
@@ -479,6 +480,10 @@ class ServiceFacadeImpl implements ServiceFacade {
     Map<String, Object> callJsonRpc(String location, String method, Map<String, Object> parameters) {
         return RemoteJsonRpcServiceRunner.runJsonService(null, location, method, parameters, ecfi.getExecutionContext())
     }
+
+    @Override
+    @CompileStatic
+    RestClient rest() { return new RestClientImpl(ecfi) }
 
     @Override
     @CompileStatic
