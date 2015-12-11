@@ -111,6 +111,8 @@ New Features
   where a single word in the default language (ie English) is ambiguous; at
   runtime if no matching LocalizedMessage is found the text before the
   double hash will be used to lookup records or as the default value
+- Service to lookup IP geo data (from freegeoip.net), called by default on
+  login (can be disabled with server-stats.@visit-ip-info-on-login)
 
 Bug Fixes
 
