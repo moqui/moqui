@@ -996,7 +996,7 @@ class ServiceDefinition {
         String description = StupidUtilities.nodeText(parmNode.get("description"))
         if (description) propMap.put("description", description)
         if (parmNode.attribute("default-value")) propMap.put("default", (String) parmNode.attribute("default-value"))
-        if (parmNode.attribute("default")) propMap.put("default", "\${${parmNode.attribute("default")}}")
+        if (parmNode.attribute("default")) propMap.put("default", "\${${parmNode.attribute("default")}}".toString())
 
         List childList = (List) parmNode.get("parameter")
         if (childList) {
@@ -1008,6 +1008,54 @@ class ServiceDefinition {
                 for (Object childObj in childList) {
                     Node childNode = (Node) childObj
                     properties.put(childNode.attribute("name"), getJsonSchemaPropMap(childNode))
+                }
+            }
+        }
+
+        return propMap
+    }
+
+    @CompileStatic
+    Map<String, Object> getRamlMapIn() {
+        Map<String, Object> properties = [:]
+        Map<String, Object> defMap = [type:'object', properties:properties] as Map<String, Object>
+        for (String parmName in getInParameterNames()) {
+            Node parmNode = getInParameter(parmName)
+            properties.put(parmName, getRamlPropMap(parmNode))
+        }
+        return defMap
+    }
+    @CompileStatic
+    Map<String, Object> getRamlMapOut() {
+        Map<String, Object> properties = [:]
+        Map<String, Object> defMap = [type:'object', properties:properties] as Map<String, Object>
+        for (String parmName in getOutParameterNames()) {
+            Node parmNode = getOutParameter(parmName)
+            properties.put(parmName, getRamlPropMap(parmNode))
+        }
+        return defMap
+    }
+    @CompileStatic
+    protected static Map<String, Object> getRamlPropMap(Node parmNode) {
+        String objectType = (String) parmNode?.attribute('type')
+        String ramlType = RestApi.getRamlType(objectType)
+        Map<String, Object> propMap = [type:ramlType] as Map<String, Object>
+        String description = StupidUtilities.nodeText(parmNode.get("description"))
+        if (description) propMap.put("description", description)
+        if (parmNode.attribute("required") == "true") propMap.put("required", true)
+        if (parmNode.attribute("default-value")) propMap.put("default", (String) parmNode.attribute("default-value"))
+        if (parmNode.attribute("default")) propMap.put("default", "\${${parmNode.attribute("default")}}".toString())
+
+        List childList = (List) parmNode.get("parameter")
+        if (childList) {
+            if (ramlType == 'array') {
+                propMap.put("items", getRamlPropMap((Node) childList[0]))
+            } else if (ramlType == 'object') {
+                Map properties = [:]
+                propMap.put("properties", properties)
+                for (Object childObj in childList) {
+                    Node childNode = (Node) childObj
+                    properties.put(childNode.attribute("name"), getRamlPropMap(childNode))
                 }
             }
         }

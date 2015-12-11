@@ -1116,6 +1116,78 @@ public class EntityDefinition {
              pageNoLimit:[type:'string', description:'If true don\'t limit page size (no pagination)'],
              dependentLevels:[type:'number', description:'Levels of dependent child records to include']
             ]
+    static final Map<String, String> fieldTypeRamlMap = [
+            "id":"string", "id-long":"string", "text-indicator":"string", "text-short":"string", "text-medium":"string",
+            "text-long":"string", "text-very-long":"string", "date-time":"date", "time":"string",
+            "date":"string", "number-integer":"integer", "number-float":"number",
+            "number-decimal":"number", "currency-amount":"number", "currency-precise":"number",
+            "binary-very-long":"string" ] // NOTE: binary-very-long may need hyper-schema stuff
+
+    Map<String, Object> getRamlFieldMap(FieldInfo fi) {
+        Map<String, Object> propMap = [:]
+        String description = StupidUtilities.nodeText(fi.fieldNode.get("description"))
+        if (description) propMap.put("description", description)
+        propMap.put('type', fieldTypeRamlMap.get(fi.type))
+
+        List enumList = getFieldEnums(fi)
+        if (enumList) propMap.put('enum', enumList)
+        return propMap
+    }
+
+    Map<String, Object> getRamlTypeMap(boolean pkOnly, Map<String, Object> typesMap, String masterName, MasterDetail masterDetail) {
+        String name = getShortAlias() ?: getFullEntityName()
+        String prettyName = getPrettyName(null, null)
+        String refName = name
+        if (masterName) {
+            refName = "${name}.${masterName}"
+            prettyName = prettyName + " (Master: ${masterName})"
+        }
+
+        Map properties = [:]
+        Map<String, Object> typeMap = [displayName:prettyName, type:'object', properties:properties]
+
+        if (typesMap != null && !typesMap.containsKey(name))
+            typesMap.put(refName, typeMap)
+
+        // add field properties
+        ArrayList<String> allFields = pkOnly ? getPkFieldNames() : getAllFieldNames(true)
+        for (int i = 0; i < allFields.size(); i++) {
+            FieldInfo fi = getFieldInfo(allFields.get(i))
+            properties.put(fi.getName(), getRamlFieldMap(fi))
+        }
+
+        // for master add related properties
+        if (!pkOnly && (masterName || masterDetail != null)) {
+            // add only relationships from master definition or detail
+            List<MasterDetail> detailList
+            if (masterName) {
+                MasterDefinition masterDef = getMasterDefinition(masterName)
+                if (masterDef == null) throw new IllegalArgumentException("Master name ${masterName} not valid for entity ${getFullEntityName()}")
+                detailList = masterDef.detailList
+            } else {
+                detailList = masterDetail.getDetailList()
+            }
+            for (MasterDetail childMasterDetail in detailList) {
+                RelationshipInfo relInfo = childMasterDetail.relInfo
+                String relationshipName = relInfo.relationshipName
+                String entryName = relInfo.shortAlias ?: relationshipName
+                String relatedRefName = relInfo.relatedEd.shortAlias ?: relInfo.relatedEd.getFullEntityName()
+
+                // recurse, let it put itself in the definitionsMap
+                if (typesMap != null && !typesMap.containsKey(relatedRefName))
+                    relInfo.relatedEd.getRamlTypeMap(pkOnly, typesMap, null, childMasterDetail)
+
+                if (relInfo.type == "many") {
+                    // properties.put(entryName, [type:'array', items:relatedRefName])
+                    properties.put(entryName, [type:(relatedRefName + '[]')])
+                } else {
+                    properties.put(entryName, [type:relatedRefName])
+                }
+            }
+        }
+
+        return typeMap
+    }
 
     @CompileStatic
     Map getRamlApi(String masterName) {
@@ -1130,12 +1202,7 @@ public class EntityDefinition {
         ArrayList<String> allFields = getAllFieldNames(true)
         for (int i = 0; i < allFields.size(); i++) {
             FieldInfo fi = getFieldInfo(allFields.get(i))
-            Map<String, Object> propMap = [:]
-            propMap.put('type', fieldTypeJsonMap.get(fi.type))
-            qpMap.put(fi.getName(), propMap)
-
-            List enumList = getFieldEnums(fi)
-            if (enumList) propMap.put('enum', enumList)
+            qpMap.put(fi.getName(), getRamlFieldMap(fi))
         }
 
         // get list

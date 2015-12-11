@@ -785,7 +785,6 @@ class WebFacadeImpl implements WebFacade {
         }
     }
 
-    @Override
     @CompileStatic
     void handleEntityRestSchema(List<String> extraPathNameList, String schemaUri, String linkPrefix,
                                 String schemaLinkPrefix, boolean getMaster) {
@@ -874,7 +873,6 @@ class WebFacadeImpl implements WebFacade {
         }
     }
 
-    @Override
     @CompileStatic
     void handleEntityRestRaml(List<String> extraPathNameList, String linkPrefix, String schemaLinkPrefix, boolean getMaster) {
         // make sure a user is logged in, screen/etc that calls will generally be configured to not require auth
@@ -1072,6 +1070,28 @@ class WebFacadeImpl implements WebFacade {
         } else {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Output type ${outputType} not supported")
         }
+    }
+
+    @CompileStatic
+    void handleServiceRestRaml(List<String> extraPathNameList, String linkPrefix) {
+        if (extraPathNameList.size() == 0) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No root resource name specified in path")
+            return
+        }
+        String rootResourceName = extraPathNameList.get(0)
+        if (rootResourceName.endsWith(".raml")) rootResourceName = rootResourceName.substring(0, rootResourceName.length() - 5)
+
+        Map swaggerMap = eci.ecfi.serviceFacade.restApi.getRamlMap(rootResourceName, linkPrefix)
+        DumperOptions options = new DumperOptions()
+        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK)
+        // default: options.setDefaultScalarStyle(DumperOptions.ScalarStyle.PLAIN)
+        options.setPrettyFlow(true)
+        Yaml yaml = new Yaml(options)
+        String yamlString = yaml.dump(swaggerMap)
+        // add beginning line "#%RAML 1.0", more efficient way to do this?
+        yamlString = "#%RAML 1.0\n" + yamlString
+
+        sendTextResponse(yamlString, "application/raml+yaml", "${rootResourceName}.raml")
     }
 
     void saveScreenLastInfo(String screenPath, Map parameters) {
