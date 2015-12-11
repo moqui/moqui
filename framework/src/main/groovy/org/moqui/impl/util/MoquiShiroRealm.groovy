@@ -166,9 +166,18 @@ class MoquiShiroRealm implements Realm {
 
                 // update visit if no user in visit yet
                 EntityValue visit = ecfi.executionContext.user.visit
-                if (visit && !visit.userId) {
-                    ecfi.serviceFacade.sync().name("update", "moqui.server.Visit")
-                            .parameters((Map<String, Object>) [visitId:visit.visitId, userId:userId]).call()
+                if (visit) {
+                    if (!visit.userId) {
+                        ecfi.serviceFacade.sync().name("update", "moqui.server.Visit")
+                                .parameters((Map<String, Object>) [visitId:visit.visitId, userId:userId]).call()
+                    }
+                    if (!visit.clientIpCountryGeoId && !visit.clientIpTimeZone) {
+                        Node ssNode = (Node) ecfi.confXmlRoot."server-stats"[0]
+                        if (ssNode.attribute("visit-ip-info-on-login") != "false") {
+                            ecfi.serviceFacade.async().name("org.moqui.impl.ServerServices.get#VisitClientIpData")
+                                    .parameter("visitId", visit.visitId).call()
+                        }
+                    }
                 }
             } finally {
                 if (!alreadyDisabled) ecfi.executionContext.artifactExecution.enableAuthz()
