@@ -1025,8 +1025,7 @@ class WebFacadeImpl implements WebFacade {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.message)
         } catch (RestApi.MethodNotSupportedException e) {
             logger.warn((String) "REST Method Not Supported: " + e.getMessage(), e)
-            // send bad request (400), reserve 404 Not Found for records that don't exist
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.message)
+            response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, e.message)
         } catch (EntityValueNotFoundException e) {
             logger.warn("REST Entity Value Not Found: " + e.getMessage())
             // record doesn't exist, send 404 Not Found
