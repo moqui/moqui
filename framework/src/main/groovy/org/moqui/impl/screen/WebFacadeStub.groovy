@@ -174,14 +174,6 @@ class WebFacadeStub implements WebFacade {
     void handleEntityRestCall(List<String> extraPathNameList, boolean masterNameInPath) {
         throw new IllegalArgumentException("WebFacadeStub handleEntityRestCall not supported") }
     @Override
-    void handleEntityRestSchema(List<String> extraPathNameList, String schemaUri, String linkPrefix, String schemaLinkPrefix, boolean getMaster) {
-        throw new IllegalArgumentException("WebFacadeStub handleEntityRestSchema not supported")
-    }
-    @Override
-    void handleEntityRestRaml(List<String> extraPathNameList, String linkPrefix, String schemaLinkPrefix, boolean getMaster) {
-        throw new IllegalArgumentException("WebFacadeStub handleEntityRestRaml not supported")
-    }
-    @Override
     void handleServiceRestCall(List<String> extraPathNameList) {
         throw new IllegalArgumentException("WebFacadeStub handleServiceRestCall not supported")
     }
