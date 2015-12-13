@@ -320,7 +320,7 @@ class RestApi {
                 responses.put("200", [description:'Success', schema:EntityDefinition.jsonCountParameters])
             } else if (operation in ['create', 'update', 'store']) {
                 parameters.add([name:'body', in:'body', required:false, schema:['$ref':"#/definitions/${refDefName}".toString()]])
-                responses.put("200", [description:'Success', schema:[type:"array", items:['$ref':"#/definitions/${refDefNamePk}".toString()]]])
+                responses.put("200", [description:'Success', schema:['$ref':"#/definitions/${refDefNamePk}".toString()]])
                 addPkDef = true
             } else if (operation == 'delete') {
                 addEntityDef = false

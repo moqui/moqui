@@ -967,7 +967,7 @@ class WebFacadeImpl implements WebFacade {
 
         String masterName = null
         if (extraPathNameList.size() > 1) {
-            masterName = extraPathNameList.get(0)
+            masterName = extraPathNameList.get(1)
             if (masterName.endsWith(".json") || masterName.endsWith(".yaml"))
                 masterName = masterName.substring(0, masterName.length() - 5)
         }
@@ -999,7 +999,6 @@ class WebFacadeImpl implements WebFacade {
 
         for (String curEntityName in entityNameSet) {
             EntityDefinition ed = efi.getEntityDefinition(curEntityName)
-            String refName = ed.getShortAlias() ?: ed.getFullEntityName()
             if (getMaster) {
                 Set<String> masterNameSet = new LinkedHashSet<String>()
                 if (masterName) {
@@ -1008,15 +1007,13 @@ class WebFacadeImpl implements WebFacade {
                     Map<String, EntityDefinition.MasterDefinition> masterDefMap = ed.getMasterDefinitionMap()
                     masterNameSet.addAll(masterDefMap.keySet())
                 }
-                Map entityPathMap = [:]
                 for (String curMasterName in masterNameSet) {
-                    // TODO
+                    ed.addToSwaggerMap(swaggerMap, curMasterName)
                 }
             } else {
-                // TODO
+                ed.addToSwaggerMap(swaggerMap, null)
             }
         }
-
 
         if (outputType == "application/json") {
             JsonBuilder jb = new JsonBuilder()

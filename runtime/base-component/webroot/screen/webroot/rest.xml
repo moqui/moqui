@@ -160,9 +160,19 @@ along with this software (see the LICENSE.md file). If not, see
 
     curl -X GET -u john.doe:moqui http://localhost:8080/rest/entity.json
 
-    To get the RAML schema (see http://raml.org) for ALL entities use a request like:
+    To get the RAML definition (see http://raml.org) for ALL entities use a request like:
 
     curl -X GET -u john.doe:moqui http://localhost:8080/rest/entity.raml
+
+    To get the Swagger definition for all entities use a request like:
+
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/entity.swagger/all.json
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/entity.swagger/all.yaml
+
+    To get the Swagger definition for just the example.Example (examples) entity use a request like:
+
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/entity.swagger/examples.json
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/entity.swagger/examples.yaml
     -->
     <transition name="entity.json" read-only="true" method="get">
         <actions><script>ec.web.handleEntityRestSchema(sri.screenUrlInfo.extraPathNameList, sri.buildUrl("entity.json").getUrl(),
@@ -172,6 +182,10 @@ along with this software (see the LICENSE.md file). If not, see
     <transition name="entity.raml" read-only="true" method="get">
         <actions><script>ec.web.handleEntityRestRaml(sri.screenUrlInfo.extraPathNameList,
                 sri.buildUrl("e1").getUrl(), sri.buildUrl("entity.json").getUrl(), false)</script></actions>
+        <default-response type="none"/>
+    </transition>
+    <transition name="entity.swagger" read-only="true" method="get">
+        <actions><script>ec.web.handleEntityRestSwagger(sri.screenUrlInfo.extraPathNameList, ec.web.getHostName(), sri.buildUrl("e1").getUrl(), false)</script></actions>
         <default-response type="none"/>
     </transition>
 
@@ -195,6 +209,21 @@ along with this software (see the LICENSE.md file). If not, see
     curl -X GET -u john.doe:moqui http://localhost:8080/rest/master.raml/examples.raml
     curl -X GET -u john.doe:moqui http://localhost:8080/rest/master.raml/example.Example
     curl -X GET -u john.doe:moqui http://localhost:8080/rest/master.raml
+
+    To get the Swagger definition for all master entities use a request like:
+
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/entity.swagger/all.json
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/entity.swagger/all.yaml
+
+    To get the Swagger definition for all master definitions of the example.Example (examples) entity use a request like:
+
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/master.swagger/examples.json
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/master.swagger/examples.yaml
+
+    To get the Swagger definition for the 'default' master definitions of the example.Example (examples) entity use a request like:
+
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/master.swagger/examples/default.json
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/master.swagger/examples/default.yaml
     -->
     <transition name="master.json" read-only="true" method="get">
         <actions><script>ec.web.handleEntityRestSchema(sri.screenUrlInfo.extraPathNameList, sri.buildUrl("master.json").getUrl(),
@@ -204,6 +233,10 @@ along with this software (see the LICENSE.md file). If not, see
     <transition name="master.raml" read-only="true" method="get">
         <actions><script>ec.web.handleEntityRestRaml(sri.screenUrlInfo.extraPathNameList,
                 sri.buildUrl("m1").getUrl(), sri.buildUrl("master.raml").getUrl(), true)</script></actions>
+        <default-response type="none"/>
+    </transition>
+    <transition name="master.swagger" read-only="true" method="get">
+        <actions><script>ec.web.handleEntityRestSwagger(sri.screenUrlInfo.extraPathNameList, ec.web.getHostName(), sri.buildUrl("m1").getUrl(), true)</script></actions>
         <default-response type="none"/>
     </transition>
 

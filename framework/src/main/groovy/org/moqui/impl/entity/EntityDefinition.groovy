@@ -1234,6 +1234,81 @@ public class EntityDefinition {
         return ramlMap
     }
 
+    void addToSwaggerMap(Map<String, Object> swaggerMap, String masterName) {
+        EntityDefinition ed = efi.getEntityDefinition(entityName)
+        if (ed == null) throw new IllegalArgumentException("Entity ${entityName} not found")
+        // Node entityNode = ed.getEntityNode()
+
+        Map definitionsMap = ((Map) swaggerMap.definitions)
+        String refDefName = ed.getShortAlias() ?: ed.getFullEntityName()
+        if (masterName) refDefName = refDefName + "." + masterName
+        String refDefNamePk = refDefName + ".PK"
+
+        String entityDescription = StupidUtilities.nodeText(ed.getEntityNode().get("description"))
+
+        // add responses
+        Map responses = ["403":[description:"Access Forbidden (no authz)"], "404":[description:"Value Not Found"],
+                         "429":[description:"Too Many Requests (tarpit)"], "500":[description:"General Error"]]
+
+        // entity path (no ID)
+        String entityPath = "/" + (ed.getShortAlias() ?: ed.getFullEntityName())
+        if (masterName) entityPath = entityPath + "/" + masterName
+        Map<String, Map<String, Object>> entityResourceMap = [:]
+        ((Map) swaggerMap.paths).put(entityPath, entityResourceMap)
+
+        // get - list
+        Map listResponses = ["200":[description:'Success', schema:[type:"array", items:['$ref':"#/definitions/${refDefName}".toString()]]]]
+        listResponses.putAll(responses)
+        entityResourceMap.put("get", [summary:("Get ${ed.getFullEntityName()}".toString()), description:entityDescription,
+                parameters:[name:'body', in:'body', required:false, schema:[allOf:[['$ref':'#/definitions/paginationParameters'], ['$ref':"#/definitions/${refDefName}"]]]],
+                responses:listResponses])
+
+        // post - create
+        Map createResponses = ["200":[description:'Success', schema:['$ref':"#/definitions/${refDefNamePk}".toString()]]]
+        createResponses.putAll(responses)
+        entityResourceMap.put("post", [summary:("Create ${ed.getFullEntityName()}".toString()), description:entityDescription,
+                parameters:[name:'body', in:'body', required:true, schema:['$ref':"#/definitions/${refDefName}".toString()]],
+                responses:createResponses])
+
+        // entity plus ID path
+        StringBuilder entityIdPathSb = new StringBuilder(entityPath)
+        List<Map> parameters = []
+        for (String pkName in getPkFieldNames()) {
+            entityIdPathSb.append("/{").append(pkName).append("}")
+
+            FieldInfo fi = ed.getFieldInfo(pkName)
+            parameters.add([name:pkName, in:'path', required:true, type:(fieldTypeJsonMap.get(fi.type) ?: "string"),
+                            description:StupidUtilities.nodeText(fi.fieldNode.get("description"))])
+        }
+        String entityIdPath = entityIdPathSb.toString()
+        Map<String, Map<String, Object>> entityIdResourceMap = [:]
+        ((Map) swaggerMap.paths).put(entityIdPath, entityIdResourceMap)
+
+        // under id: get - one
+        Map oneResponses = ["200":[name:'body', in:'body', required:false, schema:['$ref':"#/definitions/${refDefName}".toString()]]]
+        oneResponses.putAll(responses)
+        entityIdResourceMap.put("get", [summary:("Create ${ed.getFullEntityName()}".toString()),
+                description:entityDescription, parameters:parameters, responses:oneResponses])
+
+        // under id: patch - update
+        List<Map> updateParameters = new LinkedList<Map>(parameters)
+        updateParameters.add([name:'body', in:'body', required:false, schema:['$ref':"#/definitions/${refDefName}".toString()]])
+        entityIdResourceMap.put("patch", [summary:("Update ${ed.getFullEntityName()}".toString()),
+                description:entityDescription, parameters:updateParameters, responses:responses])
+
+        // under id: put - store
+        entityIdResourceMap.put("put", [summary:("Create or Update ${ed.getFullEntityName()}".toString()),
+                description:entityDescription, parameters:updateParameters, responses:responses])
+
+        // under id: delete - delete
+        entityIdResourceMap.put("delete", [summary:("Delete ${ed.getFullEntityName()}".toString()),
+                description:entityDescription, parameters:parameters, responses:responses])
+
+        // add a definition for entity fields
+        definitionsMap.put(refDefName, ed.getJsonSchema(false, false, definitionsMap, null, null, null, masterName, null))
+        definitionsMap.put(refDefNamePk, ed.getJsonSchema(true, false, null, null, null, null, masterName, null))
+    }
+
     List<Node> getFieldNodes(boolean includePk, boolean includeNonPk, boolean includeUserFields) {
         // NOTE: this is not necessarily the fastest way to do this, if it becomes a performance problem replace it with a local List of field Nodes
         List<Node> nodeList = new ArrayList<Node>()
