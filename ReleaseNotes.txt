@@ -53,6 +53,7 @@ New Features
     - call REST methods through the /rest/s1 transition
     - see example client calls in the rest.xml screen definition file
     - get Swagger API definition from /rest/service.swagger
+    - get RAML API definition from /rest/service.raml
   - New RestClient API, available through ec.service.rest(), with various
     options for doing HTTP requests and parsing response
   - Added json-schema for Entity REST API: for all entities get
@@ -61,6 +62,7 @@ New Features
   - Entity REST API supports master definitions through
     /rest/m1/${entity}/${master} or /rest/v1/${entity}?master=${master};
     see comments in the rest.xml screen definition XML file for examples
+  - Added RAML API definition for Entity Master REST API at /rest/master.raml
   - SystemMessage entity has additional fields to identify messages
   - Changed receive#SystemMessage to an interface, now use
     receive#IncomingSystemMessage for remote calls, will call the
@@ -2186,8 +2188,6 @@ Features considered, but may not to be included in 1.x series
   - Master Entity REST Interface
     - generate Swagger (http://swagger.io) for full master def hierarchies
   - Service REST API
-    - Swagger, json-schema, RAML descriptors
-    - from service: in-parameters (RAML queryParameters, json-schema), description, out-parameters (json-schema)
     - allow mapping DataDocument operations as well
 
 - AS2 Client and Server
