@@ -2175,7 +2175,6 @@ Features considered, but may not to be included in 1.x series
     - like current but use OData URL structure, query parameters, etc
     - mount on /odata4 as alternative to existing /rest
     - generate EDMX for all entities (and exported services?)
-  - Generate Swagger schema (http://swagger.io) for all entities to use with entity REST API
   - Generate minimal Data Document based on changes (per TX possible, runs async so not really; from existing doc, like current ES doc)
   - Update database from Data Document
   - Data Document UI
@@ -2187,8 +2186,6 @@ Features considered, but may not to be included in 1.x series
     - search through ElasticSearch for those with associated feed/index
     - json-schema, RAML, Swagger API defs
     - generic service for sending Data Document to REST (or other?) end point
-  - Master Entity REST Interface
-    - generate Swagger (http://swagger.io) for full master def hierarchies
   - Service REST API
     - allow mapping DataDocument operations as well
 
