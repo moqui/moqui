@@ -1261,14 +1261,14 @@ public class EntityDefinition {
         listResponses.putAll(responses)
         entityResourceMap.put("get", [summary:("Get ${ed.getFullEntityName()}".toString()), description:entityDescription,
                 parameters:[name:'body', in:'body', required:false, schema:[allOf:[['$ref':'#/definitions/paginationParameters'], ['$ref':"#/definitions/${refDefName}"]]]],
-                responses:listResponses])
+                security:[[basicAuth:[]]], responses:listResponses])
 
         // post - create
         Map createResponses = ["200":[description:'Success', schema:['$ref':"#/definitions/${refDefNamePk}".toString()]]]
         createResponses.putAll(responses)
         entityResourceMap.put("post", [summary:("Create ${ed.getFullEntityName()}".toString()), description:entityDescription,
                 parameters:[name:'body', in:'body', required:true, schema:['$ref':"#/definitions/${refDefName}".toString()]],
-                responses:createResponses])
+                security:[[basicAuth:[]]], responses:createResponses])
 
         // entity plus ID path
         StringBuilder entityIdPathSb = new StringBuilder(entityPath)
@@ -1288,21 +1288,21 @@ public class EntityDefinition {
         Map oneResponses = ["200":[name:'body', in:'body', required:false, schema:['$ref':"#/definitions/${refDefName}".toString()]]]
         oneResponses.putAll(responses)
         entityIdResourceMap.put("get", [summary:("Create ${ed.getFullEntityName()}".toString()),
-                description:entityDescription, parameters:parameters, responses:oneResponses])
+                description:entityDescription, security:[[basicAuth:[]]], parameters:parameters, responses:oneResponses])
 
         // under id: patch - update
         List<Map> updateParameters = new LinkedList<Map>(parameters)
         updateParameters.add([name:'body', in:'body', required:false, schema:['$ref':"#/definitions/${refDefName}".toString()]])
         entityIdResourceMap.put("patch", [summary:("Update ${ed.getFullEntityName()}".toString()),
-                description:entityDescription, parameters:updateParameters, responses:responses])
+                description:entityDescription, security:[[basicAuth:[]]], parameters:updateParameters, responses:responses])
 
         // under id: put - store
         entityIdResourceMap.put("put", [summary:("Create or Update ${ed.getFullEntityName()}".toString()),
-                description:entityDescription, parameters:updateParameters, responses:responses])
+                description:entityDescription, security:[[basicAuth:[]]], parameters:updateParameters, responses:responses])
 
         // under id: delete - delete
         entityIdResourceMap.put("delete", [summary:("Delete ${ed.getFullEntityName()}".toString()),
-                description:entityDescription, parameters:parameters, responses:responses])
+                description:entityDescription, security:[[basicAuth:[]]], parameters:parameters, responses:responses])
 
         // add a definition for entity fields
         definitionsMap.put(refDefName, ed.getJsonSchema(false, false, definitionsMap, null, null, null, masterName, null))

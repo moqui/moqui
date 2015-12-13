@@ -983,6 +983,7 @@ class WebFacadeImpl implements WebFacade {
         Map<String, Object> swaggerMap = [swagger:2.0,
             info:[title:("${filename} REST API"), version:'1.0'], host:hostName, basePath:basePath,
             schemes:['http', 'https'], consumes:['application/json', 'multipart/form-data'], produces:['application/json'],
+            securityDefinitions:[basicAuth:[type:'basic', description:'HTTP Basic Authentication']],
             paths:[:], definitions:(new TreeMap())
         ]
 

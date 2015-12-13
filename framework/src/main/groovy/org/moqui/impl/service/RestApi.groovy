@@ -101,6 +101,7 @@ class RestApi {
             info:[title:(resourceNode.displayName ?: rootResourceName + ' REST API'), version:(resourceNode.version ?: '1.0'),
                   description:(resourceNode.description ?: '')],
             host:hostName, basePath:basePath, schemes:['http', 'https'],
+            securityDefinitions:[basicAuth:[type:'basic', description:'HTTP Basic Authentication']],
             consumes:['application/json', 'multipart/form-data'], produces:['application/json'],
             paths:[:], definitions:(new TreeMap())
         ]
@@ -196,7 +197,8 @@ class RestApi {
             }
 
             resourceMap.put(method, [summary:(serviceNode.attribute("displayName") ?: "${sd.verb} ${sd.noun}".toString()),
-                    description:StupidUtilities.nodeText(serviceNode.get("description")), parameters:parameters, responses:responses])
+                    description:StupidUtilities.nodeText(serviceNode.get("description")),
+                    security:[[basicAuth:[]]], parameters:parameters, responses:responses])
         }
 
         Map<String, Object> getRamlMap(Map<String, Object> typesMap) {
@@ -332,7 +334,7 @@ class RestApi {
 
             resourceMap.put(method, [summary:("${operation} ${ed.getFullEntityName()}".toString()),
                     description:StupidUtilities.nodeText(ed.getEntityNode().get("description")),
-                    parameters:parameters, responses:responses])
+                    security:[[basicAuth:[]]], parameters:parameters, responses:responses])
 
             // add a definition for entity fields
             if (addEntityDef) definitionsMap.put(refDefName, ed.getJsonSchema(false, false, definitionsMap, null, null, null, masterName, null))
