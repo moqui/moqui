@@ -949,6 +949,93 @@ class WebFacadeImpl implements WebFacade {
         sendTextResponse(yamlString, "application/raml+yaml", "MoquiEntities.raml")
     }
 
+    @CompileStatic
+    void handleEntityRestSwagger(List<String> extraPathNameList, String hostName, String basePath, boolean getMaster) {
+        if (extraPathNameList.size() == 0) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No entity name specified in path (for all entities use 'all')")
+            return
+        }
+
+        EntityFacadeImpl efi = eci.getEcfi().getEntityFacade()
+
+        String entityName = extraPathNameList.get(0)
+        String outputType = "application/json"
+        if (entityName.endsWith(".yaml")) outputType = "application/yaml"
+        if (entityName.endsWith(".json") || entityName.endsWith(".yaml"))
+            entityName = entityName.substring(0, entityName.length() - 5)
+        if (entityName == 'all') entityName = null
+
+        String masterName = null
+        if (extraPathNameList.size() > 1) {
+            masterName = extraPathNameList.get(0)
+            if (masterName.endsWith(".json") || masterName.endsWith(".yaml"))
+                masterName = masterName.substring(0, masterName.length() - 5)
+        }
+
+        String filename = entityName ?: "Entities"
+        if (masterName) filename = filename + "." + masterName
+
+
+        response.addHeader("Access-Control-Allow-Origin", "*")
+        response.addHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, PATCH, OPTIONS")
+        response.addHeader("Access-Control-Allow-Headers", "Content-Type, api_key, Authorization")
+
+        Map<String, Object> swaggerMap = [swagger:2.0,
+            info:[title:("${filename} REST API"), version:'1.0'], host:hostName, basePath:basePath,
+            schemes:['http', 'https'], consumes:['application/json', 'multipart/form-data'], produces:['application/json'],
+            paths:[:], definitions:(new TreeMap())
+        ]
+
+        Set<String> entityNameSet
+        if (entityName) {
+            entityNameSet = new TreeSet<String>()
+            entityNameSet.add(entityName)
+        } else if (getMaster) {
+            // if getMaster and no entity name in path, just get entities with master definitions
+            entityNameSet = efi.getAllEntityNamesWithMaster()
+        } else {
+            entityNameSet = efi.getAllNonViewEntityNames()
+        }
+
+        for (String curEntityName in entityNameSet) {
+            EntityDefinition ed = efi.getEntityDefinition(curEntityName)
+            String refName = ed.getShortAlias() ?: ed.getFullEntityName()
+            if (getMaster) {
+                Set<String> masterNameSet = new LinkedHashSet<String>()
+                if (masterName) {
+                    masterNameSet.add(masterName)
+                } else {
+                    Map<String, EntityDefinition.MasterDefinition> masterDefMap = ed.getMasterDefinitionMap()
+                    masterNameSet.addAll(masterDefMap.keySet())
+                }
+                Map entityPathMap = [:]
+                for (String curMasterName in masterNameSet) {
+                    // TODO
+                }
+            } else {
+                // TODO
+            }
+        }
+
+
+        if (outputType == "application/json") {
+            JsonBuilder jb = new JsonBuilder()
+            jb.call(swaggerMap)
+            String jsonStr = jb.toPrettyString()
+            sendTextResponse(jsonStr, "application/json", "${filename}.swagger.json")
+        } else if (outputType == "application/yaml") {
+            DumperOptions options = new DumperOptions()
+            options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK)
+            // default: options.setDefaultScalarStyle(DumperOptions.ScalarStyle.PLAIN)
+            options.setPrettyFlow(true)
+            Yaml yaml = new Yaml(options)
+            String yamlString = yaml.dump(swaggerMap)
+
+            sendTextResponse(yamlString, "application/yaml", "${filename}.swagger.yaml")
+        } else {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Output type ${outputType} not supported")
+        }
+    }
 
     @Override
     @CompileStatic
@@ -1039,7 +1126,7 @@ class WebFacadeImpl implements WebFacade {
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, errorMessage)
         }
     }
-    // @Override
+
     @CompileStatic
     void handleServiceRestSwagger(List<String> extraPathNameList, String hostName, String basePath) {
         if (extraPathNameList.size() == 0) {
