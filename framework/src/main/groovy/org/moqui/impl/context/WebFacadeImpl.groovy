@@ -362,20 +362,23 @@ class WebFacadeImpl implements WebFacade {
     }
     @Override
     @CompileStatic
-    String getHostName() {
+    String getHostName(boolean withPort) {
+        URL requestUrl = new URL(getRequest().getRequestURL().toString())
         String hostName = null
+        Integer port = null
         try {
-            hostName = new URL(getRequest().getRequestURL().toString()).getHost()
+            hostName = requestUrl.getHost()
+            port = requestUrl.getPort()
             // logger.info("Got hostName [${hostName}] from getRequestURL [${webFacade.getRequest().getRequestURL()}]")
         } catch (Exception e) {
             /* ignore it, default to getServerName() result */
             logger.trace("Error getting hostName from getRequestURL: ", e)
         }
-        if (!hostName) {
-            hostName = getRequest().getServerName()
-            // logger.info("Got hostName [${hostName}] from getServerName")
-        }
-        return hostName
+        if (!hostName) hostName = getRequest().getServerName()
+        if (!port || port == -1) port = getRequest().getServerPort()
+        if (!port || port == -1) port = getRequest().isSecure() ? 443 : 80
+
+        return withPort ? hostName + ":" + port : hostName
     }
 
 
@@ -450,7 +453,7 @@ class WebFacadeImpl implements WebFacade {
                     urlBuilder.append(webappNode."@https-host")
                 } else {
                     if (webFacade != null) {
-                        urlBuilder.append(webFacade.getHostName())
+                        urlBuilder.append(webFacade.getHostName(false))
                     } else {
                         // uh-oh, no web context, default to localhost
                         urlBuilder.append("localhost")
@@ -467,7 +470,7 @@ class WebFacadeImpl implements WebFacade {
                     urlBuilder.append(webappNode."@http-host")
                 } else {
                     if (webFacade) {
-                        urlBuilder.append(webFacade.getHostName())
+                        urlBuilder.append(webFacade.getHostName(false))
                     } else {
                         // uh-oh, no web context, default to localhost
                         urlBuilder.append("localhost")

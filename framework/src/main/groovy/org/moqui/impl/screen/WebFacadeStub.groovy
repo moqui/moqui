@@ -92,7 +92,7 @@ class WebFacadeStub implements WebFacade {
     @Override
     Map<String, Object> getRequestParameters() { return requestParameters }
     @Override
-    String getHostName() { return "localhost" }
+    String getHostName(boolean withPort) { return withPort ? "localhost:8080" : "localhost" }
 
     @Override
     HttpServletResponse getResponse() { return httpServletResponse }
