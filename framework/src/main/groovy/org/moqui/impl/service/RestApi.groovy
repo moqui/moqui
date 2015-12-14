@@ -81,10 +81,11 @@ class RestApi {
                                        'X-Page-Range-Low':[type:'integer', description:"Index of first result in page"],
                                        'X-Page-Range-High':[type:'integer', description:"Index of last result in page"]] as Map<String, Object>
         rootMap.put('traits', [[paged:[queryParameters:EntityDefinition.ramlPaginationParameters, headers:headers]],
-            [service:[responses:[403:[description:"Access Forbidden (no authz)"],
+            [service:[responses:[401:[description:"Authentication required"], 403:[description:"Access Forbidden (no authz)"],
                                  429:[description:"Too Many Requests (tarpit)"], 500:[description:"General Error"]]]],
-            [entity:[responses:[403:[description:"Access Forbidden (no authz)"], 404:[description:"Value Not Found"],
-                                429:[description:"Too Many Requests (tarpit)"], 500:[description:"General Error"]]]]
+            [entity:[responses:[401:[description:"Authentication required"], 403:[description:"Access Forbidden (no authz)"],
+                                404:[description:"Value Not Found"], 429:[description:"Too Many Requests (tarpit)"],
+                                500:[description:"General Error"]]]]
         ])
 
         Map<String, Object> childrenMap = resourceNode.getRamlChildrenMap(typesMap)
@@ -189,8 +190,8 @@ class RestApi {
             }
 
             // add responses
-            Map responses = ["403":[description:"Access Forbidden (no authz)"], "429":[description:"Too Many Requests (tarpit)"],
-                             "500":[description:"General Error"]]
+            Map responses = ["401":[description:"Authentication required"], "403":[description:"Access Forbidden (no authz)"],
+                             "429":[description:"Too Many Requests (tarpit)"], "500":[description:"General Error"]]
             if (sd.getOutParameterNames()) {
                 responses.put("200", [description:'Success', schema:['$ref':"#/definitions/${sd.getServiceName()}.Out".toString()]])
                 definitionsMap.put("${sd.getServiceName()}.Out".toString(), sd.getJsonSchemaMapOut())
@@ -303,8 +304,9 @@ class RestApi {
             }
 
             // add responses
-            Map responses = ["403":[description:"Access Forbidden (no authz)"], "404":[description:"Value Not Found"],
-                             "429":[description:"Too Many Requests (tarpit)"], "500":[description:"General Error"]]
+            Map responses = ["401":[description:"Authentication required"], "403":[description:"Access Forbidden (no authz)"],
+                             "404":[description:"Value Not Found"], "429":[description:"Too Many Requests (tarpit)"],
+                             "500":[description:"General Error"]]
 
             boolean addEntityDef = true
             boolean addPkDef = false

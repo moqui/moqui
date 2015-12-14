@@ -1247,8 +1247,9 @@ public class EntityDefinition {
         String entityDescription = StupidUtilities.nodeText(ed.getEntityNode().get("description"))
 
         // add responses
-        Map responses = ["403":[description:"Access Forbidden (no authz)"], "404":[description:"Value Not Found"],
-                         "429":[description:"Too Many Requests (tarpit)"], "500":[description:"General Error"]]
+        Map responses = ["401":[description:"Authentication required"], "403":[description:"Access Forbidden (no authz)"],
+                         "404":[description:"Value Not Found"], "429":[description:"Too Many Requests (tarpit)"],
+                         "500":[description:"General Error"]]
 
         // entity path (no ID)
         String entityPath = "/" + (ed.getShortAlias() ?: ed.getFullEntityName())
