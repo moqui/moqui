@@ -941,7 +941,13 @@ public class EntityDefinition {
             ]
     static final Map jsonPaginationParameters = [type:'object', properties: jsonPaginationProperties]
     static final Map jsonCountParameters = [type:'object', properties: [count:[type:'number', format:'int64', description:'Count of results']]]
-
+    static final List<Map> swaggerPaginationParameters =
+            [[name:'pageIndex', in:'query', required:false, type:'number', format:'int32', description:'Page number to return, starting with zero'],
+             [name:'pageSize', in:'query', required:false, type:'number', format:'int32', description:'Number of records per page (default 100)'],
+             [name:'orderByField', in:'query', required:false, type:'string', description:'Field name to order by (or comma separated names)'],
+             [name:'pageNoLimit', in:'query', required:false, type:'string', description:'If true don\'t limit page size (no pagination)'],
+             [name:'dependentLevels', in:'query', required:false, type:'number', format:'int32', description:'Levels of dependent child records to include']
+            ]
 
     @CompileStatic
     List<String> getFieldEnums(FieldInfo fi) {
@@ -1258,11 +1264,18 @@ public class EntityDefinition {
         ((Map) swaggerMap.paths).put(entityPath, entityResourceMap)
 
         // get - list
+        List<Map> listParameters = []
+        listParameters.addAll(swaggerPaginationParameters)
+        for (String fieldName in getAllFieldNames(false)) {
+            FieldInfo fi = ed.getFieldInfo(fieldName)
+            listParameters.add([name:fieldName, in:'query', required:false, type:(fieldTypeJsonMap.get(fi.type) ?: "string"),
+                                format:(fieldTypeJsonFormatMap.get(fi.type) ?: ""),
+                                description:StupidUtilities.nodeText(fi.fieldNode.get("description"))])
+        }
         Map listResponses = ["200":[description:'Success', schema:[type:"array", items:['$ref':"#/definitions/${refDefName}".toString()]]]]
         listResponses.putAll(responses)
         entityResourceMap.put("get", [summary:("Get ${ed.getFullEntityName()}".toString()), description:entityDescription,
-                parameters:[name:'body', in:'body', required:false, schema:[allOf:[['$ref':'#/definitions/paginationParameters'], ['$ref':"#/definitions/${refDefName}"]]]],
-                security:[[basicAuth:[]]], responses:listResponses])
+                parameters:listParameters, security:[[basicAuth:[]]], responses:listResponses])
 
         // post - create
         Map createResponses = ["200":[description:'Success', schema:['$ref':"#/definitions/${refDefNamePk}".toString()]]]

@@ -317,7 +317,16 @@ class RestApi {
                 }
                 responses.put("200", [description:'Success', schema:['$ref':"#/definitions/${refDefName}".toString()]])
             } else if (operation == 'list') {
-                parameters.add([name:'body', in:'body', required:false, schema:[allOf:[['$ref':'#/definitions/paginationParameters'], ['$ref':"#/definitions/${refDefName}"]]]])
+                parameters.addAll(EntityDefinition.swaggerPaginationParameters)
+                for (String fieldName in ed.getAllFieldNames(false)) {
+                    if (fieldName in pathNode.pathParameters) continue
+                    EntityDefinition.FieldInfo fi = ed.getFieldInfo(fieldName)
+                    parameters.add([name:fieldName, in:'query', required:false,
+                                        type:(EntityDefinition.fieldTypeJsonMap.get(fi.type) ?: "string"),
+                                        format:(EntityDefinition.fieldTypeJsonFormatMap.get(fi.type) ?: ""),
+                                        description:StupidUtilities.nodeText(fi.fieldNode.get("description"))])
+                }
+                // parameters.add([name:'body', in:'body', required:false, schema:[allOf:[['$ref':'#/definitions/paginationParameters'], ['$ref':"#/definitions/${refDefName}"]]]])
                 responses.put("200", [description:'Success', schema:[type:"array", items:['$ref':"#/definitions/${refDefName}".toString()]]])
             } else if (operation == 'count') {
                 parameters.add([name:'body', in:'body', required:false, schema:['$ref':"#/definitions/${refDefName}".toString()]])
