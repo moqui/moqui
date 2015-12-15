@@ -94,20 +94,25 @@ class RestApi {
         return rootMap
     }
 
-    Map<String, Object> getSwaggerMap(String rootResourceName, String hostName, String basePath) {
+    Map<String, Object> getSwaggerMap(List<String> rootPathList, String hostName, String basePath) {
+        // TODO: support generate for all roots with empty path
+        if (!rootPathList) throw new ResourceNotFoundException("No resource path specified")
+        String rootResourceName = rootPathList[0]
         ResourceNode resourceNode = rootResourceMap.get(rootResourceName)
         if (resourceNode == null) throw new ResourceNotFoundException("Root resource not found with name ${rootResourceName}")
 
+        StringBuilder fullBasePath = new StringBuilder(basePath)
+        for (String rootPath in rootPathList) fullBasePath.append('/').append(rootPath)
         Map<String, Object> swaggerMap = [swagger:2.0,
-            info:[title:(resourceNode.displayName ?: rootResourceName + ' REST API'), version:(resourceNode.version ?: '1.0'),
+            info:[title:(resourceNode.displayName ?: "Service REST API (${fullBasePath})"), version:(resourceNode.version ?: '1.0'),
                   description:(resourceNode.description ?: '')],
-            host:hostName, basePath:basePath, schemes:['http', 'https'],
+            host:hostName, basePath:fullBasePath.toString(), schemes:['http', 'https'],
             securityDefinitions:[basicAuth:[type:'basic', description:'HTTP Basic Authentication']],
             consumes:['application/json', 'multipart/form-data'], produces:['application/json'],
             paths:[:], definitions:(new TreeMap())
         ]
 
-        resourceNode.addToSwaggerMap(swaggerMap)
+        resourceNode.addToSwaggerMap(swaggerMap, rootPathList)
 
         return swaggerMap
     }
@@ -348,8 +353,8 @@ class RestApi {
                     security:[[basicAuth:[]]], parameters:parameters, responses:responses])
 
             // add a definition for entity fields
-            if (addEntityDef) definitionsMap.put(refDefName, ed.getJsonSchema(false, false, definitionsMap, null, null, null, masterName, null))
-            if (addPkDef) definitionsMap.put(refDefNamePk, ed.getJsonSchema(true, false, null, null, null, null, masterName, null))
+            if (addEntityDef) definitionsMap.put(refDefName, ed.getJsonSchema(false, false, definitionsMap, null, null, null, false, masterName, null))
+            if (addPkDef) definitionsMap.put(refDefNamePk, ed.getJsonSchema(true, false, null, null, null, null, false, masterName, null))
         }
 
         Map<String, Object> getRamlMap(Map<String, Object> typesMap) {
@@ -429,7 +434,7 @@ class RestApi {
 
         String name
         PathNode parent
-        String fullPath
+        List<String> fullPathList = []
         Set<String> pathParameters = new LinkedHashSet<String>()
 
         PathNode(Node node, PathNode parent, ExecutionContextFactoryImpl ecfi, boolean isId) {
@@ -442,7 +447,8 @@ class RestApi {
 
             if (parent != null) this.pathParameters.addAll(parent.pathParameters)
             name = node.attribute("name")
-            fullPath = isId ? "${parent?.fullPath ?: ''}/{${name}}" : "${parent?.fullPath ?: ''}/${name}"
+            if (parent != null) fullPathList.addAll(parent.fullPathList)
+            fullPathList.add(isId ? "{${name}}".toString() : name)
             if (isId) pathParameters.add(name)
 
             for (Object childObj in node.children()) {
@@ -498,17 +504,28 @@ class RestApi {
             }
         }
 
-        void addToSwaggerMap(Map<String, Object> swaggerMap) {
+        void addToSwaggerMap(Map<String, Object> swaggerMap, List<String> rootPathList) {
+            // see if we are in the root path specified
+            int curIndex = fullPathList.size() - 1
+            if (curIndex < rootPathList.size() && fullPathList[curIndex] != rootPathList[curIndex]) return
+
             // if we have method handlers add this, otherwise just do children
-            if (methodMap) {
+            if (rootPathList.size() - 1 <= curIndex && methodMap) {
+                StringBuilder curPath = new StringBuilder()
+                for (int i = rootPathList.size(); i < fullPathList.size(); i++) {
+                    String pathItem = fullPathList.get(i)
+                    curPath.append('/').append(pathItem)
+                }
+
                 Map<String, Map<String, Object>> rsMap = [:]
                 for (MethodHandler mh in methodMap.values()) mh.addToSwaggerMap(swaggerMap, rsMap)
-                ((Map) swaggerMap.paths).put(fullPath, rsMap)
+
+                ((Map) swaggerMap.paths).put(curPath.toString() ?: '/', rsMap)
             }
             // add the id node if there is one
-            if (idNode != null) idNode.addToSwaggerMap(swaggerMap)
+            if (idNode != null) idNode.addToSwaggerMap(swaggerMap, rootPathList)
             // add any resource nodes there might be
-            for (ResourceNode rn in resourceMap.values()) rn.addToSwaggerMap(swaggerMap)
+            for (ResourceNode rn in resourceMap.values()) rn.addToSwaggerMap(swaggerMap, rootPathList)
         }
 
         Map getRamlChildrenMap(Map<String, Object> typesMap) {

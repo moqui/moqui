@@ -986,7 +986,7 @@ public class EntityDefinition {
 
     @CompileStatic
     Map getJsonSchema(boolean pkOnly, boolean standalone, Map<String, Object> definitionsMap, String schemaUri, String linkPrefix,
-                      String schemaLinkPrefix, String masterName, MasterDetail masterDetail) {
+                      String schemaLinkPrefix, boolean nestRelationships, String masterName, MasterDetail masterDetail) {
         String name = getShortAlias() ?: getFullEntityName()
         String prettyName = getPrettyName(null, null)
         String refName = name
@@ -1046,7 +1046,7 @@ public class EntityDefinition {
                 // recurse, let it put itself in the definitionsMap
                 // linkPrefix and schemaLinkPrefix are null so that no links are added for master dependents
                 if (definitionsMap != null && !definitionsMap.containsKey(relatedRefName))
-                    relInfo.relatedEd.getJsonSchema(pkOnly, false, definitionsMap, schemaUri, null, null, null, childMasterDetail)
+                    relInfo.relatedEd.getJsonSchema(pkOnly, false, definitionsMap, schemaUri, null, null, false, null, childMasterDetail)
 
                 if (relInfo.type == "many") {
                     properties.put(entryName, [type:'array', items:['$ref':('#/definitions/' + relatedRefName)]])
@@ -1054,7 +1054,7 @@ public class EntityDefinition {
                     properties.put(entryName, ['$ref':('#/definitions/' + relatedRefName)])
                 }
             }
-        } else if (!pkOnly) {
+        } else if (!pkOnly && nestRelationships) {
             // add all relationships, nest
             List<RelationshipInfo> relInfoList = getRelationshipsInfo(true)
             for (RelationshipInfo relInfo in relInfoList) {
@@ -1065,7 +1065,7 @@ public class EntityDefinition {
 
                 // recurse, let it put itself in the definitionsMap
                 if (definitionsMap != null && !definitionsMap.containsKey(relatedRefName))
-                    relInfo.relatedEd.getJsonSchema(pkOnly, false, definitionsMap, schemaUri, linkPrefix, schemaLinkPrefix, null, null)
+                    relInfo.relatedEd.getJsonSchema(pkOnly, false, definitionsMap, schemaUri, linkPrefix, schemaLinkPrefix, nestRelationships, null, null)
 
                 if (relInfo.type == "many") {
                     properties.put(entryName, [type:'array', items:['$ref':('#/definitions/' + relatedRefName)]])
@@ -1319,8 +1319,8 @@ public class EntityDefinition {
                 description:entityDescription, security:[[basicAuth:[]]], parameters:parameters, responses:responses])
 
         // add a definition for entity fields
-        definitionsMap.put(refDefName, ed.getJsonSchema(false, false, definitionsMap, null, null, null, masterName, null))
-        definitionsMap.put(refDefNamePk, ed.getJsonSchema(true, false, null, null, null, null, masterName, null))
+        definitionsMap.put(refDefName, ed.getJsonSchema(false, false, definitionsMap, null, null, null, false, masterName, null))
+        definitionsMap.put(refDefNamePk, ed.getJsonSchema(true, false, null, null, null, null, false, masterName, null))
     }
 
     List<Node> getFieldNodes(boolean includePk, boolean includeNonPk, boolean includeUserFields) {
