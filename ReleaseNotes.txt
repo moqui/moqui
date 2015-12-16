@@ -2188,6 +2188,11 @@ Features considered, but may not to be included in 1.x series
     - generic service for sending Data Document to REST (or other?) end point
   - Service REST API
     - allow mapping DataDocument operations as well
+    - Add artifact type for REST Resource, Method
+    - Call ArtifactExecutionFacade.push/pop for RestApi calls
+    - Setup john.doe user with permissions for root of various APIs
+    - Add attribute for resource/method like screen for anonymous and no authz access
+    - Add Service REST API for moqui system admin services
 
 - AS2 Client and Server
   - use OpenAS2 (http://openas2.sourceforge.net, https://github.com/OpenAS2/OpenAs2App)?
