@@ -103,16 +103,22 @@ class RestApi {
 
         StringBuilder fullBasePath = new StringBuilder(basePath)
         for (String rootPath in rootPathList) fullBasePath.append('/').append(rootPath)
+        Map<String, Map> paths = [:]
+        Map<String, Map> definitions = new TreeMap<String, Map>()
         Map<String, Object> swaggerMap = [swagger:2.0,
             info:[title:(resourceNode.displayName ?: "Service REST API (${fullBasePath})"), version:(resourceNode.version ?: '1.0'),
                   description:(resourceNode.description ?: '')],
             host:hostName, basePath:fullBasePath.toString(), schemes:['http', 'https'],
             securityDefinitions:[basicAuth:[type:'basic', description:'HTTP Basic Authentication']],
             consumes:['application/json', 'multipart/form-data'], produces:['application/json'],
-            paths:[:], definitions:(new TreeMap())
+            paths:paths, definitions:definitions
         ]
 
         resourceNode.addToSwaggerMap(swaggerMap, rootPathList)
+
+        int methodsCount = 0
+        for (Map rsMap in paths.values()) methodsCount += rsMap.size()
+        logger.info("Generated Swagger for ${rootPathList}; ${paths.size()} paths with ${methodsCount} methods, ${definitions.size()} definitions")
 
         return swaggerMap
     }
