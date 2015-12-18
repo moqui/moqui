@@ -14,7 +14,6 @@
 package org.moqui.impl.context
 
 import groovy.transform.CompileStatic
-import org.apache.commons.collections.map.ListOrderedMap
 import org.moqui.context.TransactionException
 import org.moqui.entity.EntityCondition
 import org.moqui.entity.EntityException
@@ -58,8 +57,10 @@ class TransactionCache implements Synchronization {
     protected Map<Map, EntityValueBase> readOneCache = [:]
     protected Map<String, Map<EntityCondition, EntityListImpl>> readListCache = [:]
 
-    protected ListOrderedMap writeInfoList = new ListOrderedMap()
-    protected Map<String, Map<Map, EntityValueBase>> createByEntityRef = [:]
+    protected Map<Map, EntityWriteInfo> firstWriteInfoMap = new HashMap<Map, EntityWriteInfo>()
+    protected Map<Map, EntityWriteInfo> lastWriteInfoMap = new HashMap<Map, EntityWriteInfo>()
+    protected LinkedList<EntityWriteInfo> writeInfoList = new LinkedList<EntityWriteInfo>()
+    protected LinkedHashMap<String, Map<Map, EntityValueBase>> createByEntityRef = new LinkedHashMap<String, Map<Map, EntityValueBase>>()
 
     TransactionCache(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
@@ -73,9 +74,10 @@ class TransactionCache implements Synchronization {
         if (tx == null) throw new XAException(XAException.XAER_NOTA)
         this.tx = tx
 
-        if (ecfi.getTransactionFacade().getActiveSynchronization("TransactionCache")) {
+        TransactionCache activeCache = (TransactionCache) ecfi.getTransactionFacade().getActiveSynchronization("TransactionCache")
+        if (activeCache != null) {
             logger.warn("Tried to enlist TransactionCache in current transaction but one is already in place, not enlisting", new TransactionException("TransactionCache already in place"))
-            return
+            return activeCache
         }
         // logger.warn("================= putting and enlisting new TransactionCache")
         ecfi.getTransactionFacade().putAndEnlistActiveSynchronization("TransactionCache", this)
@@ -92,9 +94,9 @@ class TransactionCache implements Synchronization {
         return createMap
     }
 
-    static Map makeKey(EntityValueBase evb) {
+    static Map<String, Object> makeKey(EntityValueBase evb) {
         if (evb == null) return null
-        Map key = evb.getPrimaryKeys()
+        Map<String, Object> key = evb.getPrimaryKeys()
         if (!key) return null
         key.put("_entityName", evb.getEntityName())
         return key
@@ -107,26 +109,27 @@ class TransactionCache implements Synchronization {
         key.put("_entityName", efb.getEntityDef().getFullEntityName())
         return key
     }
+    void addWriteInfo(Map<String, Object> key, EntityWriteInfo newEwi) {
+        writeInfoList.add(newEwi)
+        if (!firstWriteInfoMap.containsKey(key)) firstWriteInfoMap.put(key, newEwi)
+        lastWriteInfoMap.put(key, newEwi)
+    }
 
     /** Returns true if create handled, false if not; if false caller should handle the operation */
     boolean create(EntityValueBase evb) {
-        Map key = makeKey(evb)
+        Map<String, Object> key = makeKey(evb)
         if (key == null) return false
 
         // if create info already exists blow up
-        EntityWriteInfo currentEwi = (EntityWriteInfo) writeInfoList.get(key)
+        EntityWriteInfo currentEwi = lastWriteInfoMap.get(key)
         if (readOneCache.get(key) != null)
             throw new EntityException("Tried to create a value that already exists in database, entity [${evb.getEntityName()}], PK ${evb.getPrimaryKeys()}")
         if (currentEwi != null && currentEwi.writeMode != WriteMode.DELETE)
             throw new EntityException("Tried to create a value that already exists in write cache, entity [${evb.getEntityName()}], PK ${evb.getPrimaryKeys()}")
 
-        if (currentEwi != null && currentEwi.writeMode == WriteMode.DELETE) {
-            // if deleted remove delete and add an update
-            writeInfoList.remove(key)
-            writeInfoList.put(key, new EntityWriteInfo(evb, WriteMode.UPDATE))
-        } else {
-            // add to createCache
-            writeInfoList.put(key, new EntityWriteInfo(evb, WriteMode.CREATE))
+        EntityWriteInfo newEwi = new EntityWriteInfo(evb, WriteMode.CREATE)
+        addWriteInfo(key, newEwi)
+        if (currentEwi == null || currentEwi.writeMode != WriteMode.DELETE) {
             getCreateByEntityMap(evb.getEntityName()).put(evb.getPrimaryKeys(), evb)
         }
 
@@ -143,14 +146,33 @@ class TransactionCache implements Synchronization {
         return true
     }
     boolean update(EntityValueBase evb) {
-        Map key = makeKey(evb)
+        Map<String, Object> key = makeKey(evb)
         if (key == null) return false
 
+        // with writeInfoList as plain list approach no need to look for existing create or update, just add to the list
+        if (!evb.getIsFromDb()) {
+            EntityValueBase cacheEvb = readOneCache.get(key)
+            if (cacheEvb != null) {
+                cacheEvb.setFields(evb, true, null, false)
+                evb = cacheEvb
+            } else {
+                EntityValueBase dbEvb = (EntityValueBase) evb.cloneValue()
+                dbEvb.refresh()
+                dbEvb.setFields(evb, true, null, false)
+                evb = dbEvb
+                logger.warn("====== tx cache update not from db\nevb: ${evb}\ndbEvb: ${dbEvb}")
+            }
+        }
+
+        EntityWriteInfo newEwi = new EntityWriteInfo(evb, WriteMode.UPDATE)
+        addWriteInfo(key, newEwi)
+
+        /* The old approach, no longer needed with transaction log style writeInfoList:
         // if is in as create or update that value (but stay in current write mode), if delete blow up, otherwise add as update
-        EntityWriteInfo currentEwi = (EntityWriteInfo) writeInfoList.get(key)
+        EntityWriteInfo currentEwi = (EntityWriteInfo) lastWriteInfoMap.get(key)
         if (currentEwi != null) {
             if (currentEwi.writeMode == WriteMode.CREATE || currentEwi.writeMode == WriteMode.UPDATE) {
-                // TODO: if new value sets a field with an FK to a field created already in this TX create another
+                // NOTE: if new value sets a field with an FK to a field created already in this TX create another
                 //  update record (how to do with key strategy!?! maybe add a dummy Map entry...) to avoid FK issues
                 currentEwi.evb.setFields(evb, true, null, false)
                 evb = currentEwi.evb
@@ -158,22 +180,8 @@ class TransactionCache implements Synchronization {
                 throw new EntityException("Tried to update a value that has been deleted, entity [${evb.getEntityName()}], PK ${evb.getPrimaryKeys()}")
             }
         } else {
-            if (!evb.getIsFromDb()) {
-                EntityValueBase cacheEvb = readOneCache.get(key)
-                if (cacheEvb != null) {
-                    cacheEvb.setFields(evb, true, null, false)
-                    evb = cacheEvb
-                } else {
-                    EntityValueBase dbEvb = (EntityValueBase) evb.cloneValue()
-                    dbEvb.refresh()
-                    dbEvb.setFields(evb, true, null, false)
-                    evb = dbEvb
-                    logger.warn("====== tx cache update not from db\nevb: ${evb}\ndbEvb: ${dbEvb}")
-                }
-            }
-
-            writeInfoList.put(key, new EntityWriteInfo(evb, WriteMode.UPDATE))
         }
+        */
 
         // add to readCache
         readOneCache.put(key, evb)
@@ -200,9 +208,13 @@ class TransactionCache implements Synchronization {
         return true
     }
     boolean delete(EntityValueBase evb) {
-        Map key = makeKey(evb)
+        Map<String, Object> key = makeKey(evb)
         if (key == null) return false
 
+        EntityWriteInfo newEwi = new EntityWriteInfo(evb, WriteMode.DELETE)
+        addWriteInfo(key, newEwi)
+
+        /* The old approach, no longer needed with transaction log style writeInfoList:
         // if in current create remove from write list, if update change to delete, otherwise add as delete
         EntityWriteInfo currentEwi = (EntityWriteInfo) writeInfoList.get(key)
         if (currentEwi != null) {
@@ -217,6 +229,7 @@ class TransactionCache implements Synchronization {
         } else {
             writeInfoList.put(key, new EntityWriteInfo(evb, WriteMode.DELETE))
         }
+        */
 
         // remove from readCache if needed
         readOneCache.remove(key)
@@ -237,7 +250,7 @@ class TransactionCache implements Synchronization {
         return true
     }
     boolean refresh(EntityValueBase evb) {
-        Map key = makeKey(evb)
+        Map<String, Object> key = makeKey(evb)
         if (key == null) return false
         EntityValueBase curEvb = readOneCache.get(key)
         if (curEvb != null) {
@@ -249,7 +262,7 @@ class TransactionCache implements Synchronization {
     }
 
     boolean isTxCreate(EntityValueBase evb) {
-        Map key = makeKey(evb)
+        Map<String, Object> key = makeKey(evb)
         if (key == null) return false
         return isTxCreate(key)
     }
@@ -260,27 +273,27 @@ class TransactionCache implements Synchronization {
         return isTxCreate(key)
     }*/
     protected boolean isTxCreate(Map key) {
-        EntityWriteInfo currentEwi = (EntityWriteInfo) writeInfoList.get(key)
+        EntityWriteInfo currentEwi = firstWriteInfoMap.get(key)
         if (currentEwi == null) return false
         return currentEwi.writeMode == WriteMode.CREATE
     }
 
     EntityValueBase oneGet(EntityFindBase efb) {
         // NOTE: do nothing here on forUpdate, handled by caller
-        Map key = makeKeyFind(efb)
+        Map<String, Object> key = makeKeyFind(efb)
         if (key == null) return null
 
         // if this has been deleted return a DeletedEntityValue instance so caller knows it was deleted and doesn't look in the DB for another record
-        EntityWriteInfo currentEwi = (EntityWriteInfo) writeInfoList.get(key)
+        EntityWriteInfo currentEwi = (EntityWriteInfo) lastWriteInfoMap.get(key)
         if (currentEwi != null && currentEwi.writeMode == WriteMode.DELETE) return new DeletedEntityValue(efb.getEntityDef(), ecfi.getEntityFacade())
 
         // cloneValue() so that updates aren't in the read cache until an update is done
         return (EntityValueBase) readOneCache.get(key)?.cloneValue()
     }
     void onePut(EntityValueBase evb) {
-        Map key = makeKey(evb)
+        Map<String, Object> key = makeKey(evb)
         if (key == null) return
-        EntityWriteInfo currentEwi = (EntityWriteInfo) writeInfoList.get(key)
+        EntityWriteInfo currentEwi = (EntityWriteInfo) lastWriteInfoMap.get(key)
         // if this has been deleted we don't want to add it, but in general if we have a ewi then it's already in the
         //     cache and we don't want to update from this (generally from DB and may be older than value already there)
         // clone the value before putting it into the cache so that the caller can't change it later with an update call
@@ -361,20 +374,22 @@ class TransactionCache implements Synchronization {
 
     // NOTE: no need to filter EntityList or EntityListIterator, they do it internally by calling this method
     WriteMode checkUpdateValue(EntityValueBase evb) {
-        Map key = makeKey(evb)
+        Map<String, Object> key = makeKey(evb)
         if (key == null) return null
-        EntityWriteInfo currentEwi = (EntityWriteInfo) writeInfoList.get(key)
+        EntityWriteInfo firstEwi = (EntityWriteInfo) firstWriteInfoMap.get(key)
+        EntityWriteInfo currentEwi = (EntityWriteInfo) lastWriteInfoMap.get(key)
         if (currentEwi == null) {
             // add to readCache for future reference
             onePut(evb)
             return null
         }
+        if (firstEwi.writeMode == WriteMode.CREATE) {
+            throw new EntityException("Found value from database that matches a value created in the write-through transaction cache, throwing error now instead of waiting to fail on commit")
+        }
         if (currentEwi.writeMode == WriteMode.UPDATE) {
             evb.setFields(currentEwi.evb, true, null, false)
             // add to readCache
             onePut(evb)
-        } else if (currentEwi.writeMode == WriteMode.CREATE) {
-            throw new EntityException("Found value from database that matches a value created in the write-through transaction cache, throwing error now instead of waiting to fail on commit")
         }
         return currentEwi.writeMode
     }
@@ -395,10 +410,10 @@ class TransactionCache implements Synchronization {
             int createCount = 0
             int updateCount = 0
             int deleteCount = 0
-            /*for (EntityWriteInfo ewi in (List<EntityWriteInfo>) writeInfoList.valueList()) {
+            /*for (EntityWriteInfo ewi in writeInfoList) {
                 logger.warn("===== TX Cache value to ${ewi.writeMode} ${ewi.evb.getEntityName()}: \n${ewi.evb}")
             }*/
-            for (EntityWriteInfo ewi in (List<EntityWriteInfo>) writeInfoList.valueList()) {
+            for (EntityWriteInfo ewi in writeInfoList) {
                 String groupName = efi.getEntityGroupName(ewi.evb.getEntityName())
                 Connection con = connectionByGroup.get(groupName)
                 if (con == null) {
@@ -438,7 +453,7 @@ class TransactionCache implements Synchronization {
     static class EntityWriteInfo {
         WriteMode writeMode
         EntityValueBase evb
-        Map pkMap
+        Map<String, Object> pkMap
         EntityWriteInfo(EntityValueBase evb, WriteMode writeMode) {
             this.evb = evb
             this.writeMode = writeMode
