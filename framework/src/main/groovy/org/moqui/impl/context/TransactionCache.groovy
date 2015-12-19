@@ -254,7 +254,13 @@ class TransactionCache implements Synchronization {
         if (key == null) return false
         EntityValueBase curEvb = readOneCache.get(key)
         if (curEvb != null) {
-            evb.setFields(curEvb, true, null, false)
+            ArrayList<String> nonPkFieldList = evb.getEntityDefinition().getNonPkFieldNames()
+            int nonPkSize = nonPkFieldList.size()
+            for (int j = 0; j < nonPkSize; j++) {
+                String fieldName = nonPkFieldList.get(j)
+                evb.getValueMap().put(fieldName, curEvb.getValueMap().get(fieldName))
+            }
+            evb.setSyncedWithDb()
             return true
         } else {
             return false
@@ -288,7 +294,8 @@ class TransactionCache implements Synchronization {
         if (currentEwi != null && currentEwi.writeMode == WriteMode.DELETE) return new DeletedEntityValue(efb.getEntityDef(), ecfi.getEntityFacade())
 
         // cloneValue() so that updates aren't in the read cache until an update is done
-        return (EntityValueBase) readOneCache.get(key)?.cloneValue()
+        EntityValueBase evb = (EntityValueBase) readOneCache.get(key)?.cloneValue()
+        return evb
     }
     void onePut(EntityValueBase evb) {
         Map<String, Object> key = makeKey(evb)
@@ -455,7 +462,8 @@ class TransactionCache implements Synchronization {
         EntityValueBase evb
         Map<String, Object> pkMap
         EntityWriteInfo(EntityValueBase evb, WriteMode writeMode) {
-            this.evb = evb
+            // clone value so that create/update/delete stays the same no matter what happens after
+            this.evb = (EntityValueBase) evb.cloneValue()
             this.writeMode = writeMode
             this.pkMap = evb.getPrimaryKeys()
         }
