@@ -588,13 +588,15 @@ class TransactionFacadeImpl implements TransactionFacade {
     @CompileStatic
     @Override
     void initTransactionCache() {
-        if (logger.isInfoEnabled()) {
-            StringBuilder infoString = new StringBuilder()
-            infoString.append("Initializing TX cache at:")
-            for (def infoAei in ecfi.getExecutionContext().getArtifactExecution().getStack()) infoString.append("\n").append(infoAei)
-            logger.info(infoString.toString())
+        if (useTransactionCache && !isTransactionCacheActive()) {
+            if (logger.isInfoEnabled()) {
+                StringBuilder infoString = new StringBuilder()
+                infoString.append("Initializing TX cache at:")
+                for (def infoAei in ecfi.getExecutionContext().getArtifactExecution().getStack()) infoString.append("\n").append(infoAei)
+                logger.info(infoString.toString())
+            }
+            new TransactionCache(this.ecfi).enlist()
         }
-        if (useTransactionCache && !isTransactionCacheActive()) new TransactionCache(this.ecfi).enlist()
     }
     @CompileStatic
     @Override
