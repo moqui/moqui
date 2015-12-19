@@ -196,8 +196,8 @@ class EntityValueImpl extends EntityValueBase {
 
         // NOTE: this simple approach may not work for view-entities, but not restricting for now
 
-        List<String> pkFieldList = ed.getPkFieldNames()
-        List<String> nonPkFieldList = ed.getNonPkFieldNames()
+        ArrayList<String> pkFieldList = ed.getPkFieldNames()
+        ArrayList<String> nonPkFieldList = ed.getNonPkFieldNames()
         // NOTE: even if there are no non-pk fields do a refresh in order to see if the record exists or not
 
         EntityQueryBuilder eqb = new EntityQueryBuilder(ed, getEntityFacadeImpl())
@@ -240,10 +240,10 @@ class EntityValueImpl extends EntityValueBase {
 
             ResultSet rs = eqb.executeQuery()
             if (rs.next()) {
-                int j = 1
-                for (String fieldName in nonPkFieldList) {
-                    EntityQueryBuilder.getResultSetValue(rs, j, getEntityDefinition().getFieldInfo(fieldName), this, getEntityFacadeImpl())
-                    j++
+                int nonPkSize = nonPkFieldList.size()
+                for (int j = 0; j < nonPkSize; j++) {
+                    String fieldName = nonPkFieldList.get(j)
+                    EntityQueryBuilder.getResultSetValue(rs, j + 1, getEntityDefinition().getFieldInfo(fieldName), this, getEntityFacadeImpl())
                 }
                 retVal = true
                 setSyncedWithDb()
