@@ -594,8 +594,11 @@ class TransactionFacadeImpl implements TransactionFacade {
             for (def infoAei in ecfi.getExecutionContext().getArtifactExecution().getStack()) infoString.append("\n").append(infoAei)
             logger.info(infoString.toString())
         }
-        if (useTransactionCache && getActiveSynchronization("TransactionCache") == null) new TransactionCache(this.ecfi).enlist()
+        if (useTransactionCache && !isTransactionCacheActive()) new TransactionCache(this.ecfi).enlist()
     }
+    @CompileStatic
+    @Override
+    boolean isTransactionCacheActive() { return getActiveSynchronization("TransactionCache") != null }
 
     static class RollbackInfo {
         String causeMessage

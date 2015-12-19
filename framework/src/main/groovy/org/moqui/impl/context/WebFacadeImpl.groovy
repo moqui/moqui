@@ -826,14 +826,14 @@ class WebFacadeImpl implements WebFacade {
                     for (String masterName in masterDefMap.keySet()) {
                         allRefList.add(['$ref':"#/definitions/${refName}/${masterName}"])
 
-                        Map schema = ed.getJsonSchema(false, false, definitionsMap, schemaUri, linkPrefix, schemaLinkPrefix, masterName, null)
+                        Map schema = ed.getJsonSchema(false, false, definitionsMap, schemaUri, linkPrefix, schemaLinkPrefix, false, masterName, null)
                         entityPathMap.put(masterName, schema)
                     }
                     definitionsMap.put(refName, entityPathMap)
                 } else {
                     allRefList.add(['$ref':"#/definitions/${refName}"])
 
-                    Map schema = ed.getJsonSchema(false, false, null, schemaUri, linkPrefix, schemaLinkPrefix, null, null)
+                    Map schema = ed.getJsonSchema(false, false, null, schemaUri, linkPrefix, schemaLinkPrefix, true, null, null)
                     definitionsMap.put(refName, schema)
                 }
             }
@@ -861,7 +861,7 @@ class WebFacadeImpl implements WebFacade {
                     return
                 }
 
-                Map schema = ed.getJsonSchema(false, true, null, schemaUri, linkPrefix, schemaLinkPrefix, masterName, null)
+                Map schema = ed.getJsonSchema(false, true, null, schemaUri, linkPrefix, schemaLinkPrefix, !getMaster, masterName, null)
                 // TODO: support array wrapper (different URL? suffix?) with [type:'array', items:schema]
 
                 // sendJsonResponse(schema)
@@ -1135,22 +1135,28 @@ class WebFacadeImpl implements WebFacade {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No root resource name specified in path")
             return
         }
-        String rootResourceName = extraPathNameList.get(0)
+
         String outputType = "application/json"
-        if (rootResourceName.endsWith(".yaml")) outputType = "application/yaml"
-        if (rootResourceName.endsWith(".json") || rootResourceName.endsWith(".yaml"))
-            rootResourceName = rootResourceName.substring(0, rootResourceName.length() - 5)
+        List<String> rootPathList = []
+        StringBuilder filenameBase = new StringBuilder()
+        for (String pathName in extraPathNameList) {
+            if (pathName.endsWith(".yaml")) outputType = "application/yaml"
+            if (pathName.endsWith(".json") || pathName.endsWith(".yaml"))
+                pathName = pathName.substring(0, pathName.length() - 5)
+            rootPathList.add(pathName)
+            filenameBase.append(pathName).append('.')
+        }
 
         response.addHeader("Access-Control-Allow-Origin", "*")
         response.addHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, PATCH, OPTIONS")
         response.addHeader("Access-Control-Allow-Headers", "Content-Type, api_key, Authorization")
 
-        Map swaggerMap = eci.ecfi.serviceFacade.restApi.getSwaggerMap(rootResourceName, hostName, basePath)
+        Map swaggerMap = eci.ecfi.serviceFacade.restApi.getSwaggerMap(rootPathList, hostName, basePath)
         if (outputType == "application/json") {
             JsonBuilder jb = new JsonBuilder()
             jb.call(swaggerMap)
             String jsonStr = jb.toPrettyString()
-            sendTextResponse(jsonStr, "application/json", "${rootResourceName}.swagger.json")
+            sendTextResponse(jsonStr, "application/json", "${filenameBase}swagger.json")
         } else if (outputType == "application/yaml") {
             DumperOptions options = new DumperOptions()
             options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK)
@@ -1159,7 +1165,7 @@ class WebFacadeImpl implements WebFacade {
             Yaml yaml = new Yaml(options)
             String yamlString = yaml.dump(swaggerMap)
 
-            sendTextResponse(yamlString, "application/yaml", "${rootResourceName}.swagger.yaml")
+            sendTextResponse(yamlString, "application/yaml", "${filenameBase}swagger.yaml")
         } else {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Output type ${outputType} not supported")
         }

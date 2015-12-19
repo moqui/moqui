@@ -117,6 +117,9 @@ New Features
   double hash will be used to lookup records or as the default value
 - Service to lookup IP geo data (from freegeoip.net), called by default on
   login (can be disabled with server-stats.@visit-ip-info-on-login)
+- Transaction Cache better supports creates/updates/deletes within a
+  transaction; instead of consolidating all changes into one it keeps a
+  list of changes and runs in order to avoid issues with foreign keys, etc
 
 Bug Fixes
 
@@ -2188,6 +2191,19 @@ Features considered, but may not to be included in 1.x series
     - generic service for sending Data Document to REST (or other?) end point
   - Service REST API
     - allow mapping DataDocument operations as well
+    - Add artifact type for REST Resource, Method
+    - Call ArtifactExecutionFacade.push/pop for RestApi calls
+    - Setup john.doe user with permissions for root of various APIs
+    - Add attribute for resource/method like screen for anonymous and no authz access
+    - Add Service REST API for moqui system admin services
+  - OAuth2 Support
+    - Use Apache Oltu, see https://cwiki.apache.org/confluence/display/OLTU/OAuth+2.0+Authorization+Server
+    - Spec at http://tools.ietf.org/html/rfc6749
+    - Add authz and token transitions in rest.xml
+    - Support in Service REST API (and entity/master?)
+    - Add examples of auth and service calls using OAuth2
+    - Add OAuth2 details in Swagger and RAML files
+    - More?
 
 - AS2 Client and Server
   - use OpenAS2 (http://openas2.sourceforge.net, https://github.com/OpenAS2/OpenAs2App)?
