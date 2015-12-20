@@ -1452,7 +1452,8 @@ public class EntityDefinition {
         EntityValueBase destEvb = destIsEntityValueBase ? (EntityValueBase) dest : null
 
         boolean hasNamePrefix = namePrefix as boolean
-        EntityValueBase evb = src instanceof EntityValueBase ? (EntityValueBase) src : null
+        boolean srcIsEntityValueBase = src instanceof EntityValueBase
+        EntityValueBase evb = srcIsEntityValueBase ? (EntityValueBase) src : null
         ArrayList<String> fieldNameList = pks != null ? this.getFieldNames(pks, !pks, !pks) : this.getAllFieldNames()
         // use integer iterator, saves quite a bit of time, improves time for this method by about 20% with this alone
         int size = fieldNameList.size()
@@ -1465,8 +1466,8 @@ public class EntityDefinition {
                 sourceFieldName = fieldName
             }
 
-            Object value = src.get(sourceFieldName)
-            if (value != null || (evb != null ? evb.isFieldSet(sourceFieldName) : src.containsKey(sourceFieldName))) {
+            Object value = srcIsEntityValueBase? evb.getValueMap().get(sourceFieldName) : src.get(sourceFieldName)
+            if (value != null || (srcIsEntityValueBase ? evb.isFieldSet(sourceFieldName) : src.containsKey(sourceFieldName))) {
                 boolean isCharSequence = false
                 boolean isEmpty = false
                 if (value == null) {
