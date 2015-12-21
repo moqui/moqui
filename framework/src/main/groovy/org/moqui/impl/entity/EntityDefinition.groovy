@@ -1642,7 +1642,7 @@ public class EntityDefinition {
         for (Node aliasAll: this.internalEntityNode."alias-all") {
             Node memberEntity = (Node) this.internalEntityNode."member-entity".find({ it."@entity-alias" == aliasAll."@entity-alias" })
             if (!memberEntity) {
-                logger.error("In alias-all with entity-alias [${aliasAll."@entity-alias"}], member-entity with same entity-alias not found, ignoring")
+                logger.error("In view-entity ${getFullEntityName()} in alias-all with entity-alias [${aliasAll."@entity-alias"}], member-entity with same entity-alias not found, ignoring")
                 continue;
             }
 
