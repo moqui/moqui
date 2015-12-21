@@ -111,8 +111,18 @@ class RestApi {
             host:hostName, basePath:fullBasePath.toString(), schemes:['http', 'https'],
             securityDefinitions:[basicAuth:[type:'basic', description:'HTTP Basic Authentication']],
             consumes:['application/json', 'multipart/form-data'], produces:['application/json'],
-            paths:paths, definitions:definitions
         ]
+
+        // add tags for 2nd level resources
+        if (rootPathList.size() == 1) {
+            List<Map> tags = []
+            for (ResourceNode childResource in resourceNode.getResourceMap().values())
+                tags.add([name:childResource.name, description:(childResource.description ?: childResource.name)])
+            swaggerMap.put("tags", tags)
+        }
+
+        swaggerMap.put("paths", paths)
+        swaggerMap.put("definitions", definitions)
 
         resourceNode.addToSwaggerMap(swaggerMap, rootPathList)
 
@@ -208,9 +218,12 @@ class RestApi {
                 definitionsMap.put("${sd.getServiceName()}.Out".toString(), sd.getJsonSchemaMapOut())
             }
 
-            resourceMap.put(method, [summary:(serviceNode.attribute("displayName") ?: "${sd.verb} ${sd.noun}".toString()),
-                    description:StupidUtilities.nodeText(serviceNode.get("description")),
-                    security:[[basicAuth:[]]], parameters:parameters, responses:responses])
+            Map curMap = [:]
+            if (swaggerMap.tags && pathNode.fullPathList.size() > 1) curMap.put("tags", [pathNode.fullPathList[1]])
+            curMap.putAll([summary:(serviceNode.attribute("displayName") ?: "${sd.verb} ${sd.noun}".toString()),
+                           description:StupidUtilities.nodeText(serviceNode.get("description")),
+                           security:[[basicAuth:[]]], parameters:parameters, responses:responses])
+            resourceMap.put(method, curMap)
         }
 
         Map<String, Object> getRamlMap(Map<String, Object> typesMap) {
@@ -354,9 +367,12 @@ class RestApi {
                 }
             }
 
-            resourceMap.put(method, [summary:("${operation} ${ed.getFullEntityName()}".toString()),
-                    description:StupidUtilities.nodeText(ed.getEntityNode().get("description")),
-                    security:[[basicAuth:[]]], parameters:parameters, responses:responses])
+            Map curMap = [:]
+            if (swaggerMap.tags && pathNode.fullPathList.size() > 1) curMap.put("tags", [pathNode.fullPathList[1]])
+            curMap.putAll([summary:("${operation} ${ed.getFullEntityName()}".toString()),
+                           description:StupidUtilities.nodeText(ed.getEntityNode().get("description")),
+                           security:[[basicAuth:[]]], parameters:parameters, responses:responses])
+            resourceMap.put(method, curMap)
 
             // add a definition for entity fields
             if (addEntityDef) definitionsMap.put(refDefName, ed.getJsonSchema(false, false, definitionsMap, null, null, null, false, masterName, null))
