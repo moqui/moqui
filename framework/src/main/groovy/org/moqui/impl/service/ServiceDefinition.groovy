@@ -190,9 +190,10 @@ class ServiceDefinition {
                 mergeAutoParameters(baseParameterNode, childNode)
             } else if (childNode.name() == "parameter") {
                 mergeParameter(baseParameterNode, childNode, ed)
+            } else {
+                // is a validation, just add it in, or the original has been removed so add the new one
+                baseParameterNode.append(childNode)
             }
-            // is a validation, just add it in, or the original has been removed so add the new one
-            baseParameterNode.append(childNode)
         }
         if (baseParameterNode.attribute("entity-name")) {
             if (!baseParameterNode.attribute("field-name")) baseParameterNode.attributes().put("field-name", baseParameterNode.attribute("name"))
