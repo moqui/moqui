@@ -14,7 +14,6 @@
 package org.moqui.impl.service
 
 import groovy.transform.CompileStatic
-import groovy.xml.QName
 import org.moqui.BaseException
 import org.moqui.context.ExecutionContext
 import org.moqui.context.ResourceReference
@@ -114,7 +113,7 @@ class RestApi {
         ]
 
         // add tags for 2nd level resources
-        if (rootPathList.size() == 1) {
+        if (rootPathList.size() >= 1) {
             List<Map> tags = []
             for (ResourceNode childResource in resourceNode.getResourceMap().values())
                 tags.add([name:childResource.name, description:(childResource.description ?: childResource.name)])

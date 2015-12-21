@@ -1019,7 +1019,8 @@ class ServiceDefinition {
                     properties.put(childNode.attribute("name"), getJsonSchemaPropMap(childNode))
                 }
             } else {
-                logger.warn("Parameter ${parmNode.attribute('name')} of service ${getServiceName()} is an object type but has no child parameters, may cause error in Swagger, etc")
+                // Swagger UI is okay with empty maps (works, just less detail), so don't warn about this
+                // logger.warn("Parameter ${parmNode.attribute('name')} of service ${getServiceName()} is an object type but has no child parameters, may cause error in Swagger, etc")
             }
         }
 
