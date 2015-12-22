@@ -442,15 +442,15 @@ class WebFacadeImpl implements WebFacade {
     }
     static String makeWebappRootUrl(String webappName, String servletContextPath, ExecutionContextImpl eci, WebFacade webFacade,
                                     boolean requireEncryption, boolean needFullUrl) {
-
+        HttpServletRequest request = webFacade.getRequest()
         Node webappNode = (Node) eci.ecfi.confXmlRoot."webapp-list"[0]."webapp".find({ it.@name == webappName })
         StringBuilder urlBuilder = new StringBuilder()
         // build base from conf
         if (needFullUrl && webappNode) {
-            if (requireEncryption && webappNode."@https-enabled" != "false") {
+            if (request.getScheme() == "https" || (requireEncryption && webappNode.attribute("https-enabled") != "false")) {
                 urlBuilder.append("https://")
-                if (webappNode."@https-host") {
-                    urlBuilder.append(webappNode."@https-host")
+                if (webappNode.attribute("https-host")) {
+                    urlBuilder.append(webappNode.attribute("https-host"))
                 } else {
                     if (webFacade != null) {
                         urlBuilder.append(webFacade.getHostName(false))
@@ -459,28 +459,28 @@ class WebFacadeImpl implements WebFacade {
                         urlBuilder.append("localhost")
                     }
                 }
-                String httpsPort = webappNode."@https-port"
+                String httpsPort = webappNode.attribute("https-port")
                 // try the local port; this won't work when switching from http to https, conf required for that
-                if (!httpsPort && webFacade != null && webFacade.getRequest().isSecure())
-                    httpsPort = webFacade.getRequest().getServerPort() as String
+                if (!httpsPort && webFacade != null && request.isSecure())
+                    httpsPort = request.getServerPort() as String
                 if (httpsPort && httpsPort != "443") urlBuilder.append(":").append(httpsPort)
             } else {
                 urlBuilder.append("http://")
-                if (webappNode."@http-host") {
-                    urlBuilder.append(webappNode."@http-host")
+                if (webappNode.attribute("http-host")) {
+                    urlBuilder.append(webappNode.attribute("http-host"))
                 } else {
                     if (webFacade) {
                         urlBuilder.append(webFacade.getHostName(false))
                     } else {
                         // uh-oh, no web context, default to localhost
                         urlBuilder.append("localhost")
-                        logger.warn("No webFacade in place, defaulting to localhost for hostName")
+                        logger.trace("No webFacade in place, defaulting to localhost for hostName")
                     }
                 }
-                String httpPort = webappNode."@http-port"
+                String httpPort = webappNode.attribute("http-port")
                 // try the server port; this won't work when switching from https to http, conf required for that
-                if (!httpPort && webFacade != null && !webFacade.getRequest().isSecure())
-                    httpPort = webFacade.getRequest().getServerPort() as String
+                if (!httpPort && webFacade != null && !request.isSecure())
+                    httpPort = request.getServerPort() as String
                 if (httpPort && httpPort != "80") urlBuilder.append(":").append(httpPort)
             }
             urlBuilder.append("/")
@@ -502,6 +502,20 @@ class WebFacadeImpl implements WebFacade {
 
         String urlValue = urlBuilder.toString()
         return urlValue
+    }
+
+    String getRequestDetails() {
+        StringBuilder sb = new StringBuilder()
+        sb.append("Request: ").append(request.getMethod()).append(" ").append(request.getRequestURL()).append("\n")
+        sb.append("Scheme: ").append(request.getScheme()).append(", Secure? ").append(request.isSecure()).append("\n")
+        sb.append("Remote: ").append(request.getRemoteAddr()).append(" - ").append(request.getRemoteHost()).append("\n")
+        for (String hn in request.getHeaderNames()) {
+            sb.append("Header: ").append(hn).append(" = ")
+            for (String hv in request.getHeaders(hn)) sb.append("[").append(hv).append("] ")
+            sb.append("\n")
+        }
+        for (String pn in request.getParameterNames()) sb.append("Parameter: ").append(pn).append(" = ").append(request.getParameterValues(pn)).append("\n")
+        return sb.toString()
     }
 
     @Override
