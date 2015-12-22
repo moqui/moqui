@@ -318,9 +318,10 @@ class ServiceFacadeImpl implements ServiceFacade {
                 findServicesInDir(baseLocation, entryRr, sns)
             } else if (entryRr.fileName.endsWith(".xml")) {
                 // logger.warn("Finding services in [${entryRr.location}], baseLocation=[${baseLocation}]")
-                if (entryRr.fileName.endsWith(".secas.xml") || entryRr.fileName.endsWith(".emecas.xml")) continue
+                if (entryRr.fileName.endsWith(".secas.xml") || entryRr.fileName.endsWith(".emecas.xml") ||
+                        entryRr.fileName.endsWith(".rest.xml")) continue
                 Node serviceRoot = new XmlParser().parse(entryRr.openStream())
-                if (serviceRoot.name() == "secas" || serviceRoot.name() == "emecas") continue
+                if ((serviceRoot.name() as String) in ["secas", "emecas", "resource"]) continue
                 if (serviceRoot.name() != "services") {
                     logger.info("While finding service ignoring XML file [${entryRr.location}] in a services directory because the root element is [${serviceRoot.name()}] and not [services]")
                     continue
