@@ -34,8 +34,8 @@ along with this software (see the LICENSE.md file). If not, see
             <auto-fields-entity entity-name="moqui.server.Visit" field-type="display"/>
             <field name="userId"><default-field title="User">
                 <display-entity entity-name="moqui.security.UserAccount" text="UsernameTemplate"/>
-                <link url="userAccountDetail" text="${visit.userId ?: 'N/A'}" link-type="anchor"
-                        parameter-map="[userId:visit.userId]"/>
+                <link url="userAccountDetail" text="${visit.userId}" link-type="anchor"
+                        parameter-map="[userId:visit.userId]" condition="visit.userId"/>
             </default-field></field>
             <field-layout>
                 <field-row><field-ref name="visitId"/><field-ref name="visitorId"/></field-row>

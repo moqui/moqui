@@ -53,11 +53,13 @@ along with this software (see the LICENSE.md file). If not, see
                 <default-field><display/></default-field>
             </field>
             <field name="clientIpAddress">
-                <header-field title="Client IP"><text-find hide-options="true" size="8"/></header-field>
+                <header-field title="Client IP" show-order-by="true"><text-find hide-options="true" size="8"/></header-field>
                 <default-field><display/></default-field>
             </field>
-            <field name="clientIpCountryGeoId"><default-field title="Client Country">
-                <display-entity entity-name="moqui.basic.Geo" text="${geoId} - ${geoName}"/></default-field></field>
+            <field name="clientIpCountryGeoId">
+                <header-field title="Client Country" show-order-by="true"><text-find hide-options="true" size="3"/></header-field>
+                <default-field><display-entity entity-name="moqui.basic.Geo" text="${geoId} - ${geoName}"/></default-field>
+            </field>
             <field name="initialRequest">
                 <header-field show-order-by="true"><text-find hide-options="true" size="20"/></header-field>
                 <default-field><display/></default-field>
