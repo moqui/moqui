@@ -23,7 +23,7 @@ along with this software (see the LICENSE.md file). If not, see
             <parameter name="clientIpTimeZone"/>
         </out-parameters>
         <actions>
-            <entity-find-one entity-name="moqui.server.Visit" value-field="visit"/>
+            <entity-find-one entity-name="moqui.server.Visit" value-field="visit" for-update="true"/>
             <if condition="!visit"><return message="No visit found with ID ${visitId}"/></if>
             <if condition="!visit.clientIpAddress"><return message="Visit with ID ${visitId} has no clientIpAddress"/></if>
 
@@ -36,7 +36,7 @@ along with this software (see the LICENSE.md file). If not, see
             <!-- get from http://freegeoip.net/json/${clientIpAddress} -->
             <script>geoIp = ec.service.rest().method("get").uri("http://freegeoip.net/json/${visit.clientIpAddress}").call().checkError().jsonObject()</script>
 
-            <if condition="!geoIp"><return error="true" message="No return from freegeoip.net for IP ${clientIpAddress}"/></if>
+            <if condition="!geoIp"><return message="No return from freegeoip.net for IP ${visit.clientIpAddress}"/></if>
             <set field="mapped" from="[clientIpPostalCode:geoIp.zip_code, clientIpCity:geoIp.city,
                     clientIpMetroCode:geoIp.metro_code, clientIpRegionCode:geoIp.region_code, clientIpRegionName:geoIp.region_name,
                     clientIpLatitude:geoIp.latitude, clientIpLongitude:geoIp.longitude, clientIpTimeZone:geoIp.time_zone]"/>
@@ -53,8 +53,7 @@ along with this software (see the LICENSE.md file). If not, see
                 <if condition="geoList"><set field="mapped.clientIpStateProvGeoId" from="geoList[0].geoId"/></if>
             </if>
 
-            <script>ec.context.putAll(geoIp)</script>
-            <entity-set value-field="visit" map="mapped" include="nonpk"/>
+            <script>ec.context.putAll(mapped); visit.putAll(mapped)</script>
             <entity-update value-field="visit"/>
         </actions>
     </service>
