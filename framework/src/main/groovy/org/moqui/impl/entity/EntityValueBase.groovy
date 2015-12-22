@@ -1034,22 +1034,10 @@ abstract class EntityValueBase implements EntityValue {
         ExecutionContextFactoryImpl ecfi = getEntityFacadeImpl().getEcfi()
         ExecutionContext ec = ecfi.getExecutionContext()
 
-        String authorizeSkip = ed.entityNode.attribute('authorize-skip')
-        ArtifactExecutionInfo aei = new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_CREATE").setParameters(valueMap)
-        ec.getArtifactExecution().push(aei, (authorizeSkip != "true" && !authorizeSkip?.contains("create")))
-
-        getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "create", true)
-
-        Long lastUpdatedLong = ecfi.getTransactionFacade().getCurrentTransactionStartTime() ?: System.currentTimeMillis()
-        if (ed.isField("lastUpdatedStamp") && !this.getValueMap().lastUpdatedStamp)
-            this.set("lastUpdatedStamp", new Timestamp(lastUpdatedLong))
-
         // check/set defaults
         checkSetFieldDefaults(ed, ec)
 
-        // do this before the db change so modified flag isn't cleared
-        if (doDataFeed()) getEntityFacadeImpl().getEntityDataFeed().dataFeedCheckAndRegister(this, false, valueMap, null)
-
+        // make minimal fieldList to use for create
         ArrayList<String> fieldList = new ArrayList<String>()
         ArrayList<String> fieldNameList = ed.getFieldNames(true, true, false)
         int size = fieldNameList.size()
@@ -1058,24 +1046,42 @@ abstract class EntityValueBase implements EntityValue {
             if (valueMap.containsKey(fieldName)) fieldList.add(fieldName)
         }
 
-        // if there is not a txCache or the txCache doesn't handle the create, call the abstract method to create the main record
-        if (getTxCache() == null || !getTxCache().create(this)) this.basicCreate(fieldList, null)
+        // set lastUpdatedStamp
+        Long lastUpdatedLong = ecfi.getTransactionFacade().getCurrentTransactionStartTime() ?: System.currentTimeMillis()
+        if (ed.isField("lastUpdatedStamp") && !this.getValueMap().lastUpdatedStamp)
+            this.set("lastUpdatedStamp", new Timestamp(lastUpdatedLong))
 
+        // do the artifact push/authz
+        String authorizeSkip = ed.entityNode.attribute('authorize-skip')
+        ArtifactExecutionInfo aei = new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_CREATE").setParameters(valueMap)
+        ec.getArtifactExecution().push(aei, (authorizeSkip != "true" && !authorizeSkip?.contains("create")))
 
-        // NOTE: cache clear is the same for create, update, delete; even on create need to clear one cache because it
-        // might have a null value for a previous query attempt
-        getEntityFacadeImpl().getEntityCache().clearCacheForValue(this, true)
+        try {
+            // run EECA before rules
+            getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "create", true)
 
-        handleAuditLog(false, null)
+            // do this before the db change so modified flag isn't cleared
+            if (doDataFeed()) getEntityFacadeImpl().getEntityDataFeed().dataFeedCheckAndRegister(this, false, valueMap, null)
 
-        getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "create", false)
-        // count the artifact hit
-        ecfi.countArtifactHit("entity", "create", ed.getFullEntityName(), this.getPrimaryKeys(), startTime,
-                (System.nanoTime() - startTimeNanos)/1E6, 1L)
-        // pop the ArtifactExecutionInfo to clean it up
-        ec.getArtifactExecution().pop(aei)
+            // if there is not a txCache or the txCache doesn't handle the create, call the abstract method to create the main record
+            if (getTxCache() == null || !getTxCache().create(this)) this.basicCreate(fieldList, null)
 
-        return this
+            // NOTE: cache clear is the same for create, update, delete; even on create need to clear one cache because it
+            // might have a null value for a previous query attempt
+            getEntityFacadeImpl().getEntityCache().clearCacheForValue(this, true)
+            // save audit log(s) if applicable
+            handleAuditLog(false, null)
+            // run EECA after rules
+            getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "create", false)
+            // count the artifact hit
+            ecfi.countArtifactHit("entity", "create", ed.getFullEntityName(), this.getPrimaryKeys(), startTime,
+                    (System.nanoTime() - startTimeNanos)/1E6, 1L)
+
+            return this
+        } finally {
+            // pop the ArtifactExecutionInfo to clean it up
+            ec.getArtifactExecution().pop(aei)
+        }
     }
     void basicCreate(Connection con) {
         EntityDefinition ed = getEntityDefinition()
@@ -1128,12 +1134,6 @@ abstract class EntityValueBase implements EntityValue {
         ExecutionContextFactoryImpl ecfi = getEntityFacadeImpl().getEcfi()
         ExecutionContext ec = ecfi.getExecutionContext()
 
-        String authorizeSkip = ed.entityNode.attribute('authorize-skip')
-        ArtifactExecutionInfo aei = new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_UPDATE").setParameters(valueMap)
-        ec.getArtifactExecution().push(aei, authorizeSkip != "true")
-
-        getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "update", true)
-
         // check/set defaults
         checkSetFieldDefaults(ed, ec)
 
@@ -1167,46 +1167,54 @@ abstract class EntityValueBase implements EntityValue {
         // if (ed.getEntityName() == "foo") logger.warn("================ evb.update() ${getEntityName()} nonPkFieldList=${nonPkFieldList};\nvalueMap=${valueMap};\noldValues=${oldValues}")
         if (!nonPkFieldList) {
             if (logger.isTraceEnabled()) logger.trace((String) "Not doing update on entity with no populated non-PK fields; entity=" + this.toString())
-            ec.getArtifactExecution().pop(aei)
             return this
         }
 
         // do this after the empty nonPkFieldList check so that if nothing has changed then ignore the attempt to update
         if (changedCreateOnlyFields.size() > 0) {
-            ec.getArtifactExecution().pop(aei)
             throw new EntityException("Cannot update create-only (immutable) fields ${changedCreateOnlyFields} on entity [${getEntityName()}]")
         }
 
         if (ed.optimisticLock() && getTimestamp("lastUpdatedStamp") != refreshedValue.getTimestamp("lastUpdatedStamp")) {
-            ec.getArtifactExecution().pop(aei)
             throw new EntityException("This record was updated by someone else at [${getTimestamp("lastUpdatedStamp")}] which was after the version you loaded at [${refreshedValue.getTimestamp("lastUpdatedStamp")}]. Not updating to avoid overwriting data.")
         }
 
+        // set lastUpdatedStamp
         Long lastUpdatedLong = ecfi.getTransactionFacade().getCurrentTransactionStartTime() ?: System.currentTimeMillis()
         // not sure why this condition was there, doesn't make sense so removed: && !this.getValueMap().lastUpdatedStamp
         if (ed.isField("lastUpdatedStamp")) this.set("lastUpdatedStamp", new Timestamp(lastUpdatedLong))
 
-        // do this before the db change so modified flag isn't cleared
-        getEntityFacadeImpl().getEntityDataFeed().dataFeedCheckAndRegister(this, true, valueMap, oldValues)
+        // do the artifact push/authz
+        String authorizeSkip = ed.entityNode.attribute('authorize-skip')
+        ArtifactExecutionInfo aei = new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_UPDATE").setParameters(valueMap)
+        ec.getArtifactExecution().push(aei, authorizeSkip != "true")
 
+        try {
+            // run EECA before rules
+            getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "update", true)
 
-        // if there is not a txCache or the txCache doesn't handle the update, call the abstract method to update the main record
-        if (getTxCache() == null || !getTxCache().update(this)) this.basicUpdate(dbValueMapFromDb, pkFieldList, nonPkFieldList, null)
+            // do this before the db change so modified flag isn't cleared
+            getEntityFacadeImpl().getEntityDataFeed().dataFeedCheckAndRegister(this, true, valueMap, oldValues)
 
+            // if there is not a txCache or the txCache doesn't handle the update, call the abstract method to update the main record
+            if (getTxCache() == null || !getTxCache().update(this))
+                this.basicUpdate(dbValueMapFromDb, pkFieldList, nonPkFieldList, null)
 
-        // clear the entity cache
-        getEntityFacadeImpl().getEntityCache().clearCacheForValue(this, false)
+            // clear the entity cache
+            getEntityFacadeImpl().getEntityCache().clearCacheForValue(this, false)
+            // save audit log(s) if applicable
+            handleAuditLog(true, oldValues)
+            // run EECA after rules
+            getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "update", false)
+            // count the artifact hit
+            ecfi.countArtifactHit("entity", "update", ed.getFullEntityName(), this.getPrimaryKeys(), startTime,
+                    (System.nanoTime() - startTimeNanos)/1E6, 1L)
 
-        handleAuditLog(true, oldValues)
-
-        getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "update", false)
-        // count the artifact hit
-        ecfi.countArtifactHit("entity", "update", ed.getFullEntityName(), this.getPrimaryKeys(), startTime,
-                (System.nanoTime() - startTimeNanos)/1E6, 1L)
-        // pop the ArtifactExecutionInfo to clean it up
-        ec.getArtifactExecution().pop(aei)
-
-        return this
+            return this
+        } finally {
+            // pop the ArtifactExecutionInfo to clean it up
+            ec.getArtifactExecution().pop(aei)
+        }
     }
     void basicUpdate(Connection con) {
         EntityDefinition ed = getEntityDefinition()
@@ -1293,32 +1301,35 @@ abstract class EntityValueBase implements EntityValue {
 
         if (ed.createOnly()) throw new EntityException("Entity [${getEntityName()}] is create-only (immutable), cannot be deleted.")
 
+        // do the artifact push/authz
         String authorizeSkip = ed.entityNode.attribute('authorize-skip')
         ArtifactExecutionInfo aei = new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_DELETE").setParameters(valueMap)
         ec.getArtifactExecution().push(aei, authorizeSkip != "true")
 
-        getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "delete", true)
-        // this needs to be called before the actual update so we know which fields are modified
-        // NOTE: consider not doing this on delete, DataDocuments are not great for representing absence of records
-        // NOTE2: this might be useful, but is a bit of a pain and utility is dubious, leave out for now
-        // getEntityFacadeImpl().getEntityDataFeed().dataFeedCheckAndRegister(this, true, valueMap, null)
+        try {
+            // run EECA before rules
+            getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "delete", true)
+            // this needs to be called before the actual update so we know which fields are modified
+            // NOTE: consider not doing this on delete, DataDocuments are not great for representing absence of records
+            // NOTE2: this might be useful, but is a bit of a pain and utility is dubious, leave out for now
+            // getEntityFacadeImpl().getEntityDataFeed().dataFeedCheckAndRegister(this, true, valueMap, null)
 
+            // if there is not a txCache or the txCache doesn't handle the delete, call the abstract method to delete the main record
+            if (getTxCache() == null || !getTxCache().delete(this)) this.basicDelete(null)
 
-        // if there is not a txCache or the txCache doesn't handle the delete, call the abstract method to delete the main record
-        if (getTxCache() == null || !getTxCache().delete(this)) this.basicDelete(null)
+            // clear the entity cache
+            getEntityFacadeImpl().getEntityCache().clearCacheForValue(this, false)
+            // run EECA after rules
+            getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "delete", false)
+            // count the artifact hit
+            ecfi.countArtifactHit("entity", "delete", ed.getFullEntityName(), this.getPrimaryKeys(), startTime,
+                    (System.nanoTime() - startTimeNanos)/1E6, 1L)
 
-
-        // clear the entity cache
-        getEntityFacadeImpl().getEntityCache().clearCacheForValue(this, false)
-
-        getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "delete", false)
-        // count the artifact hit
-        ecfi.countArtifactHit("entity", "delete", ed.getFullEntityName(), this.getPrimaryKeys(), startTime,
-                (System.nanoTime() - startTimeNanos)/1E6, 1L)
-        // pop the ArtifactExecutionInfo to clean it up
-        ec.getArtifactExecution().pop(aei)
-
-        return this
+            return this
+        } finally {
+            // pop the ArtifactExecutionInfo to clean it up
+            ec.getArtifactExecution().pop(aei)
+        }
     }
     void basicDelete(Connection con) {
         EntityDefinition ed = getEntityDefinition()
@@ -1355,40 +1366,45 @@ abstract class EntityValueBase implements EntityValue {
         ExecutionContextFactoryImpl ecfi = getEntityFacadeImpl().getEcfi()
         ExecutionContext ec = ecfi.getExecutionContext()
 
+        List<String> pkFieldList = ed.getPkFieldNames()
+        if (pkFieldList.size() == 0) {
+            // throw new EntityException("Entity ${getEntityName()} has no primary key fields, cannot do refresh.")
+            if (logger.isTraceEnabled()) logger.trace("Entity ${getEntityName()} has no primary key fields, cannot do refresh.")
+            return false
+        }
+
+        // do the artifact push/authz
         String authorizeSkip = ed.entityNode.attribute('authorize-skip')
         ArtifactExecutionInfo aei = new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW")
                                 .setActionDetail("refresh").setParameters(valueMap)
         ec.getArtifactExecution().push(aei, authorizeSkip != "true")
 
-        getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "find-one", true)
+        try {
+            // run EECA before rules
+            getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "find-one", true)
 
-        List<String> pkFieldList = ed.getPkFieldNames()
-        if (pkFieldList.size() == 0) {
-            // throw new EntityException("Entity ${getEntityName()} has no primary key fields, cannot do refresh.")
-            if (logger.isTraceEnabled()) logger.trace("Entity ${getEntityName()} has no primary key fields, cannot do refresh.")
+            // if there is not a txCache or the txCache doesn't handle the refresh, call the abstract method to refresh
+            boolean retVal = false
+            if (getTxCache() != null) retVal = getTxCache().refresh(this)
+            // call the abstract method
+            if (!retVal) {
+                retVal = this.refreshExtended()
+                if (retVal && getTxCache() != null) getTxCache().onePut(this)
+            }
+
+            // NOTE: clear out UserFields
+
+            // run EECA after rules
+            getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "find-one", false)
+            // count the artifact hit
+            ecfi.countArtifactHit("entity", "refresh", ed.getFullEntityName(), this.getPrimaryKeys(), startTime,
+                    (System.nanoTime() - startTimeNanos)/1E6, retVal ? 1L : 0L)
+
+            return retVal
+        } finally {
+            // pop the ArtifactExecutionInfo to clean it up
             ec.getArtifactExecution().pop(aei)
-            return false
         }
-
-        // if there is not a txCache or the txCache doesn't handle the refresh, call the abstract method to refresh
-        boolean retVal = false
-        if (getTxCache() != null) retVal = getTxCache().refresh(this)
-        // call the abstract method
-        if (!retVal) {
-            retVal = this.refreshExtended()
-            if (retVal && getTxCache() != null) getTxCache().onePut(this)
-        }
-
-        // NOTE: clear out UserFields
-
-        getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "find-one", false)
-        // count the artifact hit
-        ecfi.countArtifactHit("entity", "refresh", ed.getFullEntityName(), this.getPrimaryKeys(), startTime,
-                (System.nanoTime() - startTimeNanos)/1E6, retVal ? 1L : 0L)
-        // pop the ArtifactExecutionInfo to clean it up
-        ec.getArtifactExecution().pop(aei)
-
-        return retVal
     }
     abstract boolean refreshExtended()
 }
