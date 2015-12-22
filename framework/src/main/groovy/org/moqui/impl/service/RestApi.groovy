@@ -15,6 +15,7 @@ package org.moqui.impl.service
 
 import groovy.transform.CompileStatic
 import org.moqui.BaseException
+import org.moqui.context.AuthenticationRequiredException
 import org.moqui.context.ExecutionContext
 import org.moqui.context.ResourceReference
 import org.moqui.entity.EntityFind
@@ -265,6 +266,11 @@ class RestApi {
             operation = entityNode.attribute("operation")
         }
         RestResult run(List<String> pathList, ExecutionContext ec) {
+            // service calls handle their own auth, for entity ops authc always required
+            if (!ec.getUser().getUsername()) {
+                throw new AuthenticationRequiredException("User must be logged in for operaton ${operation} on entity ${entityName}")
+            }
+
             if (operation == 'one') {
                 EntityFind ef = ec.entity.find(entityName).searchFormMap(ec.context, null, false)
                 if (masterName) {

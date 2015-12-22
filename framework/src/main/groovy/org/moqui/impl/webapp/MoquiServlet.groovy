@@ -15,6 +15,7 @@ package org.moqui.impl.webapp
 
 import groovy.transform.CompileStatic
 import org.moqui.context.ArtifactTarpitException
+import org.moqui.context.AuthenticationRequiredException
 
 import javax.servlet.http.HttpServlet
 import javax.servlet.http.HttpServletResponse
@@ -70,6 +71,9 @@ class MoquiServlet extends HttpServlet {
 
         try {
             ec.screen.makeRender().render(request, response)
+        } catch (AuthenticationRequiredException e) {
+            logger.warn("Web Unauthorized (no authc): " + e.message)
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.message)
         } catch (ArtifactAuthorizationException e) {
             // SC_UNAUTHORIZED 401 used when authc/login fails, use SC_FORBIDDEN 403 for authz failures
             // See ScreenRenderImpl.checkWebappSettings for authc and SC_UNAUTHORIZED handling

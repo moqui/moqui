@@ -1064,15 +1064,6 @@ class WebFacadeImpl implements WebFacade {
             return
         }
 
-        // make sure a user is logged in, screen/etc that calls will generally be configured to not require auth
-        if (!eci.getUser().getUsername()) {
-            // if there was a login error there will be a MessageFacade error message
-            String errorMessage = eci.message.errorsString
-            if (!errorMessage) errorMessage = "Authentication required for Service REST API operations"
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, errorMessage)
-            return
-        }
-
         try {
             long startTime = System.currentTimeMillis()
             // if _requestBodyJsonList do multiple calls
@@ -1111,6 +1102,9 @@ class WebFacadeImpl implements WebFacade {
                 //     and 204 No Content (for DELETE and other when no content is returned)
                 sendJsonResponse(restResult.responseObj)
             }
+        } catch (AuthenticationRequiredException e) {
+            logger.warn("REST Unauthorized (no authc): " + e.message)
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.message)
         } catch (ArtifactAuthorizationException e) {
             // SC_UNAUTHORIZED 401 used when authc/login fails, use SC_FORBIDDEN 403 for authz failures
             logger.warn("REST Access Forbidden (no authz): " + e.message)
