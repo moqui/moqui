@@ -367,9 +367,10 @@ class RestApi {
             }
 
             Map curMap = [:]
+            String summary = "${operation} ${ed.getEntityName()}"
+            if (masterName) summary = summary + " (master: " + masterName + ")"
             if (swaggerMap.tags && pathNode.fullPathList.size() > 1) curMap.put("tags", [pathNode.fullPathList[1]])
-            curMap.putAll([summary:("${operation} ${ed.getEntityName()}".toString()),
-                           description:StupidUtilities.nodeText(ed.getEntityNode().get("description")),
+            curMap.putAll([summary:summary, description:StupidUtilities.nodeText(ed.getEntityNode().get("description")),
                            security:[[basicAuth:[]]], parameters:parameters, responses:responses])
             resourceMap.put(method, curMap)
 
