@@ -58,6 +58,14 @@ class FieldValueCondition extends EntityConditionImplBase {
                 sql.append(" IS NOT NULL")
                 valueDone = true
             }
+        } else if (this.value instanceof Collection && ((Collection)this.value).isEmpty()) {
+            if (this.operator == IN) {
+                sql.append(" 1 = 2 ")
+                valueDone = true
+            } else if (this.operator == NOT_IN) {
+                sql.append(" 1 = 1 ")
+                valueDone = true
+            }
         }
         if (this.operator == IS_NULL || this.operator == IS_NOT_NULL) {
             sql.append(EntityConditionFactoryImpl.getComparisonOperatorString(this.operator))
