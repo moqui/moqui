@@ -25,6 +25,7 @@ import org.moqui.impl.actions.XmlAction
 import org.moqui.context.ContextStack
 import org.moqui.impl.context.ExecutionContextImpl
 import org.moqui.impl.entity.EntityDefinition
+import org.moqui.service.ServiceException
 import org.owasp.esapi.ValidationErrorList
 import org.owasp.esapi.errors.IntrusionException
 import org.owasp.esapi.errors.ValidationException
@@ -1021,6 +1022,17 @@ class ServiceDefinition {
             } else {
                 // Swagger UI is okay with empty maps (works, just less detail), so don't warn about this
                 // logger.warn("Parameter ${parmNode.attribute('name')} of service ${getServiceName()} is an object type but has no child parameters, may cause error in Swagger, etc")
+            }
+        } else {
+            String entityName = (String) parmNode.attribute("entity-name")
+            String fieldName = (String) parmNode.attribute("field-name")
+            if (entityName && fieldName) {
+                EntityDefinition ed = sfi.getEcfi().getEntityFacade().getEntityDefinition(entityName)
+                if (ed == null) throw new ServiceException("Entity ${entityName} not found, from parameter ${parmNode.attribute('name')} of service ${getServiceName()}")
+                EntityDefinition.FieldInfo fi = ed.getFieldInfo(fieldName)
+                if (ed == null) throw new ServiceException("Field ${fieldName} not found for entity ${entityName}, from parameter ${parmNode.attribute('name')} of service ${getServiceName()}")
+                List enumList = ed.getFieldEnums(fi)
+                if (enumList) propMap.put('enum', enumList)
             }
         }
 
