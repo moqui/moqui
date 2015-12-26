@@ -1030,7 +1030,7 @@ class ServiceDefinition {
                 EntityDefinition ed = sfi.getEcfi().getEntityFacade().getEntityDefinition(entityName)
                 if (ed == null) throw new ServiceException("Entity ${entityName} not found, from parameter ${parmNode.attribute('name')} of service ${getServiceName()}")
                 EntityDefinition.FieldInfo fi = ed.getFieldInfo(fieldName)
-                if (ed == null) throw new ServiceException("Field ${fieldName} not found for entity ${entityName}, from parameter ${parmNode.attribute('name')} of service ${getServiceName()}")
+                if (fi == null) throw new ServiceException("Field ${fieldName} not found for entity ${entityName}, from parameter ${parmNode.attribute('name')} of service ${getServiceName()}")
                 List enumList = ed.getFieldEnums(fi)
                 if (enumList) propMap.put('enum', enumList)
             }
