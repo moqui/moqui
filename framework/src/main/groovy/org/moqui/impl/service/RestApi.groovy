@@ -205,9 +205,22 @@ class RestApi {
                 remainingInParmNames.remove(pathParm)
             }
             if (remainingInParmNames) {
-                parameters.add([name:'body', in:'body', required:true, schema:['$ref':"#/definitions/${sd.getServiceName()}.In".toString()]])
-                // add a definition for service in parameters
-                definitionsMap.put("${sd.getServiceName()}.In".toString(), sd.getJsonSchemaMapIn())
+                if (method in ['post', 'put', 'patch']) {
+                    parameters.add([name:'body', in:'body', required:true, schema:['$ref':"#/definitions/${sd.getServiceName()}.In".toString()]])
+                    // add a definition for service in parameters
+                    definitionsMap.put("${sd.getServiceName()}.In".toString(), sd.getJsonSchemaMapIn())
+                } else {
+                    for (String parmName in remainingInParmNames) {
+                        Node parmNode = sd.getInParameter(parmName)
+                        String javaType = parmNode.attribute("type")
+                        Map<String, Object> propMap = [name:parmName, in:'query', required:false,
+                                type:getJsonType(javaType), format:getJsonFormat(javaType),
+                                description:StupidUtilities.nodeText(parmNode.get("description"))] as Map<String, Object>
+                        parameters.add(propMap)
+                        sd.addParameterEnums(parmNode, propMap)
+                    }
+
+                }
             }
 
             // add responses
@@ -341,8 +354,16 @@ class RestApi {
             boolean addPkDef = false
             if (operation  == 'one') {
                 if (remainingPkFields) {
-                    parameters.add([name:'body', in:'body', required:false, schema:['$ref':"#/definitions/${refDefNamePk}".toString()]])
-                    addPkDef = true
+                    for (String fieldName in remainingPkFields) {
+                        EntityDefinition.FieldInfo fi = ed.getFieldInfo(fieldName)
+                        Map<String, Object> fieldMap = [name:fieldName, in:'query', required:false,
+                                type:(EntityDefinition.fieldTypeJsonMap.get(fi.type) ?: "string"),
+                                format:(EntityDefinition.fieldTypeJsonFormatMap.get(fi.type) ?: ""),
+                                description:StupidUtilities.nodeText(fi.fieldNode.get("description"))] as Map<String, Object>
+                        parameters.add(fieldMap)
+                        List enumList = ed.getFieldEnums(fi)
+                        if (enumList) fieldMap.put('enum', enumList)
+                    }
                 }
                 responses.put("200", [description:'Success', schema:['$ref':"#/definitions/${refDefName}".toString()]])
             } else if (operation == 'list') {

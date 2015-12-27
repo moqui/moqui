@@ -1024,19 +1024,23 @@ class ServiceDefinition {
                 // logger.warn("Parameter ${parmNode.attribute('name')} of service ${getServiceName()} is an object type but has no child parameters, may cause error in Swagger, etc")
             }
         } else {
-            String entityName = (String) parmNode.attribute("entity-name")
-            String fieldName = (String) parmNode.attribute("field-name")
-            if (entityName && fieldName) {
-                EntityDefinition ed = sfi.getEcfi().getEntityFacade().getEntityDefinition(entityName)
-                if (ed == null) throw new ServiceException("Entity ${entityName} not found, from parameter ${parmNode.attribute('name')} of service ${getServiceName()}")
-                EntityDefinition.FieldInfo fi = ed.getFieldInfo(fieldName)
-                if (fi == null) throw new ServiceException("Field ${fieldName} not found for entity ${entityName}, from parameter ${parmNode.attribute('name')} of service ${getServiceName()}")
-                List enumList = ed.getFieldEnums(fi)
-                if (enumList) propMap.put('enum', enumList)
-            }
+            addParameterEnums(parmNode, propMap)
         }
 
         return propMap
+    }
+
+    void addParameterEnums(Node parmNode, Map<String, Object> propMap) {
+        String entityName = (String) parmNode.attribute("entity-name")
+        String fieldName = (String) parmNode.attribute("field-name")
+        if (entityName && fieldName) {
+            EntityDefinition ed = sfi.getEcfi().getEntityFacade().getEntityDefinition(entityName)
+            if (ed == null) throw new ServiceException("Entity ${entityName} not found, from parameter ${parmNode.attribute('name')} of service ${getServiceName()}")
+            EntityDefinition.FieldInfo fi = ed.getFieldInfo(fieldName)
+            if (fi == null) throw new ServiceException("Field ${fieldName} not found for entity ${entityName}, from parameter ${parmNode.attribute('name')} of service ${getServiceName()}")
+            List enumList = ed.getFieldEnums(fi)
+            if (enumList) propMap.put('enum', enumList)
+        }
     }
 
     @CompileStatic
