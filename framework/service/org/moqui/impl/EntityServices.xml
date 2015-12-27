@@ -104,7 +104,7 @@ along with this software (see the LICENSE.md file). If not, see
             <parameter name="fromUpdateStamp" type="Timestamp"/>
             <parameter name="thruUpdateStamp" type="Timestamp"/>
         </in-parameters>
-        <out-parameters><parameter name="documentList" type="List"/></out-parameters>
+        <out-parameters><parameter name="documentList" type="List"><parameter name="document" type="Map"/></parameter></out-parameters>
         <actions>
             <set field="documentList" from="ec.entity.getEntityDataFeed().getFeedDocuments(dataFeedId, fromUpdateStamp, thruUpdatedStamp)"/>
         </actions>
@@ -113,7 +113,7 @@ along with this software (see the LICENSE.md file). If not, see
         <description>This service gets the latest documents for a DataFeed based on DataFeed.lastFeedStamp, and updates
             lastFeedStamp to the current time.</description>
         <in-parameters><parameter name="dataFeedId" required="true"/></in-parameters>
-        <out-parameters><parameter name="documentList" type="List"/></out-parameters>
+        <out-parameters><parameter name="documentList" type="List"><parameter name="document" type="Map"/></parameter></out-parameters>
         <actions>
             <set field="documentList" from="ec.entity.getEntityDataFeed().getFeedLatestDocuments(dataFeedId)"/>
         </actions>
@@ -136,14 +136,16 @@ along with this software (see the LICENSE.md file). If not, see
             <parameter name="documentType"><description>The ElasticSearch document type. For DataDocument based docs
                 this is the dataDocumentId.</description></parameter>
             <parameter name="queryString" required="true"/>
-            <parameter name="orderByFields" type="List"/>
+            <parameter name="orderByFields" type="List"><parameter name="orderByField"/></parameter>
             <parameter name="pageIndex" type="Integer" default-value="0"/>
             <parameter name="pageSize" type="Integer" default-value="20"/>
             <parameter name="flattenDocument" type="Boolean" default-value="true"/>
         </in-parameters>
         <out-parameters>
-            <parameter name="documentList" type="List"><description>List of documents, each document is a Map with
-                nested Maps and Lists of Maps.</description></parameter>
+            <parameter name="documentList" type="List">
+                <description>List of documents, each document is a Map with nested Maps and Lists of Maps.</description>
+                <parameter name="document" type="Map"/>
+            </parameter>
             <parameter name="documentListCount" type="Integer"><description>The total count of hits, not just the
                 limited number returned.</description></parameter>
             <parameter name="documentListPageIndex" type="Integer"/>
@@ -239,8 +241,10 @@ along with this software (see the LICENSE.md file). If not, see
         </description>
         <in-parameters>
             <parameter name="indexName" required="true"/>
-            <parameter name="documentTypeList" type="List"><description>The ElasticSearch document type. For DataDocument based docs
-                this is the dataDocumentId.</description></parameter>
+            <parameter name="documentTypeList" type="List">
+                <description>The ElasticSearch document type. For DataDocument based docs this is the dataDocumentId.</description>
+                <parameter name="documentType"/>
+            </parameter>
             <parameter name="maxResults" type="Integer" default="1000"/>
             <parameter name="sourceJson"/>
             <parameter name="sourceMap" type="Map"/>

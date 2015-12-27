@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This software is in the public domain under CC0 1.0 Universal plus a 
+Grant of Patent License.
+
+To the extent possible under law, the author(s) have dedicated all
+copyright and related and neighboring rights to this software to the
+public domain worldwide. This software is distributed without any
+warranty.
+
+You should have received a copy of the CC0 Public Domain Dedication
+along with this software (see the LICENSE.md file). If not, see
+<http://creativecommons.org/publicdomain/zero/1.0/>.
+-->
+
+<!-- General Guideline Verbs: GET=find, POST=create/do, PUT=store (create or update), PATCH=update, DELETE=delete  -->
+
+<resource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/rest-api-1.6.xsd"
+        name="moqui" displayName="Moqui Tools REST API" version="1.6.0"
+        description="Services for various system administration and other tools in Moqui Framework. See more information
+            about Moqui Framework at [http://www.moqui.org/framework](http://www.moqui.org/framework/index.html)">
+
+    <resource name="artifacts" description="Artifacts - Screens, Services, Entities, etc">
+        <resource name="hitSummary"><method type="get">
+            <entity name="moqui.server.ArtifactHitReport" operation="list"/></method></resource>
+        <resource name="hitBins"><method type="get">
+            <entity name="moqui.server.ArtifactHitBin" operation="list"/></method></resource>
+    </resource>
+
+    <resource name="dataDocuments" description="Data Documents - Database derived JSON documents, feeds, indexes">
+        <method type="get"><entity name="dataDocuments" operation="list"/></method>
+        <method type="post"><entity name="dataDocuments" masterName="default" operation="create"/></method>
+        <id name="dataDocumentId">
+            <method type="get"><entity name="dataDocuments" masterName="default" operation="one"/></method>
+            <method type="put"><entity name="dataDocuments" masterName="default" operation="update"/></method>
+            <resource name="clone"><method type="post">
+                <service name="org.moqui.impl.EntityServices.clone#DataDocument"/></method></resource>
+        </id>
+        <resource name="feeds">
+            <id name="dataFeedId">
+                <resource name="index"><method type="post">
+                    <service name="org.moqui.impl.EntityServices.index#DataFeedDocuments"/></method></resource>
+                <resource name="documents"><method type="get">
+                    <service name="org.moqui.impl.EntityServices.get#DataFeedDocuments"/></method></resource>
+            </id>
+        </resource>
+        <resource name="indexes">
+            <id name="indexName">
+                <resource name="mappings"><method type="post">
+                    <service name="org.moqui.impl.EntityServices.put#DataDocumentMappings"/></method></resource>
+                <resource name="search"><method type="post">
+                    <service name="org.moqui.impl.EntityServices.search#DataDocuments"/></method></resource>
+                <resource name="searchCount"><method type="post">
+                    <service name="org.moqui.impl.EntityServices.search#CountBySource"/></method></resource>
+            </id>
+        </resource>
+    </resource>
+
+    <!-- TODO: caches, TODO will need services implemented as uses API directly for most ops -->
+</resource>

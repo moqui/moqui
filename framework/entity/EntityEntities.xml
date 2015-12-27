@@ -126,7 +126,7 @@ along with this software (see the LICENSE.md file). If not, see
     <!-- moqui.entity.document -->
     <!-- ========================================================= -->
 
-    <entity entity-name="DataDocument" package-name="moqui.entity.document">
+    <entity entity-name="DataDocument" package-name="moqui.entity.document" short-alias="dataDocuments">
         <field name="dataDocumentId" type="id" is-pk="true"/>
         <field name="documentName" type="text-medium"><description>The name of the document for display in search
             results and such.</description></field>
@@ -139,6 +139,22 @@ along with this software (see the LICENSE.md file). If not, see
         <field name="manualDataServiceName" type="text-medium"><description>Name of a service to call to get additional
             data to include in the document. This service should implement the
             org.moqui.impl.EntityServices.add#ManualDocumentData interface.</description></field>
+
+        <relationship type="many" related-entity-name="moqui.entity.document.DataDocumentField" short-alias="fields">
+            <key-map field-name="dataDocumentId"/></relationship>
+        <relationship type="many" related-entity-name="moqui.entity.document.DataDocumentRelAlias" short-alias="relAliases">
+            <key-map field-name="dataDocumentId"/></relationship>
+        <relationship type="many" related-entity-name="moqui.entity.document.DataDocumentCondition" short-alias="conditions">
+            <key-map field-name="dataDocumentId"/></relationship>
+        <relationship type="many" related-entity-name="moqui.entity.document.DataDocumentLink" short-alias="links">
+            <key-map field-name="dataDocumentId"/></relationship>
+        <relationship type="many" related-entity-name="moqui.entity.feed.DataFeedDocument" short-alias="feeds">
+            <key-map field-name="dataDocumentId"/></relationship>
+        <master>
+            <detail relationship="fields"/><detail relationship="relAliases"/>
+            <detail relationship="conditions"/><detail relationship="links"/>
+            <detail relationship="feeds"><detail relationship="feed"/></detail>
+        </master>
     </entity>
     <entity entity-name="DataDocumentField" package-name="moqui.entity.document">
         <field name="dataDocumentId" type="id" is-pk="true"/>
@@ -207,8 +223,8 @@ along with this software (see the LICENSE.md file). If not, see
     <entity entity-name="DataFeedDocument" package-name="moqui.entity.feed">
         <field name="dataFeedId" type="id" is-pk="true"/>
         <field name="dataDocumentId" type="id" is-pk="true"/>
-        <relationship type="one" related-entity-name="moqui.entity.feed.DataFeed"/>
-        <relationship type="one" related-entity-name="moqui.entity.document.DataDocument"/>
+        <relationship type="one" related-entity-name="moqui.entity.feed.DataFeed" short-alias="feed"/>
+        <relationship type="one" related-entity-name="moqui.entity.document.DataDocument" short-alias="document"/>
     </entity>
     <view-entity entity-name="DataFeedAndDocument" package-name="moqui.entity.feed">
         <member-entity entity-alias="DTFD" entity-name="moqui.entity.feed.DataFeed"/>
