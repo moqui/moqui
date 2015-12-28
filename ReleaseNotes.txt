@@ -49,6 +49,9 @@ New Features
   - New Service REST API tool
     - define REST resources and methods in XML files (see rest-api-1.6.xsd)
     - map methods under resources to service calls and entity operations
+    - REST resource/id visits are pushed as artifacts so authz may be
+      granted for parts or all of a REST API by the API instead of by
+      underlying service or entity
     - see example Service REST API in example.rest.xml
     - call REST methods through the /rest/s1 transition
     - see example client calls in the rest.xml screen definition file
@@ -2191,8 +2194,8 @@ Features considered, but may not to be included in 1.x series
     - generic service for sending Data Document to REST (or other?) end point
   - Service REST API
     - allow mapping DataDocument operations as well
-    - Add artifact type for REST Resource, Method
-    - Call ArtifactExecutionFacade.push/pop for RestApi calls
+    x Add artifact type for REST Resource, Method
+    x Call ArtifactExecutionFacade.push/pop for RestApi calls
     - Setup john.doe user with permissions for root of various APIs
     - Add attribute for resource/method like screen for anonymous and no authz access
     - Add Service REST API for moqui system admin services
