@@ -23,8 +23,15 @@ along with this software (see the LICENSE.md file). If not, see
     <moqui.security.ArtifactGroup artifactGroupId="EXAMPLE_APP" description="Example App (via root screen)"/>
     <moqui.security.ArtifactGroupMember artifactGroupId="EXAMPLE_APP" artifactTypeEnumId="AT_XML_SCREEN"
             inheritAuthz="Y" artifactName="component://example/screen/ExampleApp.xml"/>
-
     <!-- Full permissions for the ADMIN user group -->
     <moqui.security.ArtifactAuthz artifactAuthzId="EXAMPLE_AUTHZ_ALL" userGroupId="ADMIN" artifactGroupId="EXAMPLE_APP"
+            authzTypeEnumId="AUTHZT_ALWAYS" authzActionEnumId="AUTHZA_ALL"/>
+
+    <!-- Artifact group for all of the Example REST API via the example resource (the root resource) -->
+    <moqui.security.ArtifactGroup artifactGroupId="EXAMPLE_API" description="Example REST API (via root resource)"/>
+    <moqui.security.ArtifactGroupMember artifactGroupId="EXAMPLE_API" artifactTypeEnumId="AT_REST_PATH"
+            inheritAuthz="Y" artifactName="/example"/>
+    <!-- Full permissions for the ADMIN user group -->
+    <moqui.security.ArtifactAuthz artifactAuthzId="EXAMPLEAPI_AUTHZ_ALL" userGroupId="ADMIN" artifactGroupId="EXAMPLE_API"
             authzTypeEnumId="AUTHZT_ALWAYS" authzActionEnumId="AUTHZA_ALL"/>
 </entity-facade-xml>
