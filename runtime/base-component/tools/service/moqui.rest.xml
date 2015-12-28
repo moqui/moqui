@@ -92,7 +92,16 @@ along with this software (see the LICENSE.md file). If not, see
             </id>
         </resource>
     </resource>
-    <resource name="email" description="Email Services - Messages, Servers, Templates">
+    <resource name="email" description="Email Services - Messages, Templates, Servers">
+        <resource name="messages">
+            <method type="get"><entity name="emailMessages" operation="list"/></method>
+            <!-- NOTE: for now no create allowed, created when sending or receiving -->
+            <!-- <method type="post"><entity name="emailMessages" operation="create"/></method> -->
+            <id name="emailMessageId">
+                <method type="get"><entity name="emailMessages" masterName="default" operation="one"/></method>
+                <method type="patch"><entity name="emailMessages" masterName="default" operation="update"/></method>
+            </id>
+        </resource>
         <resource name="templates">
             <method type="get"><entity name="emailTemplates" operation="list"/></method>
             <method type="post"><entity name="emailTemplates" operation="create"/></method>
