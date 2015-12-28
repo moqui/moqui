@@ -95,6 +95,9 @@ New Features
     password that may only be used to change the password; current password
     stays valid for password change or login (if email-require-change=false)
 - Entity Features
+  - Added relationship.@mutable attribute, defaults to false for type one*
+    and to true for type many relationships; used in store through
+    sub-records in the entity auto services (used in data load, REST, etc)
   - Added field.@create-only attribute, defaults to entity.@create-only
     value, create only now checked at field level on update (only at entity
     level on delete)

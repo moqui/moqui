@@ -51,11 +51,11 @@ along with this software (see the LICENSE.md file). If not, see
 
         <!-- This is not generally necessary, reverse relationships are created automatically, but needed to specify
             the short-alias for use in entity REST requests and quick path look ups -->
-        <relationship type="many" related-entity-name="example.ExampleItem" short-alias="items">
+        <relationship type="many" related-entity-name="example.ExampleItem" short-alias="items" mutable="true">
             <key-map field-name="exampleId"/></relationship>
-        <relationship type="many" related-entity-name="example.ExampleContent" short-alias="contents">
+        <relationship type="many" related-entity-name="example.ExampleContent" short-alias="contents" mutable="true">
             <key-map field-name="exampleId"/></relationship>
-        <relationship type="many" related-entity-name="example.ExampleFeatureAppl" short-alias="featureAppls">
+        <relationship type="many" related-entity-name="example.ExampleFeatureAppl" short-alias="featureAppls" mutable="true">
             <key-map field-name="exampleId"/></relationship>
 
         <seed-data>
@@ -144,8 +144,8 @@ along with this software (see the LICENSE.md file). If not, see
         <field name="thruDate" type="date-time"/>
         <field name="exampleFeatureApplEnumId" type="id"/>
         <field name="sequenceNum" type="number-integer"/>
-        <relationship type="one" related-entity-name="example.Example"/>
-        <relationship type="one" related-entity-name="example.ExampleFeature"/>
+        <relationship type="one" related-entity-name="example.Example" short-alias="example" mutable="true"/>
+        <relationship type="one" related-entity-name="example.ExampleFeature" short-alias="feature" mutable="true"/>
         <relationship type="one" title="ExampleFeatureAppl" related-entity-name="moqui.basic.Enumeration">
             <key-map field-name="exampleFeatureApplEnumId"/></relationship>
 
