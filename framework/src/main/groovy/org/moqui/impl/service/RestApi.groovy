@@ -632,7 +632,7 @@ class RestApi {
             super(node, parent, ecfi, false)
         }
         RestResult visit(List<String> pathList, int pathIndex, ExecutionContext ec) {
-            logger.info("Visit resource ${name}")
+            // logger.info("Visit resource ${name}")
             // visit child or run here
             visitChildOrRun(pathList, pathIndex, ec)
         }
@@ -654,7 +654,7 @@ class RestApi {
             super(node, parent, ecfi, true)
         }
         RestResult visit(List<String> pathList, int pathIndex, ExecutionContext ec) {
-            logger.info("Visit id ${name}")
+            // logger.info("Visit id ${name}")
             // set ID value in context
             ec.context.put(name, pathList[pathIndex])
             // visit child or run here

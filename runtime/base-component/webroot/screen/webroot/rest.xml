@@ -254,6 +254,8 @@ along with this software (see the LICENSE.md file). If not, see
     curl -X POST -H "Content-Type: application/json" -u john.doe:moqui \
          -d '{ "exampleName":"Service REST API Test 1", "exampleTypeEnumId":"EXT_MADE_UP", "statusId":"EXST_IN_DESIGN" }' \
          http://localhost:8080/rest/s1/example/examples
+
+    curl -X GET -u john.doe:moqui "http://localhost:8080/rest/s1/moqui/artifacts/hitSummary?artifactType=entity&artifactSubType=create&artifactName=moqui.basic&artifactName_op=contains"
     -->
     <transition name="s1" read-only="true">
         <actions><script>ec.web.handleServiceRestCall(sri.screenUrlInfo.extraPathNameList)</script></actions>
