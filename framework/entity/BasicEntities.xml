@@ -492,7 +492,7 @@ along with this software (see the LICENSE.md file). If not, see
         <field name="description" type="text-medium"/>
         <field name="location" type="text-medium"/>
     </entity>
-    <entity entity-name="PrintJob" package-name="moqui.basic.print">
+    <entity entity-name="PrintJob" package-name="moqui.basic.print" short-alias="printJobs">
         <field name="printJobId" type="id" is-pk="true"/>
         <field name="statusId" type="id" enable-audit-log="true"/>
         <field name="createdDate" type="date-time"/>
@@ -506,8 +506,8 @@ along with this software (see the LICENSE.md file). If not, see
         <field name="pageRanges" type="text-short"/>
         <field name="contentType" type="text-short"/>
         <field name="document" type="binary-very-long"/>
-        <relationship type="one" related-entity-name="moqui.basic.print.NetworkPrinter"/>
-        <relationship type="one" title="PrintJob" related-entity-name="moqui.basic.StatusItem"/>
+        <relationship type="one" related-entity-name="moqui.basic.print.NetworkPrinter" short-alias="printer"/>
+        <relationship type="one" title="PrintJob" related-entity-name="moqui.basic.StatusItem" short-alias="status"/>
         <seed-data>
             <!-- Print Job Status -->
             <moqui.basic.StatusType description="Print Job Status" statusTypeId="PrintJob"/>
@@ -544,5 +544,6 @@ along with this software (see the LICENSE.md file). If not, see
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="PtjProcessing" toStatusId="PtjCanceled" transitionName="Cancel"/>
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="PtjProcessingStopped" toStatusId="PtjCanceled" transitionName="Cancel"/>
         </seed-data>
+        <master><detail relationship="printer"/><detail relationship="status"/></master>
     </entity>
 </entities>
