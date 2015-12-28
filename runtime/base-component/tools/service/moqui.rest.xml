@@ -56,5 +56,64 @@ along with this software (see the LICENSE.md file). If not, see
         </resource>
     </resource>
 
+    <resource name="basic" description="Basic Entities - Enum, Geo, Status, UOM, etc">
+        <resource name="enums">
+            <method type="get"><entity name="enums" operation="list"/></method>
+            <method type="post"><entity name="enums" operation="create"/></method>
+            <id name="enumId">
+                <method type="get"><entity name="enums" masterName="default" operation="one"/></method>
+                <method type="patch"><entity name="enums" operation="update"/></method>
+            </id>
+        </resource>
+        <resource name="geos">
+            <method type="get"><entity name="geos" operation="list"/></method>
+            <method type="post"><entity name="geos" operation="create"/></method>
+            <id name="geoId">
+                <method type="get"><entity name="geos" masterName="default" operation="one"/></method>
+                <method type="patch"><entity name="geos" operation="update"/></method>
+                <resource name="regions"><method type="get">
+                    <service name="org.moqui.impl.BasicServices.get#GeoRegionsForDropDown"/></method></resource>
+            </id>
+        </resource>
+        <resource name="statuses">
+            <method type="get"><entity name="statuses" operation="list"/></method>
+            <method type="post"><entity name="statuses" operation="create"/></method>
+            <id name="statusId">
+                <method type="get"><entity name="statuses" masterName="default" operation="one"/></method>
+                <method type="patch"><entity name="statuses" operation="update"/></method>
+            </id>
+        </resource>
+        <resource name="uoms">
+            <method type="get"><entity name="uoms" operation="list"/></method>
+            <method type="post"><entity name="uoms" operation="create"/></method>
+            <id name="uomId">
+                <method type="get"><entity name="uoms" masterName="default" operation="one"/></method>
+                <method type="patch"><entity name="uoms" operation="update"/></method>
+            </id>
+        </resource>
+    </resource>
+    <resource name="email" description="Email Services - Messages, Servers, Templates">
+        <resource name="templates">
+            <method type="get"><entity name="emailTemplates" operation="list"/></method>
+            <method type="post"><entity name="emailTemplates" operation="create"/></method>
+            <id name="emailTemplateId">
+                <method type="get"><entity name="emailTemplates" masterName="default" operation="one"/></method>
+                <method type="patch"><entity name="emailTemplates" masterName="default" operation="update"/></method>
+                <resource name="send"><method type="post">
+                    <service name="org.moqui.impl.EmailServices.send#Email"/></method></resource>
+            </id>
+        </resource>
+        <resource name="servers">
+            <method type="get"><entity name="moqui.basic.email.EmailServer" operation="list"/></method>
+            <method type="post"><entity name="moqui.basic.email.EmailServer" operation="create"/></method>
+            <id name="emailServerId">
+                <method type="get"><entity name="moqui.basic.email.EmailServer" operation="one"/></method>
+                <method type="patch"><entity name="moqui.basic.email.EmailServer" operation="update"/></method>
+                <resource name="poll"><method type="post">
+                    <service name="org.moqui.impl.EmailServices.poll#EmailServer"/></method></resource>
+            </id>
+        </resource>
+    </resource>
+
     <!-- TODO: caches, TODO will need services implemented as uses API directly for most ops -->
 </resource>
