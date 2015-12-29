@@ -73,6 +73,16 @@ New Features
     receive#IncomingSystemMessage for remote calls, will call the
     SystemMessageType.receiveServiceName service if specified to save message
   - Added EDI handler (parser and generator), used in Mantle for X12 messages
+- Moqui Tools REST API
+  - Uses new Service REST API feature
+  - See entity op and service mappings in the moqui.rest.xml file
+  - Has REST services for artifacts, basic (enums, geos, statuses, uoms),
+    data documents, email, entity sync, network print, system messages,
+    and users
+  - Has 61 resources with 85 methods (services), 96 definitions
+  - Use Moqui feature to generate Swagger file and view in Swagger UI
+    - see https://github.com/swagger-api/swagger-ui
+    - use a URL like http://localhost:8080/rest/service.swagger/moqui
 - Email Features
   - Various improvements to email message polling (calling EM-ECA rules)
     including support for Java System Properties pass through and fix for
