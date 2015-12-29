@@ -130,6 +130,7 @@ along with this software (see the LICENSE.md file). If not, see
             <id name="networkPrinterId">
                 <method type="get"><entity name="moqui.basic.print.NetworkPrinter" operation="one"/></method>
                 <method type="patch"><entity name="moqui.basic.print.NetworkPrinter" operation="update"/></method>
+
                 <resource name="print">
                     <!-- TODO how to handle InputStream or SerialBlob in parameters? -->
                     <resource name="document"><method type="post">
@@ -144,21 +145,21 @@ along with this software (see the LICENSE.md file). If not, see
         <resource name="jobs">
             <method type="get"><entity name="printJobs" operation="list"/></method>
             <method type="post"><entity name="printJobs" operation="create"/></method>
+
             <id name="printJobId">
                 <method type="get"><entity name="printJobs" masterName="default" operation="one"/></method>
                 <method type="patch"><entity name="printJobs" operation="update"/></method>
-                <resource name="print">
-                    <resource name="send"><method type="post">
-                        <service name="org.moqui.impl.PrintServices.send#PrintJob"/></method></resource>
-                    <resource name="serverDetails"><method type="get">
-                        <service name="org.moqui.impl.PrintServices.get#PrintJobDetailsFromServer"/></method></resource>
-                    <resource name="hold"><method type="post">
-                        <service name="org.moqui.impl.PrintServices.hold#PrintJob"/></method></resource>
-                    <resource name="release"><method type="post">
-                        <service name="org.moqui.impl.PrintServices.release#PrintJob"/></method></resource>
-                    <resource name="cancel"><method type="post">
-                        <service name="org.moqui.impl.PrintServices.cancel#PrintJob"/></method></resource>
-                </resource>
+
+                <resource name="send"><method type="post">
+                    <service name="org.moqui.impl.PrintServices.send#PrintJob"/></method></resource>
+                <resource name="serverDetails"><method type="get">
+                    <service name="org.moqui.impl.PrintServices.get#PrintJobDetailsFromServer"/></method></resource>
+                <resource name="hold"><method type="post">
+                    <service name="org.moqui.impl.PrintServices.hold#PrintJob"/></method></resource>
+                <resource name="release"><method type="post">
+                    <service name="org.moqui.impl.PrintServices.release#PrintJob"/></method></resource>
+                <resource name="cancel"><method type="post">
+                    <service name="org.moqui.impl.PrintServices.cancel#PrintJob"/></method></resource>
             </id>
         </resource>
 
@@ -166,5 +167,29 @@ along with this software (see the LICENSE.md file). If not, see
             <service name="org.moqui.impl.PrintServices.get#ServerPrinters"/></method></resource>
     </resource>
 
+    <resource name="entity" description="Entity - Sync, etc">
+        <resource name="syncs">
+            <method type="get"><entity name="entitySyncs" operation="list"/></method>
+            <method type="post"><entity name="entitySyncs" masterName="default" operation="create"/></method>
+
+            <id name="entitySyncId">
+                <method type="get"><entity name="entitySyncs" masterName="default" operation="one"/></method>
+                <method type="patch"><entity name="entitySyncs" masterName="default" operation="update"/></method>
+
+                <resource name="run"><method type="post">
+                    <service name="org.moqui.impl.EntitySyncServices.run#EntitySync"/></method></resource>
+                <resource name="includeList"><method type="get">
+                    <service name="org.moqui.impl.EntitySyncServices.get#EntitySyncIncludeList"/></method></resource>
+            </id>
+            <resource name="run"><method type="post">
+                <service name="org.moqui.impl.EntitySyncServices.run#EntitySyncAll"/></method></resource>
+            <resource name="data">
+                <resource name="put"><method type="post">
+                    <service name="org.moqui.impl.EntitySyncServices.put#EntitySyncData"/></method></resource>
+                <resource name="get"><method type="post">
+                    <service name="org.moqui.impl.EntitySyncServices.get#EntitySyncData"/></method></resource>
+            </resource>
+        </resource>
+    </resource>
     <!-- TODO: caches, TODO will need services implemented as uses API directly for most ops -->
 </resource>
