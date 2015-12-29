@@ -98,7 +98,7 @@ dependencies {
     compile group: 'org.apache.jackrabbit', name: 'jackrabbit-spi', version: '2.11.2' // Apache 2.0
     compile group: 'org.apache.jackrabbit', name: 'jackrabbit-jcr2spi', version: '2.11.2' // Apache 2.0
 
-    compile group: 'com.sun.mail', name: 'javax.mail', version: '1.5.4' // CDDL
+    compile group: 'com.sun.mail', name: 'javax.mail', version: '1.5.5' // CDDL
     compile group: 'javax.jcr', name: 'jcr', version: '2.0' // Apache 2.0???
     compile group: 'net.java.dev.jna', name: 'jna', version: '4.2.1' // Apache 2.0
     compile group: 'net.java.dev.jna', name: 'jna-platform', version: '4.2.1' // Apache 2.0
@@ -142,12 +142,12 @@ dependencies {
         dependencies module(group: 'commons-beanutils', name: 'commons-beanutils', version: '1.8.3') }
     compile group: 'org.apache.shiro', name: 'shiro-web', version: '1.2.4' // Apache 2.0
 
-    apiCompile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.12'
-    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.12'
-    runtime group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.4.1'
-    runtime group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.4.1'
-    runtime group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.4.1'
-    // runtime group: 'org.apache.logging.log4j', name: 'log4j-1.2-api', version: '2.4.1'
+    apiCompile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.13'
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.13'
+    runtime group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.5'
+    runtime group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.5'
+    runtime group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.5'
+    // runtime group: 'org.apache.logging.log4j', name: 'log4j-1.2-api', version: '2.5'
 
     apiCompile group: 'org.intelligents-ia.winstone', name: 'winstone', version: '1.7.0' // CDDL
     // apiCompile group: 'org.intelligents-ia.winstone', name: 'winstone-jndi', version: '1.7.0' // CDDL
@@ -307,10 +307,10 @@ war {
     from sourceSets.start.output
     from file(projectDir.absolutePath + '/lib/winstone-1.7.0.jar')
     from file(projectDir.absolutePath + '/lib/winstone-jndi-1.7.0.jar')
-    from file(projectDir.absolutePath + '/lib/slf4j-api-1.7.12.jar')
-    from file(projectDir.absolutePath + '/lib/log4j-api-2.4.1.jar')
-    from file(projectDir.absolutePath + '/lib/log4j-core-2.4.1.jar')
-    from file(projectDir.absolutePath + '/lib/log4j-slf4j-impl-2.4.1.jar')
+    from file(projectDir.absolutePath + '/lib/slf4j-api-1.7.13.jar')
+    from file(projectDir.absolutePath + '/lib/log4j-api-2.5.jar')
+    from file(projectDir.absolutePath + '/lib/log4j-core-2.5.jar')
+    from file(projectDir.absolutePath + '/lib/log4j-slf4j-impl-2.5.jar')
     from file(projectDir.absolutePath + '/src/main/resources/log4j2.xml')
     from file(projectDir.absolutePath + '/lib/geronimo-servlet_2.5_spec-1.2.jar')
     // setup the manifest for the executable war/jar mode

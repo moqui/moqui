@@ -24,17 +24,18 @@ New Features
   - Apache HttpClient to 4.5.1
   - Apache HttpCore to 4.4.4
   - Apache Jackrabbit to 2.11.2
+  - Apache Log4J to 2.5
   - Ehcache to 2.10.1
   - ElasticSearch to 1.7.3
   - Groovy to 2.4.5
   - H2 to 1.4.190
   - JNA to 4.2.1
-  - JavaMail to 1.5.4
+  - JavaMail to 1.5.5
   - KIE, Drools to 6.3.0.Final
   - Liquibase to 3.4.2
-  - Log4J to 2.4.1
   - OrientDB to 2.1.4
   - Quartz Scheduler to 2.2.2
+  - SLF4J to 1.7.13
 - Screen and Form Features
   - Added ScreenTest interface and implementation; easy tool for testing
     screens with no Servlet container in place; this uses test stubs for
