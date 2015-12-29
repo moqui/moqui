@@ -25,8 +25,9 @@ New Features
   - Apache HttpCore to 4.4.4
   - Apache Jackrabbit to 2.11.2
   - Apache Log4J to 2.5
+  - Apache Lucene to 5.3.1
   - Ehcache to 2.10.1
-  - ElasticSearch to 1.7.3
+  - ElasticSearch to 2.1.1
   - Groovy to 2.4.5
   - H2 to 1.4.190
   - JNA to 4.2.1
