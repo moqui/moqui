@@ -208,7 +208,7 @@ along with this software (see the LICENSE.md file). If not, see
     </entity>
 
     <!-- ========== User ========== -->
-    <entity entity-name="UserAccount" package-name="moqui.security">
+    <entity entity-name="UserAccount" package-name="moqui.security" short-alias="users">
         <field name="userId" type="id-long" is-pk="true"/>
         <field name="username" type="text-medium" enable-audit-log="true">
             <description>The username used along with the password to login</description></field>

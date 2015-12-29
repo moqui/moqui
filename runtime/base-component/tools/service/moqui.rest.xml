@@ -222,5 +222,23 @@ along with this software (see the LICENSE.md file). If not, see
                 <service name="org.moqui.impl.SystemMessageServices.consume#AllReceivedSystemMessages"/></method></resource>
         </resource>
     </resource>
+
+    <resource name="users" description="User Accounts">
+        <method type="get"><entity name="users" operation="list"/></method>
+        <method type="post"><service name="org.moqui.impl.UserServices.create#UserAccount"/></method>
+
+        <id name="userId">
+            <method type="get"><entity name="users" operation="one"/></method>
+            <method type="patch"><entity name="users" operation="update"/></method>
+
+            <resource name="password">
+                <resource name="update"><method type="post">
+                    <service name="org.moqui.impl.UserServices.update#Password"/></method></resource>
+                <resource name="reset"><method type="post">
+                    <service name="org.moqui.impl.UserServices.reset#Password"/></method></resource>
+            </resource>
+        </id>
+    </resource>
+
     <!-- TODO: caches, TODO will need services implemented as uses API directly for most ops -->
 </resource>
