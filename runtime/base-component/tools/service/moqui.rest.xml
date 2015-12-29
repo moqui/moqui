@@ -191,5 +191,36 @@ along with this software (see the LICENSE.md file). If not, see
             </resource>
         </resource>
     </resource>
+
+    <resource name="systemMessages" description="System to System Messages - Queue, Send, Receive, Consume, etc">
+        <method type="get"><entity name="systemMessages" operation="list"/></method>
+
+        <id name="systemMessageId">
+            <method type="get"><entity name="systemMessages" masterName="default" operation="one"/></method>
+            <method type="patch"><entity name="systemMessages" operation="update"/></method>
+
+            <resource name="send"><method type="post">
+                <service name="org.moqui.impl.SystemMessageServices.send#ProducedSystemMessage"/></method></resource>
+            <resource name="consume"><method type="post">
+                <service name="org.moqui.impl.SystemMessageServices.consume#ReceivedSystemMessage"/></method></resource>
+            <resource name="resetError"><method type="post">
+                <service name="org.moqui.impl.SystemMessageServices.reset#SystemMessageInError"/></method></resource>
+        </id>
+
+        <resource name="outgoing">
+            <resource name="queue"><method type="post">
+                <service name="org.moqui.impl.SystemMessageServices.queue#SystemMessage"/></method></resource>
+            <resource name="queueAck"><method type="post">
+                <service name="org.moqui.impl.SystemMessageServices.queue#AckSystemMessage"/></method></resource>
+            <resource name="sendAll"><method type="post">
+                <service name="org.moqui.impl.SystemMessageServices.send#AllProducedSystemMessages"/></method></resource>
+        </resource>
+        <resource name="incoming">
+            <resource name="receive"><method type="post">
+                <service name="org.moqui.impl.SystemMessageServices.receive#IncomingSystemMessage"/></method></resource>
+            <resource name="consumeAll"><method type="post">
+                <service name="org.moqui.impl.SystemMessageServices.consume#AllReceivedSystemMessages"/></method></resource>
+        </resource>
+    </resource>
     <!-- TODO: caches, TODO will need services implemented as uses API directly for most ops -->
 </resource>

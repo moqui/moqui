@@ -193,7 +193,7 @@ along with this software (see the LICENSE.md file). If not, see
     <!-- moqui.service.message -->
     <!-- ========================================================= -->
 
-    <entity entity-name="SystemMessage" package-name="moqui.service.message">
+    <entity entity-name="SystemMessage" package-name="moqui.service.message" short-alias="systemMessages">
         <field name="systemMessageId" type="id" is-pk="true"/>
         <field name="systemMessageTypeId" type="id"/>
         <field name="statusId" type="id" enable-audit-log="true"/>
@@ -241,11 +241,13 @@ along with this software (see the LICENSE.md file). If not, see
         <field name="authId" type="text-medium"/>
         -->
 
-        <relationship type="one" related-entity-name="moqui.service.message.SystemMessageType"/>
-        <relationship type="one" title="SystemMessage" related-entity-name="moqui.basic.StatusItem"/>
-        <relationship type="one" title="Parent" related-entity-name="moqui.service.message.SystemMessage">
+        <relationship type="one" related-entity-name="moqui.service.message.SystemMessageType" short-alias="type"/>
+        <relationship type="one" title="SystemMessage" related-entity-name="moqui.basic.StatusItem" short-alias="status"/>
+        <relationship type="one" title="Parent" related-entity-name="moqui.service.message.SystemMessage" short-alias="parent">
             <key-map field-name="parentMessageId" related-field-name="systemMessageId"/></relationship>
-        <relationship type="one" related-entity-name="moqui.service.message.SystemMessageRemote"/>
+        <relationship type="one" related-entity-name="moqui.service.message.SystemMessageRemote" short-alias="remote"/>
+        <relationship type="many" related-entity-name="moqui.service.message.SystemMessageError" short-alias="errors">
+            <key-map field-name="systemMessageId"/></relationship>
         <seed-data>
             <moqui.basic.StatusType description="System Message" statusTypeId="SystemMessage"/>
             <!-- Is this needed? <moqui.basic.StatusItem description="Triggered" sequenceNum="1" statusId="SmsgTriggered" statusTypeId="SystemMessage"/> -->
@@ -306,6 +308,10 @@ along with this software (see the LICENSE.md file). If not, see
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgCancelled" toStatusId="SmsgProduced" transitionName="Back to Produced"/>
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="SmsgCancelled" toStatusId="SmsgReceived" transitionName="Back to Received"/>
         </seed-data>
+        <master>
+            <detail relationship="type"/><detail relationship="status"/><detail relationship="parent"/>
+            <detail relationship="remote"/><detail relationship="errors"/>
+        </master>
     </entity>
     <entity entity-name="SystemMessageType" package-name="moqui.service.message">
         <field name="systemMessageTypeId" type="id" is-pk="true"/>
