@@ -222,6 +222,11 @@ along with this software (see the LICENSE.md file). If not, see
                     has meaning in the context of a particular entity). Should be short, start with a lowercase
                     character, and be plural (ie products, not product).</xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="mutable" type="boolean" default="false"><xs:annotation><xs:documentation>
+                If true related record may be modified through create/update auto-service calls with child records.
+                If false relationship is read-only for aggregated records (using master definition or dependent levels).
+                Defaults to false for type one* relationships, to true for type many (many are generally detail or join entities).
+            </xs:documentation></xs:annotation></xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="key-map">

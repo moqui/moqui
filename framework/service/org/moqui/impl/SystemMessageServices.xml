@@ -22,7 +22,9 @@ along with this software (see the LICENSE.md file). If not, see
             <parameter name="messageText" required="true"/>
             <parameter name="remoteMessageId"/>
         </in-parameters>
-        <out-parameters><parameter name="systemMessageIdList" type="List"/></out-parameters>
+        <out-parameters>
+            <parameter name="systemMessageIdList" type="List"><parameter name="systemMessageId"/></parameter>
+        </out-parameters>
     </service>
     <service verb="consume" noun="SystemMessage" type="interface">
         <in-parameters><parameter name="systemMessageId" required="true"/></in-parameters>

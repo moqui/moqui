@@ -13,8 +13,6 @@ along with this software (see the LICENSE.md file). If not, see
 <http://creativecommons.org/publicdomain/zero/1.0/>.
 -->
 <services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-1.6.xsd">
-
-
     <service verb="run" noun="EntitySyncAll" transaction="ignore" authenticate="anonymous-all">
         <actions>
             <entity-find entity-name="moqui.entity.sync.EntitySync" list="entitySyncList">
@@ -28,9 +26,7 @@ along with this software (see the LICENSE.md file). If not, see
         </actions>
     </service>
     <service verb="run" noun="EntitySync" authenticate="anonymous-all">
-        <in-parameters>
-            <parameter name="entitySyncId" required="true"/>
-        </in-parameters>
+        <in-parameters><parameter name="entitySyncId" required="true"/></in-parameters>
         <actions>
             <set field="startDate" from="new Timestamp(System.currentTimeMillis())"/>
 
@@ -180,7 +176,10 @@ along with this software (see the LICENSE.md file). If not, see
             <parameter name="entityIncludeList" type="List">
                 <parameter name="entryMap" type="Map">
                     <parameter name="entityName"/>
-                    <parameter name="includeFilterList" type="List"/><!-- List of Maps to be ORed together -->
+                    <parameter name="includeFilterList" type="List">
+                        <description>List of Maps to be ORed together</description>
+                        <parameter name="filterMap" type="Map"/>
+                    </parameter>
                     <parameter name="dependents" type="Boolean"/>
                 </parameter>
             </parameter>
@@ -263,14 +262,15 @@ along with this software (see the LICENSE.md file). If not, see
     </service>
 
     <service verb="get" noun="EntitySyncIncludeList">
-        <in-parameters>
-            <parameter name="entitySyncId" required="true"/>
-        </in-parameters>
+        <in-parameters><parameter name="entitySyncId" required="true"/></in-parameters>
         <out-parameters>
             <parameter name="entityIncludeList" type="List">
                 <parameter name="entryMap" type="Map">
                     <parameter name="entityName"/>
-                    <parameter name="includeFilterList" type="List"/><!-- List of Maps to be ORed together -->
+                    <parameter name="includeFilterList" type="List">
+                        <description>List of Maps to be ORed together</description>
+                        <parameter name="filterMap" type="Map"/>
+                    </parameter>
                     <parameter name="dependents" type="Boolean"/>
                 </parameter>
             </parameter>

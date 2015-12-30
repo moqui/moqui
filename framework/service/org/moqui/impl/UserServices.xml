@@ -220,17 +220,21 @@ along with this software (see the LICENSE.md file). If not, see
 
     <service verb="reset" noun="Password" type="inline" authenticate="anonymous-all" allow-remote="true">
         <in-parameters>
-            <parameter name="username" required="true"/>
+            <parameter name="userId"/>
+            <parameter name="username"><description>May be used instead of userId to identify user.</description></parameter>
         </in-parameters>
         <actions>
-            <entity-find-one entity-name="moqui.security.UserAccount" value-field="userAccount" for-update="true">
-                <field-map field-name="username"/></entity-find-one>
+            <!-- find by userId -->
+            <entity-find-one entity-name="moqui.security.UserAccount" value-field="userAccount" for-update="true"/>
             <if condition="!userAccount">
-                <return message="Could not find user account with username [${username}]" error="true"/>
+                <!-- find by username -->
+                <entity-find-one entity-name="moqui.security.UserAccount" value-field="userAccount" for-update="true">
+                    <field-map field-name="username"/></entity-find-one>
             </if>
+            <if condition="!userAccount">
+                <return message="Could not find user account with username [${username}]" error="true"/></if>
             <if condition="!userAccount.emailAddress">
-                <return message="User account with username [${username}] does not have an email address" error="true"/>
-            </if>
+                <return message="User account with username [${username}] does not have an email address" error="true"/></if>
 
             <!-- reset the password to a random value -->
             <set field="resetPassword" from="org.moqui.impl.StupidUtilities.getRandomString(12)"/>

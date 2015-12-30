@@ -483,6 +483,7 @@ public class EntityDefinition {
         String prettyName
         Map keyMap
         boolean dependent
+        boolean mutable
 
         RelationshipInfo(Node relNode, EntityDefinition fromEd, EntityFacadeImpl efi) {
             this.relNode = relNode
@@ -500,6 +501,13 @@ public class EntityDefinition {
             prettyName = relatedEd.getPrettyName(title, fromEd.internalEntityName)
             keyMap = getRelationshipExpandedKeyMapInternal(relNode, relatedEd)
             dependent = hasReverse()
+            String mutableAttr = relNode.attribute('mutable')
+            if (mutableAttr) {
+                mutable = relNode.attribute('mutable') == "true"
+            } else {
+                // by default type one not mutable, type many are mutable
+                mutable = !isTypeOne
+            }
         }
 
         private boolean hasReverse() {

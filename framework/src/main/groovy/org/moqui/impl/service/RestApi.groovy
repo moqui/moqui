@@ -15,11 +15,13 @@ package org.moqui.impl.service
 
 import groovy.transform.CompileStatic
 import org.moqui.BaseException
+import org.moqui.context.ArtifactExecutionInfo
 import org.moqui.context.AuthenticationRequiredException
 import org.moqui.context.ExecutionContext
 import org.moqui.context.ResourceReference
 import org.moqui.entity.EntityFind
 import org.moqui.impl.StupidUtilities
+import org.moqui.impl.context.ArtifactExecutionInfoImpl
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.impl.entity.EntityDefinition
 import org.slf4j.Logger
@@ -205,9 +207,22 @@ class RestApi {
                 remainingInParmNames.remove(pathParm)
             }
             if (remainingInParmNames) {
-                parameters.add([name:'body', in:'body', required:true, schema:['$ref':"#/definitions/${sd.getServiceName()}.In".toString()]])
-                // add a definition for service in parameters
-                definitionsMap.put("${sd.getServiceName()}.In".toString(), sd.getJsonSchemaMapIn())
+                if (method in ['post', 'put', 'patch']) {
+                    parameters.add([name:'body', in:'body', required:true, schema:['$ref':"#/definitions/${sd.getServiceName()}.In".toString()]])
+                    // add a definition for service in parameters
+                    definitionsMap.put("${sd.getServiceName()}.In".toString(), sd.getJsonSchemaMapIn())
+                } else {
+                    for (String parmName in remainingInParmNames) {
+                        Node parmNode = sd.getInParameter(parmName)
+                        String javaType = parmNode.attribute("type")
+                        Map<String, Object> propMap = [name:parmName, in:'query', required:false,
+                                type:getJsonType(javaType), format:getJsonFormat(javaType),
+                                description:StupidUtilities.nodeText(parmNode.get("description"))] as Map<String, Object>
+                        parameters.add(propMap)
+                        sd.addParameterEnums(parmNode, propMap)
+                    }
+
+                }
             }
 
             // add responses
@@ -341,8 +356,16 @@ class RestApi {
             boolean addPkDef = false
             if (operation  == 'one') {
                 if (remainingPkFields) {
-                    parameters.add([name:'body', in:'body', required:false, schema:['$ref':"#/definitions/${refDefNamePk}".toString()]])
-                    addPkDef = true
+                    for (String fieldName in remainingPkFields) {
+                        EntityDefinition.FieldInfo fi = ed.getFieldInfo(fieldName)
+                        Map<String, Object> fieldMap = [name:fieldName, in:'query', required:false,
+                                type:(EntityDefinition.fieldTypeJsonMap.get(fi.type) ?: "string"),
+                                format:(EntityDefinition.fieldTypeJsonFormatMap.get(fi.type) ?: ""),
+                                description:StupidUtilities.nodeText(fi.fieldNode.get("description"))] as Map<String, Object>
+                        parameters.add(fieldMap)
+                        List enumList = ed.getFieldEnums(fi)
+                        if (enumList) fieldMap.put('enum', enumList)
+                    }
                 }
                 responses.put("200", [description:'Success', schema:['$ref':"#/definitions/${refDefName}".toString()]])
             } else if (operation == 'list') {
@@ -514,21 +537,33 @@ class RestApi {
         RestResult visitChildOrRun(List<String> pathList, int pathIndex, ExecutionContext ec) {
             // more in path? visit the next, otherwise run by request method
             int nextPathIndex = pathIndex + 1
-            if (pathList.size() > nextPathIndex) {
-                String nextPath = pathList[nextPathIndex]
-                // first try resources
-                ResourceNode rn = resourceMap.get(nextPath)
-                if (rn != null) {
-                    return rn.visit(pathList, nextPathIndex, ec)
-                } else if (idNode != null) {
-                    // no resource? if there is an idNode treat as ID
-                    return idNode.visit(pathList, nextPathIndex, ec)
+            boolean moreInPath = pathList.size() > nextPathIndex
+
+            // push onto artifact stack, check authz
+            String curPath = getFullPathName([])
+            ArtifactExecutionInfo aei = new ArtifactExecutionInfoImpl(curPath, "AT_REST_PATH", getActionFromMethod(ec))
+            // NOTE: consider setting parameters on aei, but don't like setting entire context, currently used for entity/service calls
+            ec.getArtifactExecution().push(aei, !moreInPath)
+
+            try {
+                if (moreInPath) {
+                    String nextPath = pathList[nextPathIndex]
+                    // first try resources
+                    ResourceNode rn = resourceMap.get(nextPath)
+                    if (rn != null) {
+                        return rn.visit(pathList, nextPathIndex, ec)
+                    } else if (idNode != null) {
+                        // no resource? if there is an idNode treat as ID
+                        return idNode.visit(pathList, nextPathIndex, ec)
+                    } else {
+                        // not a resource and no idNode, is a bad path
+                        throw new ResourceNotFoundException("Resource ${nextPath} not valid, index ${pathIndex} in path ${pathList}; resources available are ${resourceMap.keySet()}")
+                    }
                 } else {
-                    // not a resource and no idNode, is a bad path
-                    throw new ResourceNotFoundException("Resource ${nextPath} not valid, index ${pathIndex} in path ${pathList}; resources available are ${resourceMap.keySet()}")
+                    return runByMethod(pathList, ec)
                 }
-            } else {
-                return runByMethod(pathList, ec)
+            } finally {
+                ec.getArtifactExecution().pop(aei)
             }
         }
 
@@ -539,21 +574,32 @@ class RestApi {
 
             // if we have method handlers add this, otherwise just do children
             if (rootPathList.size() - 1 <= curIndex && methodMap) {
-                StringBuilder curPath = new StringBuilder()
-                for (int i = rootPathList.size(); i < fullPathList.size(); i++) {
-                    String pathItem = fullPathList.get(i)
-                    curPath.append('/').append(pathItem)
-                }
+                String curPath = getFullPathName(rootPathList)
 
                 Map<String, Map<String, Object>> rsMap = [:]
                 for (MethodHandler mh in methodMap.values()) mh.addToSwaggerMap(swaggerMap, rsMap)
 
-                ((Map) swaggerMap.paths).put(curPath.toString() ?: '/', rsMap)
+                ((Map) swaggerMap.paths).put(curPath ?: '/', rsMap)
             }
             // add the id node if there is one
             if (idNode != null) idNode.addToSwaggerMap(swaggerMap, rootPathList)
             // add any resource nodes there might be
             for (ResourceNode rn in resourceMap.values()) rn.addToSwaggerMap(swaggerMap, rootPathList)
+        }
+
+        String getFullPathName(List<String> rootPathList) {
+            StringBuilder curPath = new StringBuilder()
+            for (int i = rootPathList.size(); i < fullPathList.size(); i++) {
+                String pathItem = fullPathList.get(i)
+                curPath.append('/').append(pathItem)
+            }
+            return curPath.toString()
+        }
+        Map<String, String> actionByMethodMap = [get:'AUTHZA_VIEW', patch:'AUTHZA_UPDATE', put:'AUTHZA_UPDATE',
+                             post:'AUTHZA_CREATE', delete:'AUTHZA_DELETE', options:'AUTHZA_VIEW', head:'AUTHZA_VIEW']
+        String getActionFromMethod(ExecutionContext ec) {
+            String method = ec.web.getRequest().getMethod().toLowerCase()
+            return actionByMethodMap.get(method)
         }
 
         Map getRamlChildrenMap(Map<String, Object> typesMap) {
@@ -586,8 +632,8 @@ class RestApi {
             super(node, parent, ecfi, false)
         }
         RestResult visit(List<String> pathList, int pathIndex, ExecutionContext ec) {
-            logger.info("Visit resource ${name}")
-            // do nothing else but visit child or run here
+            // logger.info("Visit resource ${name}")
+            // visit child or run here
             visitChildOrRun(pathList, pathIndex, ec)
         }
         String toString() {
@@ -608,7 +654,7 @@ class RestApi {
             super(node, parent, ecfi, true)
         }
         RestResult visit(List<String> pathList, int pathIndex, ExecutionContext ec) {
-            logger.info("Visit id ${name}")
+            // logger.info("Visit id ${name}")
             // set ID value in context
             ec.context.put(name, pathList[pathIndex])
             // visit child or run here

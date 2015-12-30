@@ -18,7 +18,9 @@ import org.moqui.context.ContextStack
 import org.moqui.context.ValidationError
 import org.moqui.context.WebFacade
 import org.moqui.impl.context.ExecutionContextFactoryImpl
+import org.moqui.impl.context.ExecutionContextImpl
 import org.moqui.impl.context.WebFacadeImpl
+import org.moqui.impl.service.RestApi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -175,7 +177,17 @@ class WebFacadeStub implements WebFacade {
         throw new IllegalArgumentException("WebFacadeStub handleEntityRestCall not supported") }
     @Override
     void handleServiceRestCall(List<String> extraPathNameList) {
-        throw new IllegalArgumentException("WebFacadeStub handleServiceRestCall not supported")
+        long startTime = System.currentTimeMillis()
+        ExecutionContextImpl eci = (ExecutionContextImpl) ecfi.getExecutionContext()
+
+        eci.context.push(getParameters())
+        RestApi.RestResult restResult = eci.getEcfi().getServiceFacade().getRestApi().run(extraPathNameList, eci)
+        eci.context.pop()
+
+        response.addIntHeader('X-Run-Time-ms', (System.currentTimeMillis() - startTime) as int)
+        restResult.setHeaders(response)
+
+        sendJsonResponse(restResult.responseObj)
     }
 
     static class HttpServletRequestStub implements HttpServletRequest {
