@@ -55,7 +55,7 @@ along with this software (see the LICENSE.md file). If not, see
         <label text="Test/Example Links:"/>
         <link url="edit" text="Edit" link-type="anchor"/>
         <link url="features" text="Features" link-type="anchor"/>
-        <link url="/apps/example/Example/EditExample/features/${exampleId}" url-type="plain" text="Features - Path Parameter" link-type="anchor"/>
+        <link url="/apps/example/Example/EditExample/features/${exampleId}" text="Features - Path Parameter" link-type="anchor"/>
 
         <section name="create">
             <condition><compare field="example" operator="empty"/></condition>
