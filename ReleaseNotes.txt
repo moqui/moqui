@@ -24,17 +24,19 @@ New Features
   - Apache HttpClient to 4.5.1
   - Apache HttpCore to 4.4.4
   - Apache Jackrabbit to 2.11.2
+  - Apache Log4J to 2.5
+  - Apache Lucene to 5.3.1
   - Ehcache to 2.10.1
-  - ElasticSearch to 1.7.3
+  - ElasticSearch to 2.1.1
   - Groovy to 2.4.5
   - H2 to 1.4.190
   - JNA to 4.2.1
-  - JavaMail to 1.5.4
+  - JavaMail to 1.5.5
   - KIE, Drools to 6.3.0.Final
   - Liquibase to 3.4.2
-  - Log4J to 2.4.1
   - OrientDB to 2.1.4
   - Quartz Scheduler to 2.2.2
+  - SLF4J to 1.7.13
 - Screen and Form Features
   - Added ScreenTest interface and implementation; easy tool for testing
     screens with no Servlet container in place; this uses test stubs for
@@ -73,6 +75,16 @@ New Features
     receive#IncomingSystemMessage for remote calls, will call the
     SystemMessageType.receiveServiceName service if specified to save message
   - Added EDI handler (parser and generator), used in Mantle for X12 messages
+- Moqui Tools REST API
+  - Uses new Service REST API feature
+  - See entity op and service mappings in the moqui.rest.xml file
+  - Has REST services for artifacts, basic (enums, geos, statuses, uoms),
+    data documents, email, entity sync, network print, system messages,
+    and users
+  - Has 61 resources with 85 methods (services), 96 definitions
+  - Use Moqui feature to generate Swagger file and view in Swagger UI
+    - see https://github.com/swagger-api/swagger-ui
+    - use a URL like http://localhost:8080/rest/service.swagger/moqui
 - Email Features
   - Various improvements to email message polling (calling EM-ECA rules)
     including support for Java System Properties pass through and fix for
@@ -95,6 +107,9 @@ New Features
     password that may only be used to change the password; current password
     stays valid for password change or login (if email-require-change=false)
 - Entity Features
+  - Added relationship.@mutable attribute, defaults to false for type one*
+    and to true for type many relationships; used in store through
+    sub-records in the entity auto services (used in data load, REST, etc)
   - Added field.@create-only attribute, defaults to entity.@create-only
     value, create only now checked at field level on update (only at entity
     level on delete)
@@ -2196,9 +2211,9 @@ Features considered, but may not to be included in 1.x series
     - allow mapping DataDocument operations as well
     x Add artifact type for REST Resource, Method
     x Call ArtifactExecutionFacade.push/pop for RestApi calls
-    - Setup john.doe user with permissions for root of various APIs
+    x Setup john.doe user with permissions for root of various APIs
     - Add attribute for resource/method like screen for anonymous and no authz access
-    - Add Service REST API for moqui system admin services
+    x Add Service REST API for moqui system admin services
   - OAuth2 Support
     - Use Apache Oltu, see https://cwiki.apache.org/confluence/display/OLTU/OAuth+2.0+Authorization+Server
     - Spec at http://tools.ietf.org/html/rfc6749

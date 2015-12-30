@@ -238,7 +238,7 @@ along with this software (see the LICENSE.md file). If not, see
     <!-- moqui.entity.sync -->
     <!-- ========================================================= -->
 
-    <entity entity-name="EntitySync" package-name="moqui.entity.sync">
+    <entity entity-name="EntitySync" package-name="moqui.entity.sync" short-alias="entitySyncs">
         <field name="entitySyncId" type="id" is-pk="true"/>
         <field name="description" type="text-medium"/>
         <field name="statusId" type="id"/>
@@ -256,7 +256,9 @@ along with this software (see the LICENSE.md file). If not, see
         <field name="keepRemoveInfoHours" type="number-decimal"/>
         <field name="forPull" type="text-indicator"><description>If Y this record tracks data pulled from a remote
             system, otherwise it tracks data pushed from this system.</description></field>
-        <relationship type="one" title="EntitySync" related-entity-name="moqui.basic.StatusItem"/>
+        <relationship type="one" title="EntitySync" related-entity-name="moqui.basic.StatusItem" short-alias="status"/>
+        <relationship type="many" related-entity-name="moqui.entity.sync.EntitySyncArtifact" short-alias="artifacts">
+            <key-map field-name="entitySyncId"/></relationship>
         <seed-data>
             <moqui.basic.StatusType description="Entity Sync" parentTypeId="" statusTypeId="EntitySync"/>
             <moqui.basic.StatusItem description="Not Started" sequenceNum="1" statusId="EsNotStarted" statusTypeId="EntitySync"/>
@@ -276,6 +278,13 @@ along with this software (see the LICENSE.md file). If not, see
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="EsComplete" toStatusId="EsRunning" transitionName="Running"/>
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="EsOtherError" toStatusId="EsRunning" transitionName="Running"/>
         </seed-data>
+        <master>
+            <detail relationship="status"/>
+            <detail relationship="artifacts">
+                <detail relationship="group"><detail relationship="artifacts"/></detail>
+                <detail relationship="applType"/>
+            </detail>
+        </master>
     </entity>
     <entity entity-name="EntitySyncArtifact" package-name="moqui.entity.sync">
         <description>
@@ -292,9 +301,9 @@ along with this software (see the LICENSE.md file). If not, see
         <field name="applEnumId" type="id"/>
         <field name="dependents" type="text-indicator"><description>If Y also include dependents of records, will apply
             to all records for applicable entities.</description></field>
-        <relationship type="one" related-entity-name="moqui.entity.sync.EntitySync"/>
-        <relationship type="one" related-entity-name="moqui.security.ArtifactGroup"/>
-        <relationship type="one" title="EntitySyncArtifactAppl" related-entity-name="moqui.basic.Enumeration">
+        <relationship type="one" related-entity-name="moqui.entity.sync.EntitySync" short-alias="entitySync"/>
+        <relationship type="one" related-entity-name="moqui.security.ArtifactGroup" short-alias="group" mutable="true"/>
+        <relationship type="one" title="EntitySyncArtifactAppl" related-entity-name="moqui.basic.Enumeration" short-alias="applType">
             <key-map field-name="applEnumId"/></relationship>
         <seed-data>
             <moqui.basic.EnumerationType description="Entity Sync Artifact Application Type" enumTypeId="EntitySyncArtifactAppl"/>

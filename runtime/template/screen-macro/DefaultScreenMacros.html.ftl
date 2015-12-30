@@ -590,12 +590,12 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
             tooltip:"${ec.l10n.localize("Click to edit")}", cancel:"${ec.l10n.localize("Cancel")}",
             submit:"${ec.l10n.localize("Save")}", name:"${parameterName}",
             type:"${.node["@widget-type"]!"textarea"}", cssclass:"editable-form",
-            submitdata:{<#list urlParms.keySet() as parameterKey>${parameterKey}:"${urlParms[parameterKey]}", </#list>parameterName:"${parameterName}"}
+            submitdata:{<#list urlParms.keySet() as parameterKey>${parameterKey}:"${urlParms[parameterKey]}", </#list>parameterName:"${parameterName}", moquiSessionToken:"${(ec.web.sessionToken)!}"}
             <#if .node["editable-load"]?has_content>
                 <#assign loadNode = .node["editable-load"][0]>
                 <#assign loadUrlInfo = sri.makeUrlByType(loadNode["@transition"], "transition", loadNode, "true")>
                 <#assign loadUrlParms = loadUrlInfo.getParameterMap()>
-            , loadurl:"${loadUrlInfo.url}", loadtype:"POST", loaddata:function(value, settings) { return {<#list loadUrlParms.keySet() as parameterKey>${parameterKey}:"${loadUrlParms[parameterKey]}", </#list>currentValue:value}; }
+            , loadurl:"${loadUrlInfo.url}", loadtype:"POST", loaddata:function(value, settings) { return {<#list loadUrlParms.keySet() as parameterKey>${parameterKey}:"${loadUrlParms[parameterKey]}", </#list>currentValue:value, moquiSessionToken:"${(ec.web.sessionToken)!}"}; }
             </#if>});
         </#assign>
         <#t>${sri.appendToScriptWriter(afterScreenScript)}

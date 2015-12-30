@@ -16,6 +16,8 @@ along with this software (see the LICENSE.md file). If not, see
 
     <!-- ========================================================= -->
     <!-- moqui.basic -->
+    <!-- moqui.basic.email -->
+    <!-- moqui.basic.print -->
     <!-- ========================================================= -->
 
     <!-- ========== DataSource ========== -->
@@ -331,7 +333,7 @@ along with this software (see the LICENSE.md file). If not, see
     <!-- moqui.basic.email -->
     <!-- ========================================================= -->
 
-    <entity entity-name="EmailMessage" package-name="moqui.basic.email" cache="false">
+    <entity entity-name="EmailMessage" package-name="moqui.basic.email" short-alias="emailMessages" cache="false">
         <field name="emailMessageId" type="id" is-pk="true"/>
         <field name="rootEmailMessageId" type="id">
             <description>For threaded messages, this points to the message that started the thread.</description></field>
@@ -357,19 +359,21 @@ along with this software (see the LICENSE.md file). If not, see
             <description>For outgoing messages that came from an EmailTemplate.</description></field>
         <field name="emailServerId" type="id"/>
 
-        <relationship type="one" title="EmailMessage" related-entity-name="moqui.basic.StatusItem"/>
-        <relationship type="one" title="EmailType" related-entity-name="moqui.basic.Enumeration">
+        <relationship type="one" title="EmailMessage" related-entity-name="moqui.basic.StatusItem" short-alias="status"/>
+        <relationship type="one" title="EmailType" related-entity-name="moqui.basic.Enumeration" short-alias="type">
             <key-map field-name="emailTypeEnumId"/></relationship>
-        <relationship type="one" title="Root" related-entity-name="moqui.basic.email.EmailMessage">
+        <relationship type="one" title="Root" related-entity-name="moqui.basic.email.EmailMessage" short-alias="root">
             <key-map field-name="rootEmailMessageId" related-field-name="emailMessageId"/></relationship>
-        <relationship type="one" title="Parent" related-entity-name="moqui.basic.email.EmailMessage">
+        <relationship type="one" title="Parent" related-entity-name="moqui.basic.email.EmailMessage" short-alias="parent">
             <key-map field-name="parentEmailMessageId" related-field-name="emailMessageId"/></relationship>
-        <relationship type="one" title="From" related-entity-name="moqui.security.UserAccount">
+        <relationship type="many" title="Child" related-entity-name="moqui.basic.email.EmailMessage" short-alias="children">
+            <key-map field-name="emailMessageId" related-field-name="parentEmailMessageId"/></relationship>
+        <relationship type="one" title="From" related-entity-name="moqui.security.UserAccount" short-alias="fromUser">
             <key-map field-name="fromUserId"/></relationship>
-        <relationship type="one" title="To" related-entity-name="moqui.security.UserAccount">
+        <relationship type="one" title="To" related-entity-name="moqui.security.UserAccount" short-alias="toUser">
             <key-map field-name="toUserId"/></relationship>
-        <relationship type="one" related-entity-name="moqui.basic.email.EmailTemplate"/>
-        <relationship type="one" related-entity-name="moqui.basic.email.EmailServer"/>
+        <relationship type="one" related-entity-name="moqui.basic.email.EmailTemplate" short-alias="template"/>
+        <relationship type="one" related-entity-name="moqui.basic.email.EmailServer" short-alias="server"/>
 
         <index name="EMAIL_MSG_ID"><index-field name="messageId"/></index>
 
@@ -403,6 +407,13 @@ along with this software (see the LICENSE.md file). If not, see
             <moqui.basic.Enumeration description="Account Invitation" enumId="EMT_ACCOUNT_INVITE" enumTypeId="EmailType"/>
             <moqui.basic.Enumeration description="Contact Us Notification" enumId="EMT_CONACT_US_NOT" enumTypeId="EmailType"/>
         </seed-data>
+        <master>
+            <detail relationship="status"/><detail relationship="type"/>
+            <detail relationship="root" use-master="default"/><detail relationship="parent" use-master="default"/>
+            <detail relationship="children" use-master="default"/>
+            <detail relationship="fromUser"/><detail relationship="toUser"/>
+            <detail relationship="template"/><detail relationship="server"/>
+        </master>
     </entity>
     <entity entity-name="EmailServer" package-name="moqui.basic.email" cache="true">
         <field name="emailServerId" type="id" is-pk="true"/>
@@ -481,7 +492,7 @@ along with this software (see the LICENSE.md file). If not, see
         <field name="description" type="text-medium"/>
         <field name="location" type="text-medium"/>
     </entity>
-    <entity entity-name="PrintJob" package-name="moqui.basic.print">
+    <entity entity-name="PrintJob" package-name="moqui.basic.print" short-alias="printJobs">
         <field name="printJobId" type="id" is-pk="true"/>
         <field name="statusId" type="id" enable-audit-log="true"/>
         <field name="createdDate" type="date-time"/>
@@ -495,8 +506,8 @@ along with this software (see the LICENSE.md file). If not, see
         <field name="pageRanges" type="text-short"/>
         <field name="contentType" type="text-short"/>
         <field name="document" type="binary-very-long"/>
-        <relationship type="one" related-entity-name="moqui.basic.print.NetworkPrinter"/>
-        <relationship type="one" title="PrintJob" related-entity-name="moqui.basic.StatusItem"/>
+        <relationship type="one" related-entity-name="moqui.basic.print.NetworkPrinter" short-alias="printer"/>
+        <relationship type="one" title="PrintJob" related-entity-name="moqui.basic.StatusItem" short-alias="status"/>
         <seed-data>
             <!-- Print Job Status -->
             <moqui.basic.StatusType description="Print Job Status" statusTypeId="PrintJob"/>
@@ -533,5 +544,6 @@ along with this software (see the LICENSE.md file). If not, see
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="PtjProcessing" toStatusId="PtjCanceled" transitionName="Cancel"/>
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="PtjProcessingStopped" toStatusId="PtjCanceled" transitionName="Cancel"/>
         </seed-data>
+        <master><detail relationship="printer"/><detail relationship="status"/></master>
     </entity>
 </entities>
