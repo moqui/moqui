@@ -63,13 +63,17 @@ along with this software (see the LICENSE.md file). If not, see
                         try {
                             GetResponse gr = ec.elasticSearchClient.prepareGet(_index, _type, _id).execute().actionGet()
                             Map originalDocument = gr.getSourceAsMap()
-                            // As of ES 2.0 _index, _type, _id aren't included in the document
-                            document._index = gr.getIndex()
-                            document._type = gr.getType()
-                            document._id = gr.getId()
-                            // how to get timestamp? doesn't seem to be in API: document._timestamp = hit.get?
-                            document._version = gr.getVersion()
-                            originalDocumentList.add(originalDocument ?: [:])
+                            if (originalDocument != null) {
+                                // As of ES 2.0 _index, _type, _id aren't included in the document
+                                originalDocument._index = gr.getIndex()
+                                originalDocument._type = gr.getType()
+                                originalDocument._id = gr.getId()
+                                // how to get timestamp? doesn't seem to be in API: document._timestamp = hit.get?
+                                originalDocument._version = gr.getVersion()
+                                originalDocumentList.add(originalDocument ?: [:])
+                            } else {
+                                originalDocumentList.add([:])
+                            }
                         } catch (Exception e) {
                             logger.info("Could not get original document for [${_index}, ${_type}, ${_id}]: ${e.toString()}")
                             originalDocumentList.add([:])

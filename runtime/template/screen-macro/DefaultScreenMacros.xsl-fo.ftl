@@ -282,7 +282,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             <fo:table-header>
                 <fo:table-row class="form-header">
                     <#list formListColumnList as fieldListColumn>
-                        <fo:table-cell>
+                        <fo:table-cell wrap-option="wrap" padding="2pt">
                         <#list fieldListColumn["field-ref"] as fieldRef>
                             <#assign fieldRefName = fieldRef["@name"]>
                             <#assign fieldNode = "invalid">
@@ -308,7 +308,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                     ${sri.startFormListRow(formNode["@name"], listEntry, listEntry_index, listEntry_has_next)}
                     <fo:table-row>
                         <#list formNode["form-list-column"] as fieldListColumn>
-                            <fo:table-cell>
+                            <fo:table-cell wrap-option="wrap" padding="2pt">
                             <#list fieldListColumn["field-ref"] as fieldRef>
                                 <#assign fieldRefName = fieldRef["@name"]>
                                 <#assign fieldNode = "invalid">
@@ -335,7 +335,9 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                         <#if !(fieldNode["@hide"]?if_exists == "true" ||
                                 ((!fieldNode["@hide"]?has_content) && fieldNode?children?size == 1 &&
                                 (fieldNode?children[0]["hidden"]?has_content || fieldNode?children[0]["ignored"]?has_content)))>
-                            <fo:table-cell><fo:block><@formListHeaderField fieldNode/></fo:block></fo:table-cell>
+                            <fo:table-cell wrap-option="wrap" padding="2pt">
+                                <@formListHeaderField fieldNode/>
+                            </fo:table-cell>
                         </#if>
                     </#list>
                 </fo:table-row>
@@ -346,7 +348,11 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                     <#-- NOTE: the form-list.@list-entry attribute is handled in the ScreenForm class through this call: -->
                     ${sri.startFormListRow(formNode["@name"], listEntry, listEntry_index, listEntry_has_next)}
                     <fo:table-row>
-                        <#list formNode["field"] as fieldNode><@formListSubField fieldNode/></#list>
+                        <#list formNode["field"] as fieldNode>
+                            <fo:table-cell wrap-option="wrap" padding="2pt">
+                                <@formListSubField fieldNode/>
+                            </fo:table-cell>
+                        </#list>
                     </fo:table-row>
                     ${sri.endFormListRow()}
                 </#list>
@@ -390,7 +396,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#if fieldSubNode["ignored"]?has_content><#return/></#if>
     <#if fieldSubNode["hidden"]?has_content><#recurse fieldSubNode/><#return/></#if>
     <#if fieldSubNode?parent["@hide"]?if_exists == "true"><#return></#if>
-    <fo:table-cell wrap-option="wrap"><fo:block>
+    <fo:block>
         <#t><#if isMulti && !isMultiFinalRow && fieldSubNode["submit"]?has_content><#return/></#if>
         <#t><#if isMulti && isMultiFinalRow && !fieldSubNode["submit"]?has_content><#return/></#if>
         <#list fieldSubNode?children as widgetNode>
@@ -405,7 +411,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                 <#t><#visit widgetNode>
             </#if>
         </#list>
-    </fo:block></fo:table-cell>
+    </fo:block>
 </#macro>
 <#macro "row-actions"><#-- do nothing, these are run by the SRI --></#macro>
 
@@ -427,6 +433,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 </#macro>
 
 <#macro "date-find"></#macro>
+<#macro "date-period"></#macro>
 <#macro "date-time">
     <#assign fieldValue = sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")>
     <#if .node["@format"]?has_content><#assign fieldValue = ec.l10n.format(fieldValue, .node["@format"])></#if>

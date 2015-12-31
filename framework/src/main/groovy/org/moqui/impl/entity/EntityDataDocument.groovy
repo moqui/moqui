@@ -496,17 +496,20 @@ class EntityDataDocument {
                     currentEd = relInfo.relatedEd
                     if (currentEd == null) throw new EntityException("Could not find entity [${relInfo.relatedEntityName}] in DataDocument [${dataDocumentId}]")
 
-                    String objectName = relationshipAliasMap.get(fieldPathElement) ?: fieldPathElement
-                    Map subObject = (Map) currentProperties.get(objectName)
-                    Map subProperties
-                    if (subObject == null) {
-                        subProperties = [:]
-                        subObject = [properties:subProperties]
-                        currentProperties.put(objectName, subObject)
-                    } else {
-                        subProperties = subObject.properties
+                    // only put type many in sub-objects, same as DataDocument generation
+                    if (!relInfo.isTypeOne) {
+                        String objectName = relationshipAliasMap.get(fieldPathElement) ?: fieldPathElement
+                        Map subObject = (Map) currentProperties.get(objectName)
+                        Map subProperties
+                        if (subObject == null) {
+                            subProperties = [:]
+                            subObject = [properties:subProperties]
+                            currentProperties.put(objectName, subObject)
+                        } else {
+                            subProperties = subObject.properties
+                        }
+                        currentProperties = subProperties
                     }
-                    currentProperties = subProperties
                 } else {
                     String fieldName = dataDocumentField.fieldNameAlias ?: fieldPathElement
                     EntityDefinition.FieldInfo fieldInfo = currentEd.getFieldInfo(fieldPathElement)

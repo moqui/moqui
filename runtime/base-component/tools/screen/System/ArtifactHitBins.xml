@@ -24,7 +24,7 @@ along with this software (see the LICENSE.md file). If not, see
             <parameter name="pageNoLimit" value="true"/><parameter name="lastStandalone" value="true"/></default-response>
     </transition>
     <transition name="ArtifactHitBinStats.pdf">
-        <default-response url="/fop/apps/system/ArtifactHitBins" url-type="plain">
+        <default-response url="${ec.web.getWebappRootUrl(false, null)}/fop/apps/system/ArtifactHitBins" url-type="plain">
             <parameter name="renderMode" value="xsl-fo"/><parameter name="pageNoLimit" value="true"/>
             <!--<parameter name="lastStandalone" value="true"/>-->
         </default-response>
