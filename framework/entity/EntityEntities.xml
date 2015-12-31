@@ -211,8 +211,10 @@ along with this software (see the LICENSE.md file). If not, see
         <field name="feedReceiveServiceName" type="text-medium"><description>The service named here should implement the
             org.moqui.EntityServices.receive#DataFeed interface.</description></field>
         <field name="lastFeedStamp" type="date-time"><description>Used only for periodic feeds.</description></field>
-        <relationship type="one" title="DataFeedType" related-entity-name="moqui.basic.Enumeration">
+        <relationship type="one" title="DataFeedType" related-entity-name="moqui.basic.Enumeration" short-alias="type">
             <key-map field-name="dataFeedTypeEnumId"/></relationship>
+        <relationship type="many" related-entity-name="moqui.entity.feed.DataFeedDocument" short-alias="documents">
+            <key-map field-name="dataFeedId"/></relationship>
         <seed-data>
             <moqui.basic.EnumerationType description="Data Feed Type" enumTypeId="DataFeedType"/>
             <moqui.basic.Enumeration description="Real-time Service Push" enumId="DTFDTP_RT_PUSH" enumTypeId="DataFeedType"/>
