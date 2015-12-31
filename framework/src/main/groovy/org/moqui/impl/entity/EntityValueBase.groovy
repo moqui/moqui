@@ -734,10 +734,12 @@ abstract class EntityValueBase implements EntityValue {
             if (fieldValue instanceof Map || fieldValue instanceof List) {
                 subPlainMap.put(fieldName, fieldValue)
                 continue
-            } else if (fieldValue instanceof byte[]) {
+            }
+            if (fieldValue instanceof byte[]) {
                 cdataMap.put(fieldName, new String(Base64.encodeBase64((byte[]) fieldValue)))
                 continue
-            } else if (fieldValue instanceof SerialBlob) {
+            }
+            if (fieldValue instanceof SerialBlob) {
                 if (fieldValue.length() == 0) continue
                 byte[] objBytes = fieldValue.getBytes(1, (int) fieldValue.length())
                 cdataMap.put(fieldName, new String(Base64.encodeBase64(objBytes)))
@@ -1076,12 +1078,12 @@ abstract class EntityValueBase implements EntityValue {
             // count the artifact hit
             ecfi.countArtifactHit("entity", "create", ed.getFullEntityName(), this.getPrimaryKeys(), startTime,
                     (System.nanoTime() - startTimeNanos)/1E6, 1L)
-
-            return this
         } finally {
             // pop the ArtifactExecutionInfo to clean it up
             ec.getArtifactExecution().pop(aei)
         }
+
+        return this
     }
     void basicCreate(Connection con) {
         EntityDefinition ed = getEntityDefinition()
