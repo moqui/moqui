@@ -1039,15 +1039,6 @@ abstract class EntityValueBase implements EntityValue {
         // check/set defaults
         checkSetFieldDefaults(ed, ec)
 
-        // make minimal fieldList to use for create
-        ArrayList<String> fieldList = new ArrayList<String>()
-        ArrayList<String> fieldNameList = ed.getFieldNames(true, true, false)
-        int size = fieldNameList.size()
-        for (int i = 0; i < size; i++) {
-            String fieldName = fieldNameList.get(i)
-            if (valueMap.containsKey(fieldName)) fieldList.add(fieldName)
-        }
-
         // set lastUpdatedStamp
         Long lastUpdatedLong = ecfi.getTransactionFacade().getCurrentTransactionStartTime() ?: System.currentTimeMillis()
         if (ed.isField("lastUpdatedStamp") && !this.getValueMap().lastUpdatedStamp)
@@ -1066,7 +1057,7 @@ abstract class EntityValueBase implements EntityValue {
             if (doDataFeed()) getEntityFacadeImpl().getEntityDataFeed().dataFeedCheckAndRegister(this, false, valueMap, null)
 
             // if there is not a txCache or the txCache doesn't handle the create, call the abstract method to create the main record
-            if (getTxCache() == null || !getTxCache().create(this)) this.basicCreate(fieldList, null)
+            if (getTxCache() == null || !getTxCache().create(this)) this.basicCreate(null)
 
             // NOTE: cache clear is the same for create, update, delete; even on create need to clear one cache because it
             // might have a null value for a previous query attempt
@@ -1200,7 +1191,7 @@ abstract class EntityValueBase implements EntityValue {
 
             // if there is not a txCache or the txCache doesn't handle the update, call the abstract method to update the main record
             if (getTxCache() == null || !getTxCache().update(this))
-                this.basicUpdate(dbValueMapFromDb, pkFieldList, nonPkFieldList, null)
+                this.basicUpdate(null)
 
             // clear the entity cache
             getEntityFacadeImpl().getEntityCache().clearCacheForValue(this, false)
