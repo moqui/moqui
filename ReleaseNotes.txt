@@ -2217,6 +2217,11 @@ Features considered, but may not to be included in 1.x series
   - OAuth2 Support
     - Use Apache Oltu, see https://cwiki.apache.org/confluence/display/OLTU/OAuth+2.0+Authorization+Server
     - Spec at http://tools.ietf.org/html/rfc6749
+    - http://oltu.apache.org/apidocs/oauth2/reference/org/apache/oltu/oauth2/as/request/package-summary.html
+    - http://search.maven.org/#search|ga|1|org.apache.oltu
+    - https://stormpath.com/blog/build-api-restify-stormpath/
+    - https://github.com/PROCERGS/login-cidadao/blob/master/app/Resources/doc/en/examplejava.md
+    - https://github.com/swagger-api/swagger-ui/issues/807
     - Add authz and token transitions in rest.xml
     - Support in Service REST API (and entity/master?)
     - Add examples of auth and service calls using OAuth2
