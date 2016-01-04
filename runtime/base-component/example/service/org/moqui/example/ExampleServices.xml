@@ -12,10 +12,10 @@ You should have received a copy of the CC0 Public Domain Dedication
 along with this software (see the LICENSE.md file). If not, see
 <http://creativecommons.org/publicdomain/zero/1.0/>.
 -->
-<services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-1.5.xsd">
+<services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-1.6.xsd">
 
     <!-- Example & Related Services -->
-    <service verb="create" noun="Example" type="entity-auto" allow-remote="true">
+    <service verb="create" noun="Example" displayName="Create an Example" type="entity-auto" allow-remote="true">
         <in-parameters>
             <auto-parameters include="nonpk"/>
             <parameter name="exampleTypeEnumId" required="true"/>
@@ -29,7 +29,7 @@ along with this software (see the LICENSE.md file). If not, see
             <auto-parameters include="pk" required="true"/>
         </out-parameters>
     </service>
-    <service verb="update" noun="Example" type="entity-auto" allow-remote="true">
+    <service verb="update" noun="Example" displayName="Update an Example" type="entity-auto" allow-remote="true">
         <in-parameters>
             <auto-parameters include="pk" required="true"/>
             <auto-parameters include="nonpk"/>
@@ -46,7 +46,7 @@ along with this software (see the LICENSE.md file). If not, see
     </service>
     -->
 
-    <service verb="create" noun="ExampleItem" type="entity-auto">
+    <service verb="create" noun="ExampleItem" displayName="Create an Example Item" type="entity-auto">
         <in-parameters>
             <auto-parameters include="pk" required="true"><exclude field-name="exampleItemSeqId"/></auto-parameters>
             <auto-parameters include="nonpk"/>

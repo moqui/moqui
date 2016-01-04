@@ -12,7 +12,7 @@ You should have received a copy of the CC0 Public Domain Dedication
 along with this software (see the LICENSE.md file). If not, see
 <http://creativecommons.org/publicdomain/zero/1.0/>.
 -->
-<services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-1.5.xsd">
+<services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-1.6.xsd">
 
     <service verb="index" noun="DataDocuments" authenticate="false">
         <description>Indexes documents passed using ElasticSearch. The DataDocument must have an indexName.</description>
@@ -28,49 +28,69 @@ along with this software (see the LICENSE.md file). If not, see
         </out-parameters>
         <actions>
             <script>
-            import org.elasticsearch.action.index.IndexResponse
-            import org.slf4j.Logger
-            import org.slf4j.LoggerFactory
-            import org.moqui.context.ExecutionContext
-            ExecutionContext ec = context.ec
-            Logger logger = LoggerFactory.getLogger("org.moqui.impl.EntityServices.indexDataDocuments")
 
-            // Make sure all indices exist
-            Set indexNames = new HashSet()
-            for (Map document in documentList) indexNames.add(document._index)
-            for (String indexName in indexNames) {
-                ec.entity.getEntityDataDocument().checkCreateIndex(indexName)
-            }
+                import org.elasticsearch.action.get.GetResponse
+                import org.elasticsearch.action.index.IndexResponse
+                import org.slf4j.Logger
+                import org.slf4j.LoggerFactory
+                import org.moqui.context.ExecutionContext
 
-            documentVersionList = []
-            originalDocumentList = getOriginalDocuments ? [] : null
-            for (Map document in documentList) {
-                // logger.warn("====== Indexing document: ${document}")
+                ExecutionContext ec = context.ec
+                Logger logger = LoggerFactory.getLogger("org.moqui.impl.EntityServices.indexDataDocuments")
 
-                if (getOriginalDocuments) {
-                    // this may fail for a number of reasons, like index doesn't exist yet, so catch the exception
-                    try {
-                        Map originalDocument = ec.elasticSearchClient
-                                .prepareGet((String) document._index, (String) document._type, (String) document._id)
-                                .execute().actionGet().getSourceAsMap()
-                        originalDocumentList.add(originalDocument ?: [:])
-                    } catch (Exception e) {
-                        logger.info("Could not get original document for [${document._index}, ${document._type}, ${document._id}]: ${e.toString()}")
-                        originalDocumentList.add([:])
-                    }
+                // Make sure all indices exist
+                Set indexNames = new HashSet()
+                for (Map document in documentList) indexNames.add(document._index)
+                for (String indexName in indexNames) {
+                    ec.entity.getEntityDataDocument().checkCreateIndex(indexName)
                 }
-                // Groovy DSL version
-                IndexResponse response = ec.elasticSearchClient.index { index document._index; type document._type;
-                    id document._id; source document; }.actionGet()
-                // Java API version
-                //IndexResponse response = ec.elasticSearchClient
-                //        .prepareIndex((String) document._index, (String) document._type, (String) document._id)
-                //        .setSource(document).execute().actionGet()
 
-                documentVersionList.add(response.getVersion())
-                if (logger.isTraceEnabled()) logger.trace("Indexed [${document._index}, ${document._type}, ${document._id}] version [${response.getVersion()}]")
-                // logger.warn("====== Indexed [${document._index}, ${document._type}, ${document._id}] version [${response.getVersion()}] created? ${response.isCreated()}}")
-            }
+                documentVersionList = []
+                originalDocumentList = getOriginalDocuments ? [] : null
+                for (Map document in documentList) {
+                    // logger.warn("====== Indexing document: ${document}")
+
+                    String _index = document._index
+                    String _type = document._type
+                    String _id = document._id
+                    String _timestamp = document._timestamp
+                    // As of ES 2.0 _index, _type, _id, and _timestamp shouldn't be in document to be indexed
+                    document.remove('_index'); document.remove('_type'); document.remove('_id');
+                    document.remove('_timestamp');
+
+                    if (getOriginalDocuments) {
+                        // this may fail for a number of reasons, like index doesn't exist yet, so catch the exception
+                        try {
+                            GetResponse gr = ec.elasticSearchClient.prepareGet(_index, _type, _id).execute().actionGet()
+                            Map originalDocument = gr.getSourceAsMap()
+                            if (originalDocument != null) {
+                                // As of ES 2.0 _index, _type, _id aren't included in the document
+                                originalDocument._index = gr.getIndex()
+                                originalDocument._type = gr.getType()
+                                originalDocument._id = gr.getId()
+                                // how to get timestamp? doesn't seem to be in API: document._timestamp = hit.get?
+                                originalDocument._version = gr.getVersion()
+                                originalDocumentList.add(originalDocument ?: [:])
+                            } else {
+                                originalDocumentList.add([:])
+                            }
+                        } catch (Exception e) {
+                            logger.info("Could not get original document for [${_index}, ${_type}, ${_id}]: ${e.toString()}")
+                            originalDocumentList.add([:])
+                        }
+                    }
+                    // Groovy DSL version
+                    // IndexResponse response = ec.elasticSearchClient.index { index document._index; type document._type;
+                    //     id document._id; source document; }.actionGet()
+                    // Java API version
+                    IndexResponse response = ec.elasticSearchClient.prepareIndex(_index, _type, _id)
+                            .setIndex(_index).setType(_type).setId(_id).setTimestamp(_timestamp)
+                            .setSource(document).execute().actionGet()
+
+                    documentVersionList.add(response.getVersion())
+                    if (logger.isTraceEnabled()) logger.trace("Indexed [${_index}, ${_type}, ${_id}] version [${response.getVersion()}]")
+                    // logger.warn("====== Indexed [${_index}, ${_type}, ${_id}] version [${response.getVersion()}] created? ${response.isCreated()}}")
+                }
             </script>
         </actions>
     </service>
@@ -104,7 +124,7 @@ along with this software (see the LICENSE.md file). If not, see
             <parameter name="fromUpdateStamp" type="Timestamp"/>
             <parameter name="thruUpdateStamp" type="Timestamp"/>
         </in-parameters>
-        <out-parameters><parameter name="documentList" type="List"/></out-parameters>
+        <out-parameters><parameter name="documentList" type="List"><parameter name="document" type="Map"/></parameter></out-parameters>
         <actions>
             <set field="documentList" from="ec.entity.getEntityDataFeed().getFeedDocuments(dataFeedId, fromUpdateStamp, thruUpdatedStamp)"/>
         </actions>
@@ -113,7 +133,7 @@ along with this software (see the LICENSE.md file). If not, see
         <description>This service gets the latest documents for a DataFeed based on DataFeed.lastFeedStamp, and updates
             lastFeedStamp to the current time.</description>
         <in-parameters><parameter name="dataFeedId" required="true"/></in-parameters>
-        <out-parameters><parameter name="documentList" type="List"/></out-parameters>
+        <out-parameters><parameter name="documentList" type="List"><parameter name="document" type="Map"/></parameter></out-parameters>
         <actions>
             <set field="documentList" from="ec.entity.getEntityDataFeed().getFeedLatestDocuments(dataFeedId)"/>
         </actions>
@@ -136,14 +156,16 @@ along with this software (see the LICENSE.md file). If not, see
             <parameter name="documentType"><description>The ElasticSearch document type. For DataDocument based docs
                 this is the dataDocumentId.</description></parameter>
             <parameter name="queryString" required="true"/>
-            <parameter name="orderByFields" type="List"/>
+            <parameter name="orderByFields" type="List"><parameter name="orderByField"/></parameter>
             <parameter name="pageIndex" type="Integer" default-value="0"/>
             <parameter name="pageSize" type="Integer" default-value="20"/>
             <parameter name="flattenDocument" type="Boolean" default-value="true"/>
         </in-parameters>
         <out-parameters>
-            <parameter name="documentList" type="List"><description>List of documents, each document is a Map with
-                nested Maps and Lists of Maps.</description></parameter>
+            <parameter name="documentList" type="List">
+                <description>List of documents, each document is a Map with nested Maps and Lists of Maps.</description>
+                <parameter name="document" type="Map"/>
+            </parameter>
             <parameter name="documentListCount" type="Integer"><description>The total count of hits, not just the
                 limited number returned.</description></parameter>
             <parameter name="documentListPageIndex" type="Integer"/>
@@ -180,7 +202,7 @@ along with this software (see the LICENSE.md file). If not, see
 
                 // get the search hits
                 SearchRequestBuilder srb = ec.elasticSearchClient.prepareSearch().setIndices(indexName).setTypes(documentType)
-                        .setQuery(QueryBuilders.queryString(queryString)).setFrom(fromOffset).setSize(sizeLimit)
+                        .setQuery(QueryBuilders.queryStringQuery(queryString)).setFrom(fromOffset).setSize(sizeLimit)
                         .setFetchSource(true)
                 for (String orderByField in orderByFields) {
                     boolean ascending = true
@@ -198,6 +220,12 @@ along with this software (see the LICENSE.md file). If not, see
                 SearchHits hits = srb.execute().actionGet().getHits()
                 for (SearchHit hit in hits) {
                     Map document = hit.getSource()
+                    // As of ES 2.0 _index, _type, _id aren't included in the document
+                    document._index = hit.getIndex()
+                    document._type = hit.getType()
+                    document._id = hit.getId()
+                    // how to get timestamp? doesn't seem to be in API: document._timestamp = hit.get?
+                    document._version = hit.getVersion()
                     documentList.add(flattenDocument ? StupidUtilities.flattenNestedMap(document) : document)
                 }
 
@@ -215,7 +243,10 @@ along with this software (see the LICENSE.md file). If not, see
                  */
 
                 // get the total search count
-                documentListCount = ec.elasticSearchClient.prepareCount(indexName).setTypes(documentType).setQuery(QueryBuilders.queryString(queryString)).execute().actionGet().getCount()
+                // TODO: replace deprecated (in 2.1.0) prepareCount(), release notes say: "Deprecate the count api in favour of search with size 0"
+                documentListCount = ec.elasticSearchClient.prepareCount(indexName).setTypes(documentType)
+                        .setQuery(QueryBuilders.queryStringQuery(queryString)).execute().actionGet().getCount()
+                // this doesn't work: documentListCount = srb.execute().actionGet().getCount()
 
                 // calculate the pagination values
                 documentListPageIndex = pageIndex
@@ -239,8 +270,10 @@ along with this software (see the LICENSE.md file). If not, see
         </description>
         <in-parameters>
             <parameter name="indexName" required="true"/>
-            <parameter name="documentTypeList" type="List"><description>The ElasticSearch document type. For DataDocument based docs
-                this is the dataDocumentId.</description></parameter>
+            <parameter name="documentTypeList" type="List">
+                <description>The ElasticSearch document type. For DataDocument based docs this is the dataDocumentId.</description>
+                <parameter name="documentType"/>
+            </parameter>
             <parameter name="maxResults" type="Integer" default="1000"/>
             <parameter name="sourceJson"/>
             <parameter name="sourceMap" type="Map"/>

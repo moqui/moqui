@@ -227,8 +227,12 @@ public class EntityAutoServiceRunner implements ServiceRunner {
             if (otherFieldsToSkip.contains(entryName)) continue
 
             EntityDefinition subEd = null
-            if (ed.getRelationshipInfo(entryName) != null) {
-                EntityDefinition.RelationshipInfo relInfo = ed.getRelationshipInfo(entryName)
+            EntityDefinition.RelationshipInfo relInfo = ed.getRelationshipInfo(entryName)
+            if (relInfo != null) {
+                if (!relInfo.mutable) {
+                    if (logger.isInfoEnabled()) logger.info("In create entity auto service found key [${entryName}] which is a non-mutable relationship of [${ed.getFullEntityName()}], skipping")
+                    continue
+                }
                 subEd = relInfo.relatedEd
             } else if (efi.isEntityDefined(entryName)) {
                 subEd = efi.getEntityDefinition(entryName)
@@ -421,8 +425,12 @@ public class EntityAutoServiceRunner implements ServiceRunner {
             if (otherFieldsToSkip.contains(entryName)) continue
 
             EntityDefinition subEd = null
-            if (ed.getRelationshipInfo(entryName) != null) {
-                EntityDefinition.RelationshipInfo relInfo = ed.getRelationshipInfo(entryName)
+            EntityDefinition.RelationshipInfo relInfo = ed.getRelationshipInfo(entryName)
+            if (relInfo != null) {
+                if (!relInfo.mutable) {
+                    if (logger.isInfoEnabled()) logger.info("In store entity auto service found key [${entryName}] which is a non-mutable relationship of [${ed.getFullEntityName()}], skipping")
+                    continue
+                }
                 subEd = relInfo.relatedEd
             } else if (efi.isEntityDefined(entryName)) {
                 subEd = efi.getEntityDefinition(entryName)

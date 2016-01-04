@@ -12,7 +12,7 @@ You should have received a copy of the CC0 Public Domain Dedication
 along with this software (see the LICENSE.md file). If not, see
 <http://creativecommons.org/publicdomain/zero/1.0/>.
 -->
-<entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/entity-definition-1.5.xsd">
+<entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/entity-definition-1.6.xsd">
 
     <!-- ========================================================= -->
     <!-- moqui.security -->
@@ -22,6 +22,8 @@ along with this software (see the LICENSE.md file). If not, see
     <entity entity-name="ArtifactGroup" package-name="moqui.security">
         <field name="artifactGroupId" type="id" is-pk="true"/>
         <field name="description" type="text-medium"/>
+        <relationship type="many" related-entity-name="moqui.security.ArtifactGroupMember" short-alias="artifacts">
+            <key-map field-name="artifactGroupId"/></relationship>
     </entity>
     <entity entity-name="ArtifactGroupMember" package-name="moqui.security">
         <field name="artifactGroupId" type="id" is-pk="true"/>
@@ -51,6 +53,7 @@ along with this software (see the LICENSE.md file). If not, see
             <moqui.basic.Enumeration description="Screen Transition" enumId="AT_XML_SCREEN_TRANS" enumTypeId="ArtifactType"/>
             <moqui.basic.Enumeration description="Service" enumId="AT_SERVICE" enumTypeId="ArtifactType"/>
             <moqui.basic.Enumeration description="Entity" enumId="AT_ENTITY" enumTypeId="ArtifactType"/>
+            <moqui.basic.Enumeration description="REST API Path" enumId="AT_REST_PATH" enumTypeId="ArtifactType"/>
             <moqui.basic.Enumeration description="Other" enumId="AT_OTHER" enumTypeId="ArtifactType"/>
             <!-- not yet pushed/tracked/checked types below here
                 some of these are experimental ideas and may not ever be implemented, or useful
@@ -205,7 +208,7 @@ along with this software (see the LICENSE.md file). If not, see
     </entity>
 
     <!-- ========== User ========== -->
-    <entity entity-name="UserAccount" package-name="moqui.security">
+    <entity entity-name="UserAccount" package-name="moqui.security" short-alias="users">
         <field name="userId" type="id-long" is-pk="true"/>
         <field name="username" type="text-medium" enable-audit-log="true">
             <description>The username used along with the password to login</description></field>

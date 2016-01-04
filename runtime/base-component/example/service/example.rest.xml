@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This software is in the public domain under CC0 1.0 Universal plus a 
+Grant of Patent License.
+
+To the extent possible under law, the author(s) have dedicated all
+copyright and related and neighboring rights to this software to the
+public domain worldwide. This software is distributed without any
+warranty.
+
+You should have received a copy of the CC0 Public Domain Dedication
+along with this software (see the LICENSE.md file). If not, see
+<http://creativecommons.org/publicdomain/zero/1.0/>.
+-->
+
+<!-- General Guideline Verbs: GET=find, POST=create, PUT=store (create or update), PATCH=update, DELETE=delete  -->
+
+<resource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/rest-api-1.6.xsd"
+        name="example" displayName="Example REST API" version="1.6.0">
+    <resource name="examples">
+        <method type="get"><entity name="examples" masterName="default" operation="list"/></method>
+        <method type="post"><service name="org.moqui.example.ExampleServices.create#Example"/></method>
+
+        <id name="exampleId">
+            <method type="get"><entity name="examples" masterName="default" operation="one"/></method>
+            <method type="patch"><service name="org.moqui.example.ExampleServices.update#Example"/></method>
+
+            <resource name="items">
+                <method type="get"><entity name="exampleItems" operation="list"/></method>
+                <method type="post"><service name="org.moqui.example.ExampleServices.create#ExampleItem"/></method>
+                <id name="exampleItemSeqId">
+                    <method type="get"><entity name="exampleItems" operation="one"/></method>
+                    <method type="patch"><entity name="exampleItems" operation="update"/></method>
+                    <method type="put"><entity name="exampleItems" operation="store"/></method>
+                    <method type="delete"><entity name="exampleItems" operation="delete"/></method>
+                </id>
+            </resource>
+        </id>
+    </resource>
+</resource>

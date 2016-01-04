@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!-- No copyright or license for configuration file, details here are not considered a creative work. -->
 <moqui-conf xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/moqui-conf-1.5.xsd">
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/moqui-conf-1.6.xsd">
 
     <!-- Settings in this file can be overridden in a runtime conf file that has a any of the desired sub-elements. -->
 
@@ -51,7 +51,7 @@
         <!-- this is a count of all artifact hits, expire once idle for over 15 minutes -->
         <cache name="artifact.tarpit.hits" expire-time-idle="900" expire-time-live="0" max-elements="10000"/>
     </cache-list>
-    <server-stats bin-length-seconds="900" visit-enabled="true" visitor-enabled="true">
+    <server-stats bin-length-seconds="900" visit-enabled="true" visit-ip-info-on-login="true" visitor-enabled="true">
         <artifact-stats type="screen" persist-bin="true" persist-hit="true"/>
         <artifact-stats type="screen-content" persist-bin="true" persist-hit="true"/>
         <artifact-stats type="transition" persist-bin="true" persist-hit="true"/>

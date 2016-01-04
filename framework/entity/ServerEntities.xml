@@ -12,7 +12,7 @@ You should have received a copy of the CC0 Public Domain Dedication
 along with this software (see the LICENSE.md file). If not, see
 <http://creativecommons.org/publicdomain/zero/1.0/>.
 -->
-<entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/entity-definition-1.5.xsd">
+<entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/entity-definition-1.6.xsd">
 
     <!-- ========================================================= -->
     <!-- moqui.server -->
@@ -84,17 +84,24 @@ along with this software (see the LICENSE.md file). If not, see
         <field name="serverIpAddress" type="id"/>
         <field name="serverHostName" type="text-medium"/>
         <field name="webappName" type="text-medium"/>
-        <field name="initialLocale" type="text-medium"/>
+        <field name="initialLocale" type="text-short"/>
         <field name="initialRequest" type="text-long"/>
         <field name="initialReferrer" type="text-long"/>
         <field name="initialUserAgent" type="text-medium"/>
-        <field name="clientIpAddress" type="text-medium"/>
+        <field name="clientIpAddress" type="text-short"/>
         <field name="clientHostName" type="text-medium"/>
         <field name="clientUser" type="text-medium"/>
-        <field name="clientIpIspName" type="text-medium"/>
-        <field name="clientIpPostalCode" type="text-medium"/>
+        <field name="clientIpIspName" type="text-short"/>
+        <field name="clientIpPostalCode" type="text-short"/>
+        <field name="clientIpCity" type="text-short"/>
+        <field name="clientIpMetroCode" type="text-short"/>
+        <field name="clientIpRegionCode" type="text-short"/>
+        <field name="clientIpRegionName" type="text-short"/>
         <field name="clientIpStateProvGeoId" type="id"/>
         <field name="clientIpCountryGeoId" type="id"/>
+        <field name="clientIpLatitude" type="text-short"/>
+        <field name="clientIpLongitude" type="text-short"/>
+        <field name="clientIpTimeZone" type="text-short"/>
         <field name="fromDate" type="date-time"/>
         <field name="thruDate" type="date-time"/>
         <relationship type="one" related-entity-name="moqui.server.Visitor"/>

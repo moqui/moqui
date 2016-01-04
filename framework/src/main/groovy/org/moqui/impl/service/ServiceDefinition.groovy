@@ -25,6 +25,7 @@ import org.moqui.impl.actions.XmlAction
 import org.moqui.context.ContextStack
 import org.moqui.impl.context.ExecutionContextImpl
 import org.moqui.impl.entity.EntityDefinition
+import org.moqui.service.ServiceException
 import org.owasp.esapi.ValidationErrorList
 import org.owasp.esapi.errors.IntrusionException
 import org.owasp.esapi.errors.ValidationException
@@ -178,7 +179,7 @@ class ServiceDefinition {
         }
     }
 
-    static void mergeParameter(Node parametersNode, Node overrideParameterNode, EntityDefinition ed) {
+    void mergeParameter(Node parametersNode, Node overrideParameterNode, EntityDefinition ed) {
         Node baseParameterNode = mergeParameter(parametersNode, (String) overrideParameterNode."@name",
                 overrideParameterNode.attributes())
         // merge description, subtype, ParameterValidations
@@ -186,14 +187,20 @@ class ServiceDefinition {
             if (childNode.name() == "description" || childNode.name() == "subtype") {
                 if (baseParameterNode[(String) childNode.name()]) baseParameterNode.remove((Node) baseParameterNode[(String) childNode.name()].getAt(0))
             }
-            // is a validation, just add it in, or the original has been removed so add the new one
-            baseParameterNode.append(childNode)
+            if (childNode.name() == "auto-parameters") {
+                mergeAutoParameters(baseParameterNode, childNode)
+            } else if (childNode.name() == "parameter") {
+                mergeParameter(baseParameterNode, childNode, ed)
+            } else {
+                // is a validation, just add it in, or the original has been removed so add the new one
+                baseParameterNode.append(childNode)
+            }
         }
-        if (baseParameterNode."@entity-name") {
-            if (!baseParameterNode."@field-name") baseParameterNode.attributes().put("field-name", baseParameterNode."@name")
-        } else if (ed != null && ed.isField(baseParameterNode."@name")) {
+        if (baseParameterNode.attribute("entity-name")) {
+            if (!baseParameterNode.attribute("field-name")) baseParameterNode.attributes().put("field-name", baseParameterNode.attribute("name"))
+        } else if (ed != null && ed.isField((String) baseParameterNode.attribute("name"))) {
             baseParameterNode.attributes().put("entity-name", ed.getFullEntityName())
-            baseParameterNode.attributes().put("field-name", baseParameterNode."@name")
+            baseParameterNode.attributes().put("field-name", baseParameterNode.attribute("name"))
         }
     }
 
@@ -274,14 +281,14 @@ class ServiceDefinition {
 
     Node getInParameter(String name) { return (Node) inParametersNode."parameter".find({ it."@name" == name }) }
     Set<String> getInParameterNames() {
-        Set<String> inNames = new HashSet()
+        Set<String> inNames = new LinkedHashSet()
         for (Node parameter in inParametersNode."parameter") inNames.add((String) parameter."@name")
         return inNames
     }
 
     Node getOutParameter(String name) { return (Node) outParametersNode."parameter".find({ it."@name" == name }) }
     Set<String> getOutParameterNames() {
-        Set<String> outNames = new HashSet()
+        Set<String> outNames = new LinkedHashSet()
         for (Node parameter in outParametersNode."parameter") outNames.add((String) parameter."@name")
         return outNames
     }
@@ -957,4 +964,130 @@ class ServiceDefinition {
         }
     }
     */
+
+    @CompileStatic
+    Map<String, Object> getJsonSchemaMapIn() {
+        // add a definition for service in parameters
+        List<String> requiredParms = []
+        Map<String, Object> properties = [:]
+        Map<String, Object> defMap = [type:'object', properties:properties] as Map<String, Object>
+        for (String parmName in getInParameterNames()) {
+            Node parmNode = getInParameter(parmName)
+            if (parmNode.attribute("required") == "true") requiredParms.add(parmName)
+            properties.put(parmName, getJsonSchemaPropMap(parmNode))
+        }
+        if (requiredParms) defMap.put("required", requiredParms)
+        return defMap
+    }
+    @CompileStatic
+    Map<String, Object> getJsonSchemaMapOut() {
+        List<String> requiredParms = []
+        Map<String, Object> properties = [:]
+        Map<String, Object> defMap = [type:'object', properties:properties] as Map<String, Object>
+        for (String parmName in getOutParameterNames()) {
+            Node parmNode = getOutParameter(parmName)
+            if (parmNode.attribute("required") == "true") requiredParms.add(parmName)
+            properties.put(parmName, getJsonSchemaPropMap(parmNode))
+        }
+        if (requiredParms) defMap.put("required", requiredParms)
+        return defMap
+    }
+    @CompileStatic
+    protected Map<String, Object> getJsonSchemaPropMap(Node parmNode) {
+        String objectType = (String) parmNode?.attribute('type')
+        String jsonType = RestApi.getJsonType(objectType)
+        Map<String, Object> propMap = [type:jsonType] as Map<String, Object>
+        String format = RestApi.getJsonFormat(objectType)
+        if (format) propMap.put("format", format)
+        String description = StupidUtilities.nodeText(parmNode.get("description"))
+        if (description) propMap.put("description", description)
+        if (parmNode.attribute("default-value")) propMap.put("default", (String) parmNode.attribute("default-value"))
+        if (parmNode.attribute("default")) propMap.put("default", "{${parmNode.attribute("default")}}".toString())
+
+        List childList = (List) parmNode.get("parameter")
+        if (jsonType == 'array') {
+            if (childList) {
+                propMap.put("items", getJsonSchemaPropMap((Node) childList[0]))
+            } else {
+                logger.warn("Parameter ${parmNode.attribute('name')} of service ${getServiceName()} is an array type but has no child parameter (should have one, name ignored), may cause error in Swagger, etc")
+            }
+        } else if (jsonType == 'object') {
+            if (childList) {
+                Map properties = [:]
+                propMap.put("properties", properties)
+                for (Object childObj in childList) {
+                    Node childNode = (Node) childObj
+                    properties.put(childNode.attribute("name"), getJsonSchemaPropMap(childNode))
+                }
+            } else {
+                // Swagger UI is okay with empty maps (works, just less detail), so don't warn about this
+                // logger.warn("Parameter ${parmNode.attribute('name')} of service ${getServiceName()} is an object type but has no child parameters, may cause error in Swagger, etc")
+            }
+        } else {
+            addParameterEnums(parmNode, propMap)
+        }
+
+        return propMap
+    }
+
+    void addParameterEnums(Node parmNode, Map<String, Object> propMap) {
+        String entityName = (String) parmNode.attribute("entity-name")
+        String fieldName = (String) parmNode.attribute("field-name")
+        if (entityName && fieldName) {
+            EntityDefinition ed = sfi.getEcfi().getEntityFacade().getEntityDefinition(entityName)
+            if (ed == null) throw new ServiceException("Entity ${entityName} not found, from parameter ${parmNode.attribute('name')} of service ${getServiceName()}")
+            EntityDefinition.FieldInfo fi = ed.getFieldInfo(fieldName)
+            if (fi == null) throw new ServiceException("Field ${fieldName} not found for entity ${entityName}, from parameter ${parmNode.attribute('name')} of service ${getServiceName()}")
+            List enumList = ed.getFieldEnums(fi)
+            if (enumList) propMap.put('enum', enumList)
+        }
+    }
+
+    @CompileStatic
+    Map<String, Object> getRamlMapIn() {
+        Map<String, Object> properties = [:]
+        Map<String, Object> defMap = [type:'object', properties:properties] as Map<String, Object>
+        for (String parmName in getInParameterNames()) {
+            Node parmNode = getInParameter(parmName)
+            properties.put(parmName, getRamlPropMap(parmNode))
+        }
+        return defMap
+    }
+    @CompileStatic
+    Map<String, Object> getRamlMapOut() {
+        Map<String, Object> properties = [:]
+        Map<String, Object> defMap = [type:'object', properties:properties] as Map<String, Object>
+        for (String parmName in getOutParameterNames()) {
+            Node parmNode = getOutParameter(parmName)
+            properties.put(parmName, getRamlPropMap(parmNode))
+        }
+        return defMap
+    }
+    @CompileStatic
+    protected static Map<String, Object> getRamlPropMap(Node parmNode) {
+        String objectType = (String) parmNode?.attribute('type')
+        String ramlType = RestApi.getRamlType(objectType)
+        Map<String, Object> propMap = [type:ramlType] as Map<String, Object>
+        String description = StupidUtilities.nodeText(parmNode.get("description"))
+        if (description) propMap.put("description", description)
+        if (parmNode.attribute("required") == "true") propMap.put("required", true)
+        if (parmNode.attribute("default-value")) propMap.put("default", (String) parmNode.attribute("default-value"))
+        if (parmNode.attribute("default")) propMap.put("default", "{${parmNode.attribute("default")}}".toString())
+
+        List childList = (List) parmNode.get("parameter")
+        if (childList) {
+            if (ramlType == 'array') {
+                propMap.put("items", getRamlPropMap((Node) childList[0]))
+            } else if (ramlType == 'object') {
+                Map properties = [:]
+                propMap.put("properties", properties)
+                for (Object childObj in childList) {
+                    Node childNode = (Node) childObj
+                    properties.put(childNode.attribute("name"), getRamlPropMap(childNode))
+                }
+            }
+        }
+
+        return propMap
+    }
 }

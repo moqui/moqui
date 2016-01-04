@@ -177,7 +177,7 @@ class UserFacadeImpl implements UserFacade {
                     // NOTE: disable authz for this call, don't normally want to allow create of Visitor, but this is a special case
                     Map cvResult = eci.service.sync().name("create", "moqui.server.Visitor")
                             .parameter("createdDate", getNowTimestamp()).disableAuthz().call()
-                    cookieVisitorId = cvResult?.visitorId
+                    cookieVisitorId = (String) cvResult?.visitorId
                     logger.info("Created new Visitor with ID [${cookieVisitorId}] in session [${session.id}]")
                 }
                 if (cookieVisitorId) {

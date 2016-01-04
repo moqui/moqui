@@ -18,7 +18,9 @@ import org.moqui.context.ContextStack
 import org.moqui.context.ValidationError
 import org.moqui.context.WebFacade
 import org.moqui.impl.context.ExecutionContextFactoryImpl
+import org.moqui.impl.context.ExecutionContextImpl
 import org.moqui.impl.context.WebFacadeImpl
+import org.moqui.impl.service.RestApi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -91,6 +93,8 @@ class WebFacadeStub implements WebFacade {
     Map<String, Object> getRequestAttributes() { return requestParameters }
     @Override
     Map<String, Object> getRequestParameters() { return requestParameters }
+    @Override
+    String getHostName(boolean withPort) { return withPort ? "localhost:8080" : "localhost" }
 
     @Override
     HttpServletResponse getResponse() { return httpServletResponse }
@@ -172,12 +176,18 @@ class WebFacadeStub implements WebFacade {
     void handleEntityRestCall(List<String> extraPathNameList, boolean masterNameInPath) {
         throw new IllegalArgumentException("WebFacadeStub handleEntityRestCall not supported") }
     @Override
-    void handleEntityRestSchema(List<String> extraPathNameList, String schemaUri, String linkPrefix, String schemaLinkPrefix) {
-        throw new IllegalArgumentException("WebFacadeStub handleEntityRestSchema not supported")
-    }
-    @Override
-    void handleEntityRestRaml(List<String> extraPathNameList, String linkPrefix, String schemaLinkPrefix) {
-        throw new IllegalArgumentException("WebFacadeStub handleEntityRestRaml not supported")
+    void handleServiceRestCall(List<String> extraPathNameList) {
+        long startTime = System.currentTimeMillis()
+        ExecutionContextImpl eci = (ExecutionContextImpl) ecfi.getExecutionContext()
+
+        eci.context.push(getParameters())
+        RestApi.RestResult restResult = eci.getEcfi().getServiceFacade().getRestApi().run(extraPathNameList, eci)
+        eci.context.pop()
+
+        response.addIntHeader('X-Run-Time-ms', (System.currentTimeMillis() - startTime) as int)
+        restResult.setHeaders(response)
+
+        sendJsonResponse(restResult.responseObj)
     }
 
     static class HttpServletRequestStub implements HttpServletRequest {

@@ -53,6 +53,8 @@ class ExecutionContextImpl implements ExecutionContext {
         // NOTE: don't init userFacade, messageFacade, artifactExecutionFacade here, lazy init when first used instead
         // put reference to this in the context root
         contextRoot.put("ec", this)
+
+        if (loggerDirect.isTraceEnabled()) loggerDirect.trace("ExecutionContextImpl initialized")
     }
 
     ExecutionContextFactoryImpl getEcfi() { return ecfi }
@@ -86,7 +88,8 @@ class ExecutionContextImpl implements ExecutionContext {
     }
 
     @Override
-    UserFacade getUser() { if (userFacade != null) return userFacade else return (userFacade = new UserFacadeImpl(this)) }
+    UserFacade getUser() { return getUserFacade() }
+    UserFacadeImpl getUserFacade() { if (userFacade != null) return userFacade else return (userFacade = new UserFacadeImpl(this)) }
 
     @Override
     MessageFacade getMessage() { if (messageFacade != null) return messageFacade else return (messageFacade = new MessageFacadeImpl()) }
@@ -133,7 +136,7 @@ class ExecutionContextImpl implements ExecutionContext {
         List<NotificationMessage> nmList = []
         boolean alreadyDisabled = getArtifactExecution().disableAuthz()
         try {
-            Map parameters = [receivedDate:null]
+            Map<String, Object> parameters = [receivedDate:null] as Map<String, Object>
             if (userId) parameters.userId = userId
             if (topic) parameters.topic = topic
             EntityList nmbuList = entity.find("moqui.security.user.NotificationMessageByUser").condition(parameters).list()
@@ -203,6 +206,8 @@ class ExecutionContextImpl implements ExecutionContext {
 
         // this is the beginning of a request, so trigger before-request actions
         wfi.runBeforeRequestActions()
+
+        if (loggerDirect.isTraceEnabled()) loggerDirect.trace("ExecutionContextImpl WebFacade initialized")
     }
 
     /** Meant to be used to set a test stub that implements the WebFacade interface */
@@ -224,6 +229,7 @@ class ExecutionContextImpl implements ExecutionContext {
         if (userFacade != null && !userFacade.getLoggedInAnonymous()) userFacade.logoutUser()
         this.tenantId = tenantId
         if (webFacade != null) webFacade.session.setAttribute("moqui.tenantId", tenantId)
+        if (loggerDirect.isTraceEnabled()) loggerDirect.trace("Changed tenant to ${tenantId}")
     }
 
     @Override
@@ -238,6 +244,8 @@ class ExecutionContextImpl implements ExecutionContext {
         ecfi.resourceFacade.destroyAllInThread()
         // clear out the ECFI's reference to this as well
         ecfi.activeContext.remove()
+
+        if (loggerDirect.isTraceEnabled()) loggerDirect.trace("ExecutionContextImpl destroyed")
     }
 
     @Override

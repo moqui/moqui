@@ -12,7 +12,7 @@ You should have received a copy of the CC0 Public Domain Dedication
 along with this software (see the LICENSE.md file). If not, see
 <http://creativecommons.org/publicdomain/zero/1.0/>.
 -->
-<entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/entity-definition-1.5.xsd">
+<entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/entity-definition-1.6.xsd">
     <!-- ========================================================= -->
     <!-- moqui.screen -->
     <!-- ========================================================= -->
@@ -93,6 +93,7 @@ along with this software (see the LICENSE.md file). If not, see
 
     <entity entity-name="DbForm" package-name="moqui.screen.form">
         <field name="formId" type="id" is-pk="true"/>
+        <field name="purposeEnumId" type="id"/>
         <field name="isListForm" type="text-indicator"/>
         <field name="modifyXmlScreenForm" type="text-medium"><description>The screen location and form name (separated
             by a hash/pound sign) of XML Screen Form to modify.</description></field>
@@ -105,6 +106,12 @@ along with this software (see the LICENSE.md file). If not, see
         <field name="printContainerHeight" type="text-short"/>
         <field name="printRepeatCount" type="number-integer"/>
         <field name="printRepeatNewPage" type="text-indicator"/>
+        <relationship type="one" title="DbFormPurpose" related-entity-name="moqui.basic.Enumeration">
+            <key-map field-name="purposeEnumId"/></relationship>
+        <seed-data>
+            <moqui.basic.EnumerationType description="DB Form Purpose" enumTypeId="DbFormPurpose"/>
+            <moqui.basic.Enumeration description="Other" enumId="DbfpOther" enumTypeId="DbFormPurpose"/>
+        </seed-data>
     </entity>
     <entity entity-name="DbFormField" package-name="moqui.screen.form">
         <field name="formId" type="id" is-pk="true"/>

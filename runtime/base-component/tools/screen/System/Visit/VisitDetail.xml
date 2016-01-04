@@ -13,11 +13,13 @@ along with this software (see the LICENSE.md file). If not, see
 <http://creativecommons.org/publicdomain/zero/1.0/>.
 -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd">
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.6.xsd">
 
     <parameter name="visitId" required="true"/>
 
     <transition name="userAccountDetail"><default-response url="//system/Security/UserAccountDetail"/></transition>
+    <transition name="getVisitClientIpData"><service-call name="org.moqui.impl.ServerServices.get#VisitClientIpData"/>
+        <default-response url="."/></transition>
 
     <actions>
         <entity-find-one entity-name="moqui.server.Visit" value-field="visit"/>
@@ -27,12 +29,13 @@ along with this software (see the LICENSE.md file). If not, see
         </entity-find>
     </actions>
     <widgets>
+        <link url="getVisitClientIpData" text="Get Client IP Data"/>
         <form-single name="VisitDetail" map="visit">
             <auto-fields-entity entity-name="moqui.server.Visit" field-type="display"/>
             <field name="userId"><default-field title="User">
                 <display-entity entity-name="moqui.security.UserAccount" text="UsernameTemplate"/>
-                <link url="userAccountDetail" text="${visit.userId ?: 'N/A'}" link-type="anchor"
-                        parameter-map="[userId:visit.userId]"/>
+                <link url="userAccountDetail" text="${visit.userId}" link-type="anchor"
+                        parameter-map="[userId:visit.userId]" condition="visit.userId"/>
             </default-field></field>
             <field-layout>
                 <field-row><field-ref name="visitId"/><field-ref name="visitorId"/></field-row>
@@ -43,8 +46,11 @@ along with this software (see the LICENSE.md file). If not, see
                 <field-row><field-ref name="initialReferrer"/><field-ref name="initialUserAgent"/></field-row>
                 <field-row><field-ref name="clientIpAddress"/><field-ref name="clientHostName"/></field-row>
                 <field-row><field-ref name="clientUser"/><field-ref name="clientIpIspName"/></field-row>
-                <!-- <field-row><field-ref name="clientIpPostalCode"/><field-ref name="clientIpStateProvGeoId"/></field-row>
-                     <field-row><field-ref name="clientIpCountryGeoId"/></field-row> -->
+                <field-row><field-ref name="clientIpPostalCode"/><field-ref name="clientIpCity"/></field-row>
+                <field-row><field-ref name="clientIpRegionCode"/><field-ref name="clientIpRegionName"/></field-row>
+                <field-row><field-ref name="clientIpStateProvGeoId"/><field-ref name="clientIpCountryGeoId"/></field-row>
+                <field-row><field-ref name="clientIpLatitude"/><field-ref name="clientIpLongitude"/></field-row>
+                <field-row><field-ref name="clientIpTimeZone"/><field-ref name="clientIpMetroCode"/></field-row>
                 <field-row><field-ref name="fromDate"/><field-ref name="thruDate"/></field-row>
             </field-layout>
         </form-single>

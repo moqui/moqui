@@ -14,6 +14,7 @@
 package org.moqui.entity;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /** Used to load XML entity data into the database or into an EntityList. The XML can come from
@@ -82,6 +83,13 @@ public interface EntityDataLoader {
     EntityDataLoader csvDelimiter(char delimiter);
     EntityDataLoader csvCommentStart(char commentStart);
     EntityDataLoader csvQuoteChar(char quoteChar);
+
+    /** For CSV files use this name (entity or service name) instead of looking for it on line one in the file */
+    EntityDataLoader csvEntityName(String entityName);
+    /** For CSV files use these field names instead of looking for them on line two in the file */
+    EntityDataLoader csvFieldNames(List<String> fieldNames);
+    /** Default values for all records to load, if applicable for given entity or service */
+    EntityDataLoader defaultValues(Map<String, Object> defaultValues);
 
     /** Only check the data against matching records in the database. Report on records that don't exist in the database
      * and any differences with records that have matching primary keys.

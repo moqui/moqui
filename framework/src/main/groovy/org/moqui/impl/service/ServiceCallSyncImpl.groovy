@@ -17,6 +17,7 @@ import groovy.transform.CompileStatic
 import org.moqui.BaseException
 import org.moqui.context.ArtifactAuthorizationException
 import org.moqui.context.ArtifactExecutionInfo
+import org.moqui.context.AuthenticationRequiredException
 import org.moqui.context.TransactionException
 import org.moqui.context.TransactionFacade
 import org.moqui.entity.EntityValue
@@ -184,6 +185,9 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
             // if user was not logged in we should already have an error message in place so just return
             if (!userLoggedIn) return null
         }
+        if (sd != null && sd.getAuthenticate() == "true" && !eci.getUser().getUsername() && !eci.getUserFacade().loggedInAnonymous) {
+            throw new AuthenticationRequiredException("User must be logged in to call service ${getServiceName()}")
+        }
 
         // pre authentication and authorization SECA rules
         sfi.runSecaRules(getServiceNameNoHash(), currentParameters, null, "pre-auth")
@@ -313,6 +317,8 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                 }
                 sfi.runSecaRules(getServiceNameNoHash(), currentParameters, result, "post-commit")
             }
+
+            return result
         } catch (TransactionException e) {
             throw e
         } finally {
@@ -326,20 +332,17 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
             } catch (Throwable t) {
                 logger.error("Error logging out user after call to service [${getServiceName()}]", t)
             }
+            if (loggedInAnonymous) ((UserFacadeImpl) eci.getUser()).logoutAnonymousOnly()
 
             double runningTimeMillis = (System.nanoTime() - startTimeNanos)/1E6
             sfi.getEcfi().countArtifactHit("service", serviceType, getServiceName(), currentParameters, callStartTime,
                     runningTimeMillis, null)
 
+            // all done so pop the artifact info
+            eci.getArtifactExecution().pop(aei)
+
             if (logger.traceEnabled) logger.trace("Finished call to service [${getServiceName()}] in ${(runningTimeMillis)/1000} seconds" + (eci.getMessage().hasError() ? " with ${eci.getMessage().getErrors().size() + eci.getMessage().getValidationErrors().size()} error messages" : ", was successful"))
         }
-
-        // all done so pop the artifact info; don't bother making sure this is done on errors/etc like in a finally clause because if there is an error this will help us know how we got there
-        eci.getArtifactExecution().pop(aei)
-
-        if (loggedInAnonymous) ((UserFacadeImpl) eci.getUser()).logoutAnonymousOnly()
-
-        return result
     }
 
     protected void checkAddSemaphore(ServiceDefinition sd, ExecutionContextImpl eci) {

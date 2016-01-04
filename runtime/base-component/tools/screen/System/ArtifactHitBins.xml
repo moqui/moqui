@@ -12,7 +12,7 @@ You should have received a copy of the CC0 Public Domain Dedication
 along with this software (see the LICENSE.md file). If not, see
 <http://creativecommons.org/publicdomain/zero/1.0/>.
 -->
-<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd"
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.6.xsd"
         default-menu-title="Artifact Bins" default-menu-index="3">
 
     <transition name="ArtifactHitBinStats.csv">
@@ -24,7 +24,7 @@ along with this software (see the LICENSE.md file). If not, see
             <parameter name="pageNoLimit" value="true"/><parameter name="lastStandalone" value="true"/></default-response>
     </transition>
     <transition name="ArtifactHitBinStats.pdf">
-        <default-response url="/fop/apps/system/ArtifactHitBins" url-type="plain">
+        <default-response url="${ec.web.getWebappRootUrl(false, null)}/fop/apps/system/ArtifactHitBins" url-type="plain">
             <parameter name="renderMode" value="xsl-fo"/><parameter name="pageNoLimit" value="true"/>
             <!--<parameter name="lastStandalone" value="true"/>-->
         </default-response>

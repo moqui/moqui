@@ -699,7 +699,7 @@ class EntityFacadeImpl implements EntityFacade {
                 Map keyMap = EntityDefinition.getRelationshipExpandedKeyMapInternal(relNode, reverseEd)
 
                 Node newRelNode = reverseEd.entityNode.appendNode("relationship",
-                        ["related-entity-name":ed.fullEntityName, "type":relType, "is-auto-reverse":"true"])
+                        ["related-entity-name":ed.fullEntityName, "type":relType, "is-auto-reverse":"true", "mutable":"true"])
                 if (relNode.attribute('title')) newRelNode.attributes().title = title
                 for (Map.Entry keyEntry in keyMap) {
                     // add a key-map with the reverse fields
@@ -842,6 +842,15 @@ class EntityFacadeImpl implements EntityFacade {
             if (ed != null && !ed.isViewEntity()) nonViewNames.add(name)
         }
         return nonViewNames
+    }
+    Set<String> getAllEntityNamesWithMaster() {
+        Set<String> allNames = getAllEntityNames()
+        Set<String> masterNames = new TreeSet<>()
+        for (String name in allNames) {
+            EntityDefinition ed = getEntityDefinition(name)
+            if (ed != null && !ed.isViewEntity() && ed.masterDefinitionMap) masterNames.add(name)
+        }
+        return masterNames
     }
 
     List<Map> getAllEntityInfo(int levels, boolean excludeViewEntities) {
@@ -1114,8 +1123,15 @@ class EntityFacadeImpl implements EntityFacade {
 
         // look for a master definition name as the next path element
         if (masterNameInPath) {
-            if (localPath.size() == 0) throw new EntityException("No entity master definition name found in path")
-            masterName = localPath.remove(0)
+            if (!masterName) {
+                if (localPath.size() > 0 && firstEd.getMasterDefinition(localPath.get(0)) != null) {
+                    masterName = localPath.remove(0)
+                } else {
+                    masterName = "default"
+                }
+            }
+            if (firstEd.getMasterDefinition(masterName) == null)
+                throw new EntityException("Master definition not found for entity [${firstEd.getFullEntityName()}], tried master name [${masterName}]")
         }
 
         // if there are more path elements use one for each PK field of the entity

@@ -29,6 +29,7 @@ public interface WebFacade {
     HttpServletRequest getRequest();
     Map<String, Object> getRequestAttributes();
     Map<String, Object> getRequestParameters();
+    String getHostName(boolean withPort);
 
     HttpServletResponse getResponse();
 
@@ -59,6 +60,5 @@ public interface WebFacade {
     void handleXmlRpcServiceCall();
     void handleJsonRpcServiceCall();
     void handleEntityRestCall(List<String> extraPathNameList, boolean masterNameInPath);
-    void handleEntityRestSchema(List<String> extraPathNameList, String schemaUri, String linkPrefix, String schemaLinkPrefix);
-    void handleEntityRestRaml(List<String> extraPathNameList, String linkPrefix, String schemaLinkPrefix);
+    void handleServiceRestCall(List<String> extraPathNameList);
 }

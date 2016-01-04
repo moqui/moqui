@@ -16,7 +16,7 @@ package org.moqui.service;
 import java.util.Map;
 
 public interface ServiceCall {
-    public enum TimeUnit { SECONDS, MINUTES, HOURS, DAYS, WEEKS, MONTHS, YEARS }
+    enum TimeUnit { SECONDS, MINUTES, HOURS, DAYS, WEEKS, MONTHS, YEARS }
 
     String getServiceName();
 

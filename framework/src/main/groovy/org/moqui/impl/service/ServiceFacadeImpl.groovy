@@ -21,6 +21,7 @@ import org.moqui.impl.StupidJavaUtilities
 import org.moqui.impl.StupidUtilities
 import org.moqui.impl.service.runner.EntityAutoServiceRunner
 import org.moqui.impl.service.runner.RemoteJsonRpcServiceRunner
+import org.moqui.service.RestClient
 import org.moqui.service.ServiceFacade
 import org.moqui.service.ServiceCallback
 import org.moqui.service.ServiceCallSync
@@ -61,6 +62,7 @@ class ServiceFacadeImpl implements ServiceFacade {
 
     protected final Map<String, List<ServiceEcaRule>> secaRulesByServiceName = new HashMap()
     protected final List<EmailEcaRule> emecaRuleList = new ArrayList()
+    protected RestApi restApi
 
     protected final Map<String, ServiceRunner> serviceRunners = new HashMap()
 
@@ -77,6 +79,8 @@ class ServiceFacadeImpl implements ServiceFacade {
         loadSecaRulesAll()
         // load Email ECA rules
         loadEmecaRulesAll()
+        // load REST API
+        restApi = new RestApi(ecfi)
 
         // load service runners from configuration
         for (Node serviceType in ecfi.confXmlRoot."service-facade"[0]."service-type") {
@@ -125,6 +129,8 @@ class ServiceFacadeImpl implements ServiceFacade {
 
     @CompileStatic
     ServiceRunner getServiceRunner(String type) { return serviceRunners.get(type) }
+    @CompileStatic
+    RestApi getRestApi() { return restApi }
 
     @CompileStatic
     boolean isServiceDefined(String serviceName) {
@@ -312,9 +318,10 @@ class ServiceFacadeImpl implements ServiceFacade {
                 findServicesInDir(baseLocation, entryRr, sns)
             } else if (entryRr.fileName.endsWith(".xml")) {
                 // logger.warn("Finding services in [${entryRr.location}], baseLocation=[${baseLocation}]")
-                if (entryRr.fileName.endsWith(".secas.xml") || entryRr.fileName.endsWith(".emecas.xml")) continue
+                if (entryRr.fileName.endsWith(".secas.xml") || entryRr.fileName.endsWith(".emecas.xml") ||
+                        entryRr.fileName.endsWith(".rest.xml")) continue
                 Node serviceRoot = new XmlParser().parse(entryRr.openStream())
-                if (serviceRoot.name() == "secas" || serviceRoot.name() == "emecas") continue
+                if ((serviceRoot.name() as String) in ["secas", "emecas", "resource"]) continue
                 if (serviceRoot.name() != "services") {
                     logger.info("While finding service ignoring XML file [${entryRr.location}] in a services directory because the root element is [${serviceRoot.name()}] and not [services]")
                     continue
@@ -474,6 +481,10 @@ class ServiceFacadeImpl implements ServiceFacade {
     Map<String, Object> callJsonRpc(String location, String method, Map<String, Object> parameters) {
         return RemoteJsonRpcServiceRunner.runJsonService(null, location, method, parameters, ecfi.getExecutionContext())
     }
+
+    @Override
+    @CompileStatic
+    RestClient rest() { return new RestClientImpl(ecfi) }
 
     @Override
     @CompileStatic
