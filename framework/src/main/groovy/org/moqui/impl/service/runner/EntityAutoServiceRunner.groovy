@@ -230,7 +230,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
             EntityDefinition.RelationshipInfo relInfo = ed.getRelationshipInfo(entryName)
             if (relInfo != null) {
                 if (!relInfo.mutable) {
-                    if (logger.isInfoEnabled()) logger.info("In create entity auto service found key [${entryName}] which is a non-mutable relationship of [${ed.getFullEntityName()}], skipping")
+                    if (logger.isTraceEnabled()) logger.trace("In create entity auto service found key [${entryName}] which is a non-mutable relationship of [${ed.getFullEntityName()}], skipping")
                     continue
                 }
                 subEd = relInfo.relatedEd
@@ -428,7 +428,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
             EntityDefinition.RelationshipInfo relInfo = ed.getRelationshipInfo(entryName)
             if (relInfo != null) {
                 if (!relInfo.mutable) {
-                    if (logger.isInfoEnabled()) logger.info("In store entity auto service found key [${entryName}] which is a non-mutable relationship of [${ed.getFullEntityName()}], skipping")
+                    if (logger.isTraceEnabled()) logger.trace("In store entity auto service found key [${entryName}] which is a non-mutable relationship of [${ed.getFullEntityName()}], skipping")
                     continue
                 }
                 subEd = relInfo.relatedEd
