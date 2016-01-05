@@ -138,6 +138,8 @@ New Features
 - Transaction Cache better supports creates/updates/deletes within a
   transaction; instead of consolidating all changes into one it keeps a
   list of changes and runs in order to avoid issues with foreign keys, etc
+- Added entities and services for wiki spaces and pages, originally from
+  HiveMind, based on ResourceFacade resources
 
 Bug Fixes
 
