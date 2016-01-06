@@ -1,7 +1,6 @@
 # gradle/build files
 build/
 .gradle
-# NOTE: settings.gradle is ignore with git update-index --assume-unchanged, undo with git update-index --no-assume-unchanged
 
 # build generated files
 /moqui-*.war
