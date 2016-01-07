@@ -19,15 +19,15 @@ along with this software (see the LICENSE.md file). If not, see
         name="example" displayName="Example REST API" version="1.6.0">
     <resource name="examples">
         <method type="get"><entity name="examples" masterName="default" operation="list"/></method>
-        <method type="post"><service name="org.moqui.example.ExampleServices.create#Example"/></method>
+        <method type="post"><service name="moqui.example.ExampleServices.create#Example"/></method>
 
         <id name="exampleId">
             <method type="get"><entity name="examples" masterName="default" operation="one"/></method>
-            <method type="patch"><service name="org.moqui.example.ExampleServices.update#Example"/></method>
+            <method type="patch"><service name="moqui.example.ExampleServices.update#Example"/></method>
 
             <resource name="items">
                 <method type="get"><entity name="exampleItems" operation="list"/></method>
-                <method type="post"><service name="org.moqui.example.ExampleServices.create#ExampleItem"/></method>
+                <method type="post"><service name="moqui.example.ExampleServices.create#ExampleItem"/></method>
                 <id name="exampleItemSeqId">
                     <method type="get"><entity name="exampleItems" operation="one"/></method>
                     <method type="patch"><entity name="exampleItems" operation="update"/></method>

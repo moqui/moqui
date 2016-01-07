@@ -140,6 +140,7 @@ New Features
   list of changes and runs in order to avoid issues with foreign keys, etc
 - Added entities and services for wiki spaces and pages, originally from
   HiveMind, based on ResourceFacade resources
+- Example entities, services now have a consistent package (moqui.entity)
 
 Bug Fixes
 

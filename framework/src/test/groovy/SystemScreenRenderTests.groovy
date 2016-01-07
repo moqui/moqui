@@ -70,8 +70,8 @@ class SystemScreenRenderTests extends Specification {
         "dashboard" | "" | ""
 
         // ArtifactHit screens
-        "ArtifactHitSummary?artifactName=example&artifactName_op=contains" | "example.ExampleItem" | "entity"
-        "ArtifactHitBins?artifactName=example&artifactName_op=contains" | "example.Example" | "create"
+        "ArtifactHitSummary?artifactName=example&artifactName_op=contains" | "moqui.example.ExampleItem" | "entity"
+        "ArtifactHitBins?artifactName=example&artifactName_op=contains" | "moqui.example.Example" | "create"
         // AuditLog screen
         "AuditLog?changedEntityName=example&changedEntityName_op=contains" | "statusId" | "EXST_IN_DESIGN"
         // Cache screens
@@ -86,7 +86,7 @@ class SystemScreenRenderTests extends Specification {
 
         // EntitySync screens
         "EntitySync/EntitySyncList" | "Example sync" | ""
-        "EntitySync/EntitySyncDetail?entitySyncId=EXAMPLE" | "EXAMPLE1" | "example.ExampleItem"
+        "EntitySync/EntitySyncDetail?entitySyncId=EXAMPLE" | "EXAMPLE1" | "moqui.example.ExampleItem"
 
         // Localization screens
         "Localization/Messages" | "Add" | "Añadir"
@@ -122,7 +122,7 @@ class SystemScreenRenderTests extends Specification {
 
         // SystemMessage screens
         // send a message using Tools/Service/ServiceRun (note that this does not work as an external URL, gets caught by security stuff)
-        "../tools/Service/ServiceRun/run?serviceName=org.moqui.example.ExampleServices.produce#ExampleMessage&systemMessageRemoteId=Example1Direct&exampleId=TEST1" | "" | ""
+        "../tools/Service/ServiceRun/run?serviceName=moqui.example.ExampleServices.produce#ExampleMessage&systemMessageRemoteId=Example1Direct&exampleId=TEST1" | "" | ""
         "SystemMessage/Message/SystemMessageList" | "Example Message" | "Example1Local"
         "SystemMessage/Message/SystemMessageDetail?systemMessageId=100000" | "Sent" | "100001"
         "SystemMessage/Message/SystemMessageDetail/EditMessageText?systemMessageId=100000" |
@@ -131,9 +131,9 @@ class SystemScreenRenderTests extends Specification {
         "SystemMessage/Remote/MessageRemoteDetail?systemMessageRemoteId=Example1Local" |
                 "Example Local" | "http://localhost:8080/rpc/json"
         "SystemMessage/Type/MessageTypeList" | "Example Message" |
-                "org.moqui.example.ExampleServices.consume#ExampleMessage"
+                "moqui.example.ExampleServices.consume#ExampleMessage"
         "SystemMessage/Type/MessageTypeDetail?systemMessageTypeId=ExampleMessage" |
-                "Example Message" | "org.moqui.example.ExampleServices.produce#ExampleMessage"
+                "Example Message" | "moqui.example.ExampleServices.produce#ExampleMessage"
 
         // Visit screens
         // NOTE: this relies on demo data in the example component

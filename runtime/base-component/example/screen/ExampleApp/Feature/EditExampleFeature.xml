@@ -19,16 +19,16 @@ along with this software (see the LICENSE.md file). If not, see
     <parameter name="exampleFeatureId"/>
 
     <transition name="createExampleFeature">
-        <service-call name="org.moqui.example.ExampleServices.create#ExampleFeature"/>
+        <service-call name="moqui.example.ExampleServices.create#ExampleFeature"/>
         <default-response url="."/>
     </transition>
     <transition name="updateExampleFeature">
-        <service-call name="update#example.ExampleFeature"/>
+        <service-call name="update#moqui.example.ExampleFeature"/>
         <default-response url="."/>
     </transition>
 
     <actions>
-        <entity-find-one entity-name="example.ExampleFeature" value-field="fieldValues"/>
+        <entity-find-one entity-name="moqui.example.ExampleFeature" value-field="fieldValues"/>
 
         <entity-find entity-name="moqui.basic.Enumeration" list="featureSourceEnumList">
             <econdition field-name="enumTypeId" value="ExampleFeatureSource"/>
@@ -40,7 +40,7 @@ along with this software (see the LICENSE.md file). If not, see
             <condition><compare field="fieldValues" operator="empty"/></condition>
             <widgets>
                 <form-single name="CreateExampleFeature" transition="createExampleFeature">
-                    <auto-fields-service service-name="org.moqui.example.ExampleServices.create#ExampleFeature"/>
+                    <auto-fields-service service-name="moqui.example.ExampleServices.create#ExampleFeature"/>
                     <field name="exampleFeatureId">
                         <conditional-field condition="exampleFeatureId">
                             <display text="Not Found: [${exampleFeatureId}]" also-hidden="false"/>

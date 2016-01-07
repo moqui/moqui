@@ -18,13 +18,13 @@ along with this software (see the LICENSE.md file). If not, see
     
     <parameter name="exampleId"/>
 
-    <transition name="updateExampleItem"><service-call name="update#example.ExampleItem"/>
+    <transition name="updateExampleItem"><service-call name="update#moqui.example.ExampleItem"/>
         <default-response url="../EditExampleItems"><parameter name="exampleId" from="exampleId_0"/></default-response></transition>
-    <transition name="deleteExampleItem"><service-call name="delete#example.ExampleItem"/>
+    <transition name="deleteExampleItem"><service-call name="delete#moqui.example.ExampleItem"/>
         <default-response url="../EditExampleItems"/></transition>
 
     <actions>
-        <entity-find entity-name="example.ExampleItem" list="exampleItemList">
+        <entity-find entity-name="moqui.example.ExampleItem" list="exampleItemList">
             <search-form-inputs default-order-by="exampleItemSeqId"/>
             <econdition field-name="exampleId" from="exampleId"/>
         </entity-find>
@@ -36,7 +36,7 @@ along with this software (see the LICENSE.md file). If not, see
     </actions>
     <widgets>
         <form-list name="ListExampleItems" transition="updateExampleItem" list="exampleItemList" multi="true">
-            <auto-fields-service service-name="update#example.ExampleItem"/>
+            <auto-fields-service service-name="update#moqui.example.ExampleItem"/>
             <field name="exampleId">
                 <header-field><hidden/></header-field>
                 <default-field><hidden/></default-field>

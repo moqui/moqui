@@ -40,7 +40,7 @@ along with this software (see the LICENSE.md file). If not, see
         </moqui.screen.form.DbFormField>
     </moqui.screen.form.DbForm>
 
-    <moqui.entity.UserField entityName="example.Example" fieldName="testUserField" userGroupId="ALL_USERS"
+    <moqui.entity.UserField entityName="moqui.example.Example" fieldName="testUserField" userGroupId="ALL_USERS"
                             fieldType="text-long" enableAuditLog="Y" enableLocalization="N" encrypt="N"/>
 
     <!-- Example Survey Form 1 -->

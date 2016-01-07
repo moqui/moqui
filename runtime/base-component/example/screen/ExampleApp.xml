@@ -25,7 +25,7 @@ along with this software (see the LICENSE.md file). If not, see
     <transition name="ExampleEntity" method="get" read-only="true">
         <path-parameter name="exampleId"/>
         <actions>
-            <entity-find-one entity-name="example.Example" value-field="example"/>
+            <entity-find-one entity-name="moqui.example.Example" value-field="example"/>
             <script>ec.web.sendJsonResponse(example)</script>
         </actions>
         <default-response type="none"/>
@@ -38,7 +38,7 @@ along with this software (see the LICENSE.md file). If not, see
          http://localhost:8080/apps/example/ExampleEntity
     -->
     <transition name="ExampleEntity" method="post">
-        <service-call name="org.moqui.example.ExampleServices.createExample" in-map="ec.web.parameters"
+        <service-call name="moqui.example.ExampleServices.createExample" in-map="ec.web.parameters"
                       web-send-json-response="true"/>
         <default-response type="none"/>
     </transition>
@@ -56,7 +56,7 @@ along with this software (see the LICENSE.md file). If not, see
     -->
     <transition name="ExampleEntity" method="put">
         <path-parameter name="exampleId"/>
-        <service-call name="org.moqui.example.ExampleServices.updateExample" in-map="ec.web.parameters"
+        <service-call name="moqui.example.ExampleServices.updateExample" in-map="ec.web.parameters"
                       web-send-json-response="true"/>
         <default-response type="none"/>
     </transition>
@@ -65,7 +65,7 @@ along with this software (see the LICENSE.md file). If not, see
     -->
     <transition name="ExampleEntity" method="delete">
         <path-parameter name="exampleId"/>
-        <service-call name="delete#example.Example" in-map="ec.web.parameters"
+        <service-call name="delete#moqui.example.Example" in-map="ec.web.parameters"
                       web-send-json-response="true"/>
         <default-response type="none"/>
     </transition>
@@ -119,7 +119,7 @@ along with this software (see the LICENSE.md file). If not, see
          http://localhost:8080/apps/example/localCamelExample
     -->
     <transition name="localCamelExample">
-        <service-call name="org.moqui.example.ExampleServices.localCamelExample" web-send-json-response="true"/>
+        <service-call name="moqui.example.ExampleServices.localCamelExample" web-send-json-response="true"/>
         <default-response type="none"/>
     </transition>
 

@@ -1,5 +1,5 @@
 # first record is ${entityName or serviceName},${dataType}
-example.Example,demo
+moqui.example.Example,demo
 # second record is list of field names, then each additional record is values for those fields
 exampleId, exampleTypeEnumId, statusId, exampleName, description, exampleSize, exampleDate, testDate, testTime, exampleEmail
 TEST1, EXT_MADE_UP, EXST_IN_DESIGN, Test Example Name, "Test description, with a comma, from CSV file", 11, 2014-01-01 12:00:00, 2014-01-01, 12:00:00, example1@test.com
