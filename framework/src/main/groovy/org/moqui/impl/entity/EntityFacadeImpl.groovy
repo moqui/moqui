@@ -510,7 +510,10 @@ class EntityFacadeImpl implements EntityFacade {
         // If this is a moqui.entity.view.DbViewEntity, handle that in a special way (generate the Nodes from the DB records)
         if (entityLocationList.contains("_DB_VIEW_ENTITY_")) {
             EntityValue dbViewEntity = makeFind("moqui.entity.view.DbViewEntity").condition("dbViewEntityName", entityName).one()
-            if (dbViewEntity == null) throw new EntityNotFoundException("Could not find DbViewEntity with name ${entityName}")
+            if (dbViewEntity == null) {
+                logger.warn("Could not find DbViewEntity with name ${entityName}")
+                return null
+            }
             Node dbViewNode = new Node(null, "view-entity", ["entity-name":entityName, "package-name":dbViewEntity.packageName])
             if (dbViewEntity.cache == "Y") dbViewNode.attributes().put("cache", "true")
             else if (dbViewEntity.cache == "N") dbViewNode.attributes().put("cache", "false")
@@ -656,6 +659,8 @@ class EntityFacadeImpl implements EntityFacade {
         Set<String> entityNameSet = getAllEntityNames()
         for (String entityName in entityNameSet) {
             EntityDefinition ed = getEntityDefinition(entityName)
+            // may happen if all entity names includes a DB view entity or other that doesn't really exist
+            if (ed == null) continue
             List<String> pkSet = ed.getPkFieldNames()
             for (Node relNode in ed.entityNode."relationship") {
                 // don't create reverse for auto reference relationships
@@ -713,6 +718,7 @@ class EntityFacadeImpl implements EntityFacade {
         //     called for new ones, not from cache
         for (String entityName in entityNameSet) {
             EntityDefinition ed = getEntityDefinition(entityName)
+            if (ed == null) continue
             ed.hasReverseRelationships = true
         }
 
@@ -1357,21 +1363,26 @@ class EntityFacadeImpl implements EntityFacade {
 
     protected final static long defaultBankSize = 50L
     @CompileStatic
-    protected String dbSequencedIdPrimary(String seqName, Long staggerMax, Long bankSize) {
+    protected synchronized Lock getDbSequenceLock(String seqName) {
         Lock dbSequenceLock = dbSequenceLocks.get(seqName)
         if (dbSequenceLock == null) {
             dbSequenceLock = new ReentrantLock()
             dbSequenceLocks.put(seqName, dbSequenceLock)
         }
+        return dbSequenceLock
+    }
+    @CompileStatic
+    protected String dbSequencedIdPrimary(String seqName, Long staggerMax, Long bankSize) {
 
         // TODO: find some way to get this running non-synchronized for performance reasons (right now if not
         // TODO:     synchronized the forUpdate won't help if the record doesn't exist yet, causing errors in high
         // TODO:     traffic creates; is it creates only?)
 
+        Lock dbSequenceLock = getDbSequenceLock(seqName)
+        dbSequenceLock.lock()
+
         // NOTE: simple approach with forUpdate, not using the update/select "ethernet" approach used in OFBiz; consider
         // that in the future if there are issues with this approach
-
-        dbSequenceLock.lock()
 
         try {
             // first get a bank if we don't have one already
