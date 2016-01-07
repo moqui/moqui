@@ -170,11 +170,18 @@ class EntityDataFeed {
         return dfxr
     }
 
+    final Set<String> dataFeedSkipEntities = new HashSet<String>(['moqui.entity.SequenceValueItem'])
+
     List<DocumentEntityInfo> getDataFeedEntityInfoList(String fullEntityName) {
         List<DocumentEntityInfo> entityInfoList = (List<DocumentEntityInfo>) dataFeedEntityInfo.get(fullEntityName)
         if (entityInfoList != null) return entityInfoList
         // after this point entityInfoList is null
         if (dataFeedEntityInfo.containsKey(fullEntityName)) return null
+        // if this is an entity to skip, return now (do after primary lookup to avoid additional performance overhead in common case)
+        if (dataFeedSkipEntities.contains(fullEntityName)) {
+            dataFeedEntityInfo.put(fullEntityName, [])
+            return null
+        }
 
         // logger.warn("=============== getting DocumentEntityInfo for [${fullEntityName}], from cache: ${entityInfoList}")
         // only rebuild if the cache is empty, most entities won't have any entry in it and don't want a rebuild for each one
