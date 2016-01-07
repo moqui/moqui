@@ -122,7 +122,7 @@ class ToolsScreenRenderTests extends Specification {
         // create a DbViewEntity, set MASTER and fields, view it
         when:
         ScreenTestRender createStr = screenTest.render("DataView/FindDbView/create",
-                [dbViewEntityName:'ExampleDbView', packageName:'example', isDataView:'Y'], null)
+                [dbViewEntityName:'ExampleDbView', packageName:'moqui.example', isDataView:'Y'], null)
         logger.info("Called FindDbView/create in ${createStr.getRenderTime()}ms")
 
         ScreenTestRender fdvStr = screenTest.render("DataView/FindDbView", null, null)
