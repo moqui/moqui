@@ -857,18 +857,18 @@ class EntityFacadeImpl implements EntityFacade {
     List<Map> getAllEntityInfo(int levels, boolean excludeViewEntities) {
         Map<String, Map> entityInfoMap = [:]
         for (String entityName in getAllEntityNames()) {
-            if (excludeViewEntities) {
-                EntityDefinition ed = getEntityDefinition(entityName)
-                if (ed.isViewEntity()) continue
-            }
+            EntityDefinition ed = getEntityDefinition(entityName)
+            boolean isView = ed.isViewEntity()
+            if (excludeViewEntities && isView) continue
             int lastDotIndex = 0
             for (int i = 0; i < levels; i++) lastDotIndex = entityName.indexOf(".", lastDotIndex+1)
             String name = lastDotIndex == -1 ? entityName : entityName.substring(0, lastDotIndex)
             Map curInfo = entityInfoMap.get(name)
             if (curInfo) {
-                StupidUtilities.addToBigDecimalInMap("entities", 1, curInfo)
+                if (isView) StupidUtilities.addToBigDecimalInMap("viewEntities", 1, curInfo)
+                else StupidUtilities.addToBigDecimalInMap("entities", 1, curInfo)
             } else {
-                entityInfoMap.put(name, [name:name, entities:1])
+                entityInfoMap.put(name, [name:name, entities:(isView ? 0 : 1), viewEntities:(isView ? 1 : 0)])
             }
         }
         TreeSet<String> nameSet = new TreeSet(entityInfoMap.keySet())

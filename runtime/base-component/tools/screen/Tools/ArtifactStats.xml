@@ -19,16 +19,25 @@ along with this software (see the LICENSE.md file). If not, see
 
     <actions>
         <set field="levels" from="levels ? levels as int : 2"/>
+
         <set field="entityInfoList" from="ec.entity.getAllEntityInfo(levels, false)"/>
+        <set field="entityCount" from="0"/>
+        <set field="viewEntityCount" from="0"/>
+        <iterate list="entityInfoList" entry="entityInfo">
+            <set field="entityCount" from="entityCount + entityInfo.entities"/>
+            <set field="viewEntityCount" from="viewEntityCount + entityInfo.viewEntities"/>
+        </iterate>
+
         <set field="serviceInfoList" from="ec.service.getAllServiceInfo(levels)"/>
         <set field="allRootScreenLocations" from="ec.screen.getAllRootScreenLocations()"/>
     </actions>
     <widgets>
         <label text="Entity Stats" type="h3"/>
-        <label text="Entities: ${ec.entity.getAllEntityNames().size()}, EECA rules: ${ec.entity.getEecaRuleCount()}" type="p"/>
+        <label text="Entities: ${entityCount}, View Entities: ${viewEntityCount}, EECA rules: ${ec.entity.getEecaRuleCount()}" type="p"/>
         <form-list name="EntityInfoList" list="entityInfoList" skip-form="true">
             <field name="name"><default-field><display/></default-field></field>
             <field name="entities"><default-field><display/></default-field></field>
+            <field name="viewEntities"><default-field><display/></default-field></field>
         </form-list>
 
         <label text="Service Stats" type="h3"/>
