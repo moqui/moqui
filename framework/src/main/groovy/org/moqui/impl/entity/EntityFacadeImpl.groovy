@@ -38,6 +38,8 @@ import org.moqui.BaseException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock
 
@@ -61,7 +63,7 @@ class EntityFacadeImpl implements EntityFacade {
     /** Sequence name (often entity name) plus tenantId is the key and the value is an array of 2 Longs the first is the next
      * available value and the second is the highest value reserved/cached in the bank. */
     final Cache entitySequenceBankCache
-    protected final Map<String, Lock> dbSequenceLocks = new HashMap<String, Lock>()
+    protected final ConcurrentMap<String, Lock> dbSequenceLocks = new ConcurrentHashMap<String, Lock>()
     protected final Lock locationLoadLock = new ReentrantLock()
 
     protected final Map<String, List<EntityEcaRule>> eecaRulesByEntityName = new HashMap()
@@ -1363,11 +1365,14 @@ class EntityFacadeImpl implements EntityFacade {
 
     protected final static long defaultBankSize = 50L
     @CompileStatic
-    protected synchronized Lock getDbSequenceLock(String seqName) {
-        Lock dbSequenceLock = dbSequenceLocks.get(seqName)
+    protected Lock getDbSequenceLock(String seqName) {
+        Lock oldLock, dbSequenceLock = dbSequenceLocks.get(seqName)
         if (dbSequenceLock == null) {
             dbSequenceLock = new ReentrantLock()
-            dbSequenceLocks.put(seqName, dbSequenceLock)
+            oldLock = dbSequenceLocks.putIfAbsent(seqName, dbSequenceLock)
+            if(oldLock != null) {
+                return oldLock
+            }
         }
         return dbSequenceLock
     }
