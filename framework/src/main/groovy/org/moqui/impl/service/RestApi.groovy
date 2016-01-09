@@ -109,9 +109,10 @@ class RestApi {
         Map<String, Map> definitions = new TreeMap<String, Map>()
         Map<String, Object> swaggerMap = [swagger:2.0,
             info:[title:(resourceNode.displayName ?: "Service REST API (${fullBasePath})"), version:(resourceNode.version ?: '1.0'),
-                  description:(resourceNode.description ?: '')],
+                description:(resourceNode.description ?: '')],
             host:hostName, basePath:fullBasePath.toString(), schemes:['http', 'https'],
-            securityDefinitions:[basicAuth:[type:'basic', description:'HTTP Basic Authentication']],
+            securityDefinitions:[basicAuth:[type:'basic', description:'HTTP Basic Authentication'],
+                api_key:[type:"apiKey", name:"api_key", in:"header", description:'HTTP Header api_key, also supports tenant_id header']],
             consumes:['application/json', 'multipart/form-data'], produces:['application/json'],
         ]
 
@@ -237,7 +238,7 @@ class RestApi {
             if (swaggerMap.tags && pathNode.fullPathList.size() > 1) curMap.put("tags", [pathNode.fullPathList[1]])
             curMap.putAll([summary:(serviceNode.attribute("displayName") ?: "${sd.verb} ${sd.noun}".toString()),
                            description:StupidUtilities.nodeText(serviceNode.get("description")),
-                           security:[[basicAuth:[]]], parameters:parameters, responses:responses])
+                           security:[[basicAuth:[]], [api_key:[]]], parameters:parameters, responses:responses])
             resourceMap.put(method, curMap)
         }
 
@@ -400,7 +401,7 @@ class RestApi {
             if (masterName) summary = summary + " (master: " + masterName + ")"
             if (swaggerMap.tags && pathNode.fullPathList.size() > 1) curMap.put("tags", [pathNode.fullPathList[1]])
             curMap.putAll([summary:summary, description:StupidUtilities.nodeText(ed.getEntityNode().get("description")),
-                           security:[[basicAuth:[]]], parameters:parameters, responses:responses])
+                           security:[[basicAuth:[]], [api_key:[]]], parameters:parameters, responses:responses])
             resourceMap.put(method, curMap)
 
             // add a definition for entity fields

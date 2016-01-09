@@ -1310,21 +1310,21 @@ public class EntityDefinition {
         Map oneResponses = ["200":[name:'body', in:'body', required:false, schema:['$ref':"#/definitions/${refDefName}".toString()]]]
         oneResponses.putAll(responses)
         entityIdResourceMap.put("get", [summary:("Create ${ed.getFullEntityName()}".toString()),
-                description:entityDescription, security:[[basicAuth:[]]], parameters:parameters, responses:oneResponses])
+                description:entityDescription, security:[[basicAuth:[]], [api_key:[]]], parameters:parameters, responses:oneResponses])
 
         // under id: patch - update
         List<Map> updateParameters = new LinkedList<Map>(parameters)
         updateParameters.add([name:'body', in:'body', required:false, schema:['$ref':"#/definitions/${refDefName}".toString()]])
         entityIdResourceMap.put("patch", [summary:("Update ${ed.getFullEntityName()}".toString()),
-                description:entityDescription, security:[[basicAuth:[]]], parameters:updateParameters, responses:responses])
+                description:entityDescription, security:[[basicAuth:[]], [api_key:[]]], parameters:updateParameters, responses:responses])
 
         // under id: put - store
         entityIdResourceMap.put("put", [summary:("Create or Update ${ed.getFullEntityName()}".toString()),
-                description:entityDescription, security:[[basicAuth:[]]], parameters:updateParameters, responses:responses])
+                description:entityDescription, security:[[basicAuth:[]], [api_key:[]]], parameters:updateParameters, responses:responses])
 
         // under id: delete - delete
         entityIdResourceMap.put("delete", [summary:("Delete ${ed.getFullEntityName()}".toString()),
-                description:entityDescription, security:[[basicAuth:[]]], parameters:parameters, responses:responses])
+                description:entityDescription, security:[[basicAuth:[]], [api_key:[]]], parameters:parameters, responses:responses])
 
         // add a definition for entity fields
         definitionsMap.put(refDefName, ed.getJsonSchema(false, false, definitionsMap, null, null, null, false, masterName, null))
