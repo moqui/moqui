@@ -16,6 +16,7 @@ along with this software (see the LICENSE.md file). If not, see
         default-menu-index="1" menu-image="glyphicon glyphicon-dashboard" menu-image-type="icon">
 
     <actions>
+        <set field="restUrl" from="sri.buildUrl('/rest').url"/>
     </actions>
     <widgets>
         <container-row>
@@ -26,6 +27,19 @@ along with this software (see the LICENSE.md file). If not, see
                         <link url="../AutoScreen" text="Auto Screens"/>
                         <link url="../ArtifactStats" text="Artifact Stats"/>
                         <link url="../Service" text="Services"/>
+                    </box-body>
+                </container-box>
+                <container-box>
+                    <box-header><label text="REST API: Swagger UI" type="h5"/></box-header>
+                    <box-body>
+                        <link url="/assets/lib/swagger-ui/index.html?url=${restUrl}/service.swagger/moqui"
+                                url-type="plain" target-window="_blank" text="Moqui Tools API"/>
+                        <link url="/assets/lib/swagger-ui/index.html?url=${restUrl}/service.swagger/example"
+                                url-type="plain" target-window="_blank" text="Example API"/>
+                        <link url="/assets/lib/swagger-ui/index.html?url=${restUrl}/service.swagger/mantle"
+                                url-type="plain" target-window="_blank" text="Mantle API"/>
+                        <link url="/assets/lib/swagger-ui/index.html?url=${restUrl}/master.swagger/all"
+                                url-type="plain" target-window="_blank" text="Entity Master API"/>
                     </box-body>
                 </container-box>
             </row-col>
