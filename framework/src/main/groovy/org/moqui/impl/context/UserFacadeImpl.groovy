@@ -115,8 +115,7 @@ class UserFacadeImpl implements UserFacade {
 
         // check for HTTP Basic Authorization for Authentication purposes
         // NOTE: do this even if there is another user logged in, will go on stack
-        Map multiPartParameters = eci.webImpl.multiPartParameters
-        Map jsonParameters = eci.webImpl.jsonParameters
+        Map secureParameters = eci.webImpl.getSecureRequestParameters()
         String authzHeader = request.getHeader("Authorization")
         if (authzHeader && authzHeader.substring(0, 6).equals("Basic ")) {
             String basicAuthEncoded = authzHeader.substring(6).trim()
@@ -124,7 +123,7 @@ class UserFacadeImpl implements UserFacade {
             if (basicAuthAsString.indexOf(":") > 0) {
                 String username = basicAuthAsString.substring(0, basicAuthAsString.indexOf(":"))
                 String password = basicAuthAsString.substring(basicAuthAsString.indexOf(":") + 1)
-                String tenantId = multiPartParameters?.authTenantId ?: jsonParameters?.authTenantId ?: request.getParameter("authTenantId")
+                String tenantId = secureParameters.authTenantId
                 this.loginUser(username, password, tenantId)
             } else {
                 logger.warn("For HTTP Basic Authorization got bad credentials string. Base64 encoded is [${basicAuthEncoded}] and after decoding is [${basicAuthAsString}].")
@@ -133,26 +132,17 @@ class UserFacadeImpl implements UserFacade {
             String loginKey = request.getHeader("api_key") ?: request.getHeader("login_key")
             String tenantId = request.getHeader("tenant_id")
             this.loginUserKey(loginKey.trim(), tenantId?.trim())
-        } else {
+        } else if (secureParameters.api_key || secureParameters.login_key) {
+            String loginKey = secureParameters.api_key ?: secureParameters.login_key
+            String tenantId = secureParameters.tenant_id
+            this.loginUserKey(loginKey.trim(), tenantId?.trim())
+        } else if (secureParameters.authUsername) {
             // try the Moqui-specific parameters for instant login
             // if we have credentials coming in anywhere other than URL parameters, try logging in
-            String authUsername = null
-            String authPassword = null
-            String authTenantId = null
-            if (multiPartParameters && multiPartParameters.authUsername) {
-                authUsername = multiPartParameters.authUsername
-                authPassword = multiPartParameters.authPassword
-                authTenantId = multiPartParameters.authTenantId
-            } else if (jsonParameters && jsonParameters.authUsername) {
-                authUsername = jsonParameters.authUsername
-                authPassword = jsonParameters.authPassword
-                authTenantId = jsonParameters.authTenantId
-            } else if (!request.getQueryString() && request.getParameter("authUsername") && request.getParameter("authPassword")) {
-                authUsername = request.getParameter("authUsername")
-                authPassword = request.getParameter("authPassword")
-                authTenantId = request.getParameter("authTenantId")
-            }
-            if (authUsername) this.loginUser(authUsername, authPassword, authTenantId)
+            String authUsername = secureParameters.authUsername
+            String authPassword = secureParameters.authPassword
+            String authTenantId = secureParameters.authTenantId
+            this.loginUser(authUsername, authPassword, authTenantId)
         }
 
         this.visitId = session.getAttribute("moqui.visitId")
