@@ -216,8 +216,12 @@ class RestApi {
                     for (String parmName in remainingInParmNames) {
                         Node parmNode = sd.getInParameter(parmName)
                         String javaType = parmNode.attribute("type")
+                        String jsonType = getJsonType(javaType)
+                        // these are query parameters because method doesn't support body, so skip objects and arrays
+                        //   (in many services they are not needed, pre-lookup sorts of objects; use post or something if needed)
+                        if (jsonType == 'object' || jsonType == 'array') continue
                         Map<String, Object> propMap = [name:parmName, in:'query', required:false,
-                                type:getJsonType(javaType), format:getJsonFormat(javaType),
+                                type:jsonType, format:getJsonFormat(javaType),
                                 description:StupidUtilities.nodeText(parmNode.get("description"))] as Map<String, Object>
                         parameters.add(propMap)
                         sd.addParameterEnums(parmNode, propMap)
