@@ -107,7 +107,7 @@ class RestApi {
         for (String rootPath in rootPathList) fullBasePath.append('/').append(rootPath)
         Map<String, Map> paths = [:]
         Map<String, Map> definitions = new TreeMap<String, Map>()
-        Map<String, Object> swaggerMap = [swagger:2.0,
+        Map<String, Object> swaggerMap = [swagger:'2.0',
             info:[title:(resourceNode.displayName ?: "Service REST API (${fullBasePath})"), version:(resourceNode.version ?: '1.0'),
                 description:(resourceNode.description ?: '')],
             host:hostName, basePath:fullBasePath.toString(), schemes:['http', 'https'],

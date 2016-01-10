@@ -1013,8 +1013,8 @@ class WebFacadeImpl implements WebFacade {
         response.addHeader("Access-Control-Allow-Headers", "Content-Type, api_key, Authorization")
 
         Map definitionsMap = new TreeMap()
-        Map<String, Object> swaggerMap = [swagger:2.0,
-            info:[title:("${filename} REST API"), version:'1.0'], host:hostName, basePath:basePath,
+        Map<String, Object> swaggerMap = [swagger:'2.0',
+            info:[title:("${filename} REST API"), version:'1.6.0'], host:hostName, basePath:basePath,
             schemes:['http', 'https'], consumes:['application/json', 'multipart/form-data'], produces:['application/json'],
             securityDefinitions:[basicAuth:[type:'basic', description:'HTTP Basic Authentication'],
                 api_key:[type:"apiKey", name:"api_key", in:"header", description:'HTTP Header api_key, also supports tenant_id header']],
