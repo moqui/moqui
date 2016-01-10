@@ -363,8 +363,6 @@ class WebFacadeImpl implements WebFacade {
     @Override
     @CompileStatic
     Map<String, Object> getSecureRequestParameters() {
-        if (requestParameters != null) return requestParameters
-
         ContextStack cs = new ContextStack()
         if (savedParameters) cs.push(savedParameters)
         if (multiPartParameters) cs.push(multiPartParameters)
@@ -372,8 +370,7 @@ class WebFacadeImpl implements WebFacade {
         if (!request.getQueryString()) cs.push((Map<String, Object>) request.getParameterMap())
 
         // NOTE: the CanonicalizeMap cleans up character encodings, and unwraps lists of values with a single entry
-        requestParameters = new StupidWebUtilities.CanonicalizeMap(cs)
-        return requestParameters
+        return new StupidWebUtilities.CanonicalizeMap(cs)
     }
     @Override
     @CompileStatic
