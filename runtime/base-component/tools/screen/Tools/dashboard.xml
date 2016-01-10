@@ -40,6 +40,7 @@ along with this software (see the LICENSE.md file). If not, see
                                 url-type="plain" target-window="_blank" text="Mantle API"/>
                         <link url="/assets/lib/swagger-ui/index.html?url=${restUrl}/master.swagger/all"
                                 url-type="plain" target-window="_blank" text="Entity Master API"/>
+                        <label text="The larger APIs take a few seconds to load. Runs in same session (already authenticated)." type="p"/>
                     </box-body>
                 </container-box>
             </row-col>
