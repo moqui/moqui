@@ -1009,7 +1009,8 @@ public class EntityDefinition {
 
         Map<String, Object> properties = [:]
         properties.put('_entity', [type:'string', default:name])
-        Map<String, Object> schema = [id:refName, title:prettyName, type:'object', properties:properties] as Map<String, Object>
+        // NOTE: Swagger validation doesn't like the id field, was: id:refName
+        Map<String, Object> schema = [title:prettyName, type:'object', properties:properties] as Map<String, Object>
 
         // add all fields
         ArrayList<String> allFields = pkOnly ? getPkFieldNames() : getAllFieldNames(true)
