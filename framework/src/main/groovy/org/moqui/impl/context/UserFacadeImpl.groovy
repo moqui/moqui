@@ -577,6 +577,10 @@ class UserFacadeImpl implements UserFacade {
                 .parameters([loginKey:hashedKey, userId:userId, fromDate:fromDate, thruDate:new Timestamp(thruTime)])
                 .disableAuthz().call()
 
+        // clean out expired keys
+        eci.entity.find("moqui.security.UserLoginKey").condition("userId", userId)
+                .condition("thruDate", "less-than", fromDate).disableAuthz().deleteAll()
+
         return loginKey
     }
 
