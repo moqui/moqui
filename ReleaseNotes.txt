@@ -59,6 +59,10 @@ New Features
     - see example client calls in the rest.xml screen definition file
     - get Swagger API definition from /rest/service.swagger
     - get RAML API definition from /rest/service.raml
+  - Added Swagger UI 2.1.4, with links from Tools app
+    - browse REST API details from generated Swagger
+    - call REST API services
+    - use new Login Key functionality with api_key for authentication
   - New RestClient API, available through ec.service.rest(), with various
     options for doing HTTP requests and parsing response
   - Added json-schema for Entity REST API: for all entities get
@@ -106,6 +110,17 @@ New Features
   - Password reset now sets a reset password separate from the current
     password that may only be used to change the password; current password
     stays valid for password change or login (if email-require-change=false)
+  - Added Login Key functionality
+    - secure temporary keys associated with a UserAccount as an alternate
+      way to authenticate
+    - expire time configured in user-facade.login-key.@expire-hours in
+      Moqui Conf XML, defaults to 144 hours (6 days)
+    - keys generated using secure random and saved in secure hashed form
+      (default SHA-256) so can only be retrieved on create
+      (see UserFacade.getLoginKey())
+    - can retrieve with a request to /rest/api_key (see rest.xml comments)
+    - pass key in api_key or login_key request header or secure parameter
+      (not in path or query string)
 - Entity Features
   - Added relationship.@mutable attribute, defaults to false for type one*
     and to true for type many relationships; used in store through

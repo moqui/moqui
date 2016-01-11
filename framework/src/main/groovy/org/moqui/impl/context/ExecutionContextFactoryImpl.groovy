@@ -455,13 +455,22 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     static String getRandomSalt() { return StupidUtilities.getRandomString(8) }
     String getPasswordHashType() {
         Node passwordNode = (Node) confXmlRoot."user-facade"[0]."password"[0]
-        return passwordNode."@encrypt-hash-type" ?: "SHA-256"
+        return passwordNode.attribute("encrypt-hash-type") ?: "SHA-256"
     }
     @CompileStatic
     String getSimpleHash(String source, String salt) { return getSimpleHash(source, salt, getPasswordHashType()) }
     @CompileStatic
     String getSimpleHash(String source, String salt, String hashType) {
         return new SimpleHash(hashType ?: getPasswordHashType(), source, salt).toString()
+    }
+
+    String getLoginKeyHashType() {
+        Node loginKeyNode = (Node) confXmlRoot."user-facade"[0]."login-key"[0]
+        return loginKeyNode.attribute("encrypt-hash-type") ?: "SHA-256"
+    }
+    int getLoginKeyExpireHours() {
+        Node loginKeyNode = (Node) confXmlRoot."user-facade"[0]."login-key"[0]
+        return (loginKeyNode.attribute("expire-hours") ?: "144") as int
     }
 
     // ========== Getters ==========
@@ -1211,6 +1220,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             Node ufBaseNode = baseNode."user-facade"[0]
             Node ufOverrideNode = overrideNode."user-facade"[0]
             mergeSingleChild(ufBaseNode, ufOverrideNode, "password")
+            mergeSingleChild(ufBaseNode, ufOverrideNode, "login-key")
             mergeSingleChild(ufBaseNode, ufOverrideNode, "login")
         }
 

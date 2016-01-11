@@ -14,9 +14,11 @@
 package org.moqui.impl.context
 
 import groovy.transform.CompileStatic
+import org.apache.commons.codec.binary.Base64
 import org.moqui.context.NotificationMessage
 import org.moqui.entity.EntityCondition
 
+import java.security.SecureRandom
 import java.sql.Timestamp
 import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServletRequest
@@ -113,8 +115,7 @@ class UserFacadeImpl implements UserFacade {
 
         // check for HTTP Basic Authorization for Authentication purposes
         // NOTE: do this even if there is another user logged in, will go on stack
-        Map multiPartParameters = eci.webImpl.multiPartParameters
-        Map jsonParameters = eci.webImpl.jsonParameters
+        Map secureParameters = eci.webImpl.getSecureRequestParameters()
         String authzHeader = request.getHeader("Authorization")
         if (authzHeader && authzHeader.substring(0, 6).equals("Basic ")) {
             String basicAuthEncoded = authzHeader.substring(6).trim()
@@ -122,31 +123,26 @@ class UserFacadeImpl implements UserFacade {
             if (basicAuthAsString.indexOf(":") > 0) {
                 String username = basicAuthAsString.substring(0, basicAuthAsString.indexOf(":"))
                 String password = basicAuthAsString.substring(basicAuthAsString.indexOf(":") + 1)
-                String tenantId = multiPartParameters?.authTenantId ?: jsonParameters?.authTenantId ?: request.getParameter("authTenantId")
+                String tenantId = secureParameters.authTenantId
                 this.loginUser(username, password, tenantId)
             } else {
                 logger.warn("For HTTP Basic Authorization got bad credentials string. Base64 encoded is [${basicAuthEncoded}] and after decoding is [${basicAuthAsString}].")
             }
-        } else {
+        } else if (request.getHeader("api_key") || request.getHeader("login_key")) {
+            String loginKey = request.getHeader("api_key") ?: request.getHeader("login_key")
+            String tenantId = request.getHeader("tenant_id")
+            this.loginUserKey(loginKey.trim(), tenantId?.trim())
+        } else if (secureParameters.api_key || secureParameters.login_key) {
+            String loginKey = secureParameters.api_key ?: secureParameters.login_key
+            String tenantId = secureParameters.tenant_id
+            this.loginUserKey(loginKey.trim(), tenantId?.trim())
+        } else if (secureParameters.authUsername) {
             // try the Moqui-specific parameters for instant login
             // if we have credentials coming in anywhere other than URL parameters, try logging in
-            String authUsername = null
-            String authPassword = null
-            String authTenantId = null
-            if (multiPartParameters && multiPartParameters.authUsername) {
-                authUsername = multiPartParameters.authUsername
-                authPassword = multiPartParameters.authPassword
-                authTenantId = multiPartParameters.authTenantId
-            } else if (jsonParameters && jsonParameters.authUsername) {
-                authUsername = jsonParameters.authUsername
-                authPassword = jsonParameters.authPassword
-                authTenantId = jsonParameters.authTenantId
-            } else if (!request.getQueryString() && request.getParameter("authUsername") && request.getParameter("authPassword")) {
-                authUsername = request.getParameter("authUsername")
-                authPassword = request.getParameter("authPassword")
-                authTenantId = request.getParameter("authTenantId")
-            }
-            if (authUsername) this.loginUser(authUsername, authPassword, authTenantId)
+            String authUsername = secureParameters.authUsername
+            String authPassword = secureParameters.authPassword
+            String authTenantId = secureParameters.authTenantId
+            this.loginUser(authUsername, authPassword, authTenantId)
         }
 
         this.visitId = session.getAttribute("moqui.visitId")
@@ -527,6 +523,65 @@ class UserFacadeImpl implements UserFacade {
         }
         if (currentUser != null && currentUser.isAuthenticated()) currentUser.logout()
         clearPerUserValues()
+    }
+
+    @Override
+    boolean loginUserKey(String loginKey, String tenantId) {
+        if (!loginKey) {
+            eci.message.addError("No username specified")
+            return false
+        }
+        // if tenantId, change before lookup
+        if (tenantId) eci.changeTenant(tenantId)
+
+        // lookup login key, by hashed key
+        String hashedKey = eci.ecfi.getSimpleHash(loginKey, "", eci.ecfi.getLoginKeyHashType())
+        EntityValue userLoginKey = eci.getEntity().find("moqui.security.UserLoginKey")
+                .condition("loginKey", hashedKey).disableAuthz().one()
+
+        // see if we found a record for the login key
+        if (userLoginKey == null) {
+            eci.message.addError("Login key not valid")
+            return false
+        }
+
+        // check expire date
+        Timestamp nowDate = getNowTimestamp()
+        if (nowDate > userLoginKey.getTimestamp("thruDate")) {
+            eci.message.addError("Login key expired")
+            return false
+        }
+
+        // login user with internalLoginUser()
+        EntityValue userAccount = eci.getEntity().find("moqui.security.UserAccount")
+                .condition("userId", userLoginKey.userId).disableAuthz().one()
+        return internalLoginUser(userAccount.getString("username"), tenantId)
+    }
+    @Override
+    String getLoginKey() {
+        String userId = getUserId()
+        if (!userId) throw new IllegalStateException("No active user, cannot get login key")
+
+        // generate login key
+        SecureRandom sr = new SecureRandom()
+        byte[] randomBytes = new byte[30]
+        sr.nextBytes(randomBytes)
+        String loginKey = Base64.encodeBase64URLSafeString(randomBytes)
+
+        // save hashed in UserLoginKey, calc expire and set from/thru dates
+        String hashedKey = eci.ecfi.getSimpleHash(loginKey, "", eci.ecfi.getLoginKeyHashType())
+        int expireHours = eci.ecfi.getLoginKeyExpireHours()
+        Timestamp fromDate = getNowTimestamp()
+        long thruTime = fromDate.getTime() + (expireHours * 60*60*1000)
+        eci.service.sync().name("create", "moqui.security.UserLoginKey")
+                .parameters([loginKey:hashedKey, userId:userId, fromDate:fromDate, thruDate:new Timestamp(thruTime)])
+                .disableAuthz().call()
+
+        // clean out expired keys
+        eci.entity.find("moqui.security.UserLoginKey").condition("userId", userId)
+                .condition("thruDate", "less-than", fromDate).disableAuthz().deleteAll()
+
+        return loginKey
     }
 
     @Override

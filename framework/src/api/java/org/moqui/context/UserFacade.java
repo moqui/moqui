@@ -81,9 +81,13 @@ public interface UserFacade {
      * @return true if user was logged in, otherwise false
      */
     boolean loginUser(String username, String password, String tenantId);
-
     /** Remove (logout) active user. */
     void logoutUser();
+
+    /** Authenticate a user and make active using a login key */
+    boolean loginUserKey(String loginKey, String tenantId);
+    /** Get a login key for the active user. */
+    String getLoginKey();
 
     /** If no user is logged in consider an anonymous user logged in. For internal purposes to run things that require authentication. */
     boolean loginAnonymousIfNoUser();
