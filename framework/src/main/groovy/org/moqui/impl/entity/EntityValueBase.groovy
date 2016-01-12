@@ -1127,8 +1127,9 @@ abstract class EntityValueBase implements EntityValue {
         ExecutionContextFactoryImpl ecfi = getEntityFacadeImpl().getEcfi()
         ExecutionContext ec = ecfi.getExecutionContext()
 
-        // check/set defaults
-        checkSetFieldDefaults(ed, ec)
+        // TODO check/set defaults in update? causes problems when not all fields are passed, maybe do after filling in DB values
+        // checkSetFieldDefaults(ed, ec)
+
         // if there is one or more DataFeed configs associated with this entity get info about them
         List entityInfoList = doDataFeed() ? getEntityFacadeImpl().getEntityDataFeed().getDataFeedEntityInfoList(ed.getFullEntityName()) : []
 
