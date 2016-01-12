@@ -904,6 +904,12 @@ public class EntityDefinition {
 
     Map<String, String> pkFieldDefaults = null
     Map<String, String> nonPkFieldDefaults = null
+    Boolean hasFieldDefaultsVal = null
+    @CompileStatic
+    boolean hasFieldDefaults() {
+        if (hasFieldDefaultsVal == null) hasFieldDefaultsVal = getPkFieldDefaults() || getNonPkFieldDefaults()
+        return hasFieldDefaultsVal
+    }
     @CompileStatic
     Map<String, String> getPkFieldDefaults() {
         if (pkFieldDefaults == null) {

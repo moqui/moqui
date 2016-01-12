@@ -167,6 +167,8 @@ Bug Fixes
   expanding; caused problems with set elements in widget-template-include
 - Fixed issue with multiple render-mode elements where there is no
   text.@type attribute; GitHub issue #158
+- Fixed issue with check/set defaults on entity value update where fields
+  not specified were set back to default value
 
 ===========================================================================
 Release 1.5.3 - 11 Sep 2015
