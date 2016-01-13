@@ -155,6 +155,7 @@ New Features
   list of changes and runs in order to avoid issues with foreign keys, etc
 - Added entities and services for wiki spaces and pages, originally from
   HiveMind, based on ResourceFacade resources
+- Example entities, services now have a consistent package (moqui.entity)
 
 Bug Fixes
 
@@ -166,6 +167,8 @@ Bug Fixes
   expanding; caused problems with set elements in widget-template-include
 - Fixed issue with multiple render-mode elements where there is no
   text.@type attribute; GitHub issue #158
+- Fixed issue with check/set defaults on entity value update where fields
+  not specified were set back to default value
 
 ===========================================================================
 Release 1.5.3 - 11 Sep 2015

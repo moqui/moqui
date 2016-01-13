@@ -21,7 +21,7 @@ along with this software (see the LICENSE.md file). If not, see
     <transition name="editExampleFeature"><default-response url="../EditExampleFeature"/></transition>
 
     <actions>
-        <entity-find entity-name="example.ExampleFeature" list="exampleFeatureList">
+        <entity-find entity-name="moqui.example.ExampleFeature" list="exampleFeatureList">
             <search-form-inputs default-order-by="description"/></entity-find>
     </actions>
     <widgets>

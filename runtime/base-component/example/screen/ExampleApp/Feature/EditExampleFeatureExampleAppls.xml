@@ -19,11 +19,11 @@ along with this software (see the LICENSE.md file). If not, see
     <parameter name="exampleFeatureId" required="true"/>
 
     <transition name="editExample"><default-response url="../../Example/EditExample"/></transition>
-    <transition name="createExampleFeatureAppl"><service-call name="org.moqui.example.ExampleServices.create#ExampleFeatureAppl"/>
+    <transition name="createExampleFeatureAppl"><service-call name="moqui.example.ExampleServices.create#ExampleFeatureAppl"/>
         <default-response url="."/></transition>
-    <transition name="updateExampleFeatureAppl"><service-call name="update#example.ExampleFeatureAppl"/>
+    <transition name="updateExampleFeatureAppl"><service-call name="update#moqui.example.ExampleFeatureAppl"/>
         <default-response url="."/></transition>
-    <transition name="deleteExampleFeatureAppl"><service-call name="delete#example.ExampleFeatureAppl"/>
+    <transition name="deleteExampleFeatureAppl"><service-call name="delete#moqui.example.ExampleFeatureAppl"/>
         <default-response url="."/></transition>
 
     <transition name="getExampleList">
@@ -46,7 +46,7 @@ along with this software (see the LICENSE.md file). If not, see
     </transition>
 
     <actions>
-        <entity-find entity-name="example.ExampleFeatureAppl" list="exampleFeatureApplList">
+        <entity-find entity-name="moqui.example.ExampleFeatureAppl" list="exampleFeatureApplList">
             <econdition field-name="exampleFeatureId"/><order-by field-name="sequenceNum"/></entity-find>
 
         <entity-find entity-name="moqui.basic.Enumeration" list="exampleFeatureApplEnumList">

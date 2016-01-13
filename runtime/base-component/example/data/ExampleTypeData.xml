@@ -14,7 +14,7 @@ along with this software (see the LICENSE.md file). If not, see
 -->
 <entity-facade-xml type="seed">
     <!-- In the seed data since code may rely on it: and example moqui.entity.view.DbViewEntity -->
-    <moqui.entity.view.DbViewEntity dbViewEntityName="StatusItemAndTypeDb" packageName="example" cache="Y">
+    <moqui.entity.view.DbViewEntity dbViewEntityName="StatusItemAndTypeDb" packageName="moqui.basic" cache="Y">
         <moqui.entity.view.DbViewEntityMember entityAlias="SI" entityName="moqui.basic.StatusItem"/>
         <moqui.entity.view.DbViewEntityMember entityAlias="ST" entityName="moqui.basic.StatusType" joinFromAlias="SI"/>
         <moqui.entity.view.DbViewEntityKeyMap joinFromAlias="SI" entityAlias="ST" fieldName="statusTypeId"/>
@@ -40,7 +40,7 @@ along with this software (see the LICENSE.md file). If not, see
         </moqui.screen.form.DbFormField>
     </moqui.screen.form.DbForm>
 
-    <moqui.entity.UserField entityName="example.Example" fieldName="testUserField" userGroupId="ALL_USERS"
+    <moqui.entity.UserField entityName="moqui.example.Example" fieldName="testUserField" userGroupId="ALL_USERS"
                             fieldType="text-long" enableAuditLog="Y" enableLocalization="N" encrypt="N"/>
 
     <!-- Example Survey Form 1 -->

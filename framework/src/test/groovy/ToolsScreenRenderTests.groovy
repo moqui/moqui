@@ -71,14 +71,14 @@ class ToolsScreenRenderTests extends Specification {
 
         // AutoScreen screens
         "AutoScreen/MainEntityList" | "" | ""
-        "AutoScreen/AutoFind?aen=example.Example" | "Test Example Name" | "In Design [EXST_IN_DESIGN]"
-        "AutoScreen/AutoEdit/AutoEditMaster?exampleId=TEST1&aen=example.Example" |
+        "AutoScreen/AutoFind?aen=moqui.example.Example" | "Test Example Name" | "In Design [EXST_IN_DESIGN]"
+        "AutoScreen/AutoEdit/AutoEditMaster?exampleId=TEST1&aen=moqui.example.Example" |
                 "Test Example Name" | "example1@test.com"
-        "AutoScreen/AutoEdit/AutoEditDetail?exampleId=TEST1&aen=example.Example&den=example.ExampleItem" |
+        "AutoScreen/AutoEdit/AutoEditDetail?exampleId=TEST1&aen=moqui.example.Example&den=moqui.example.ExampleItem" |
                 "Amount Uom ID" | "Test 1 Item 1"
-        // test example.Example create through transition, then view it
-        "AutoScreen/AutoFind/create?aen=example.Example&exampleId=TEST_SCR&exampleName=Screen Test Example&exampleTypeEnumId=EXT_MADE_UP&statusId=EXST_IN_DESIGN" | "" | ""
-        "AutoScreen/AutoEdit/AutoEditMaster?exampleId=TEST_SCR&aen=example.Example" | "Screen Test Example" | ""
+        // test moqui.example.Example create through transition, then view it
+        "AutoScreen/AutoFind/create?aen=moqui.example.Example&exampleId=TEST_SCR&exampleName=Screen Test Example&exampleTypeEnumId=EXT_MADE_UP&statusId=EXST_IN_DESIGN" | "" | ""
+        "AutoScreen/AutoEdit/AutoEditMaster?exampleId=TEST_SCR&aen=moqui.example.Example" | "Screen Test Example" | ""
 
         // ArtifactStats screen
         // don't run, takes too long: "ArtifactStats" | "" | ""
@@ -87,19 +87,19 @@ class ToolsScreenRenderTests extends Specification {
         // see "render DataView screens"
 
         // Entity/DataEdit screens
-        "Entity/DataEdit/EntityList" | "ExampleContent" | "example"
-        "Entity/DataEdit/EntityDetail?entityName=example.Example" | "text-medium" | "moqui.basic.Enumeration"
-        "Entity/DataEdit/EntityDataFind?entityName=example.Example" | "Screen Test Example" | "In Design"
-        "Entity/DataEdit/EntityDataEdit?exampleId=TEST1&entityName=example.Example" |
+        "Entity/DataEdit/EntityList?filterRegexp=example" | "ExampleContent" | "example"
+        "Entity/DataEdit/EntityDetail?entityName=moqui.example.Example" | "text-medium" | "moqui.basic.Enumeration"
+        "Entity/DataEdit/EntityDataFind?entityName=moqui.example.Example" | "Screen Test Example" | "In Design"
+        "Entity/DataEdit/EntityDataEdit?exampleId=TEST1&entityName=moqui.example.Example" |
                 "Test description, with a comma" | "example1@test.com"
-        "Entity/DataEdit/EntityDataFind?exampleId=TEST1&entityName=example.ExampleItem" |
+        "Entity/DataEdit/EntityDataFind?exampleId=TEST1&entityName=moqui.example.ExampleItem" |
                 "Test 1 Item 1" | "exampleItemSeqId"
 
         // Other Entity screens
-        "Entity/DataExport" | "example.Example" | ""
-        // test export JSON and XML for example.Example
-        "Entity/DataExport/EntityExport?entityNames=example.Example&dependentLevels=1&fileType=JSON&output=browser" | "Test Example Name" | "exampleItemSeqId"
-        "Entity/DataExport/EntityExport?entityNames=example.Example&dependentLevels=1&fileType=XML&output=browser" | "Test Example Name" | "exampleItemSeqId"
+        "Entity/DataExport" | "moqui.example.Example" | ""
+        // test export JSON and XML for moqui.example.Example
+        "Entity/DataExport/EntityExport?entityNames=moqui.example.Example&dependentLevels=1&fileType=JSON&output=browser" | "Test Example Name" | "exampleItemSeqId"
+        "Entity/DataExport/EntityExport?entityNames=moqui.example.Example&dependentLevels=1&fileType=XML&output=browser" | "Test Example Name" | "exampleItemSeqId"
         "Entity/DataImport" | "" | ""
         "Entity/SqlRunner?groupName=transactional&sql=SELECT * FROM EXAMPLE" | "Test Example Name" | "EXT_MADE_UP"
         // run with very few baseCalls so it doesn't take too long
@@ -107,14 +107,14 @@ class ToolsScreenRenderTests extends Specification {
 
         // Service screens
         "Service/ServiceReference?serviceName=example" |
-                "org.moqui.example.ExampleServices.create#ExampleItem" | "Service Detail"
-        "Service/ServiceDetail?serviceName=org.moqui.example.ExampleServices.consume#ExampleMessage" |
-                "moqui.service.message.SystemMessage" | """ec.service.sync().name("store#example.Example")"""
-        "Service/ServiceRun?serviceName=org.moqui.example.ExampleServices.create#ExampleItem" |
+                "moqui.example.ExampleServices.create#ExampleItem" | "Service Detail"
+        "Service/ServiceDetail?serviceName=moqui.example.ExampleServices.consume#ExampleMessage" |
+                "moqui.service.message.SystemMessage" | """ec.service.sync().name("store#moqui.example.Example")"""
+        "Service/ServiceRun?serviceName=moqui.example.ExampleServices.create#ExampleItem" |
                 "Example ID" | "Cron String"
         // run the service, then make sure it ran
-        "Service/ServiceRun/run?serviceName=org.moqui.example.ExampleServices.create#ExampleItem&exampleId=TEST_SCR&description=ServiceRun Screen Test Item" | "" | ""
-        "Entity/DataEdit/EntityDataFind?exampleId=TEST_SCR&entityName=example.ExampleItem" |
+        "Service/ServiceRun/run?serviceName=moqui.example.ExampleServices.create#ExampleItem&exampleId=TEST_SCR&description=ServiceRun Screen Test Item" | "" | ""
+        "Entity/DataEdit/EntityDataFind?exampleId=TEST_SCR&entityName=moqui.example.ExampleItem" |
                 "ServiceRun Screen Test Item" | ""
     }
 
@@ -122,18 +122,18 @@ class ToolsScreenRenderTests extends Specification {
         // create a DbViewEntity, set MASTER and fields, view it
         when:
         ScreenTestRender createStr = screenTest.render("DataView/FindDbView/create",
-                [dbViewEntityName:'ExampleDbView', packageName:'example', isDataView:'Y'], null)
+                [dbViewEntityName:'ExampleDbView', packageName:'moqui.example', isDataView:'Y'], null)
         logger.info("Called FindDbView/create in ${createStr.getRenderTime()}ms")
 
         ScreenTestRender fdvStr = screenTest.render("DataView/FindDbView", null, null)
         logger.info("Rendered DataView/FindDbView in ${fdvStr.getRenderTime()}ms, ${fdvStr.output?.length()} characters")
 
         ScreenTestRender setMeStr = screenTest.render("DataView/EditDbView/setMasterEntity",
-                [dbViewEntityName:'ExampleDbView', entityAlias:'MASTER', entityName:'example.Example'], null)
+                [dbViewEntityName:'ExampleDbView', entityAlias:'MASTER', entityName:'moqui.example.Example'], null)
         logger.info("Called EditDbView/setMasterEntity in ${setMeStr.getRenderTime()}ms")
 
         ScreenTestRender setMfStr = screenTest.render("DataView/EditDbView/setMasterFields",
-                [dbViewEntityName_0:'ExampleDbView', field_0:'example.Example.exampleName',
+                [dbViewEntityName_0:'ExampleDbView', field_0:'moqui.example.Example.exampleName',
                  dbViewEntityName_1:'ExampleDbView', field_1:'Example#moqui.basic.StatusItem.description',
                  dbViewEntityName_2:'ExampleDbView', field_2:'ExampleType#moqui.basic.Enumeration.description'], null)
         logger.info("Called EditDbView/setMasterFields in ${setMfStr.getRenderTime()}ms")

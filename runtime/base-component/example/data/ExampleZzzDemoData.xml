@@ -28,11 +28,11 @@ along with this software (see the LICENSE.md file). If not, see
     <moqui.security.UserLoginHistory userId="EX_JOHN_DOE" fromDate="1265184000000" successfulLogin="Y"/>
 
     <!-- services matched by fully qualified name, so can just use path/package prefix -->
-    <moqui.security.ArtifactGroupMember artifactGroupId="EXAMPLE_APP" artifactName="org\.moqui\.example\..*"
+    <moqui.security.ArtifactGroupMember artifactGroupId="EXAMPLE_APP" artifactName="moqui\.example\..*"
             nameIsPattern="Y" artifactTypeEnumId="AT_SERVICE" inheritAuthz="Y"/>
     <!-- entities matched by full name (package + name), so can match by package; this will also handle entity-implicit
          services which can be authorized by their entity authz -->
-    <moqui.security.ArtifactGroupMember artifactGroupId="EXAMPLE_APP" artifactName="example\..*"
+    <moqui.security.ArtifactGroupMember artifactGroupId="EXAMPLE_APP" artifactName="moqui\.example\..*"
             nameIsPattern="Y" artifactTypeEnumId="AT_ENTITY" inheritAuthz="Y"/>
 
     <!-- ========== Example with just view access for the ExampleApp ========== -->
@@ -97,8 +97,8 @@ along with this software (see the LICENSE.md file). If not, see
     <!-- NOTE: empty receiveServiceName to use the default, org.moqui.impl.SystemMessageServices.receive#IncomingSystemMessage,
         in the send#SystemMessageJsonRpc service -->
     <moqui.service.message.SystemMessageType systemMessageTypeId="ExampleMessage" description="Example Message"
-            produceServiceName="org.moqui.example.ExampleServices.produce#ExampleMessage"
-            consumeServiceName="org.moqui.example.ExampleServices.consume#ExampleMessage"
+            produceServiceName="moqui.example.ExampleServices.produce#ExampleMessage"
+            consumeServiceName="moqui.example.ExampleServices.consume#ExampleMessage"
             sendServiceName="org.moqui.impl.SystemMessageServices.send#SystemMessageJsonRpc"
             receiveServiceName=""/>
     <moqui.service.message.SystemMessageRemote systemMessageRemoteId="Example1Local" description="Example Local"
@@ -140,22 +140,22 @@ along with this software (see the LICENSE.md file). If not, see
         <moqui.server.ArtifactHit artifactType="screen" hitId="EX_100106" artifactSubType="text/html" runningTimeMillis="166.809616" 
                 userId="EX_JOHN_DOE" serverHostName="localhost" startDateTime="1447864661424" isSlowHit="N"
                 artifactName="component://tools/screen/Tools/Service/ServiceRun.xml" requestUrl="http://localhost:8080/apps/tools/Service/ServiceRun"
-                wasError="N" serverIpAddress="172.16.0.8" parameterString="moquiFormName=SelectServiceInput,serviceName=org.moqui.example.ExampleServices.produce#ExampleMessage"/>
+                wasError="N" serverIpAddress="172.16.0.8" parameterString="moquiFormName=SelectServiceInput,serviceName=moqui.example.ExampleServices.produce#ExampleMessage"/>
         <moqui.server.ArtifactHit artifactType="service" hitId="EX_100108" artifactSubType="inline" runningTimeMillis="88.968414" 
                 userId="EX_JOHN_DOE" serverHostName="localhost" startDateTime="1447864665223" isSlowHit="N"
-                artifactName="org.moqui.example.ExampleServices.produce#ExampleMessage"
+                artifactName="moqui.example.ExampleServices.produce#ExampleMessage"
                 requestUrl="http://localhost:8080/apps/tools/Service/ServiceRun/run" wasError="N" serverIpAddress="172.16.0.8"
                 parameterString="exampleId=TEST1,systemMessageRemoteId=Example1Local,sendNow=true"/>
         <moqui.server.ArtifactHit artifactType="transition" hitId="EX_100109" artifactSubType="url" runningTimeMillis="100.39878" 
                 userId="EX_JOHN_DOE" serverHostName="localhost" startDateTime="1447864665220" isSlowHit="N"
                 artifactName="component://tools/screen/Tools/Service/ServiceRun.xml#run"
                 requestUrl="http://localhost:8080/apps/tools/Service/ServiceRun/run" wasError="N" serverIpAddress="172.16.0.8"
-                parameterString="serviceName=org.moqui.example.ExampleServices.produce#ExampleMessage,systemMessageRemoteId=Example1Local,doingRun=Y,exampleId=TEST1,moquiSessionToken=z9uYVgMdsKF4aoyQsyd5WRbIhyk,moquiFormName=ServiceParameters,submitButton=submitButton"/>
+                parameterString="serviceName=moqui.example.ExampleServices.produce#ExampleMessage,systemMessageRemoteId=Example1Local,doingRun=Y,exampleId=TEST1,moquiSessionToken=z9uYVgMdsKF4aoyQsyd5WRbIhyk,moquiFormName=ServiceParameters,submitButton=submitButton"/>
         <moqui.server.ArtifactHit artifactType="screen" hitId="EX_100110" artifactSubType="text/html" runningTimeMillis="56.769109" 
                 userId="EX_JOHN_DOE" serverHostName="localhost" startDateTime="1447864665330" isSlowHit="N"
                 artifactName="component://tools/screen/Tools/Service/ServiceRun.xml"
-                requestUrl="http://localhost:8080/apps/tools/Service/ServiceRun?doingRun=Y&amp;serviceName=org.moqui.example.ExampleServices.produce%23ExampleMessage"
-                wasError="N" serverIpAddress="172.16.0.8" parameterString="systemMessageId=100000,submitButton=submitButton,moquiFormName=ServiceParameters,moquiSessionToken=z9uYVgMdsKF4aoyQsyd5WRbIhyk,doingRun=Y,systemMessageRemoteId=Example1Local,exampleId=TEST1,serviceName=org.moqui.example.ExampleServices.produce#ExampleMess"/>
+                requestUrl="http://localhost:8080/apps/tools/Service/ServiceRun?doingRun=Y&amp;serviceName=moqui.example.ExampleServices.produce%23ExampleMessage"
+                wasError="N" serverIpAddress="172.16.0.8" parameterString="systemMessageId=100000,submitButton=submitButton,moquiFormName=ServiceParameters,moquiSessionToken=z9uYVgMdsKF4aoyQsyd5WRbIhyk,doingRun=Y,systemMessageRemoteId=Example1Local,exampleId=TEST1,serviceName=moqui.example.ExampleServices.produce#ExampleMess"/>
         <moqui.server.ArtifactHit artifactType="screen-content" hitId="EX_100116" artifactSubType="text/css" runningTimeMillis="0.652743" 
                 userId="EX_JOHN_DOE" serverHostName="localhost" outputSize="17780" startDateTime="1447864669212" isSlowHit="N"
                 artifactName="component://webroot/screen/webroot/assets/lib/Font-Awesome/css/font-awesome.min.css"

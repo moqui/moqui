@@ -14,21 +14,15 @@ along with this software (see the LICENSE.md file). If not, see
 -->
 <entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/entity-definition-1.6.xsd">
 
-    <view-entity entity-name="ExampleStatusDetail" package-name="example">
+    <view-entity entity-name="ExampleStatusDetail" package-name="moqui.example">
         <member-entity entity-alias="EXPL" entity-name="Example"/>
         <member-entity entity-alias="EAL" entity-name="moqui.entity.EntityAuditLog" join-from-alias="EXPL">
-            <key-map field-name="exampleId" related-field-name="pkPrimaryValue"/>
-        </member-entity>
+            <key-map field-name="exampleId" related-field-name="pkPrimaryValue"/></member-entity>
         <member-entity entity-alias="STIT" entity-name="moqui.basic.StatusItem" join-from-alias="EAL">
-            <key-map field-name="pkPrimaryValue" related-field-name="statusId"/>
-        </member-entity>
-        <alias-all entity-alias="EXPL">
-            <exclude field="statusId"/>
-        </alias-all>
+            <key-map field-name="pkPrimaryValue" related-field-name="statusId"/></member-entity>
+        <alias-all entity-alias="EXPL"><exclude field="statusId"/></alias-all>
         <alias-all entity-alias="EAL"/>
-        <alias-all entity-alias="STIT">
-            <exclude field="description"/>
-        </alias-all>
+        <alias-all entity-alias="STIT"><exclude field="description"/></alias-all>
         <alias entity-alias="STIT" name="statusDescription" field="description"/>
         <alias entity-alias="EXPL" name="currentStatusId" field="statusId"/>
         <!-- TABLED not to be part of 1.0:
@@ -45,7 +39,7 @@ along with this software (see the LICENSE.md file). If not, see
         </entity-condition>
     </view-entity>
 
-    <view-entity entity-name="ExampleStatusItem" package-name="example">
+    <view-entity entity-name="ExampleStatusItem" package-name="moqui.example">
         <member-entity entity-alias="SI" entity-name="moqui.basic.StatusItem"/>
         <alias-all entity-alias="SI"/>
         <entity-condition>
@@ -55,16 +49,15 @@ along with this software (see the LICENSE.md file). If not, see
     </view-entity>
     
     <!-- Some examples of nested views and conditions for report -->
-    <view-entity entity-name="ExampleFeatureApplAndEnum" package-name="example">
+    <view-entity entity-name="ExampleFeatureApplAndEnum" package-name="moqui.example">
         <member-entity entity-alias="EXFTAP" entity-name="ExampleFeatureAppl"/>
         <member-entity entity-alias="ENUM" entity-name="moqui.basic.Enumeration" join-from-alias="EXFTAP">
-            <key-map field-name="exampleFeatureApplEnumId"/>
-        </member-entity>
+            <key-map field-name="exampleFeatureApplEnumId"/></member-entity>
         <alias-all entity-alias="EXFTAP"/>
         <alias-all entity-alias="ENUM"><exclude field="sequenceNum"/></alias-all>
     </view-entity>
     <!-- these still needs some work to support:
-    <view-entity entity-name="ExampleFeatureAndApplAndEnum" package-name="example">
+    <view-entity entity-name="ExampleFeatureAndApplAndEnum" package-name="moqui.example">
         <member-entity entity-alias="EXFT" entity-name="ExampleFeature"/>
         <member-entity entity-alias="EFAAE" entity-name="ExampleFeatureApplAndEnum" join-from-alias="EXFT">
             <key-map field-name="exampleFeatureId"/>
@@ -75,7 +68,7 @@ along with this software (see the LICENSE.md file). If not, see
         </alias-all>
         <alias name="typeDescription" entity-alias="EFAAE" field="description"/>
     </view-entity>
-    <view-entity entity-name="ExampleFeatureAndApplFullView" package-name="example">
+    <view-entity entity-name="ExampleFeatureAndApplFullView" package-name="moqui.example">
         <member-entity entity-alias="EX" entity-name="Example"/>
         <member-entity entity-alias="EFAAAE" entity-name="ExampleFeatureAndApplAndEnum" join-from-alias="EX">
             <key-map field-name="exampleId"/>
@@ -86,7 +79,7 @@ along with this software (see the LICENSE.md file). If not, see
         </alias-all>
         <alias name="featureDescription" entity-alias="EFAAAE" field="description"/>
     </view-entity>
-    <view-entity entity-name="ContrivedExamplesWithRequiredFeaturesReport" package-name="example">
+    <view-entity entity-name="ContrivedExamplesWithRequiredFeaturesReport" package-name="moqui.example">
         <member-entity entity-alias="EFAAFV" entity-name="ExampleFeatureAndApplFullView"/>
         <alias-all entity-alias="EFAAFV"/>
         <entity-condition>
@@ -101,7 +94,7 @@ along with this software (see the LICENSE.md file). If not, see
 
     <!-- example for nested view-entity with conditions on nested views -->
     <!-- this still needs some work to support:
-    <view-entity entity-name="ExampleFeatureApplAndTypeDesired" package-name="example">
+    <view-entity entity-name="ExampleFeatureApplAndTypeDesired" package-name="moqui.example">
         <member-entity entity-alias="EXFTAP" entity-name="ExampleFeatureAppl"/>
         <member-entity entity-alias="ENUM" entity-name="moqui.basic.Enumeration" join-from-alias="EXFTAP">
             <key-map field-name="exampleFeatureApplEnumId" related-field-name="enumId"/>
@@ -122,7 +115,7 @@ along with this software (see the LICENSE.md file). If not, see
         </alias>
         <alias name="typeDescription" entity-alias="ENUM" field="description"/>
     </view-entity>
-    <view-entity entity-name="AllExamplesWithDesiredCustomerFeaturesReport" package-name="example">
+    <view-entity entity-name="AllExamplesWithDesiredCustomerFeaturesReport" package-name="moqui.example">
         <member-entity entity-alias="EFAATD" entity-name="ExampleFeatureApplAndTypeDesired"/>
         <member-entity entity-alias="EXFT" entity-name="ExampleFeature" join-from-alias="EFAATD">
             <key-map field-name="exampleFeatureId"/>

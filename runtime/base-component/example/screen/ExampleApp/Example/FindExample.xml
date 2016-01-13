@@ -27,7 +27,7 @@ along with this software (see the LICENSE.md file). If not, see
     </pre-actions>
     
     <actions>
-        <entity-find entity-name="example.Example" list="exampleList">
+        <entity-find entity-name="moqui.example.Example" list="exampleList">
             <search-form-inputs default-order-by="^exampleName"/></entity-find>
 
         <entity-find entity-name="ExampleStatusItem" list="exampleStatusItemList"/>
@@ -40,7 +40,7 @@ along with this software (see the LICENSE.md file). If not, see
                     <field name="exampleId"><default-field><text-find/></default-field></field>
                     <field name="exampleName"><default-field><text-find/></default-field></field>
                     <field name="exampleTypeEnumId"><default-field title="Type">
-                        <auto-widget-entity entity-name="example.Example" field-type="edit"/>
+                        <auto-widget-entity entity-name="moqui.example.Example" field-type="edit"/>
                     </default-field></field>
                     <field name="statusId"><default-field title="Status">
                         <drop-down allow-empty="true"><list-options list="exampleStatusItemList" text="${description}"/></drop-down>

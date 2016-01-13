@@ -275,7 +275,14 @@ class ServiceFacadeImpl implements ServiceFacade {
     }
 
     Set<String> getKnownServiceNames() {
-        Set<String> sns = new TreeSet()
+        Set<String> sns = new TreeSet<String>()
+
+        // search declared service-file elements in Moqui Conf XML
+        for (Node serviceFile in ecfi.confXmlRoot."service-facade"[0]."service-file") {
+            String location = serviceFile.attribute("location")
+            ResourceReference entryRr = ecfi.resourceFacade.getLocationReference(location)
+            findServicesInFile("classpath://service", entryRr, sns)
+        }
 
         // search for service def XML files in the components
         for (String location in this.ecfi.getComponentBaseLocations().values()) {
@@ -320,24 +327,27 @@ class ServiceFacadeImpl implements ServiceFacade {
                 // logger.warn("Finding services in [${entryRr.location}], baseLocation=[${baseLocation}]")
                 if (entryRr.fileName.endsWith(".secas.xml") || entryRr.fileName.endsWith(".emecas.xml") ||
                         entryRr.fileName.endsWith(".rest.xml")) continue
-                Node serviceRoot = new XmlParser().parse(entryRr.openStream())
-                if ((serviceRoot.name() as String) in ["secas", "emecas", "resource"]) continue
-                if (serviceRoot.name() != "services") {
-                    logger.info("While finding service ignoring XML file [${entryRr.location}] in a services directory because the root element is [${serviceRoot.name()}] and not [services]")
-                    continue
-                }
-
-                // get the service file location without the .xml and without everything up to the "service" directory
-                String location = entryRr.location.substring(0, entryRr.location.lastIndexOf("."))
-                if (location.startsWith(baseLocation)) location = location.substring(baseLocation.length())
-                if (location.charAt(0) == '/') location = location.substring(1)
-                location = location.replace('/', '.')
-
-                for (Node serviceNode in serviceRoot."service") {
-                    sns.add(location + "." + serviceNode."@verb" +
-                            (serviceNode."@noun" ? "#" + serviceNode."@noun" : ""))
-                }
+                findServicesInFile(baseLocation, entryRr, sns)
             }
+        }
+    }
+    protected void findServicesInFile(String baseLocation, ResourceReference entryRr, Set<String> sns) {
+        Node serviceRoot = new XmlParser().parse(entryRr.openStream())
+        if ((serviceRoot.name() as String) in ["secas", "emecas", "resource"]) return
+        if (serviceRoot.name() != "services") {
+            logger.info("While finding service ignoring XML file [${entryRr.location}] in a services directory because the root element is [${serviceRoot.name()}] and not [services]")
+            return
+        }
+
+        // get the service file location without the .xml and without everything up to the "service" directory
+        String location = entryRr.location.substring(0, entryRr.location.lastIndexOf("."))
+        if (location.startsWith(baseLocation)) location = location.substring(baseLocation.length())
+        if (location.charAt(0) == '/') location = location.substring(1)
+        location = location.replace('/', '.')
+
+        for (Node serviceNode in serviceRoot."service") {
+            sns.add(location + "." + serviceNode."@verb" +
+                    (serviceNode."@noun" ? "#" + serviceNode."@noun" : ""))
         }
     }
 

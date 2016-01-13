@@ -1,5 +1,5 @@
 # first line is ${entityName or serviceName},${dataType}
-org.moqui.example.ExampleServices.create#Example, demo
+moqui.example.ExampleServices.create#Example, demo
 # second line is list of field names
 exampleTypeEnumId, statusId, exampleName, description, exampleSize, exampleDate, testDate, testTime, exampleEmail
 # each additional line has values for those fields to pass to each service call

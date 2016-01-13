@@ -42,47 +42,47 @@ class ServiceCrudImplicit extends Specification {
     def "create and find Example SVCTST1 with service"() {
         when:
         // do a "store" to create or update
-        ec.service.sync().name("store#example.Example").parameters([exampleId:"SVCTST1", exampleName:"Test Name"]).call()
+        ec.service.sync().name("store#moqui.example.Example").parameters([exampleId:"SVCTST1", exampleName:"Test Name"]).call()
 
         then:
-        EntityValue example = ec.entity.find("example.Example").condition([exampleId:"SVCTST1"]).one()
+        EntityValue example = ec.entity.find("moqui.example.Example").condition([exampleId:"SVCTST1"]).one()
         example.exampleName == "Test Name"
     }
 
     def "update Example SVCTST1 with service"() {
         when:
-        ec.service.sync().name("update#example.Example").parameters([exampleId:"SVCTST1", exampleName:"Test Name 2"]).call()
+        ec.service.sync().name("update#moqui.example.Example").parameters([exampleId:"SVCTST1", exampleName:"Test Name 2"]).call()
 
         then:
-        EntityValue exampleCheck = ec.entity.find("example.Example").condition([exampleId:"SVCTST1"]).one()
+        EntityValue exampleCheck = ec.entity.find("moqui.example.Example").condition([exampleId:"SVCTST1"]).one()
         exampleCheck.exampleName == "Test Name 2"
     }
 
     def "store update Example SVCTST1 with service"() {
         when:
-        ec.service.sync().name("store#example.Example").parameters([exampleId:"SVCTST1", exampleName:"Test Name 3"]).call()
+        ec.service.sync().name("store#moqui.example.Example").parameters([exampleId:"SVCTST1", exampleName:"Test Name 3"]).call()
 
         then:
-        EntityValue exampleCheck = ec.entity.find("example.Example").condition([exampleId:"SVCTST1"]).one()
+        EntityValue exampleCheck = ec.entity.find("moqui.example.Example").condition([exampleId:"SVCTST1"]).one()
         exampleCheck.exampleName == "Test Name 3"
     }
 
     def "delete Example SVCTST1 with service"() {
         when:
-        ec.service.sync().name("delete#example.Example").parameters([exampleId:"SVCTST1"]).call()
+        ec.service.sync().name("delete#moqui.example.Example").parameters([exampleId:"SVCTST1"]).call()
 
         then:
-        EntityValue exampleCheck = ec.entity.find("example.Example").condition([exampleId:"SVCTST1"]).one()
+        EntityValue exampleCheck = ec.entity.find("moqui.example.Example").condition([exampleId:"SVCTST1"]).one()
         exampleCheck == null
     }
 
     /* No real point to this, muddies data
     def "store create Example TEST_A with service"() {
         when:
-        ec.service.sync().name("store#example.Example").parameters([exampleId:"TEST_A", exampleName:"Test Name A"]).call()
+        ec.service.sync().name("store#moqui.example.Example").parameters([exampleId:"TEST_A", exampleName:"Test Name A"]).call()
 
         then:
-        EntityValue exampleCheck = ec.entity.find("example.Example").condition([exampleId:"TEST_A"]).one()
+        EntityValue exampleCheck = ec.entity.find("moqui.example.Example").condition([exampleId:"TEST_A"]).one()
         exampleCheck.exampleName == "Test Name A"
     }
     */

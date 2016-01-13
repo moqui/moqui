@@ -53,7 +53,7 @@ class ExampleServiceTests extends Specification {
 
     def "create example with ExampleServices"() {
         when:
-        Map createResult = ec.service.sync().name("org.moqui.example.ExampleServices.createExample")
+        Map createResult = ec.service.sync().name("moqui.example.ExampleServices.createExample")
                 .parameters([exampleTypeEnumId:"EXT_MADE_UP", statusId:"EXST_IN_DESIGN", exampleName:"Service Test Example"]).call()
         EntityValue exampleCreated = ec.entity.find("Example").condition("exampleId", createResult.exampleId).one()
 
@@ -74,7 +74,7 @@ class ExampleServiceTests extends Specification {
     def "send and consume ExampleMessage"() {
         when:
         // use the direct/local "remote" because no web server is running for local RPC call
-        Map result = ec.service.sync().name("org.moqui.example.ExampleServices.produce#ExampleMessage")
+        Map result = ec.service.sync().name("moqui.example.ExampleServices.produce#ExampleMessage")
                 .parameters([exampleId:'TEST2', systemMessageRemoteId:'Example1Direct']).call()
         // message is sent async so wait, needs to be enough for Quartz to pick it up, etc
         sleep(4000)

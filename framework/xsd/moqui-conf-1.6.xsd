@@ -383,6 +383,7 @@ along with this software (see the LICENSE.md file). If not, see
             <xs:sequence>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="service-location"/>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="service-type"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="service-file"/>
                 <!-- leaving this out for now, not easily supported by Quartz Scheduler: <xs:element minOccurs="0" ref="thread-pool"/> -->
                 <!-- TABLED: not to include in 1.0: <xs:element minOccurs="0" maxOccurs="unbounded" ref="jms-service"/> -->
             </xs:sequence>
@@ -402,6 +403,11 @@ along with this software (see the LICENSE.md file). If not, see
                     Fully qualified name of class that implements the org.moqui.impl.service.ServiceRunner interface.
                 </xs:documentation></xs:annotation>
             </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="service-file">
+        <xs:complexType>
+            <xs:attribute name="location" type="xs:string" use="required"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="server-jndi">

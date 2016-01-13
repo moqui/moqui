@@ -14,7 +14,7 @@ along with this software (see the LICENSE.md file). If not, see
 -->
 <actions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-actions-1.6.xsd">
 
-    <service-call name="org.moqui.example.ExampleServices.createExample"
+    <service-call name="moqui.example.ExampleServices.createExample"
                   in-map="createExampleMap" out-map="createExampleResult">
         <field-map field-name="exampleTypeId" value="CONTRIVED"/>
         <field-map field-name="exampleName" value="Test Example"/>
