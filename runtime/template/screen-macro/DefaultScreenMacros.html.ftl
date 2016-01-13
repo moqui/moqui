@@ -819,7 +819,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
         </#assign>
         <#t>${sri.appendToScriptWriter(afterFormScript)}
     </#if>
-    <#t>${sri.popContext()}<!-- context was pushed for the form-single so pop here at the end -->
+    <#t>${sri.popContext()}<#-- context was pushed for the form-single so pop here at the end -->
     <#if sri.doBoundaryComments()><!-- END   form-single[@name=${.node["@name"]}] --></#if>
 </#macro>
 <#macro formSingleSubField fieldNode>
