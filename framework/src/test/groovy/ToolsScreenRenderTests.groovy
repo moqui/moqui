@@ -53,14 +53,15 @@ class ToolsScreenRenderTests extends Specification {
 
     @Unroll
     def "render tools screen #screenPath (#containsText1, #containsText2)"() {
-        expect:
+        setup:
         ScreenTestRender str = screenTest.render(screenPath, null, null)
         // logger.info("Rendered ${screenPath} in ${str.getRenderTime()}ms")
         boolean contains1 = containsText1 ? str.assertContains(containsText1) : true
         boolean contains2 = containsText2 ? str.assertContains(containsText2) : true
         if (!contains1) logger.info("In ${screenPath} text 1 [${containsText1}] not found:\n${str.output}")
         if (!contains2) logger.info("In ${screenPath} text 2 [${containsText2}] not found:\n${str.output}")
-        // assertions
+
+        expect:
         !str.errorMessages
         contains1
         contains2
