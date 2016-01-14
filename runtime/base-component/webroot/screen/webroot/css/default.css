@@ -41,6 +41,7 @@ form { display: inline; }
 button.button-plain { border: 0; padding: 0; background: transparent; margin: 0; color: #428bca; }
 button.button-plain:hover { text-decoration: underline; }
 
+a.disabled { pointer-events: none; text-decoration: none; }
 
 input:required:invalid, input:invalid, textarea:invalid { background-color: #FEE; }
 input:focus:valid, textarea:focus:valid { background-color: #EEE; }
