@@ -140,7 +140,7 @@
                 $("body").toggleClass("bg-dark dk");
                 $("body").toggleClass("bg-light lter");
                 var currentStyle = $("body").hasClass("bg-dark dk") ? "bg-dark dk" : "bg-light lter";
-                $.ajax({ type:'POST', url:'/apps/setPreference', data:{ 'preferenceKey': 'OUTER_STYLE', 'preferenceValue': currentStyle }, dataType:'json' });
+                $.ajax({ type:'POST', url:'/apps/setPreference', data:{ 'moquiSessionToken': ${ec.web.sessionToken},'preferenceKey': 'OUTER_STYLE', 'preferenceValue': currentStyle }, dataType:'json' });
             }
         </script>
     </div>
