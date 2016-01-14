@@ -13,9 +13,8 @@
  */
 package org.moqui.impl.screen
 
+import groovy.transform.CompileStatic
 import org.moqui.context.ContextStack
-import org.moqui.context.ExecutionContext
-import org.moqui.impl.StupidUtilities
 import org.moqui.impl.actions.XmlAction
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.impl.context.ExecutionContextImpl
@@ -49,6 +48,7 @@ class ScreenTree {
             subNodeList.add(new TreeSubNode(this, treeSubNodeNode, location + ".subnode." + treeSubNodeNode."@node-name"))
     }
 
+    @CompileStatic
     void sendSubNodeJson() {
         // NOTE: This method is very specific to jstree
 
@@ -76,6 +76,7 @@ class ScreenTree {
         eci.getWeb().sendJsonResponse(outputNodeList)
     }
 
+    @CompileStatic
     List<Map> getChildNodes(List<TreeSubNode> currentSubNodeList, ExecutionContextImpl eci, ContextStack cs) {
         List<Map> outputNodeList = []
 
@@ -85,10 +86,10 @@ class ScreenTree {
             // run actions
             if (tsn.actions != null) tsn.actions.run(eci)
 
-            TreeNode tn = nodeByName.get(tsn.treeSubNodeNode."@node-name")
+            TreeNode tn = nodeByName.get(tsn.treeSubNodeNode.attribute("node-name"))
 
             // iterate over the list and add a response node for each entry
-            String nodeListName = tsn.treeSubNodeNode."@list" ?: "nodeList"
+            String nodeListName = tsn.treeSubNodeNode.attribute("list") ?: "nodeList"
             List nodeList = (List) eci.getResource().expression(nodeListName, "")
             // logger.warn("======= nodeList named [${nodeListName}]: ${nodeList}")
             Iterator i = nodeList?.iterator()
@@ -107,9 +108,11 @@ class ScreenTree {
                     // run actions
                     if (tn.actions != null) tn.actions.run(eci)
 
-                    String id = eci.getResource().expand((String) tn.linkNode."@id", tn.location + ".id")
-                    String text = eci.getResource().expand((String) tn.linkNode."@text", tn.location + ".text")
-                    ScreenUrlInfo.UrlInstance urlInstance = cs.get("sri").makeUrlByTypeGroovyNode(tn.linkNode."@url", tn.linkNode."@url-type" ?: "transition", tn.linkNode, tn.linkNode."@expand-transition-url" ?: "true")
+                    String id = eci.getResource().expand((String) tn.linkNode.attribute("id"), tn.location + ".id")
+                    String text = eci.getResource().expand((String) tn.linkNode.attribute("text"), tn.location + ".text")
+                    ScreenUrlInfo.UrlInstance urlInstance = ((ScreenRenderImpl) cs.get("sri"))
+                            .makeUrlByTypeGroovyNode((String) tn.linkNode.attribute("url"), (String) tn.linkNode.attribute("url-type") ?: "transition",
+                                tn.linkNode, (String) tn.linkNode.attribute("expand-transition-url") ?: "true")
 
                     // now get children to check if has some, and if in treeOpenPath include them
                     List<Map> childNodeList = null
@@ -121,16 +124,18 @@ class ScreenTree {
                         cs.pop()
                     }
 
-                    String urlText = urlInstance.getUrlWithParams()
-                    if (tn.linkNode."@dynamic-load-id") {
-                        String loadId = tn.linkNode."@dynamic-load-id"
+                    boolean noParam = tn.linkNode.attribute("url-noparam") == "true"
+                    String urlText = noParam ? urlInstance.getUrl() : urlInstance.getUrlWithParams()
+                    if (tn.linkNode.attribute("dynamic-load-id")) {
+                        String loadId = tn.linkNode.attribute("dynamic-load-id")
                         // NOTE: the void(0) is needed for Firefox and other browsers that render the result of the JS expression
                         urlText = "javascript:{\$('#${loadId}').load('${urlText}'); void(0);}"
                     }
 
-                    Map subNodeMap = [id:id, text:text, a_attr:[href:urlText], li_attr:["treeNodeName":tn.treeNodeNode."@name"]]
+                    Map<String, Object> subNodeMap = [id:id, text:text, a_attr:[href:urlText],
+                            li_attr:["treeNodeName":tn.treeNodeNode.attribute("name")]] as Map<String, Object>
                     if (((String) cs.get("treeOpenPath"))?.startsWith(id)) {
-                        subNodeMap.state = [opened:true, selected:(cs.get("treeOpenPath") == id)]
+                        subNodeMap.state = [opened:true, selected:(cs.get("treeOpenPath") == id)] as Map<String, Object>
                         subNodeMap.children = childNodeList
                     } else {
                         subNodeMap.children = childNodeList as boolean
