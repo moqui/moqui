@@ -34,7 +34,7 @@ along with this software (see the LICENSE.md file). If not, see
                     <box-body>
                         <link url="../Security/UserAccount" text="Users"/>
                         <link url="../Security/UserGroup" text="User Groups"/>
-                        <link url="../Security/UserGroup" text="Artifact Groups"/>
+                        <link url="../Security/ArtifactGroup" text="Artifact Groups"/>
                     </box-body>
                 </container-box>
             </row-col>
