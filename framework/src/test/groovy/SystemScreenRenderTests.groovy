@@ -117,7 +117,7 @@ class SystemScreenRenderTests extends Specification {
         "Security/UserGroup/UserGroupDetail?userGroupId=ADMIN" |
                 "ExamplePerm - Example Permission" | "System App (via root screen)"
         "Security/UserGroup/GroupUsers?userGroupId=ADMIN" | "john.doe - John Doe" | ""
-        "Security/ArtifactGroup/ArtifactGroupList" | "All Screens" | "System App (via root screen)"
+        "Security/ArtifactGroup/ArtifactGroupList" | "All Screens" | ""
         "Security/ArtifactGroup/ArtifactGroupDetail?artifactGroupId=SYSTEM_APP" |
                 "component://tools/screen/System.xml" | "Administrators (full access)"
 
