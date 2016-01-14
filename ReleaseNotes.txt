@@ -26,6 +26,7 @@ New Features
   - Apache Jackrabbit to 2.11.2
   - Apache Log4J to 2.5
   - Apache Lucene to 5.3.1
+  - Bitronix 3.0.0-SNAPSHOT from latest source (13 Jan 2016)
   - Ehcache to 2.10.1
   - ElasticSearch to 2.1.1
   - Groovy to 2.4.5
