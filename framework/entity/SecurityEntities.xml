@@ -24,6 +24,8 @@ along with this software (see the LICENSE.md file). If not, see
         <field name="description" type="text-medium"/>
         <relationship type="many" related-entity-name="moqui.security.ArtifactGroupMember" short-alias="artifacts">
             <key-map field-name="artifactGroupId"/></relationship>
+        <relationship type="many" related-entity-name="moqui.security.ArtifactAuthz" short-alias="authz">
+            <key-map field-name="artifactGroupId"/></relationship>
     </entity>
     <entity entity-name="ArtifactGroupMember" package-name="moqui.security">
         <field name="artifactGroupId" type="id" is-pk="true"/>
@@ -246,12 +248,14 @@ along with this software (see the LICENSE.md file). If not, see
         </seed-data>
     </entity>
 
-    <entity entity-name="UserGroup" package-name="moqui.security">
+    <entity entity-name="UserGroup" package-name="moqui.security" short-alias="userGroups">
         <field name="userGroupId" type="id" is-pk="true"/>
         <field name="description" type="text-medium"/>
         <relationship type="many" related-entity-name="moqui.security.UserGroupPermission" short-alias="permissions">
             <key-map field-name="userGroupId"/></relationship>
         <relationship type="many" related-entity-name="moqui.security.UserGroupPreference" short-alias="preferences">
+            <key-map field-name="userGroupId"/></relationship>
+        <relationship type="many" related-entity-name="moqui.security.ArtifactAuthz" short-alias="authz">
             <key-map field-name="userGroupId"/></relationship>
     </entity>
     <entity entity-name="UserGroupMember" package-name="moqui.security" cache="true">
