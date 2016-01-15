@@ -58,24 +58,22 @@
             <li id="history-menu" class="dropdown">
                 <a id="history-menu-link" href="#" class="dropdown-toggle btn btn-default btn-sm navbar-btn" data-toggle="dropdown" title="History">
                     <i class="glyphicon glyphicon-list"></i></a>
-                <ul class="dropdown-menu">
-                    <#list screenHistoryList as screenHistory><#if (screenHistory_index >= 25)><#break></#if>
-                        <li><a href="${screenHistory.url}">
-                            <#if screenHistory.image?has_content>
-                                <#if screenHistory.imageType == "icon">
-                                    <i class="${screenHistory.image}" style="padding-right: 8px;"></i>
-                                <#elseif screenHistory.imageType == "url-plain">
-                                    <img src="${screenHistory.image}" width="18" style="padding-right: 4px;"/>
-                                <#else>
-                                    <img src="${sri.buildUrl(screenHistory.image).url}" height="18" style="padding-right: 4px;"/>
-                                </#if>
+                <ul class="dropdown-menu"><#list screenHistoryList as screenHistory><#if (screenHistory_index >= 25)><#break></#if>
+                    <li><a href="${screenHistory.url}">
+                        <#if screenHistory.image?has_content>
+                            <#if screenHistory.imageType == "icon">
+                                <i class="${screenHistory.image}" style="padding-right: 8px;"></i>
+                            <#elseif screenHistory.imageType == "url-plain">
+                                <img src="${screenHistory.image}" width="18" style="padding-right: 4px;"/>
                             <#else>
-                                <i class="glyphicon glyphicon-link" style="padding-right: 8px;"></i>
+                                <img src="${sri.buildUrl(screenHistory.image).url}" height="18" style="padding-right: 4px;"/>
                             </#if>
-                            ${screenHistory.name}
-                        </a></li>
-                    </#list>
-                </ul>
+                        <#else>
+                            <i class="glyphicon glyphicon-link" style="padding-right: 8px;"></i>
+                        </#if>
+                        ${screenHistory.name}
+                    </a></li>
+                </#list></ul>
             </li>
         </ul>
         <#-- dark/light switch JS method -->
