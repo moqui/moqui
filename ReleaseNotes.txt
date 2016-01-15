@@ -84,6 +84,8 @@ New Features
   - When a form-single is rendered the form map is added to a pushed
     (isolated) context and popped after; field values can now be referenced
     directly in expressions in @condition, @text, etc attributes
+  - Transition responses of type screen-last and screen-last-noparam now
+    use the screen history last if no screen is saved
 - Integration Features
   - New Service REST API tool
     - define REST resources and methods in XML files (see rest-api-1.6.xsd)
