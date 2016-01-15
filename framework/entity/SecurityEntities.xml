@@ -44,8 +44,9 @@ along with this software (see the LICENSE.md file). If not, see
                 Defaults to Y. 
             </description>
         </field>
-        <field name="filterMap" type="text-long"><description>A Groovy expression that should evaluate to a Map that
-            will be used to constrain Entity operations and Service calls.</description></field>
+        <field name="filterMap" type="text-long"><description>A Groovy expression that evaluates to a Map that
+            will be used to constrain if the member is part of the group based on fields/parameters for Entity
+            operations and Service calls.</description></field>
         <relationship type="one" related-entity-name="moqui.security.ArtifactGroup"/>
         <relationship type="one" title="ArtifactType" related-entity-name="moqui.basic.Enumeration">
             <key-map field-name="artifactTypeEnumId"/></relationship>
@@ -96,6 +97,10 @@ along with this software (see the LICENSE.md file). If not, see
             <key-map field-name="authzTypeEnumId"/></relationship>
         <relationship type="one" title="AuthzAction" related-entity-name="moqui.basic.Enumeration">
             <key-map field-name="authzActionEnumId"/></relationship>
+        <relationship type="many" related-entity-name="moqui.security.ArtifactAuthzFilter" short-alias="filters">
+            <key-map field-name="artifactAuthzId"/></relationship>
+        <relationship type="many" related-entity-name="moqui.security.ArtifactAuthzRecord" short-alias="records">
+            <key-map field-name="artifactAuthzId"/></relationship>
         <seed-data>
             <moqui.basic.EnumerationType description="Authorization Type" enumTypeId="AuthzType"/>
             <moqui.basic.Enumeration description="Allow" enumId="AUTHZT_ALLOW" enumTypeId="AuthzType"/>
@@ -138,6 +143,7 @@ along with this software (see the LICENSE.md file). If not, see
                 use the userId field in the view-entity.
             </description>
         </field>
+        <relationship type="one" related-entity-name="moqui.security.ArtifactAuthz" short-alias="authz"/>
     </entity>
     <entity entity-name="ArtifactAuthzRecordCond" package-name="moqui.security">
         <field name="artifactAuthzId" type="id" is-pk="true"/>
@@ -168,6 +174,41 @@ along with this software (see the LICENSE.md file). If not, see
         <alias entity-alias="AGM" name="filterMap"/>
         <alias entity-alias="AAR" name="viewEntityName"/>
     </view-entity>
+
+    <entity entity-name="ArtifactAuthzFilter" package-name="moqui.security">
+        <field name="artifactAuthzId" type="id" is-pk="true"/>
+        <field name="entityFilterSetId" type="id" is-pk="true"/>
+        <relationship type="one" related-entity-name="moqui.security.ArtifactAuthz" short-alias="authz"/>
+        <relationship type="one" related-entity-name="moqui.security.EntityFilterSet" short-alias="filterSet"/>
+    </entity>
+    <entity entity-name="EntityFilterSet" package-name="moqui.security">
+        <field name="entityFilterSetId" type="id" is-pk="true"/>
+        <field name="description" type="text-medium"/>
+
+        <relationship type="many" related-entity-name="moqui.security.EntityFilter" short-alias="filters">
+            <key-map field-name="entityFilterSetId"/></relationship>
+    </entity>
+    <entity entity-name="EntityFilter" package-name="moqui.security">
+        <field name="entityFilterId" type="id" is-pk="true"/>
+        <field name="entityFilterSetId" type="id"/>
+        <field name="entityName" type="text-medium"><description>The name of the entity to filter when queried. May be
+            queried directly or as part of a view-entity.</description></field>
+        <field name="filterMap" type="text-long"><description>
+            A Groovy expression that evaluates to a Map that will be added to queries to filter/constrain visible data.
+            Values can be constants or variables that come from user context (ec.user.context) or execution context
+            (ec.context). It is up to code to set values for use by these filters.
+
+            If the value evaluates to a Collection the default comparison operator is IN, otherwise default is EQUALS.
+            If a Collection is empty results in a false constraint, unless using a NOT* comparison operator.
+        </description></field>
+        <field name="comparisonEnumId" type="id"/>
+        <field name="joinOr" type="text-indicator"><description>If Y then OR filterMap entries, default AND.</description></field>
+        <!-- FUTURE: EntityFilterField with field path like DataDocument to join other entities/fields into queries for filtering -->
+
+        <relationship type="one" related-entity-name="moqui.security.EntityFilterSet" short-alias="filterSet"/>
+        <relationship type="one" title="ComparisonOperator" related-entity-name="moqui.basic.Enumeration" short-alias="comparison">
+            <key-map field-name="comparisonEnumId"/></relationship>
+    </entity>
 
     <!-- ========== Artifact Tarpit ========== -->
     <entity entity-name="ArtifactTarpit" package-name="moqui.security">
