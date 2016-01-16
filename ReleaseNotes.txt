@@ -195,6 +195,10 @@ New Features
 - Added entities and services for wiki spaces and pages, originally from
   HiveMind, based on ResourceFacade resources
 - Example entities, services now have a consistent package (moqui.entity)
+- Added MessageFacade.pushErrors() and popErrors() methods for code that
+  should ignore previous errors (especially service calls)
+- Added ServiceCallSync.ignorePreviousError() method to run a service even
+  if previous code added errors in MessageFacade
 
 Bug Fixes
 
@@ -208,6 +212,8 @@ Bug Fixes
   text.@type attribute; GitHub issue #158
 - Fixed issue with check/set defaults on entity value update where fields
   not specified were set back to default value
+- Fixed issue where service semaphores were not cleared when services threw
+  an exception or returned an error; GitHub issue #213
 
 ===========================================================================
 Release 1.5.3 - 11 Sep 2015
