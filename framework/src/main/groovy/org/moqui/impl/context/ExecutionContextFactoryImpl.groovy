@@ -1162,7 +1162,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         // do this sync to avoid overhead of job scheduling for a very simple service call, and to avoid infinite recursion when EntityJobStore is in place
         try {
             executionContext.service.sync().name("create", "moqui.server.ArtifactHitBin").parameters(ahb)
-                    .requireNewTransaction(true).call()
+                    .requireNewTransaction(true).ignorePreviousError(true).disableAuthz().call()
             if (executionContext.message.hasError()) {
                 logger.error("Error creating ArtifactHitBin: ${executionContext.message.getErrorsString()}")
                 executionContext.message.clearErrors()
