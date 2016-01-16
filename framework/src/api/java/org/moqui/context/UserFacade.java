@@ -55,6 +55,10 @@ public interface UserFacade {
      */
     void setPreference(String preferenceKey, String preferenceValue);
 
+    /** A per-user context like the execution context for but data specific to a user and maintained through service
+     * calls, etc unlike ExecutionContext.getContext(). Used for security data, etc such as entity filter values. */
+    Map<String, Object> getContext();
+
     /** Get the current date and time in a Timestamp object. This is either the current system time, or the Effective
      * Time if that has been set for this context (allowing testing of past and future system behavior).
      *
