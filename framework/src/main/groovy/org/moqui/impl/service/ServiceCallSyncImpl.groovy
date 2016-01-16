@@ -356,8 +356,10 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                 if (System.currentTimeMillis() > (lockTime.getTime() + ignoreMillis)) {
                     eci.getService().sync().name("delete", "moqui.service.semaphore.ServiceSemaphore")
                             .parameters([serviceName:getServiceName()]).requireNewTransaction(true).call()
+                    serviceSemaphore = null
                 }
-
+            }
+            if (serviceSemaphore) {
                 if (semaphore == "fail") {
                     throw new ServiceException("An instance of service [${getServiceName()}] is already running (thread [${serviceSemaphore.lockThread}], locked at ${serviceSemaphore.lockTime}) and it is setup to fail on semaphore conflict.")
                 } else {
@@ -382,7 +384,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
             // if we got to here the semaphore didn't exist or has cleared, so create one
             eci.getService().sync().name("create", "moqui.service.semaphore.ServiceSemaphore")
                     .parameters([serviceName:getServiceName(), lockThread:Thread.currentThread().getName(),
-                    lockTime:new Timestamp(System.currentTimeMillis())])
+                        lockTime:new Timestamp(System.currentTimeMillis())])
                     .requireNewTransaction(true).call()
         }
     }
