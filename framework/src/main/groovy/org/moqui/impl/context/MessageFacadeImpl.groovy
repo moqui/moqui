@@ -28,6 +28,8 @@ public class MessageFacadeImpl implements MessageFacade {
     protected List<String> errorList = new LinkedList<String>()
     protected List<ValidationError> validationErrorList = new LinkedList<ValidationError>()
 
+    protected LinkedList<SavedErrors> savedErrorsStack = new LinkedList<SavedErrors>()
+
     MessageFacadeImpl() { }
 
     @Override
@@ -41,15 +43,19 @@ public class MessageFacadeImpl implements MessageFacade {
 
     @Override
     List<String> getErrors() { return this.errorList }
+    @Override
     void addError(String error) { if (error) this.errorList.add(error) }
 
     @Override
     List<ValidationError> getValidationErrors() { return this.validationErrorList }
+    @Override
     void addValidationError(String form, String field, String serviceName, String message, Throwable nested) {
         this.validationErrorList.add(new ValidationError(form, field, serviceName, message, nested))
     }
 
+    @Override
     boolean hasError() { return errorList.size() > 0 || validationErrorList.size() > 0 }
+    @Override
     String getErrorsString() {
         StringBuilder errorBuilder = new StringBuilder()
         for (String errorMessage in errorList) errorBuilder.append(errorMessage).append("\n")
@@ -57,5 +63,27 @@ public class MessageFacadeImpl implements MessageFacade {
         return errorBuilder.toString()
     }
 
+    @Override
     void clearErrors() { errorList.clear(); validationErrorList.clear(); }
+
+    @Override
+    void pushErrors() {
+        savedErrorsStack.addFirst(new SavedErrors(errorList, validationErrorList))
+        errorList = new LinkedList<String>()
+        validationErrorList = new LinkedList<ValidationError>()
+    }
+    @Override
+    void popErrors() {
+        SavedErrors se = savedErrorsStack.removeFirst()
+        errorList.addAll(se.errorList)
+        validationErrorList.addAll(se.validationErrorList)
+    }
+
+    static class SavedErrors {
+        List<String> errorList
+        List<ValidationError> validationErrorList
+        SavedErrors(List<String> errorList, List<ValidationError> validationErrorList) {
+            this.errorList = errorList; this.validationErrorList = validationErrorList
+        }
+    }
 }
