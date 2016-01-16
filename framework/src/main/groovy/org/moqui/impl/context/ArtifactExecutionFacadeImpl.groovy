@@ -14,6 +14,9 @@
 package org.moqui.impl.context
 
 import groovy.transform.CompileStatic
+import org.moqui.impl.entity.EntityFindBase
+import org.moqui.impl.entity.EntityFindImpl
+
 import java.sql.Timestamp
 
 import org.moqui.BaseException
@@ -549,5 +552,24 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
 
         // if ("AT_XML_SCREEN" == aeii.typeEnumId) logger.warn("TOREMOVE artifact isPermitted got to end for user ${userId} - ${aeii}")
         // return true
+    }
+
+    void filterFindForUser(EntityFindBase efb) {
+        ArtifactExecutionInfoImpl lastAeii = artifactExecutionInfoStack.peekFirst()
+        EntityValue aacv = lastAeii.aacv
+
+        // find applicable EntityFilter records
+        EntityList artifactAuthzFilterList = eci.entity.find("moqui.security.ArtifactAuthzFilter")
+                .condition("artifactAuthzId", aacv.artifactAuthzId).useCache(true).list()
+        if (!artifactAuthzFilterList) return
+        for (EntityValue artifactAuthzFilter in artifactAuthzFilterList) {
+            EntityList entityFilterList = eci.entity.find("moqui.security.EntityFilter")
+                    .condition("entityFilterSetId", artifactAuthzFilter.entityFilterSetId).useCache(true).list()
+            if (!entityFilterList) continue
+
+            // TODO see if there if any filter entities match the current entity or if it is a view then a member entity
+
+            // Map<String, Object> filterMapObj = (Map<String, Object>) eci.getResource().expression(entityFilter.getString('filterMap'), null)
+        }
     }
 }

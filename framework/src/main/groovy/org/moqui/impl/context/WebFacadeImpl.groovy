@@ -229,6 +229,7 @@ class WebFacadeImpl implements WebFacade {
         urlInstance.getParameterMap().remove("pageIndex")
         // logger.warn("======= parameters: ${urlInstance.getParameterMap()}")
         String urlWithParams = urlInstance.getUrlWithParams()
+        String urlNoParams = urlInstance.getUrl()
         // logger.warn("======= urlWithParams: ${urlWithParams}")
 
         // if is the same as last screen skip it
@@ -281,8 +282,8 @@ class WebFacadeImpl implements WebFacade {
         }
 
         // add to history list
-        screenHistoryList.addFirst([name:nameBuilder.toString(), url:urlWithParams, image:sui.menuImage,
-                                    imageType:sui.menuImageType, screenLocation:targetScreen.getLocation()])
+        screenHistoryList.addFirst([name:nameBuilder.toString(), url:urlWithParams, urlNoParams:urlNoParams,
+                image:sui.menuImage, imageType:sui.menuImageType, screenLocation:targetScreen.getLocation()])
 
         // trim the list if needed; keep 40, whatever uses it may display less
         while (screenHistoryList.size() > 40) screenHistoryList.removeLast()

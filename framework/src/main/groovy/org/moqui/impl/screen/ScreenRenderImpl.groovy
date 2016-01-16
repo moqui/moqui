@@ -362,13 +362,20 @@ class ScreenRenderImpl implements ScreenRender {
                 if (ri.type == "screen-last" || ri.type == "screen-last-noparam") {
                     String savedUrl =  wfi.getRemoveScreenLastPath()
                     urlType = "screen-path"
-                    // if no saved URL, just go to root/default; avoid getting stuck on Login screen, etc
-                    url = savedUrl ?: "/"
-                }
-                if (ri.type == "screen-last") {
-                    wfi.removeScreenLastParameters(true)
-                } else if (ri.type == "screen-last-noparam") {
-                    wfi.removeScreenLastParameters(false)
+                    if (savedUrl) {
+                        url = savedUrl
+                        wfi.removeScreenLastParameters(ri.type == "screen-last")
+                    } else {
+                        // try screen history when no last was saved
+                        Map historyMap = wfi.getScreenHistory()?.get(0)
+                        if (historyMap) {
+                            url = ri.type == "screen-last" ? historyMap.url : historyMap.urlNoParams
+                            urlType = "plain"
+                        } else {
+                            // if no saved URL, just go to root/default; avoid getting stuck on Login screen, etc
+                            url = savedUrl ?: "/"
+                        }
+                    }
                 }
             }
 

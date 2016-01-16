@@ -65,6 +65,8 @@ class UserFacadeImpl implements UserFacade {
     protected String noUserCurrencyUomId = null
     // if one of these is set before login, set it on the account on login? probably best not...
 
+    protected final Map<String, Object> userContext = [:]
+
     protected Calendar calendarForTzLcOnly = null
 
     /** This is set instead of adding _NA_ user as logged in to pass authc tests but not generally behave as if a user is logged in */
@@ -370,6 +372,9 @@ class UserFacadeImpl implements UserFacade {
             if (!alreadyDisabled) eci.getArtifactExecution().enableAuthz()
         }
     }
+
+    @Override
+    Map<String, Object> getContext() { return userContext }
 
     @Override
     Timestamp getNowTimestamp() {
