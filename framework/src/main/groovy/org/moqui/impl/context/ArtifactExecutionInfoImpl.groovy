@@ -31,6 +31,8 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
     protected String authorizedAuthzTypeId = null
     protected String authorizedActionEnumId = null
     protected boolean authorizationInheritable = false
+    protected EntityValue aacv = null
+
     //protected Exception createdLocation = null
     protected ArtifactExecutionInfoImpl parentAeii = null
     protected long startTime
@@ -52,6 +54,7 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
     ArtifactExecutionInfoImpl setParameters(Map<String, Object> parameters) { this.parameters = parameters; return this }
 
     @Override
+    @CompileStatic
     String getName() { return this.name }
 
     @Override
@@ -65,24 +68,33 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
     @Override
     @CompileStatic
     String getAuthorizedUserId() { return this.authorizedUserId }
+    @CompileStatic
     void setAuthorizedUserId(String authorizedUserId) { this.authorizedUserId = authorizedUserId }
 
     @Override
     @CompileStatic
     String getAuthorizedAuthzTypeId() { return this.authorizedAuthzTypeId }
+    @CompileStatic
     void setAuthorizedAuthzTypeId(String authorizedAuthzTypeId) { this.authorizedAuthzTypeId = authorizedAuthzTypeId }
 
     @Override
     @CompileStatic
     String getAuthorizedActionEnumId() { return this.authorizedActionEnumId }
+    @CompileStatic
     void setAuthorizedActionEnumId(String authorizedActionEnumId) { this.authorizedActionEnumId = authorizedActionEnumId }
 
     @Override
+    @CompileStatic
     boolean isAuthorizationInheritable() { return this.authorizationInheritable }
+    @CompileStatic
     void setAuthorizationInheritable(boolean isAuthorizationInheritable) { this.authorizationInheritable = isAuthorizationInheritable}
 
     @CompileStatic
+    EntityValue getAacv() { return aacv }
+
+    @CompileStatic
     void copyAacvInfo(EntityValue aacv, String userId) {
+        this.aacv = aacv
         this.authorizedUserId = userId
         this.authorizedAuthzTypeId = (String) aacv.get('authzTypeEnumId')
         this.authorizedActionEnumId = (String) aacv.get('authzActionEnumId')
@@ -91,6 +103,7 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
 
     @CompileStatic
     void copyAuthorizedInfo(ArtifactExecutionInfoImpl aeii) {
+        this.aacv = aeii.aacv
         this.authorizedUserId = aeii.authorizedUserId
         this.authorizedAuthzTypeId = aeii.authorizedAuthzTypeId
         this.authorizedActionEnumId = aeii.authorizedActionEnumId
@@ -200,7 +213,7 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
         } else {
             val = timeByArtifact[key]
             val.count = val.count + 1
-            if (val.count == 2 && val.times[0] > (curTime * 3)) {
+            if (val.count == 2 && ((List) val.times)[0] > (curTime * 3)) {
                 // if the first is much higher than the 2nd, use the 2nd for both
                 val.times = [curTime, curTime]
                 val.time = curTime + curTime
@@ -208,7 +221,7 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
                 val.timeMax = curTime
                 val.timeAvg = curTime
             } else {
-                val.times.add(curTime)
+                ((List) val.times).add(curTime)
                 val.time = val.time + curTime
                 val.timeMin = val.timeMin > curTime ? curTime : val.timeMin
                 val.timeMax = val.timeMax > curTime ? val.timeMax : curTime
@@ -249,7 +262,7 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
                     action:ArtifactExecutionFacadeImpl.artifactActionDescriptionMap.get(actionEnumId)]
             flatMap.put(key, artifactMap)
             if (parentArtifactMap != null) {
-                parentArtifactMap.childInfoList.add(artifactMap)
+                ((List) parentArtifactMap.childInfoList).add(artifactMap)
             } else {
                 topLevelList.add(artifactMap)
             }
@@ -262,7 +275,7 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
                 // is the current artifact in the current parent's child list? if not add it (a given artifact may be under multiple parents, normal)
                 boolean foundMap = false
                 for (Map candidate in parentArtifactMap.childInfoList) if (candidate.key == key) { foundMap = true; break }
-                if (!foundMap) parentArtifactMap.childInfoList.add(artifactMap)
+                if (!foundMap) ((List) parentArtifactMap.childInfoList).add(artifactMap)
             }
         }
 
