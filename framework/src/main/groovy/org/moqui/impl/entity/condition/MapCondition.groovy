@@ -20,13 +20,17 @@ import org.moqui.entity.EntityCondition
 
 @CompileStatic
 class MapCondition extends EntityConditionImplBase {
-    protected Map<String, Object> fieldMap
+    protected final Map<String, Object> fieldMap
     protected EntityCondition.ComparisonOperator comparisonOperator
     protected EntityCondition.JoinOperator joinOperator
     protected Boolean ignoreCase = false
     protected EntityConditionImplBase internalCond = null
-    protected int curHashCode
+    protected Integer curHashCode = null
     protected static final Class thisClass = MapCondition.class
+
+    protected final int fieldsSize
+    protected final String[] names
+    protected final Object[] values
 
     MapCondition(EntityConditionFactoryImpl ecFactoryImpl,
             Map<String, Object> fieldMap, EntityCondition.ComparisonOperator comparisonOperator,
@@ -35,8 +39,22 @@ class MapCondition extends EntityConditionImplBase {
         this.fieldMap = fieldMap ? fieldMap : new HashMap<String, Object>()
         this.comparisonOperator = comparisonOperator ?: EQUALS
         this.joinOperator = joinOperator ?: AND
-        curHashCode = createHashCode()
+
+        fieldsSize = fieldMap.size()
+        names = new String[fieldsSize]
+        values = new Object[fieldsSize]
+        int fieldIndex = 0
+        for (Map.Entry<String, Object> entry in fieldMap.entrySet()) {
+            names[fieldIndex] = entry.key
+            values[fieldIndex] = entry.value
+            fieldIndex++
+        }
     }
+
+    Map<String, Object> getFieldMap() { return fieldMap }
+    EntityCondition.ComparisonOperator getComparisonOperator() { return comparisonOperator }
+    EntityCondition.JoinOperator getJoinOperator() { return joinOperator }
+    boolean getIgnoreCase() { return ignoreCase }
 
     @Override
     void makeSqlWhere(EntityQueryBuilder eqb) {
@@ -48,9 +66,9 @@ class MapCondition extends EntityConditionImplBase {
         // do this directly instead of going through condition, faster
         // return this.makeCondition().mapMatches(map)
 
-        for (Map.Entry<String, ?> fieldEntry in this.fieldMap.entrySet()) {
-            boolean conditionMatches = EntityConditionFactoryImpl.compareByOperator(map.get(fieldEntry.getKey()),
-                    comparisonOperator, fieldEntry.getValue())
+        for (int i = 0; i < fieldsSize; i++) {
+            boolean conditionMatches = EntityConditionFactoryImpl.compareByOperator(map.get(names[i]),
+                    comparisonOperator, values[i])
             if (conditionMatches && joinOperator == OR) return true
             if (!conditionMatches && joinOperator == AND) return false
         }
@@ -67,11 +85,11 @@ class MapCondition extends EntityConditionImplBase {
     }
 
     void getAllAliases(Set<String> entityAliasSet, Set<String> fieldAliasSet) {
-        for (Map.Entry<String, Object> entry in fieldMap.entrySet()) fieldAliasSet.add(entry.key)
+        for (int i = 0; i < fieldsSize; i++) fieldAliasSet.add(names[i])
     }
 
     @Override
-    EntityCondition ignoreCase() { this.ignoreCase = true; curHashCode = createHashCode(); return this }
+    EntityCondition ignoreCase() { this.ignoreCase = true; curHashCode = null; return this }
 
     @Override
     String toString() {
@@ -94,13 +112,13 @@ class MapCondition extends EntityConditionImplBase {
         */
     }
 
-    protected EntityConditionImplBase makeCondition() {
+    EntityConditionImplBase makeCondition() {
         if (internalCond != null) return internalCond
 
         List conditionList = new LinkedList()
-        for (Map.Entry<String, ?> fieldEntry in this.fieldMap.entrySet()) {
-            EntityConditionImplBase newCondition = (EntityConditionImplBase) this.ecFactoryImpl.makeCondition(fieldEntry.getKey(),
-                    this.comparisonOperator, fieldEntry.getValue())
+        for (int i = 0; i < fieldsSize; i++) {
+            EntityConditionImplBase newCondition = (EntityConditionImplBase) this.ecFactoryImpl.makeCondition(names[i],
+                    this.comparisonOperator, values[i])
             if (this.ignoreCase) newCondition.ignoreCase()
             conditionList.add(newCondition)
         }
@@ -110,7 +128,11 @@ class MapCondition extends EntityConditionImplBase {
     }
 
     @Override
-    int hashCode() { return curHashCode }
+    int hashCode() {
+        if (curHashCode != null) return curHashCode
+        curHashCode = createHashCode()
+        return curHashCode
+    }
     protected int createHashCode() {
         return (fieldMap ? fieldMap.hashCode() : 0) + comparisonOperator.hashCode() + joinOperator.hashCode() +
                 ignoreCase.hashCode()

@@ -33,12 +33,20 @@ class EntityListImpl implements EntityList {
 
     protected EntityFacadeImpl efi
 
-    protected List<EntityValue> valueList = new LinkedList<EntityValue>()
+    protected ArrayList<EntityValue> valueList
     protected boolean fromCache = false
     protected Integer offset = null
     protected Integer limit = null
 
-    EntityListImpl(EntityFacadeImpl efi) { this.efi = efi }
+    EntityListImpl(EntityFacadeImpl efi) {
+        this.efi = efi
+        valueList = new ArrayList<EntityValue>(30) // default size, at least enough for common pagination
+    }
+
+    EntityListImpl(EntityFacadeImpl efi, int initialCapacity) {
+        this.efi = efi
+        valueList = new ArrayList<EntityValue>(initialCapacity)
+    }
 
     @Override
     EntityValue getFirst() { return valueList ? valueList.get(0) : null }
@@ -53,9 +61,9 @@ class EntityListImpl implements EntityList {
         if (!fromDateName) fromDateName = "fromDate"
         if (!thruDateName) thruDateName = "thruDate"
 
-        Iterator<EntityValue> valueIterator = this.valueList.iterator()
-        while (valueIterator.hasNext()) {
-            EntityValue value = valueIterator.next()
+        int valueIndex = 0
+        while (valueIndex < valueList.size()) {
+            EntityValue value = valueList.get(valueIndex)
             Object fromDateObj = value.get(fromDateName)
             Object thruDateObj = value.get(thruDateName)
 
@@ -73,12 +81,16 @@ class EntityListImpl implements EntityList {
             if (fromDateObj instanceof java.sql.Date || thruDateObj instanceof java.sql.Date) {
                 if (!((thruDateLong == null || thruDateLong >= momentDateLong) &&
                         (fromDateLong == null || fromDateLong <= momentDateLong))) {
-                    valueIterator.remove()
+                    valueList.remove(valueIndex)
+                } else {
+                    valueIndex++
                 }
             } else {
                 if (!((thruDateLong == null || thruDateLong >= momentLong) &&
                         (fromDateLong == null || fromDateLong <= momentLong))) {
-                    valueIterator.remove()
+                    valueList.remove(valueIndex)
+                } else {
+                    valueIndex++
                 }
             }
         }
@@ -91,29 +103,56 @@ class EntityListImpl implements EntityList {
     }
 
     @Override
-    EntityList filterByAnd(Map<String, Object> fields) {
-        if (fromCache) return this.cloneList().filterByAnd(fields)
-        return filterByCondition(this.efi.getConditionFactory().makeCondition(fields), true)
+    EntityList filterByAnd(Map<String, Object> fields) { return filterByAnd(fields, true) }
+    @Override
+    EntityList filterByAnd(Map<String, Object> fields, Boolean include) {
+        if (fromCache) return this.cloneList().filterByAnd(fields, include)
+        if (include == null) include = true
+
+        // iterate fields once, then use indexes within big loop
+        int fieldsSize = fields.size()
+        String[] names = new String[fieldsSize]
+        Object[] values = new Object[fieldsSize]
+        int fieldIndex = 0
+        for (Map.Entry<String, Object> entry in fields.entrySet()) {
+            names[fieldIndex] = entry.key
+            values[fieldIndex] = entry.value
+            fieldIndex++
+        }
+
+        int valueIndex = 0
+        while (valueIndex < valueList.size()) {
+            EntityValue value = valueList.get(valueIndex)
+            boolean matches = true
+            for (int i = 0; i < fieldsSize; i++) if (value.get(names[i]) != values[i]) matches = false
+            if ((matches && !include) || (!matches && include)) {
+                valueList.remove(valueIndex)
+            } else {
+                valueIndex++
+            }
+        }
+        return this
     }
 
     @Override
-    EntityList removeByAnd(Map<String, Object> fields) {
-        if (fromCache) return this.cloneList().removeByAnd(fields)
-        return filterByCondition(this.efi.getConditionFactory().makeCondition(fields), false)
-    }
+    EntityList removeByAnd(Map<String, Object> fields) { return filterByAnd(fields, false) }
 
     @Override
     EntityList filterByCondition(EntityCondition condition, Boolean include) {
         if (fromCache) return this.cloneList().filterByCondition(condition, include)
         if (include == null) include = true
-        Iterator<EntityValue> valueIterator = this.valueList.iterator()
-        while (valueIterator.hasNext()) {
-            EntityValue value = valueIterator.next()
+        int valueIndex = 0
+        while (valueIndex < valueList.size()) {
+            EntityValue value = valueList.get(valueIndex)
             boolean matches = condition.mapMatches(value)
             // logger.warn("TOREMOVE filter value [${value}] with condition [${condition}] include=${include}, matches=${matches}")
             // matched: if include is not true or false (default exclude) remove it
             // didn't match, if include is true remove it
-            if ((matches && !include) || (!matches && include)) valueIterator.remove()
+            if ((matches && !include) || (!matches && include)) {
+                valueList.remove(valueIndex)
+            } else {
+                valueIndex++
+            }
         }
         return this
     }
@@ -122,19 +161,15 @@ class EntityListImpl implements EntityList {
     EntityList filterByLimit(Integer offset, Integer limit) {
         if (fromCache) return this.cloneList().filterByLimit(offset, limit)
         if (offset == null && limit == null) return this
-
-        this.offset = offset
+        if (offset == null) offset = 0
+        this.offset = offset ?: 0
         this.limit = limit
 
-        Integer maxIndex = limit != null ? (offset ?: 0) + limit : null
-        int curIndex = 0
-        Iterator<EntityValue> valueIterator = this.valueList.iterator()
-        while (valueIterator.hasNext()) {
-            valueIterator.next()
-            if (offset != null && curIndex < offset) valueIterator.remove()
-            if (maxIndex != null && curIndex >= maxIndex) valueIterator.remove()
-            curIndex++
-        }
+        int vlSize = valueList.size()
+        int toIndex = limit != null ? offset + limit : vlSize
+        if (toIndex > vlSize) toIndex = vlSize
+        ArrayList<EntityValue> newList = new ArrayList<EntityValue>(limit ?: (vlSize - offset))
+        for (int i = offset; i < toIndex; i++) newList.add(valueList.get(i))
 
         return this
     }
@@ -229,14 +264,14 @@ class EntityListImpl implements EntityList {
 
     @Override
     EntityList cloneList() {
-        EntityListImpl newObj = new EntityListImpl(this.efi)
+        EntityListImpl newObj = new EntityListImpl(this.efi, valueList.size())
         newObj.valueList.addAll(this.valueList)
         // NOTE: when cloning don't clone the fromCache value (normally when from cache will be cloned before filtering)
         return newObj
     }
 
     EntityListImpl deepCloneList() {
-        EntityListImpl newObj = new EntityListImpl(this.efi)
+        EntityListImpl newObj = new EntityListImpl(this.efi, valueList.size())
         for (EntityValue ev in this.valueList) newObj.valueList.add(ev.cloneValue())
         return newObj
     }
@@ -362,6 +397,7 @@ class EntityListImpl implements EntityList {
         EntityValue getFirst() { return null }
         EntityList filterByDate(String fromDateName, String thruDateName, Timestamp moment) { return this }
         EntityList filterByAnd(Map<String, Object> fields) { return this }
+        EntityList filterByAnd(Map<String, Object> fields, Boolean include) { return this }
         EntityList removeByAnd(Map<String, Object> fields) { return this }
         EntityList filterByCondition(EntityCondition condition, Boolean include) { return this }
         EntityList filterByLimit(Integer offset, Integer limit) {

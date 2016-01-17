@@ -344,6 +344,7 @@ class EntityFacadeImpl implements EntityFacade {
         return entityRrList
     }
 
+    @CompileStatic
     void loadAllEntityLocations() {
         // lock or wait for lock, this lock used here and for checking entity defined
         locationLoadLock.lock()
@@ -360,10 +361,10 @@ class EntityFacadeImpl implements EntityFacade {
                 int numDbViewEntities = 0
                 for (EntityValue dbViewEntity in makeFind("moqui.entity.view.DbViewEntity").list()) {
                     if (dbViewEntity.packageName) {
-                        List pkgList = (List) this.entityLocationCache.get(dbViewEntity.packageName + "." + dbViewEntity.dbViewEntityName)
+                        List pkgList = (List) this.entityLocationCache.get((String) dbViewEntity.packageName + "." + dbViewEntity.dbViewEntityName)
                         if (!pkgList) {
                             pkgList = new LinkedList()
-                            this.entityLocationCache.put(dbViewEntity.packageName + "." + dbViewEntity.dbViewEntityName, pkgList)
+                            this.entityLocationCache.put((String) dbViewEntity.packageName + "." + dbViewEntity.dbViewEntityName, pkgList)
                         }
                         if (!pkgList.contains("_DB_VIEW_ENTITY_")) pkgList.add("_DB_VIEW_ENTITY_")
                     }
@@ -397,6 +398,7 @@ class EntityFacadeImpl implements EntityFacade {
     }
 
     // NOTE: only called by loadAllEntityLocations() which is synchronized/locked, so doesn't need to be
+    @CompileStatic
     protected void loadEntityFileLocations(ResourceReference entityRr) {
         Node entityRoot = getEntityFileRoot(entityRr)
         if (entityRoot.name() == "entities") {
@@ -404,9 +406,9 @@ class EntityFacadeImpl implements EntityFacade {
             int numEntities = 0
             List<Node> entityRootChildren = (List<Node>) entityRoot.children()
             for (Node entity in entityRootChildren) {
-                String entityName = (String) entity."@entity-name"
-                String packageName = (String) entity."@package-name"
-                String shortAlias = (String) entity."@short-alias"
+                String entityName = (String) entity.attribute("entity-name")
+                String packageName = (String) entity.attribute("package-name")
+                String shortAlias = (String) entity.attribute("short-alias")
 
                 if (!entityName) {
                     logger.warn("Skipping entity XML file [${entityRr.getLocation()}] element with no @entity-name: ${entity}")

@@ -57,6 +57,8 @@ public class EntityDefinition {
     protected Boolean hasUserFields = null
     protected Boolean allowUserField = null
     protected Map<String, Map> mePkFieldToAliasNameMapMap = null
+    protected Map<String, Map<String, ArrayList<Node>>> memberEntityFieldAliases = null
+    protected Map<String, Node> memberEntityAliasMap = null
 
     protected Boolean isView = null
     protected Boolean needsAuditLogVal = null
@@ -89,9 +91,14 @@ public class EntityDefinition {
             this.sequenceBankSize = internalEntityNode."@sequence-bank-size" as long
 
         if (isViewEntity()) {
+            memberEntityFieldAliases = [:]
+            memberEntityAliasMap = [:]
+
             // get group-name, etc from member-entity
             for (Node memberEntity in internalEntityNode."member-entity") {
-                EntityDefinition memberEd = this.efi.getEntityDefinition((String) memberEntity."@entity-name")
+                String memberEntityName = (String) memberEntity."@entity-name"
+                memberEntityAliasMap.put((String) memberEntity."@entity-alias", memberEntity)
+                EntityDefinition memberEd = this.efi.getEntityDefinition(memberEntityName)
                 Node memberEntityNode = memberEd.getEntityNode()
                 if (memberEntityNode."@group-name") internalEntityNode.attributes().put("group-name", memberEntityNode."@group-name")
             }
@@ -99,7 +106,7 @@ public class EntityDefinition {
             this.expandAliasAlls()
             // set @type, set is-pk on all alias Nodes if the related field is-pk
             for (Node aliasNode in internalEntityNode."alias") {
-                Node memberEntity = (Node) internalEntityNode."member-entity".find({ it."@entity-alias" == aliasNode."@entity-alias" })
+                Node memberEntity = memberEntityAliasMap.get((String) aliasNode.attribute("entity-alias"))
                 if (memberEntity == null) {
                     if (aliasNode."complex-alias") {
                         continue
@@ -113,9 +120,16 @@ public class EntityDefinition {
                 if (fieldNode == null) throw new EntityException("In view-entity [${internalEntityName}] alias [${aliasNode."@name"}] referred to field [${fieldName}] that does not exist on entity [${memberEd.internalEntityName}].")
                 if (!aliasNode.attribute("type")) aliasNode.attributes().put("type", fieldNode.attribute("type"))
                 if (fieldNode."@is-pk" == "true") aliasNode."@is-pk" = "true"
+
+                // add to aliases by field name by entity name
+                if (!memberEntityFieldAliases.containsKey(memberEd.getFullEntityName())) memberEntityFieldAliases.put(memberEd.getFullEntityName(), [:])
+                Map<String, List<Node>> fieldInfoByEntity = memberEntityFieldAliases.get(memberEd.getFullEntityName())
+                if (!fieldInfoByEntity.containsKey(fieldName)) fieldInfoByEntity.put(fieldName, new ArrayList())
+                ArrayList<Node> aliasByField = fieldInfoByEntity.get(fieldName)
+                aliasByField.add(aliasNode)
             }
             for (Node aliasNode in internalEntityNode."alias") {
-                String fieldName = (String) aliasNode."@name"
+                String fieldName = (String) aliasNode.attribute("name")
                 fieldNodeMap.put(fieldName, aliasNode)
                 fieldInfoMap.put(fieldName, new FieldInfo(this, aliasNode))
             }
@@ -150,6 +164,10 @@ public class EntityDefinition {
         return isView
     }
     boolean hasFunctionAlias() { return isViewEntity() && this.internalEntityNode."alias".find({ it."@function" }) }
+    @CompileStatic
+    Map<String, ArrayList<Node>> getMemberFieldAliases(String memberEntityName) {
+        return memberEntityFieldAliases?.get(memberEntityName)
+    }
 
     String getEntityGroupName() {
         if (groupName == null) {
@@ -481,7 +499,7 @@ public class EntityDefinition {
         String relationshipName
         String shortAlias
         String prettyName
-        Map keyMap
+        Map<String, String> keyMap
         boolean dependent
         boolean mutable
 
@@ -519,10 +537,10 @@ public class EntityDefinition {
         }
 
         @CompileStatic
-        Map getTargetParameterMap(Map valueSource) {
+        Map<String, Object> getTargetParameterMap(Map valueSource) {
             if (!valueSource) return [:]
-            Map targetParameterMap = new HashMap()
-            for (Map.Entry keyEntry in keyMap.entrySet()) {
+            Map<String, Object> targetParameterMap = new HashMap<String, Object>()
+            for (Map.Entry<String, String> keyEntry in keyMap.entrySet()) {
                 Object value = valueSource.get(keyEntry.key)
                 if (!StupidUtilities.isEmpty(value)) targetParameterMap.put(keyEntry.value, value)
             }
@@ -701,7 +719,7 @@ public class EntityDefinition {
     }
 
     protected String getBasicFieldColName(Node entityNode, String entityAlias, String fieldName) {
-        Node memberEntity = (Node) entityNode."member-entity".find({ it."@entity-alias" == entityAlias })
+        Node memberEntity = memberEntityAliasMap.get(entityAlias)
         if (memberEntity == null) throw new EntityException("Could not find member-entity with entity-alias [${entityAlias}] in view-entity [${getFullEntityName()}]")
         EntityDefinition memberEd = this.efi.getEntityDefinition((String) memberEntity."@entity-name")
         return memberEd.getColumnName(fieldName, false)
@@ -1380,7 +1398,7 @@ public class EntityDefinition {
         mePkFieldToAliasNameMap = new HashMap()
 
         // do a reverse map on member-entity pk fields to view-entity aliases
-        Node memberEntityNode = (Node) entityNode."member-entity".find({ it."@entity-alias" == entityAlias })
+        Node memberEntityNode = memberEntityAliasMap.get(entityAlias)
         //logger.warn("TOREMOVE 2 getMePkFieldToAliasNameMap entityAlias=${entityAlias} memberEntityNode=${memberEntityNode}")
         EntityDefinition med = this.efi.getEntityDefinition((String) memberEntityNode."@entity-name")
         List<String> pkFieldNames = med.getPkFieldNames()
@@ -1655,7 +1673,7 @@ public class EntityDefinition {
     protected void expandAliasAlls() {
         if (!isViewEntity()) return
         for (Node aliasAll: this.internalEntityNode."alias-all") {
-            Node memberEntity = (Node) this.internalEntityNode."member-entity".find({ it."@entity-alias" == aliasAll."@entity-alias" })
+            Node memberEntity = memberEntityAliasMap.get((String) aliasAll.attribute("entity-alias"))
             if (!memberEntity) {
                 logger.error("In view-entity ${getFullEntityName()} in alias-all with entity-alias [${aliasAll."@entity-alias"}], member-entity with same entity-alias not found, ignoring")
                 continue;
@@ -1745,7 +1763,7 @@ public class EntityDefinition {
             ConditionField field
             EntityDefinition condEd;
             if (econdition."@entity-alias") {
-                Node memberEntity = (Node) this.internalEntityNode."member-entity".find({ it."@entity-alias" == econdition."@entity-alias"})
+                Node memberEntity = memberEntityAliasMap.get((String) econdition.attribute("entity-alias"))
                 if (!memberEntity) throw new EntityException("The entity-alias [${econdition."@entity-alias"}] was not found in view-entity [${this.internalEntityName}]")
                 EntityDefinition aliasEntityDef = this.efi.getEntityDefinition((String) memberEntity."@entity-name")
                 field = new ConditionField((String) econdition."@entity-alias", (String) econdition."@field-name", aliasEntityDef)
@@ -1757,7 +1775,7 @@ public class EntityDefinition {
             if (econdition."@to-field-name" != null) {
                 ConditionField toField
                 if (econdition."@to-entity-alias") {
-                    Node memberEntity = (Node) this.internalEntityNode."member-entity".find({ it."@entity-alias" == econdition."@to-entity-alias"})
+                    Node memberEntity = memberEntityAliasMap.get((String) econdition.attribute("to-entity-alias"))
                     if (!memberEntity) throw new EntityException("The entity-alias [${econdition."@to-entity-alias"}] was not found in view-entity [${this.internalEntityName}]")
                     EntityDefinition aliasEntityDef = this.efi.getEntityDefinition((String) memberEntity."@entity-name")
                     toField = new ConditionField((String) econdition."@to-entity-alias", (String) econdition."@to-field-name", aliasEntityDef)

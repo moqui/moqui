@@ -176,6 +176,12 @@ New Features
     records 1 and 2 of the CSV file
   - EntityDataLoader has new defaultValues Map option for default values to
     be used by field/parameter name for entity stores and service calls
+  - EntityListImpl now uses an ArrayList internally and filter* methods
+    have been optimized for this and faster by and methods; a few condition
+    objects have been similarly optimized
+  - Added beta/experimental entity filter feature to filter queries based
+    on authz configuration; automatically adds query conditions; see the
+    ArtifactAuthzFilter and EntityFilter entities in SecurityEntities.xml
 - Components may now have a component.xml with a single component element,
   the same component element that is used in the Moqui Conf XML file; if a
   name is specified it will override the directory name; added a depends-on

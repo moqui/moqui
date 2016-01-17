@@ -14,8 +14,10 @@
 package org.moqui.impl.context
 
 import groovy.transform.CompileStatic
+import org.moqui.impl.entity.EntityConditionFactoryImpl
 import org.moqui.impl.entity.EntityFindBase
-import org.moqui.impl.entity.EntityFindImpl
+import org.moqui.impl.entity.condition.EntityConditionImplBase
+import org.moqui.impl.entity.condition.ListCondition
 
 import java.sql.Timestamp
 
@@ -28,6 +30,7 @@ import org.moqui.context.Cache
 import org.moqui.entity.EntityList
 import org.moqui.entity.EntityFind
 import org.moqui.entity.EntityCondition.ComparisonOperator
+import org.moqui.entity.EntityCondition.JoinOperator
 import org.moqui.entity.EntityValue
 import org.moqui.impl.entity.EntityDefinition
 import org.moqui.impl.entity.EntityFacadeImpl
@@ -554,22 +557,111 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
         // return true
     }
 
-    void filterFindForUser(EntityFindBase efb) {
+    boolean filterFindForUser(EntityFindBase efb) {
+        // do nothing if authz disabled
+        if (authzDisabled) return false
+
+        // NOTE: look for filters in all unique aacv in stack? shouldn't be needed, most recent auth is the valid one
         ArtifactExecutionInfoImpl lastAeii = artifactExecutionInfoStack.peekFirst()
         EntityValue aacv = lastAeii.aacv
+        if (aacv == null) return false
+
+        EntityDefinition findEd = efb.getEntityDef()
+        String findEntityName = findEd.getFullEntityName()
+        // skip all Moqui Framework entities;  note that this skips moqui.example too...
+        if (findEntityName.startsWith("moqui.")) return false
 
         // find applicable EntityFilter records
         EntityList artifactAuthzFilterList = eci.entity.find("moqui.security.ArtifactAuthzFilter")
-                .condition("artifactAuthzId", aacv.artifactAuthzId).useCache(true).list()
-        if (!artifactAuthzFilterList) return
-        for (EntityValue artifactAuthzFilter in artifactAuthzFilterList) {
-            EntityList entityFilterList = eci.entity.find("moqui.security.EntityFilter")
-                    .condition("entityFilterSetId", artifactAuthzFilter.entityFilterSetId).useCache(true).list()
-            if (!entityFilterList) continue
+                .condition("artifactAuthzId", aacv.artifactAuthzId).disableAuthz().useCache(true).list()
 
-            // TODO see if there if any filter entities match the current entity or if it is a view then a member entity
+        if (artifactAuthzFilterList == null) return false
+        int authzFilterSize = artifactAuthzFilterList.size()
+        if (authzFilterSize == 0) return false
 
-            // Map<String, Object> filterMapObj = (Map<String, Object>) eci.getResource().expression(entityFilter.getString('filterMap'), null)
+        // for evaluating filter Maps add user context to ec.context
+        eci.context.push(eci.user.context)
+
+        boolean addedFilter = false
+        try {
+            for (int i = 0; i < authzFilterSize; i++) {
+                EntityValue artifactAuthzFilter = artifactAuthzFilterList.get(i)
+                EntityList entityFilterList = eci.entity.find("moqui.security.EntityFilter")
+                        .condition("entityFilterSetId", artifactAuthzFilter.entityFilterSetId)
+                        .disableAuthz().useCache(true).list()
+
+                if (entityFilterList == null) continue
+                int entFilterSize = entityFilterList.size()
+                if (entFilterSize == 0) continue
+
+                for (int j = 0; j < entFilterSize; j++) {
+                    EntityValue entityFilter = entityFilterList.get(j)
+                    String filterEntityName = entityFilter.getString("entityName")
+
+                    // see if there if any filter entities match the current entity or if it is a view then a member entity
+                    Map<String, ArrayList<Node>> memberFieldAliases = null
+                    if (findEd.isViewEntity()) {
+                        memberFieldAliases = findEd.getMemberFieldAliases(filterEntityName)
+                        if (memberFieldAliases == null) continue
+                    } else {
+                        if (filterEntityName != findEd.fullEntityName) continue
+                    }
+
+                    Map<String, Object> filterMapObj = (Map<String, Object>) eci.getResource()
+                            .expression(entityFilter.getString('filterMap'), null)
+                    // logger.info("===== ${findEntityName} filterMapObj: ${filterMapObj}")
+
+                    JoinOperator joinOp = entityFilter.joinOr == "Y" ? EntityCondition.OR : EntityCondition.AND
+                    ComparisonOperator compOp = entityFilter.comparisonEnumId ? eci.entity.conditionFactory
+                            .comparisonOperatorFromEnumId((String) entityFilter.comparisonEnumId) : null
+
+                    List<EntityConditionImplBase> condList = []
+                    for (Map.Entry<String, Object> entry in filterMapObj.entrySet()) {
+                        String fieldName = entry.key
+                        Object value = entry.value
+                        if (value == null) {
+                            logger.info("Tried to filter find on entity [${findEd.fullEntityName}] for entity [${filterEntityName}] on field ${fieldName} but value was null, not adding condition")
+                            continue
+                        }
+                        ComparisonOperator curCompOp = compOp
+                        if (curCompOp == null) curCompOp = value instanceof Collection ? EntityCondition.IN : EntityCondition.EQUALS
+                        if (memberFieldAliases) {
+                            // we have a view entity, more complex
+                            ArrayList<Node> aliases = memberFieldAliases.get(fieldName)
+                            if (!aliases) {
+                                throw new ArtifactAuthorizationException("There is a filter on field ${fieldName} of entity ${filterEntityName} which is not included in view-entity ${findEd.fullEntityName}")
+                            }
+
+                            for (int k = 0; k < aliases.size(); k++) {
+                                Node aliasNode = aliases.get(k)
+                                // could be same as field name, but not if aliased with different name
+                                String aliasName = aliasNode.attribute("name")
+                                condList.add((EntityConditionImplBase) eci.entity.conditionFactory.makeCondition(aliasName, curCompOp, value))
+                            }
+                        } else {
+                            condList.add((EntityConditionImplBase) eci.entity.conditionFactory.makeCondition(fieldName, curCompOp, value))
+                        }
+                    }
+
+                    if (condList.size() == 0) continue
+
+                    // add the condition to the find
+                    // NOTE: just create a list cond and add it, EntityFindBase will put it in simpleAndMap or otherwise optimize it
+                    addedFilter = true
+                    if (condList.size() == 1) {
+                        efb.condition(condList[0])
+                    } else {
+                        efb.condition(new ListCondition((EntityConditionFactoryImpl) eci.entity.conditionFactory, condList, joinOp))
+                    }
+                    // TODO: once more tested remove this
+                    logger.info("Query on ${findEntityName} added authz filter conditions (${joinOp}): ${condList}")
+                    // logger.info("Query on ${findEntityName} find: ${efb.toString()}")
+                }
+            }
+        } finally {
+            eci.context.pop()
         }
+
+        return addedFilter
     }
 }

@@ -20,41 +20,44 @@ import org.moqui.entity.EntityCondition
 
 @CompileStatic
 class ListCondition extends EntityConditionImplBase {
-    protected List<EntityConditionImplBase> conditionList
+    protected ArrayList<EntityConditionImplBase> conditionList
     protected EntityCondition.JoinOperator operator
-    protected int curHashCode
+    protected Integer curHashCode = null
     protected static final Class thisClass = ListCondition.class
 
     ListCondition(EntityConditionFactoryImpl ecFactoryImpl,
             List<EntityConditionImplBase> conditionList, EntityCondition.JoinOperator operator) {
         super(ecFactoryImpl)
+        this.conditionList = new ArrayList<EntityConditionImplBase>()
         if (conditionList) {
             Iterator<EntityConditionImplBase> conditionIter = conditionList.iterator()
-            while (conditionIter.hasNext()) if (conditionIter.next() == null) conditionIter.remove()
+            while (conditionIter.hasNext()) {
+                EntityConditionImplBase cond = conditionIter.next()
+                if (cond != null) this.conditionList.add(cond)
+            }
         }
-        this.conditionList = conditionList ?: new LinkedList<EntityConditionImplBase>()
         this.operator = operator ?: AND
-        curHashCode = createHashCode()
     }
 
     void addCondition(EntityConditionImplBase condition) {
         if (condition != null) conditionList.add(condition)
-        curHashCode = createHashCode()
+        curHashCode = null
     }
 
     EntityCondition.JoinOperator getOperator() { return operator }
+    ArrayList<EntityConditionImplBase> getConditionList() { return conditionList }
 
     @Override
     void makeSqlWhere(EntityQueryBuilder eqb) {
         if (!this.conditionList) return
 
         StringBuilder sql = eqb.getSqlTopLevel()
+        String joinOpString = EntityConditionFactoryImpl.getJoinOperatorString(this.operator)
         sql.append('(')
-        boolean isFirst = true
-        for (EntityConditionImplBase condition in this.conditionList) {
-            if (isFirst) isFirst = false else {
-                sql.append(' ').append(EntityConditionFactoryImpl.getJoinOperatorString(this.operator)).append(' ')
-            }
+        int clSize = conditionList.size()
+        for (int i = 0; i < clSize; i++) {
+            EntityConditionImplBase condition = conditionList.get(i)
+            if (i > 0) sql.append(' ').append(joinOpString).append(' ')
             condition.makeSqlWhere(eqb)
         }
         sql.append(')')
@@ -62,7 +65,9 @@ class ListCondition extends EntityConditionImplBase {
 
     @Override
     boolean mapMatches(Map<String, ?> map) {
-        for (EntityConditionImplBase condition in this.conditionList) {
+        int clSize = conditionList.size()
+        for (int i = 0; i < clSize; i++) {
+            EntityConditionImplBase condition = conditionList.get(i)
             boolean conditionMatches = condition.mapMatches(map)
             if (conditionMatches && this.operator == OR) return true
             if (!conditionMatches && this.operator == AND) return false
@@ -74,12 +79,20 @@ class ListCondition extends EntityConditionImplBase {
     @Override
     boolean populateMap(Map<String, ?> map) {
         if (operator != AND) return false
-        for (EntityConditionImplBase condition in this.conditionList) if (!condition.populateMap(map)) return false
+        int clSize = conditionList.size()
+        for (int i = 0; i < clSize; i++) {
+            EntityConditionImplBase condition = conditionList.get(i)
+            if (!condition.populateMap(map)) return false
+        }
         return true
     }
 
     void getAllAliases(Set<String> entityAliasSet, Set<String> fieldAliasSet) {
-        for (EntityConditionImplBase cond in conditionList) cond.getAllAliases(entityAliasSet, fieldAliasSet)
+        int clSize = conditionList.size()
+        for (int i = 0; i < clSize; i++) {
+            EntityConditionImplBase condition = conditionList.get(i)
+            condition.getAllAliases(entityAliasSet, fieldAliasSet)
+        }
     }
 
     @Override
@@ -88,7 +101,9 @@ class ListCondition extends EntityConditionImplBase {
     @Override
     String toString() {
         StringBuilder sb = new StringBuilder()
-        for (EntityConditionImplBase condition in this.conditionList) {
+        int clSize = conditionList.size()
+        for (int i = 0; i < clSize; i++) {
+            EntityConditionImplBase condition = conditionList.get(i)
             if (sb.length() > 0) sb.append(' ').append(EntityConditionFactoryImpl.getJoinOperatorString(this.operator)).append(' ')
             sb.append('(').append(condition.toString()).append(')')
         }
@@ -96,7 +111,11 @@ class ListCondition extends EntityConditionImplBase {
     }
 
     @Override
-    int hashCode() { return curHashCode }
+    int hashCode() {
+        if (curHashCode != null) return curHashCode
+        curHashCode = createHashCode()
+        return curHashCode
+    }
     protected int createHashCode() {
         return (conditionList ? conditionList.hashCode() : 0) + operator.hashCode()
     }
