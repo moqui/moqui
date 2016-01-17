@@ -7,7 +7,7 @@ Release 1.6.0 - 17 Jan 2016
 
 Moqui Framework 1.6.0 is a major new feature and bug fix release.
 
-There are over 550 commits since the last release and an increase in size
+There are over 575 commits since the last release and an increase in size
 from around 67k lines to around 74k lines of text (primarily Java, Groovy,
 XML, XSD, and FTL files; not including files from other projects). The
 System and Tools apps have 57 screens and 124 forms. Moqui has 123
