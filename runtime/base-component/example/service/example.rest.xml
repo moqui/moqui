@@ -16,7 +16,7 @@ along with this software (see the LICENSE.md file). If not, see
 <!-- General Guideline Verbs: GET=find, POST=create, PUT=store (create or update), PATCH=update, DELETE=delete  -->
 
 <resource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/rest-api-1.6.xsd"
-        name="example" displayName="Example REST API" version="1.6.0">
+        name="example" displayName="Example REST API" version="1.6.1">
     <resource name="examples">
         <method type="get"><entity name="examples" masterName="default" operation="list"/></method>
         <method type="post"><service name="moqui.example.ExampleServices.create#Example"/></method>
