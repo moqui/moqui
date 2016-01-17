@@ -10,27 +10,28 @@ Moqui Framework 1.6.0 is a major new feature and bug fix release.
 There are over 550 commits since the last release and an increase in size
 from around 67k lines to around 74k lines of text (primarily Java, Groovy,
 XML, XSD, and FTL files; not including files from other projects). The
-System and Tools apps have 57 screens and 124 forms. Moqui has 120
-entities, 22 view entities, and 97 services.
+System and Tools apps have 57 screens and 124 forms. Moqui has 123
+entities, 23 view entities, and 97 services.
 
 The new Moqui Tools REST API has 85 services. This uses the new Service
 REST tool which allows specifying resource and id paths with services and
 entity operations associated with HTTP request methods, one of the major
 new features in this release.
 
-Along with this feature there is generation Swagger definitions and Swagger
-UI is included with links to view the various defined APIs in the Tools
-app. The REST API also uses the new feature of explicitly defined 'master'
-entities which are based on relationships to detail and join entities to
-produce and consume JSON (or nested maps/lists), easily combining related
-records into a single document.
+Along with this feature there is generation of Swagger definitions and
+Swagger UI is included with links to view the various defined APIs in the
+Tools app. The REST API also uses the new feature of explicitly defined
+'master' entities which are based on relationships to detail and join
+entities to produce and consume JSON (or nested maps/lists), easily
+combining related records into a single document for query or update.
 
 Another major new feature is the ScreenTest interface and an implementation
 that includes stubs for the WebFacade and various Java Servlet interfaces
 to simulate web requests without a Servlet container running. There are
-tests for the System, and Tools apps and Tools REST API that do 70 renders.
-These tests are run along with other Spock tests in gradle test runs, and
-for the projects in the Moqui Ecosystem in the Travis CI automated builds.
+tests for the System and Tools apps and the Tools REST API that do 70
+renders. These tests are run along with other Spock tests in gradle test
+runs, and for the projects in the Moqui Ecosystem all are run in the
+Travis CI automated builds.
 
 Other features include a REST Client tool, various email send and receive
 improvements, a session token for CSRF prevention, password reset uses a
