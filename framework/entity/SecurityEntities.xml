@@ -19,7 +19,7 @@ along with this software (see the LICENSE.md file). If not, see
     <!-- ========================================================= -->
 
     <!-- ========== Artifact Group ========== -->
-    <entity entity-name="ArtifactGroup" package-name="moqui.security">
+    <entity entity-name="ArtifactGroup" package-name="moqui.security" short-alias="artifactGroups">
         <field name="artifactGroupId" type="id" is-pk="true"/>
         <field name="description" type="text-medium"/>
         <relationship type="many" related-entity-name="moqui.security.ArtifactGroupMember" short-alias="artifacts">
