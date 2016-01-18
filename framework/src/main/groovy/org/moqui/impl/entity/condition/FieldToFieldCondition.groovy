@@ -37,15 +37,17 @@ class FieldToFieldCondition extends EntityConditionImplBase {
     @Override
     void makeSqlWhere(EntityQueryBuilder eqb) {
         StringBuilder sql = eqb.getSqlTopLevel()
-        if (this.ignoreCase) sql.append("UPPER(")
+        int typeValue = field.getFieldInfo(eqb.getMainEd())?.typeValue ?: 1
+        if (this.ignoreCase && typeValue == 1) sql.append("UPPER(")
         sql.append(field.getColumnName(eqb.getMainEd()))
-        if (this.ignoreCase) sql.append(")")
+        if (this.ignoreCase && typeValue == 1) sql.append(")")
         sql.append(' ')
         sql.append(EntityConditionFactoryImpl.getComparisonOperatorString(this.operator))
         sql.append(' ')
-        if (this.ignoreCase) sql.append("UPPER(")
+        int toTypeValue = toField.getFieldInfo(eqb.getMainEd())?.typeValue ?: 1
+        if (this.ignoreCase && toTypeValue == 1) sql.append("UPPER(")
         sql.append(toField.getColumnName(eqb.getMainEd()))
-        if (this.ignoreCase) sql.append(")")
+        if (this.ignoreCase && toTypeValue == 1) sql.append(")")
     }
 
     @Override

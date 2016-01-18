@@ -49,9 +49,10 @@ class FieldValueCondition extends EntityConditionImplBase {
     @Override
     void makeSqlWhere(EntityQueryBuilder eqb) {
         StringBuilder sql = eqb.getSqlTopLevel()
-        if (this.ignoreCase) sql.append("UPPER(")
+        int typeValue = field.getFieldInfo(eqb.getMainEd())?.typeValue ?: 1
+        if (this.ignoreCase && typeValue == 1) sql.append("UPPER(")
         sql.append(field.getColumnName(eqb.getMainEd()))
-        if (this.ignoreCase) sql.append(')')
+        if (this.ignoreCase && typeValue == 1) sql.append(')')
         sql.append(' ')
         boolean valueDone = false
         if (this.value == null) {
