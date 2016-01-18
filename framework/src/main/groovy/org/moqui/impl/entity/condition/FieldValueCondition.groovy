@@ -30,7 +30,7 @@ class FieldValueCondition extends EntityConditionImplBase {
     protected final EntityCondition.ComparisonOperator operator
     protected Object value
     protected boolean ignoreCase = false
-    protected int curHashCode
+    protected Integer curHashCode = null
     protected static final Class thisClass = FieldValueCondition.class
 
     FieldValueCondition(EntityConditionFactoryImpl ecFactoryImpl,
@@ -39,7 +39,6 @@ class FieldValueCondition extends EntityConditionImplBase {
         this.field = field
         this.operator = operator ?: EQUALS
         this.value = value
-        curHashCode = createHashCode()
     }
 
     EntityCondition.ComparisonOperator getOperator() { return operator }
@@ -141,7 +140,7 @@ class FieldValueCondition extends EntityConditionImplBase {
     }
 
     @Override
-    EntityCondition ignoreCase() { this.ignoreCase = true; curHashCode = createHashCode(); return this }
+    EntityCondition ignoreCase() { this.ignoreCase = true; curHashCode = null; return this }
 
     @Override
     String toString() {
@@ -149,7 +148,10 @@ class FieldValueCondition extends EntityConditionImplBase {
     }
 
     @Override
-    int hashCode() { return curHashCode }
+    int hashCode() {
+        if (curHashCode == null) curHashCode = createHashCode()
+        return curHashCode
+    }
     protected int createHashCode() {
         return (field ? field.hashCode() : 0) + operator.hashCode() + (value ? value.hashCode() : 0) + (ignoreCase ? 1 : 0)
     }
