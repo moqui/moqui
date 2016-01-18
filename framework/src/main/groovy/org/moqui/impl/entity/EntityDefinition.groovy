@@ -65,6 +65,7 @@ public class EntityDefinition {
     protected Boolean needsEncryptVal = null
     protected Boolean createOnlyVal = null
     protected Boolean optimisticLockVal = null
+    protected Boolean authorizeSkipViewVal = null
     protected String useCache = null
     protected String sequencePrimaryPrefix = ""
     protected long sequencePrimaryStagger = 1
@@ -208,6 +209,14 @@ public class EntityDefinition {
         if (optimisticLockVal != null) return optimisticLockVal
         optimisticLockVal = "true".equals(internalEntityNode.attribute('optimistic-lock'))
         return optimisticLockVal
+    }
+
+    @CompileStatic
+    boolean authorizeSkipView() {
+        if (authorizeSkipViewVal != null) return authorizeSkipViewVal
+        String authorizeSkip = (String) internalEntityNode.attribute('authorize-skip')
+        authorizeSkipViewVal = authorizeSkip == "true" || authorizeSkip?.contains("view")
+        return authorizeSkipViewVal
     }
 
     @CompileStatic

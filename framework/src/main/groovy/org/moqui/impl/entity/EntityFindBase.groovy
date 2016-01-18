@@ -542,13 +542,11 @@ abstract class EntityFindBase implements EntityFind {
         boolean enableAuthz = disableAuthz ? !efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz() : false
         try {
             EntityDefinition ed = this.getEntityDef()
-            Node entityNode = ed.getEntityNode()
             ExecutionContextImpl ec = efi.getEcfi().getEci()
 
-            String authorizeSkip = (String) entityNode.attribute('authorize-skip')
             ArtifactExecutionInfo aei = new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW")
                     .setActionDetail("one").setParameters(simpleAndMap)
-            ec.getArtifactExecution().push(aei, (authorizeSkip != "true" && !authorizeSkip?.contains("view")))
+            ec.getArtifactExecution().push(aei, !ed.authorizeSkipView())
 
             try {
                 return oneInternal(ec)
@@ -671,12 +669,10 @@ abstract class EntityFindBase implements EntityFind {
         boolean enableAuthz = disableAuthz ? !efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz() : false
         try {
             EntityDefinition ed = this.getEntityDef()
-            Node entityNode = ed.getEntityNode()
             ExecutionContextImpl ec = efi.getEcfi().getEci()
 
-            String authorizeSkip = (String) entityNode.attribute('authorize-skip')
             ArtifactExecutionInfo aei = new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW").setActionDetail("one")
-            ec.getArtifactExecution().push(aei, (authorizeSkip != "true" && !authorizeSkip?.contains("view")))
+            ec.getArtifactExecution().push(aei, !ed.authorizeSkipView())
 
             try {
                 EntityValue ev = oneInternal(ec)
@@ -695,12 +691,10 @@ abstract class EntityFindBase implements EntityFind {
         boolean enableAuthz = disableAuthz ? !efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz() : false
         try {
             EntityDefinition ed = this.getEntityDef()
-            Node entityNode = ed.getEntityNode()
             ExecutionContextImpl ec = efi.getEcfi().getEci()
 
-            String authorizeSkip = (String) entityNode.attribute('authorize-skip')
             ArtifactExecutionInfo aei = new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW").setActionDetail("list")
-            ec.getArtifactExecution().push(aei, (authorizeSkip != "true" && !authorizeSkip?.contains("view")))
+            ec.getArtifactExecution().push(aei, !ed.authorizeSkipView())
             try {
                 return listInternal(ec)
             } finally {
@@ -770,16 +764,14 @@ abstract class EntityFindBase implements EntityFind {
 
             EntityConditionImplBase viewWhere = ed.makeViewWhereCondition()
             if (whereCondition && viewWhere) {
-                whereCondition =
-                    (EntityConditionImplBase) efi.getConditionFactory().makeCondition(whereCondition, EntityCondition.JoinOperator.AND, viewWhere)
+                whereCondition = (EntityConditionImplBase) efi.getConditionFactory().makeCondition(whereCondition, EntityCondition.JoinOperator.AND, viewWhere)
             } else if (viewWhere) {
                 whereCondition = viewWhere
             }
             EntityConditionImplBase havingCondition = (EntityConditionImplBase) getHavingEntityCondition()
             EntityConditionImplBase viewHaving = ed.makeViewHavingCondition()
             if (havingCondition && viewHaving) {
-                havingCondition =
-                    (EntityConditionImplBase) efi.getConditionFactory().makeCondition(havingCondition, EntityCondition.JoinOperator.AND, viewHaving)
+                havingCondition = (EntityConditionImplBase) efi.getConditionFactory().makeCondition(havingCondition, EntityCondition.JoinOperator.AND, viewHaving)
             } else if (viewHaving) {
                 havingCondition = viewHaving
             }
@@ -818,12 +810,10 @@ abstract class EntityFindBase implements EntityFind {
         boolean enableAuthz = disableAuthz ? !efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz() : false
         try {
             EntityDefinition ed = this.getEntityDef()
-            Node entityNode = ed.getEntityNode()
             ExecutionContextImpl ec = efi.getEcfi().getEci()
 
-            String authorizeSkip = (String) entityNode.attribute('authorize-skip')
             ArtifactExecutionInfo aei = new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW").setActionDetail("list")
-            ec.getArtifactExecution().push(aei, (authorizeSkip != "true" && !authorizeSkip?.contains("view")))
+            ec.getArtifactExecution().push(aei, !ed.authorizeSkipView())
             try {
                 EntityList el = listInternal(ec)
                 return el.getMasterValueList(name)
@@ -855,9 +845,8 @@ abstract class EntityFindBase implements EntityFind {
         if (ed.isViewEntity() && (!entityNode.get("member-entity") || !entityNode.get("alias")))
             throw new EntityException("Cannot do find for view-entity with name [${entityName}] because it has no member entities or no aliased fields.")
 
-        String authorizeSkip = (String) entityNode.attribute('authorize-skip')
         ArtifactExecutionInfo aei = new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW").setActionDetail("iterator")
-        ec.getArtifactExecution().push(aei, (authorizeSkip != "true" && !authorizeSkip?.contains("view")))
+        ec.getArtifactExecution().push(aei, !ed.authorizeSkipView())
 
         // there may not be a simpleAndMap, but that's all we have that can be treated directly by the EECA
         // find EECA rules deprecated, not worth performance hit: efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-iterator", true)
