@@ -50,4 +50,9 @@ public interface MessageFacade {
     String getErrorsString();
 
     void clearErrors();
+
+    /** Save current errors on a stack and clear them */
+    void pushErrors();
+    /** Remove last pushed errors from the stack and add them to current errors */
+    void popErrors();
 }

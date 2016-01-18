@@ -44,6 +44,8 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
     protected boolean useTransactionCache = false
     /* not supported by Atomikos/etc right now, consider for later: protected int transactionIsolation = -1 */
 
+    protected boolean ignorePreviousError = false
+
     protected boolean multi = false
     protected boolean disableAuthz = false
 
@@ -74,6 +76,9 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
 
     @Override
     ServiceCallSync useTransactionCache(boolean utc) { this.useTransactionCache = utc; return this }
+
+    @Override
+    ServiceCallSync ignorePreviousError(boolean ipe) { this.ignorePreviousError = ipe; return this }
 
     @Override
     ServiceCallSync multi(boolean mlt) { this.multi = mlt; return this }
@@ -144,13 +149,15 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
     }
 
     Map<String, Object> callSingle(Map<String, Object> currentParameters, ServiceDefinition sd, ExecutionContextImpl eci) {
+        if (ignorePreviousError) eci.getMessage().pushErrors()
         // NOTE: checking this here because service won't generally run after input validation, etc anyway
         if (eci.getMessage().hasError()) {
             logger.warn("Found error(s) before service [${getServiceName()}], so not running service. Errors: ${eci.getMessage().getErrorsString()}")
             return null
         }
-        if (eci.getTransaction().getStatus() == 1) {
+        if (eci.getTransaction().getStatus() == 1 && !requireNewTransaction) {
             logger.warn("Transaction marked for rollback, not running service [${getServiceName()}]. Errors: ${eci.getMessage().getErrorsString()}")
+            if (ignorePreviousError) eci.getMessage().popErrors()
             return null
         }
 
@@ -174,6 +181,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                 errMsg.append(stackItem.toString()).append('\n')
             }
             logger.warn(errMsg.toString())
+            if (ignorePreviousError) eci.getMessage().popErrors()
             return null
         }
 
@@ -186,6 +194,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
             if (!userLoggedIn) return null
         }
         if (sd != null && sd.getAuthenticate() == "true" && !eci.getUser().getUsername() && !eci.getUserFacade().loggedInAnonymous) {
+            if (ignorePreviousError) eci.getMessage().popErrors()
             throw new AuthenticationRequiredException("User must be logged in to call service ${getServiceName()}")
         }
 
@@ -212,27 +221,40 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
 
         if (sd == null) {
             if (isEntityAutoPattern()) {
-                Map result = runImplicitEntityAuto(currentParameters, eci)
+                try {
+                    Map result = runImplicitEntityAuto(currentParameters, eci)
 
-                double runningTimeMillis = (System.nanoTime() - startTimeNanos)/1E6
-                if (logger.traceEnabled) logger.trace("Finished call to service [${getServiceName()}] in ${(runningTimeMillis)/1000} seconds")
-                sfi.getEcfi().countArtifactHit("service", "entity-implicit", getServiceName(), currentParameters,
-                        callStartTime, runningTimeMillis, null)
+                    double runningTimeMillis = (System.nanoTime() - startTimeNanos)/1E6
+                    if (logger.traceEnabled) logger.trace("Finished call to service [${getServiceName()}] in ${(runningTimeMillis)/1000} seconds")
+                    sfi.getEcfi().countArtifactHit("service", "entity-implicit", getServiceName(), currentParameters,
+                            callStartTime, runningTimeMillis, null)
 
-                eci.artifactExecution.pop(aei)
-                return result
+                    return result
+                } finally {
+                    eci.artifactExecution.pop(aei)
+                    if (ignorePreviousError) eci.getMessage().popErrors()
+                }
             } else {
                 logger.info("No service with name ${getServiceName()}, isEntityAutoPattern=${isEntityAutoPattern()}, path=${path}, verb=${verb}, noun=${noun}, noun is entity? ${((EntityFacadeImpl) eci.getEntity()).isEntityDefined(noun)}")
                 eci.artifactExecution.pop(aei)
+                if (ignorePreviousError) eci.getMessage().popErrors()
                 throw new ServiceException("Could not find service with name [${getServiceName()}]")
             }
         }
 
         String serviceType = sd.getServiceType()
-        if ("interface".equals(serviceType)) throw new ServiceException("Cannot run interface service [${getServiceName()}]")
+        if ("interface".equals(serviceType)) {
+            eci.artifactExecution.pop(aei)
+            if (ignorePreviousError) eci.getMessage().popErrors()
+            throw new ServiceException("Cannot run interface service [${getServiceName()}]")
+        }
 
         ServiceRunner sr = sfi.getServiceRunner(serviceType)
-        if (sr == null) throw new ServiceException("Could not find service runner for type [${serviceType}] for service [${getServiceName()}]")
+        if (sr == null) {
+            eci.artifactExecution.pop(aei)
+            if (ignorePreviousError) eci.getMessage().popErrors()
+            throw new ServiceException("Could not find service runner for type [${serviceType}] for service [${getServiceName()}]")
+        }
 
         // start with the settings for the default: use-or-begin
         boolean pauseResumeIfNeeded = false
@@ -300,7 +322,8 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                 String semaphore = sd.getServiceNode().attribute('semaphore')
                 if (semaphore == "fail" || semaphore == "wait") {
                     eci.getService().sync().name("delete", "moqui.service.semaphore.ServiceSemaphore")
-                            .parameters([serviceName:getServiceName()]).requireNewTransaction(true).call()
+                            .parameters([serviceName:getServiceName()])
+                            .ignorePreviousError(true).requireNewTransaction(true).disableAuthz().call()
                 }
 
                 try {
@@ -340,6 +363,8 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
 
             // all done so pop the artifact info
             eci.getArtifactExecution().pop(aei)
+            // restore error messages if needed
+            if (ignorePreviousError) eci.getMessage().popErrors()
 
             if (logger.traceEnabled) logger.trace("Finished call to service [${getServiceName()}] in ${(runningTimeMillis)/1000} seconds" + (eci.getMessage().hasError() ? " with ${eci.getMessage().getErrors().size() + eci.getMessage().getValidationErrors().size()} error messages" : ", was successful"))
         }
@@ -355,9 +380,12 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                 Timestamp lockTime = serviceSemaphore.getTimestamp("lockTime")
                 if (System.currentTimeMillis() > (lockTime.getTime() + ignoreMillis)) {
                     eci.getService().sync().name("delete", "moqui.service.semaphore.ServiceSemaphore")
-                            .parameters([serviceName:getServiceName()]).requireNewTransaction(true).call()
+                            .parameters([serviceName:getServiceName()])
+                            .ignorePreviousError(true).requireNewTransaction(true).disableAuthz().call()
+                    serviceSemaphore = null
                 }
-
+            }
+            if (serviceSemaphore) {
                 if (semaphore == "fail") {
                     throw new ServiceException("An instance of service [${getServiceName()}] is already running (thread [${serviceSemaphore.lockThread}], locked at ${serviceSemaphore.lockTime}) and it is setup to fail on semaphore conflict.")
                 } else {
@@ -368,7 +396,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                     while (System.currentTimeMillis() < (startTime + timeoutTime)) {
                         Thread.sleep(sleepTime)
                         if (eci.getEntity().find("moqui.service.semaphore.ServiceSemaphore")
-                                .condition("serviceName", getServiceName()).useCache(false).one() == null) {
+                                .condition("serviceName", getServiceName()).useCache(false).disableAuthz().one() == null) {
                             semaphoreCleared = true
                             break
                         }
@@ -382,8 +410,8 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
             // if we got to here the semaphore didn't exist or has cleared, so create one
             eci.getService().sync().name("create", "moqui.service.semaphore.ServiceSemaphore")
                     .parameters([serviceName:getServiceName(), lockThread:Thread.currentThread().getName(),
-                    lockTime:new Timestamp(System.currentTimeMillis())])
-                    .requireNewTransaction(true).call()
+                        lockTime:new Timestamp(System.currentTimeMillis())])
+                    .requireNewTransaction(true).disableAuthz().call()
         }
     }
 

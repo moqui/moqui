@@ -2,12 +2,61 @@
 Moqui Framework Release Notes
 
 ===========================================================================
-Release 1.6.0 - TBD
+Release 1.6.1 - TBD
+===========================================================================
+
+Moqui Framework 1.6.1 is a minor new feature and bug fix release.
+
+TODO
+
+New Features
+
+Bug Fixes
+
+===========================================================================
+Release 1.6.0 - 17 Jan 2016
 ===========================================================================
 
 Moqui Framework 1.6.0 is a major new feature and bug fix release.
 
-TODO
+There are over 575 commits since the last release and an increase in size
+from around 67k lines to around 74k lines of text (primarily Java, Groovy,
+XML, XSD, and FTL files; not including files from other projects). The
+System and Tools apps have 57 screens and 124 forms. Moqui has 123
+entities, 23 view entities, and 97 services.
+
+The new Moqui Tools REST API has 85 services. This uses the new Service
+REST tool which allows specifying resource and id paths with services and
+entity operations associated with HTTP request methods, one of the major
+new features in this release.
+
+Along with this feature there is generation of Swagger definitions and
+Swagger UI is included with links to view the various defined APIs in the
+Tools app. The REST API also uses the new feature of explicitly defined
+'master' entities which are based on relationships to detail and join
+entities to produce and consume JSON (or nested maps/lists), easily
+combining related records into a single document for query or update.
+
+Another major new feature is the ScreenTest interface and an implementation
+that includes stubs for the WebFacade and various Java Servlet interfaces
+to simulate web requests without a Servlet container running. There are
+tests for the System and Tools apps and the Tools REST API that do 70
+renders. These tests are run along with other Spock tests in gradle test
+runs, and for the projects in the Moqui Ecosystem all are run in the
+Travis CI automated builds.
+
+Other features include a REST Client tool, various email send and receive
+improvements, a session token for CSRF prevention, password reset uses a
+separate temporary password to avoid disabling accounts, a login/api key
+issued like a temporary username/password combination, component definition
+files with dependencies to change load order, and wiki entities and
+services based on the ResourceFacade (originally in HiveMind).
+
+This is the 6th anniversary release for Moqui Framework (the project was
+started 3 Feb 2010). These plus dozens of smaller features and features
+from past releases make Moqui Framework the best option, open source or
+commercial, for building efficient, large scale, secure, and integrated
+enterprise applications with minimal code.
 
 Non Backward Compatible Changes
 
@@ -26,6 +75,7 @@ New Features
   - Apache Jackrabbit to 2.11.2
   - Apache Log4J to 2.5
   - Apache Lucene to 5.3.1
+  - Bitronix 3.0.0-SNAPSHOT from latest source (13 Jan 2016)
   - Ehcache to 2.10.1
   - ElasticSearch to 2.1.1
   - Groovy to 2.4.5
@@ -47,6 +97,8 @@ New Features
   - When a form-single is rendered the form map is added to a pushed
     (isolated) context and popped after; field values can now be referenced
     directly in expressions in @condition, @text, etc attributes
+  - Transition responses of type screen-last and screen-last-noparam now
+    use the screen history last if no screen is saved
 - Integration Features
   - New Service REST API tool
     - define REST resources and methods in XML files (see rest-api-1.6.xsd)
@@ -59,6 +111,10 @@ New Features
     - see example client calls in the rest.xml screen definition file
     - get Swagger API definition from /rest/service.swagger
     - get RAML API definition from /rest/service.raml
+  - Added Swagger UI 2.1.4, with links from Tools app
+    - browse REST API details from generated Swagger
+    - call REST API services
+    - use new Login Key functionality with api_key for authentication
   - New RestClient API, available through ec.service.rest(), with various
     options for doing HTTP requests and parsing response
   - Added json-schema for Entity REST API: for all entities get
@@ -106,6 +162,17 @@ New Features
   - Password reset now sets a reset password separate from the current
     password that may only be used to change the password; current password
     stays valid for password change or login (if email-require-change=false)
+  - Added Login Key functionality
+    - secure temporary keys associated with a UserAccount as an alternate
+      way to authenticate
+    - expire time configured in user-facade.login-key.@expire-hours in
+      Moqui Conf XML, defaults to 144 hours (6 days)
+    - keys generated using secure random and saved in secure hashed form
+      (default SHA-256) so can only be retrieved on create
+      (see UserFacade.getLoginKey())
+    - can retrieve with a request to /rest/api_key (see rest.xml comments)
+    - pass key in api_key or login_key request header or secure parameter
+      (not in path or query string)
 - Entity Features
   - Added relationship.@mutable attribute, defaults to false for type one*
     and to true for type many relationships; used in store through
@@ -122,6 +189,12 @@ New Features
     records 1 and 2 of the CSV file
   - EntityDataLoader has new defaultValues Map option for default values to
     be used by field/parameter name for entity stores and service calls
+  - EntityListImpl now uses an ArrayList internally and filter* methods
+    have been optimized for this and faster by and methods; a few condition
+    objects have been similarly optimized
+  - Added beta/experimental entity filter feature to filter queries based
+    on authz configuration; automatically adds query conditions; see the
+    ArtifactAuthzFilter and EntityFilter entities in SecurityEntities.xml
 - Components may now have a component.xml with a single component element,
   the same component element that is used in the Moqui Conf XML file; if a
   name is specified it will override the directory name; added a depends-on
@@ -138,6 +211,13 @@ New Features
 - Transaction Cache better supports creates/updates/deletes within a
   transaction; instead of consolidating all changes into one it keeps a
   list of changes and runs in order to avoid issues with foreign keys, etc
+- Added entities and services for wiki spaces and pages, originally from
+  HiveMind, based on ResourceFacade resources
+- Example entities, services now have a consistent package (moqui.entity)
+- Added MessageFacade.pushErrors() and popErrors() methods for code that
+  should ignore previous errors (especially service calls)
+- Added ServiceCallSync.ignorePreviousError() method to run a service even
+  if previous code added errors in MessageFacade
 
 Bug Fixes
 
@@ -149,6 +229,10 @@ Bug Fixes
   expanding; caused problems with set elements in widget-template-include
 - Fixed issue with multiple render-mode elements where there is no
   text.@type attribute; GitHub issue #158
+- Fixed issue with check/set defaults on entity value update where fields
+  not specified were set back to default value
+- Fixed issue where service semaphores were not cleared when services threw
+  an exception or returned an error; GitHub issue #213
 
 ===========================================================================
 Release 1.5.3 - 11 Sep 2015

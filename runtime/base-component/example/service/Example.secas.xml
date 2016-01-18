@@ -15,12 +15,12 @@ along with this software (see the LICENSE.md file). If not, see
 <secas xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-eca-1.6.xsd">
 <!-- this is just an example of what was used for keeping ExampleStatus records; now handled with the audit-log, so
         this is no longer needed or used:
-    <seca service="org.moqui.example.ExampleServices.updateExample" when="post-commit">
+    <seca service="moqui.example.ExampleServices.updateExample" when="post-commit">
         <condition>
             <compare field="statusId" operator="not-equals" to-field="oldStatusId"/>
         </condition>
         <actions>
-            <service-call name="org.moqui.example.ExampleServices.createExampleStatus"/>
+            <service-call name="moqui.example.ExampleServices.createExampleStatus"/>
         </actions>
     </seca>
 -->

@@ -60,7 +60,7 @@ class WebFacadeStub implements WebFacade {
                   Map<String, Object> sessionAttributes, String requestMethod) {
         this.ecfi = ecfi
         if (requestParameters) this.requestParameters.putAll(requestParameters)
-        if (sessionAttributes) this.sessionAttributes.putAll(sessionAttributes)
+        if (sessionAttributes != null) this.sessionAttributes = sessionAttributes
         if (requestMethod) this.requestMethod = requestMethod
 
         servletContext = new ServletContextStub(this)
@@ -93,6 +93,9 @@ class WebFacadeStub implements WebFacade {
     Map<String, Object> getRequestAttributes() { return requestParameters }
     @Override
     Map<String, Object> getRequestParameters() { return requestParameters }
+    @Override
+    Map<String, Object> getSecureRequestParameters() { return requestParameters }
+
     @Override
     String getHostName(boolean withPort) { return withPort ? "localhost:8080" : "localhost" }
 

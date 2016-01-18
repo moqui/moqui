@@ -210,6 +210,7 @@ along with this software (see the LICENSE.md file). If not, see
         <xs:complexType>
             <xs:sequence>
                 <xs:element ref="password"/>
+                <xs:element ref="login-key"/>
                 <xs:element ref="login"/>
             </xs:sequence>
         </xs:complexType>
@@ -240,6 +241,21 @@ along with this software (see the LICENSE.md file). If not, see
             <xs:attribute name="email-expire-hours" type="xs:nonNegativeInteger" default="48">
                 <!-- TODO use in impl -->
                 <xs:annotation><xs:documentation>How long will the new password be valid from the password reset email?</xs:documentation></xs:annotation></xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="login-key">
+        <xs:complexType>
+            <xs:attribute name="encrypt-hash-type" default="SHA-256">
+                <xs:simpleType><xs:restriction base="xs:token">
+                    <xs:enumeration value="SHA-256"/>
+                    <xs:enumeration value="SHA-384"/>
+                    <xs:enumeration value="SHA-512"/>
+                    <xs:enumeration value="SHA"/>
+                    <xs:enumeration value="MD5"/>
+                </xs:restriction></xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="expire-hours" type="xs:nonNegativeInteger" default="144">
+                <xs:annotation><xs:documentation>Expire key after this many hours</xs:documentation></xs:annotation></xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="login">
@@ -367,6 +383,7 @@ along with this software (see the LICENSE.md file). If not, see
             <xs:sequence>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="service-location"/>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="service-type"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="service-file"/>
                 <!-- leaving this out for now, not easily supported by Quartz Scheduler: <xs:element minOccurs="0" ref="thread-pool"/> -->
                 <!-- TABLED: not to include in 1.0: <xs:element minOccurs="0" maxOccurs="unbounded" ref="jms-service"/> -->
             </xs:sequence>
@@ -386,6 +403,11 @@ along with this software (see the LICENSE.md file). If not, see
                     Fully qualified name of class that implements the org.moqui.impl.service.ServiceRunner interface.
                 </xs:documentation></xs:annotation>
             </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="service-file">
+        <xs:complexType>
+            <xs:attribute name="location" type="xs:string" use="required"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="server-jndi">

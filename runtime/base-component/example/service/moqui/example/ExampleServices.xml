@@ -116,7 +116,7 @@ along with this software (see the LICENSE.md file). If not, see
     </service>
 
     <!-- Example Camel services (one to call through Moqui Service Facade, one to be called when that service is called) -->
-    <service verb="localCamelExample" type="camel" location="moquiservice:org.moqui.example.ExampleServices.targetCamelExample">
+    <service verb="localCamelExample" type="camel" location="moquiservice:moqui.example.ExampleServices.targetCamelExample">
         <in-parameters><parameter name="testInput"/></in-parameters>
         <out-parameters><parameter name="testOutput"/></out-parameters>
     </service>
@@ -138,7 +138,7 @@ along with this software (see the LICENSE.md file). If not, see
         </in-parameters>
         <out-parameters><parameter name="systemMessageId"/></out-parameters>
         <actions>
-            <entity-find-one entity-name="example.Example" value-field="example"/>
+            <entity-find-one entity-name="moqui.example.Example" value-field="example"/>
             <set field="exampleJson" from="groovy.json.JsonOutput.toJson(example)"/>
             <service-call name="org.moqui.impl.SystemMessageServices.queue#SystemMessage" out-map="context"
                     in-map="[systemMessageTypeId:'ExampleMessage', systemMessageRemoteId:systemMessageRemoteId,
@@ -151,7 +151,7 @@ along with this software (see the LICENSE.md file). If not, see
             <!-- <return error="true" message="Test error!"/> -->
             <entity-find-one entity-name="moqui.service.message.SystemMessage" value-field="systemMessage"/>
             <set field="exampleMap" from="new groovy.json.JsonSlurper().parseText(systemMessage.messageText)"/>
-            <service-call name="store#example.Example" in-map="exampleMap"/>
+            <service-call name="store#moqui.example.Example" in-map="exampleMap"/>
         </actions>
     </service>
 </services>

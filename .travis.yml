@@ -4,12 +4,10 @@ jdk:
   - oraclejdk7
   - openjdk7
   - oraclejdk8
-# oraclejdk8 runs slowly and often fails due to insufficient wait times in tests, found JDK8 to be faster than JDK7 in other environments
 
 env:
   - TERM=dumb
 
 script:
-  - gradle cleanAll load
-  - gradle check
+  - gradle load
   - gradle test --info

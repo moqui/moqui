@@ -229,6 +229,7 @@ class WebFacadeImpl implements WebFacade {
         urlInstance.getParameterMap().remove("pageIndex")
         // logger.warn("======= parameters: ${urlInstance.getParameterMap()}")
         String urlWithParams = urlInstance.getUrlWithParams()
+        String urlNoParams = urlInstance.getUrl()
         // logger.warn("======= urlWithParams: ${urlWithParams}")
 
         // if is the same as last screen skip it
@@ -281,8 +282,8 @@ class WebFacadeImpl implements WebFacade {
         }
 
         // add to history list
-        screenHistoryList.addFirst([name:nameBuilder.toString(), url:urlWithParams, image:sui.menuImage,
-                                    imageType:sui.menuImageType, screenLocation:targetScreen.getLocation()])
+        screenHistoryList.addFirst([name:nameBuilder.toString(), url:urlWithParams, urlNoParams:urlNoParams,
+                image:sui.menuImage, imageType:sui.menuImageType, screenLocation:targetScreen.getLocation()])
 
         // trim the list if needed; keep 40, whatever uses it may display less
         while (screenHistoryList.size() > 40) screenHistoryList.removeLast()
@@ -359,6 +360,18 @@ class WebFacadeImpl implements WebFacade {
         // NOTE: the CanonicalizeMap cleans up character encodings, and unwraps lists of values with a single entry
         requestParameters = new StupidWebUtilities.CanonicalizeMap(cs)
         return requestParameters
+    }
+    @Override
+    @CompileStatic
+    Map<String, Object> getSecureRequestParameters() {
+        ContextStack cs = new ContextStack()
+        if (savedParameters) cs.push(savedParameters)
+        if (multiPartParameters) cs.push(multiPartParameters)
+        if (jsonParameters) cs.push(jsonParameters)
+        if (!request.getQueryString()) cs.push((Map<String, Object>) request.getParameterMap())
+
+        // NOTE: the CanonicalizeMap cleans up character encodings, and unwraps lists of values with a single entry
+        return new StupidWebUtilities.CanonicalizeMap(cs)
     }
     @Override
     @CompileStatic
@@ -998,10 +1011,11 @@ class WebFacadeImpl implements WebFacade {
         response.addHeader("Access-Control-Allow-Headers", "Content-Type, api_key, Authorization")
 
         Map definitionsMap = new TreeMap()
-        Map<String, Object> swaggerMap = [swagger:2.0,
-            info:[title:("${filename} REST API"), version:'1.0'], host:hostName, basePath:basePath,
+        Map<String, Object> swaggerMap = [swagger:'2.0',
+            info:[title:("${filename} REST API"), version:'1.6.1'], host:hostName, basePath:basePath,
             schemes:['http', 'https'], consumes:['application/json', 'multipart/form-data'], produces:['application/json'],
-            securityDefinitions:[basicAuth:[type:'basic', description:'HTTP Basic Authentication']],
+            securityDefinitions:[basicAuth:[type:'basic', description:'HTTP Basic Authentication'],
+                api_key:[type:"apiKey", name:"api_key", in:"header", description:'HTTP Header api_key, also supports tenant_id header']],
             paths:[:], definitions:definitionsMap
         ]
 
@@ -1058,6 +1072,13 @@ class WebFacadeImpl implements WebFacade {
     void handleServiceRestCall(List<String> extraPathNameList) {
         ContextStack parmStack = (ContextStack) getParameters()
 
+        // check for login, etc error messages
+        if (eci.message.hasError()) {
+            String errorsString = eci.message.errorsString
+            logger.warn((String) "General error in Service REST API: " + errorsString)
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, errorsString)
+        }
+
         // check for parsing error, send a 400 response
         if (parmStack._requestBodyJsonParseError) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, (String) parmStack._requestBodyJsonParseError)
@@ -1090,7 +1111,16 @@ class WebFacadeImpl implements WebFacade {
                     parmStack.pop()
                 }
                 response.addIntHeader('X-Run-Time-ms', (System.currentTimeMillis() - startTime) as int)
-                sendJsonResponse(responseList)
+
+                if (eci.message.hasError()) {
+                    // if error return that
+                    String errorsString = eci.message.errorsString
+                    logger.warn((String) "General error in Service REST API: " + errorsString)
+                    response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, errorsString)
+                } else {
+                    // otherwise send response
+                    sendJsonResponse(responseList)
+                }
             } else {
                 eci.context.push(parmStack)
                 RestApi.RestResult restResult = eci.getEcfi().getServiceFacade().getRestApi().run(extraPathNameList, eci)
@@ -1098,9 +1128,16 @@ class WebFacadeImpl implements WebFacade {
                 response.addIntHeader('X-Run-Time-ms', (System.currentTimeMillis() - startTime) as int)
                 restResult.setHeaders(response)
 
-                // NOTE: This will always respond with 200 OK, consider using 201 Created (for successful POST, create PUT)
-                //     and 204 No Content (for DELETE and other when no content is returned)
-                sendJsonResponse(restResult.responseObj)
+                if (eci.message.hasError()) {
+                    // if error return that
+                    String errorsString = eci.message.errorsString
+                    logger.warn((String) "General error in Service REST API: " + errorsString)
+                    response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, errorsString)
+                } else {
+                    // NOTE: This will always respond with 200 OK, consider using 201 Created (for successful POST, create PUT)
+                    //     and 204 No Content (for DELETE and other when no content is returned)
+                    sendJsonResponse(restResult.responseObj)
+                }
             }
         } catch (AuthenticationRequiredException e) {
             logger.warn("REST Unauthorized (no authc): " + e.message)

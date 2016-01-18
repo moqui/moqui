@@ -72,7 +72,7 @@ class EntityCache {
         efi.getEntityCache().registerCacheOneRa(ed.getFullEntityName(), whereCondition, newEntityValue)
     }
 
-    EntityListImpl getFromListCache(EntityDefinition ed, EntityCondition whereCondition, List<String> orderByList, CacheImpl entityListCache) {
+    EntityList getFromListCache(EntityDefinition ed, EntityCondition whereCondition, List<String> orderByList, CacheImpl entityListCache) {
         if (entityListCache == null) entityListCache = getCacheList(ed.getFullEntityName())
 
         Element cacheElement = entityListCache.getElement(whereCondition)
@@ -80,7 +80,7 @@ class EntityCache {
             if (cacheElement.expired) {
                 entityListCache.removeElement(cacheElement)
             } else {
-                EntityListImpl cacheHit = (EntityListImpl) cacheElement.objectValue
+                EntityList cacheHit = (EntityList) cacheElement.objectValue
                 if (orderByList) cacheHit.orderByFields(orderByList)
                 return cacheHit
             }

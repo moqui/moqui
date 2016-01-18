@@ -490,7 +490,7 @@ abstract class EntityValueBase implements EntityValue {
             pkModified = (getEntityDefinition().getPrimaryKeys(this.valueMap) == getEntityDefinition().getPrimaryKeys(this.dbValueMap))
         } else {
             // make sure PK fields with defaults are filled in BEFORE doing the refresh to see if it exists
-            checkSetFieldDefaults(getEntityDefinition(), getEntityFacadeImpl().getEcfi().getExecutionContext())
+            checkSetFieldDefaults(getEntityDefinition(), getEntityFacadeImpl().getEcfi().getExecutionContext(), true)
         }
         if ((isFromDb && !pkModified) || this.cloneValue().refresh()) {
             return update()
@@ -1006,18 +1006,24 @@ abstract class EntityValueBase implements EntityValue {
         return this.getEntityDefinition().getFullEntityName() != "moqui.server.ArtifactHitBin"
     }
 
-    void checkSetFieldDefaults(EntityDefinition ed, ExecutionContext ec) {
-        Map<String, String> nonPkDefaults = ed.getNonPkFieldDefaults()
-        if (nonPkDefaults.size() > 0) for (Map.Entry<String, String> entry in nonPkDefaults.entrySet())
-            checkSetDefault(entry.getKey(), entry.getValue(), ec)
+    void checkSetFieldDefaults(EntityDefinition ed, ExecutionContext ec, Boolean pks) {
         // allow updating a record without specifying default PK fields, so don't check this: if (isCreate) {
         Map<String, String> pkDefaults = ed.getPkFieldDefaults()
-        if (pkDefaults.size() > 0) for (Map.Entry<String, String> entry in pkDefaults.entrySet())
+        if ((pks == null || pks) && pkDefaults.size() > 0) for (Map.Entry<String, String> entry in pkDefaults.entrySet())
+            checkSetDefault(entry.getKey(), entry.getValue(), ec)
+        Map<String, String> nonPkDefaults = ed.getNonPkFieldDefaults()
+        if ((pks == null || !pks) && nonPkDefaults.size() > 0) for (Map.Entry<String, String> entry in nonPkDefaults.entrySet())
             checkSetDefault(entry.getKey(), entry.getValue(), ec)
     }
     protected void checkSetDefault(String fieldName, String defaultStr, ExecutionContext ec) {
-        Object curVal = valueMap.get(fieldName)
+        Object curVal = null
+        if (valueMap.containsKey(fieldName)) {
+            curVal = valueMap.get(fieldName)
+        } else if (dbValueMap != null) {
+            curVal = dbValueMap.get(fieldName)
+        }
         if (StupidUtilities.isEmpty(curVal)) {
+            if (dbValueMap != null) ec.getContext().push(dbValueMap)
             ec.getContext().push(valueMap)
             try {
                 Object newVal = ec.getResource().expression(defaultStr, "")
@@ -1037,7 +1043,7 @@ abstract class EntityValueBase implements EntityValue {
         ExecutionContext ec = ecfi.getExecutionContext()
 
         // check/set defaults
-        checkSetFieldDefaults(ed, ec)
+        if (ed.hasFieldDefaults()) checkSetFieldDefaults(ed, ec, null)
 
         // set lastUpdatedStamp
         Long lastUpdatedLong = ecfi.getTransactionFacade().getCurrentTransactionStartTime() ?: System.currentTimeMillis()
@@ -1127,17 +1133,21 @@ abstract class EntityValueBase implements EntityValue {
         ExecutionContextFactoryImpl ecfi = getEntityFacadeImpl().getEcfi()
         ExecutionContext ec = ecfi.getExecutionContext()
 
-        // check/set defaults
-        checkSetFieldDefaults(ed, ec)
+        // check/set defaults for pk fields, do this first to fill in optional pk fields
+        if (ed.hasFieldDefaults()) checkSetFieldDefaults(ed, ec, true)
+
         // if there is one or more DataFeed configs associated with this entity get info about them
         List entityInfoList = doDataFeed() ? getEntityFacadeImpl().getEntityDataFeed().getDataFeedEntityInfoList(ed.getFullEntityName()) : []
 
         // need actual DB values for various scenarios? get them here
-        if (ed.needsAuditLog() || ed.createOnly() || entityInfoList || ed.optimisticLock()) {
+        if (ed.needsAuditLog() || ed.createOnly() || entityInfoList || ed.optimisticLock() || ed.hasFieldDefaults()) {
             EntityValueBase refreshedValue = (EntityValueBase) this.cloneValue()
             refreshedValue.refresh()
             this.setDbValueMap(refreshedValue.getValueMap())
         }
+
+        // check/set defaults for non-pk fields, after getting dbValueMap
+        if (ed.hasFieldDefaults()) checkSetFieldDefaults(ed, ec, false)
 
         // Save original values before anything is changed for DataFeed and audit log
         Map<String, Object> originalValues = dbValueMap ? new HashMap<String, Object>(dbValueMap) : new HashMap<String, Object>()

@@ -42,6 +42,10 @@ class FieldValueCondition extends EntityConditionImplBase {
         curHashCode = createHashCode()
     }
 
+    EntityCondition.ComparisonOperator getOperator() { return operator }
+    String getFieldName() { return field.fieldName }
+    Object getValue() { return value }
+
     @Override
     void makeSqlWhere(EntityQueryBuilder eqb) {
         StringBuilder sql = eqb.getSqlTopLevel()

@@ -42,4 +42,7 @@ class ClasspathResourceReference extends UrlResourceReference {
 
         return this
     }
+
+    @Override
+    String getLocation() { return "classpath://" + strippedLocation }
 }

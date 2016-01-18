@@ -1,5 +1,6 @@
 <#--
-This software is in the public domain under CC0 1.0 Universal plus a Grant of Patent License.
+This software is in the public domain under CC0 1.0 Universal plus a
+Grant of Patent License.
 
 To the extent possible under law, the author(s) have dedicated all
 copyright and related and neighboring rights to this software to the
@@ -30,53 +31,33 @@ along with this software (see the LICENSE.md file). If not, see
     <#assign menuId = .node["@id"]!"subscreensMenu">
     <#assign menuTitle = .node["@title"]!sri.getActiveScreenDef().getDefaultMenuName()!"Menu">
     <#if .node["@type"]! == "popup">
-        <#-- <#assign menuUrlInfo = sri.buildUrl("")> -->
-        <#-- <ul id="${menuId}"<#if .node["@width"]?has_content> style="width: ${.node["@width"]};"</#if>> -->
-            <#-- <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
-                <#assign urlInstance = sri.buildUrl(subscreensItem.name)>
-                <#if urlInstance?exists && urlInstance.inCurrentScreenPath><#assign currentItemName = ec.l10n.localize(subscreensItem.menuTitle)></#if>
-            </#list> -->
-            <li id="${menuId}" class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown">${ec.resource.expand(menuTitle, "")} <i class="glyphicon glyphicon-chevron-right"></i></a>
-                <ul class="dropdown-menu">
-                    <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
-                        <#assign urlInstance = sri.buildUrl(subscreensItem.name)>
-                        <#if urlInstance.isPermitted()>
-                            <li class="<#if urlInstance.inCurrentScreenPath>active</#if>"><a href="<#if urlInstance.disableLink>#<#else>${urlInstance.minimalPathUrlWithParams}</#if>">
-                                <#if urlInstance.sui.menuImage?has_content>
-                                    <#if urlInstance.sui.menuImageType == "icon">
-                                        <i class="${urlInstance.sui.menuImage}" style="padding-right: 8px;"></i>
-                                    <#elseif urlInstance.sui.menuImageType == "url-plain">
-                                        <img src="${urlInstance.sui.menuImage}" width="18" style="padding-right: 4px;"/>
-                                    <#else>
-                                        <img src="${sri.buildUrl(urlInstance.sui.menuImage).url}" height="18" style="padding-right: 4px;"/>
-                                    </#if>
+        <li id="${menuId}" class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">${ec.resource.expand(menuTitle, "")} <i class="glyphicon glyphicon-chevron-right"></i></a>
+            <ul class="dropdown-menu">
+                <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
+                    <#assign urlInstance = sri.buildUrl(subscreensItem.name)>
+                    <#if urlInstance.isPermitted()>
+                        <li class="<#if urlInstance.inCurrentScreenPath>active</#if>"><a href="<#if urlInstance.disableLink>#<#else>${urlInstance.minimalPathUrlWithParams}</#if>">
+                            <#if urlInstance.sui.menuImage?has_content>
+                                <#if urlInstance.sui.menuImageType == "icon">
+                                    <i class="${urlInstance.sui.menuImage}" style="padding-right: 8px;"></i>
+                                <#elseif urlInstance.sui.menuImageType == "url-plain">
+                                    <img src="${urlInstance.sui.menuImage}" width="18" style="padding-right: 4px;"/>
                                 <#else>
-                                    <i class="glyphicon glyphicon-link" style="padding-right: 8px;"></i>
+                                    <img src="${sri.buildUrl(urlInstance.sui.menuImage).url}" height="18" style="padding-right: 4px;"/>
                                 </#if>
-                                ${ec.resource.expand(subscreensItem.menuTitle, "")}
-                            </a></li>
-                        </#if>
-                    </#list>
-                </ul>
-            </li>
-            <#--
-            <li><a href="${menuUrlInfo.minimalPathUrlWithParams}">${menuTitle}<#-- very usable without this: <#if currentItemName?has_content> (${currentItemName})</#if> - -></a>
-                <ul>
-                    <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
-                        <#assign urlInstance = sri.buildUrl(subscreensItem.name)>
-                        <#if urlInstance.isPermitted()>
-                            <li class="<#if urlInstance.inCurrentScreenPath>ui-state-active</#if>"><a href="<#if urlInstance.disableLink>#<#else>${urlInstance.minimalPathUrlWithParams}</#if>">${ec.l10n.localize(subscreensItem.menuTitle)}</a></li>
-                        </#if>
-                    </#list>
-                </ul>
-            </li>
-            -->
-        <#-- </ul> -->
+                            <#else>
+                                <i class="glyphicon glyphicon-link" style="padding-right: 8px;"></i>
+                            </#if>
+                            ${ec.resource.expand(subscreensItem.menuTitle, "")}
+                        </a></li>
+                    </#if>
+                </#list>
+            </ul>
+        </li>
         <#-- NOTE: not putting this script at the end of the document so that it doesn't appear unstyled for as long -->
         <#-- move the menu to the header-menus container -->
         <script>$("#${.node["@header-menus-id"]!"header-menus"}").append($("#${menuId}"));</script>
-        <#-- $("#${menuId}").menu({position: { my: "right top", at: "right bottom" }}); -->
     <#elseif .node["@type"]! == "popup-tree">
     <#else>
         <#-- default to type=tab -->
@@ -97,17 +78,7 @@ along with this software (see the LICENSE.md file). If not, see
 </#macro>
 
 <#macro "subscreens-active">
-    <#-- NOTE DEJ20130803 is there any reason to do this, or even support an id? disabling for now as it complicates things with jquery layout:
-    <#if .node["@id"]?has_content>
-        <div class="ui-tabs">
-            <div id="${.node["@id"]}" class="ui-tabs-panel">
-            ${sri.renderSubscreen()}
-            </div>
-        </div>
-    <#else>
-    -->
-        ${sri.renderSubscreen()}
-    <#-- </#if> -->
+    ${sri.renderSubscreen()}
 </#macro>
 
 <#macro "subscreens-panel">
@@ -117,55 +88,33 @@ along with this software (see the LICENSE.md file). If not, see
     <#assign menuId><#if .node["@id"]?has_content>${.node["@id"]}-menu<#else>subscreensPanelMenu</#if></#assign>
     <#assign menuTitle = .node["@title"]!sri.getActiveScreenDef().getDefaultMenuName()!"Menu">
     <#if .node["@type"]! == "popup">
-        <#-- <#assign menuUrlInfo = sri.buildUrl("")> -->
-        <#-- <ul id="${menuId}"<#if .node["@width"]?has_content> style="width: ${.node["@menu-width"]};"</#if>>  ->
-            <#-- <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
-                <#assign urlInstance = sri.buildUrl(subscreensItem.name)>
-                <#if urlInstance.inCurrentScreenPath><#assign currentItemName = ec.resource.expand(subscreensItem.menuTitle, "")></#if>
-            </#list> -->
-            <li id="${menuId}" class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown">${ec.resource.expand(menuTitle, "")} <i class="glyphicon glyphicon-chevron-right"></i></a>
-                <ul class="dropdown-menu">
-                    <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
-                        <#assign urlInstance = sri.buildUrl(subscreensItem.name)>
-                        <#if urlInstance.isPermitted()>
-                            <li class="<#if urlInstance.inCurrentScreenPath>active</#if>"><a href="<#if urlInstance.disableLink>#<#else>${urlInstance.minimalPathUrlWithParams}</#if>">
-                                <#if urlInstance.sui.menuImage?has_content>
-                                    <#if urlInstance.sui.menuImageType == "icon">
-                                        <i class="${urlInstance.sui.menuImage}" style="padding-right: 8px;"></i>
-                                    <#elseif urlInstance.sui.menuImageType == "url-plain">
-                                        <img src="${urlInstance.sui.menuImage}" width="18" style="padding-right: 4px;"/>
-                                    <#else>
-                                        <img src="${sri.buildUrl(urlInstance.sui.menuImage).url}" height="18" style="padding-right: 4px;"/>
-                                    </#if>
+        <li id="${menuId}" class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">${ec.resource.expand(menuTitle, "")} <i class="glyphicon glyphicon-chevron-right"></i></a>
+            <ul class="dropdown-menu">
+                <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
+                    <#assign urlInstance = sri.buildUrl(subscreensItem.name)>
+                    <#if urlInstance.isPermitted()>
+                        <li class="<#if urlInstance.inCurrentScreenPath>active</#if>"><a href="<#if urlInstance.disableLink>#<#else>${urlInstance.minimalPathUrlWithParams}</#if>">
+                            <#if urlInstance.sui.menuImage?has_content>
+                                <#if urlInstance.sui.menuImageType == "icon">
+                                    <i class="${urlInstance.sui.menuImage}" style="padding-right: 8px;"></i>
+                                <#elseif urlInstance.sui.menuImageType == "url-plain">
+                                    <img src="${urlInstance.sui.menuImage}" width="18" style="padding-right: 4px;"/>
                                 <#else>
-                                    <i class="glyphicon glyphicon-link" style="padding-right: 8px;"></i>
+                                    <img src="${sri.buildUrl(urlInstance.sui.menuImage).url}" height="18" style="padding-right: 4px;"/>
                                 </#if>
-                                ${ec.resource.expand(subscreensItem.menuTitle, "")}
-                            </a></li>
-                        </#if>
-                    </#list>
-                </ul>
-            </li>
-            <#--
-            <li><a href="${menuUrlInfo.minimalPathUrlWithParams}">${menuTitle}<#-- very usable without this: <#if currentItemName?has_content> (${currentItemName})</#if> - -></a>
-                <ul>
-                    <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
-                        <#assign urlInstance = sri.buildUrl(subscreensItem.name)>
-                        <#if urlInstance.isPermitted()>
-                            <li class="<#if urlInstance.inCurrentScreenPath>ui-state-active</#if>"><a href="<#if urlInstance.disableLink>#<#else>${urlInstance.minimalPathUrlWithParams}</#if>">${ec.resource.expand(subscreensItem.menuTitle, "")}</a></li>
-                        </#if>
-                    </#list>
-                </ul>
-            </li>
-            -->
-        <#-- </ul> -->
+                            <#else>
+                                <i class="glyphicon glyphicon-link" style="padding-right: 8px;"></i>
+                            </#if>
+                            ${ec.resource.expand(subscreensItem.menuTitle, "")}
+                        </a></li>
+                    </#if>
+                </#list>
+            </ul>
+        </li>
         <#-- NOTE: not putting this script at the end of the document so that it doesn't appear unstyled for as long -->
-        <script>
-            <#-- move the menu to the header menus section -->
-            $("#${.node["@header-menus-id"]!"header-menus"}").append($("#${menuId}"));
-            <#-- $("#${menuId}").menu({position: { my: "right top", at: "right bottom" }}); -->
-        </script>
+        <#-- move the menu to the header menus section -->
+        <script>$("#${.node["@header-menus-id"]!"header-menus"}").append($("#${menuId}"));</script>
 
         ${sri.renderSubscreen()}
     <#elseif .node["@type"]! == "stack">
@@ -495,7 +444,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#assign iconClass = linkNode["@icon"]!>
     <#if !iconClass?has_content && linkNode["@text"]?has_content><#assign iconClass = sri.getThemeIconClass(linkNode["@text"])!></#if>
     <#if urlInstance.disableLink>
-        <a href="#"<#if linkFormId?has_content> id="${linkFormId}"</#if>class="<#if linkNode["@link-type"]! != "anchor" && linkNode["@link-type"]! != "hidden-form-link">btn btn-metis-5 btn-sm</#if><#if .node["@style"]?has_content> ${ec.resource.expand(.node["@style"], "")}</#if>"><#if iconClass?has_content><i class="${iconClass}"></i></#if>${linkText}</a>
+        <a href="#"<#if linkFormId?has_content> id="${linkFormId}"</#if>class="disabled text-muted <#if linkNode["@link-type"]! != "anchor" && linkNode["@link-type"]! != "hidden-form-link">btn btn-metis-5 btn-sm</#if><#if .node["@style"]?has_content> ${ec.resource.expand(.node["@style"], "")}</#if>"><#if iconClass?has_content><i class="${iconClass}"></i></#if><#if linkNode["image"]?has_content><#visit linkNode["image"][0]><#else>${linkText}</#if></a>
     <#else>
         <#assign confirmationMessage = ec.resource.expand(linkNode["@confirmation"]!, "")/>
         <#if (linkNode["@link-type"]! == "anchor" || linkNode["@link-type"]! == "anchor-button") ||
@@ -505,7 +454,11 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                 <#-- NOTE: the void(0) is needed for Firefox and other browsers that render the result of the JS expression -->
                 <#assign urlText>javascript:{$('#${linkNode["@dynamic-load-id"]}').load('${urlInstance.urlWithParams}'); void(0);}</#assign>
             <#else>
-                <#assign urlText = urlInstance.urlWithParams/>
+                <#if linkNode["@url-noparam"]! == "true">
+                    <#assign urlText = urlInstance.url/>
+                <#else>
+                    <#assign urlText = urlInstance.urlWithParams/>
+                </#if>
             </#if>
             <a href="${urlText}"<#if linkFormId?has_content> id="${linkFormId}"</#if><#if linkNode["@target-window"]?has_content> target="${linkNode["@target-window"]}"</#if><#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if> class="<#if linkNode["@link-type"]! != "anchor">btn btn-primary btn-sm</#if><#if linkNode["@style"]?has_content> ${ec.resource.expand(linkNode["@style"], "")}</#if>"<#if linkNode["@tooltip"]?has_content> data-toggle="tooltip" title="${ec.resource.expand(linkNode["@tooltip"], "")}"</#if>><#if iconClass?has_content><i class="${iconClass}"></i></#if>
             <#t><#if linkNode["image"]?has_content><#visit linkNode["image"][0]><#else>${linkText}</#if>
@@ -819,7 +772,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
         </#assign>
         <#t>${sri.appendToScriptWriter(afterFormScript)}
     </#if>
-    <#t>${sri.popContext()}<!-- context was pushed for the form-single so pop here at the end -->
+    <#t>${sri.popContext()}<#-- context was pushed for the form-single so pop here at the end -->
     <#if sri.doBoundaryComments()><!-- END   form-single[@name=${.node["@name"]}] --></#if>
 </#macro>
 <#macro formSingleSubField fieldNode>

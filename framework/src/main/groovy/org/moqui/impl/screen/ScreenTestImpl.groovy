@@ -31,6 +31,7 @@ class ScreenTestImpl implements ScreenTest {
 
     protected final ExecutionContextFactoryImpl ecfi
     protected final ScreenFacadeImpl sfi
+    final List<String> errorStrings = ["FTL stack trace", "Could not find subscreen or transition"]
 
     protected String rootScreenLocation = null
     protected ScreenDefinition rootScreenDef = null
@@ -198,6 +199,7 @@ class ScreenTestImpl implements ScreenTest {
             // pop the context stack, get rid of var space
             postRenderContext = cs.pop()
 
+            // check, pass through, error messages
             if (eci.message.hasError()) {
                 errorMessages.addAll(eci.message.getErrors())
                 eci.message.clearErrors()
@@ -207,6 +209,15 @@ class ScreenTestImpl implements ScreenTest {
                 sti.errorCount += errorMessages.size()
             }
 
+            // check for error strings in output
+            if (outputString) for (String errorStr in sti.errorStrings) if (outputString.contains(errorStr)) {
+                String errMsg = "Found error [${errorStr}] in output from ${screenPath}"
+                errorMessages.add(errMsg)
+                sti.errorCount++
+                logger.warn(errMsg)
+            }
+
+            // update stats
             sti.renderCount++
             if (outputString) sti.totalChars += outputString.length()
 

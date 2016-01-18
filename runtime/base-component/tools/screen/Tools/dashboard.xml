@@ -15,8 +15,6 @@ along with this software (see the LICENSE.md file). If not, see
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.6.xsd"
         default-menu-index="1" menu-image="glyphicon glyphicon-dashboard" menu-image-type="icon">
 
-    <actions>
-    </actions>
     <widgets>
         <container-row>
             <row-col lg="6" md="6">
@@ -28,6 +26,24 @@ along with this software (see the LICENSE.md file). If not, see
                         <link url="../Service" text="Services"/>
                     </box-body>
                 </container-box>
+                <section name="RestApiSection"><actions>
+                    <set field="restUrl" from="sri.buildUrl('/rest').url"/>
+                    <set field="rootResources" from="ec.service.restApi.rootResourceMap.values()"/>
+                </actions><widgets>
+                    <container-box>
+                        <box-header><label text="REST API: Swagger UI" type="h5"/></box-header>
+                        <box-body>
+                            <section-iterate name="RootResourcesSection" list="rootResources" entry="resource"><widgets>
+                                <link url="/assets/lib/swagger-ui/index.html?url=${restUrl}/service.swagger/${resource.name}"
+                                        url-type="plain" target-window="_blank" text="${resource.displayName ?: resource.name}"
+                                        tooltip="${resource.description ?: ''}"/>
+                            </widgets></section-iterate>
+                            <link url="/assets/lib/swagger-ui/index.html?url=${restUrl}/master.swagger/all"
+                                    url-type="plain" target-window="_blank" text="Entity Master API"/>
+                            <label text="The larger APIs take a few seconds to load. Runs in same session (already authenticated)." type="p"/>
+                        </box-body>
+                    </container-box>
+                </widgets></section>
             </row-col>
             <row-col lg="6" md="6">
                 <container-box>

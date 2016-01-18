@@ -17,7 +17,10 @@ import groovy.transform.CompileStatic
 import groovy.transform.TypeChecked
 import groovy.transform.TypeCheckingMode
 import org.moqui.context.ArtifactExecutionInfo
+import org.moqui.impl.context.ExecutionContextImpl
 import org.moqui.impl.context.TransactionCache
+import org.moqui.impl.entity.condition.FieldValueCondition
+import org.moqui.impl.entity.condition.MapCondition
 
 import java.sql.ResultSet
 import java.sql.Timestamp
@@ -90,7 +93,7 @@ abstract class EntityFindBase implements EntityFind {
 
     @Override
     EntityFind condition(String fieldName, Object value) {
-        if (!this.simpleAndMap) this.simpleAndMap = new HashMap()
+        if (!this.simpleAndMap) this.simpleAndMap = new LinkedHashMap()
         this.simpleAndMap.put(fieldName, value)
         return this
     }
@@ -123,6 +126,35 @@ abstract class EntityFindBase implements EntityFind {
     @Override
     EntityFind condition(EntityCondition condition) {
         if (condition == null) return this
+
+        if (condition instanceof FieldValueCondition) {
+            // if this is a basic field/value EQUALS condition, just add to simpleAndMap
+            FieldValueCondition fvc = (FieldValueCondition) condition
+            if (fvc.operator == EntityCondition.EQUALS && !fvc.ignoreCase()) {
+                this.condition(fvc.getFieldName(), fvc.getValue())
+                return this
+            }
+        } else if (condition instanceof ListCondition) {
+            // if this is an AND list condition, just unroll it and add each one; could end up as another list, but may add to simpleAndMap
+            ListCondition lc = (ListCondition) condition
+            if (lc.operator == EntityCondition.AND) {
+                ArrayList<EntityConditionImplBase> condList = lc.getConditionList()
+                for (int i = 0; i < condList.size(); i++) this.condition(condList.get(i))
+                return this
+            }
+        } else if (condition instanceof MapCondition) {
+            MapCondition mc = (MapCondition) condition
+            if (mc.joinOperator == EntityCondition.AND) {
+                if (mc.comparisonOperator == EntityCondition.EQUALS && !mc.ignoreCase) {
+                    // simple AND Map, just add it
+                    return this.condition(mc.fieldMap)
+                } else {
+                    // call back into this to break down the condition
+                    return this.condition(mc.makeCondition())
+                }
+            }
+        }
+
         if (whereEntityCondition) {
             // use ListCondition instead of ANDing two at a time to avoid a bunch of nested ANDs
             if (whereEntityCondition instanceof ListCondition &&
@@ -511,7 +543,7 @@ abstract class EntityFindBase implements EntityFind {
         try {
             EntityDefinition ed = this.getEntityDef()
             Node entityNode = ed.getEntityNode()
-            ExecutionContext ec = efi.getEcfi().getExecutionContext()
+            ExecutionContextImpl ec = efi.getEcfi().getEci()
 
             String authorizeSkip = (String) entityNode.attribute('authorize-skip')
             ArtifactExecutionInfo aei = new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW")
@@ -528,7 +560,7 @@ abstract class EntityFindBase implements EntityFind {
             if (enableAuthz) efi.getEcfi().getExecutionContext().getArtifactExecution().enableAuthz()
         }
     }
-    protected EntityValue oneInternal(ExecutionContext ec) throws EntityException {
+    protected EntityValue oneInternal(ExecutionContextImpl ec) throws EntityException {
         if (this.dynamicView) throw new IllegalArgumentException("Dynamic View not supported for 'one' find.")
 
         long startTime = System.currentTimeMillis()
@@ -541,9 +573,12 @@ abstract class EntityFindBase implements EntityFind {
 
         // find EECA rules deprecated, not worth performance hit: efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-one", true)
 
+        // before combining conditions let ArtifactFacade add entity filters associated with authz
+        boolean authzFilterAdded = ec.artifactExecutionImpl.filterFindForUser(this)
+
         // if over-constrained (anything in addition to a full PK), just use the full PK
         EntityConditionImplBase whereCondition
-        if (ed.containsPrimaryKey(simpleAndMap)) {
+        if (!authzFilterAdded && ed.containsPrimaryKey(simpleAndMap)) {
             whereCondition = (EntityConditionImplBase) efi.getConditionFactory().makeCondition(ed.getPrimaryKeys(simpleAndMap))
         } else {
             whereCondition = (EntityConditionImplBase) getWhereEntityCondition()
@@ -637,7 +672,7 @@ abstract class EntityFindBase implements EntityFind {
         try {
             EntityDefinition ed = this.getEntityDef()
             Node entityNode = ed.getEntityNode()
-            ExecutionContext ec = efi.getEcfi().getExecutionContext()
+            ExecutionContextImpl ec = efi.getEcfi().getEci()
 
             String authorizeSkip = (String) entityNode.attribute('authorize-skip')
             ArtifactExecutionInfo aei = new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW").setActionDetail("one")
@@ -661,7 +696,7 @@ abstract class EntityFindBase implements EntityFind {
         try {
             EntityDefinition ed = this.getEntityDef()
             Node entityNode = ed.getEntityNode()
-            ExecutionContext ec = efi.getEcfi().getExecutionContext()
+            ExecutionContextImpl ec = efi.getEcfi().getEci()
 
             String authorizeSkip = (String) entityNode.attribute('authorize-skip')
             ArtifactExecutionInfo aei = new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW").setActionDetail("list")
@@ -676,7 +711,7 @@ abstract class EntityFindBase implements EntityFind {
             if (enableAuthz) efi.getEcfi().getExecutionContext().getArtifactExecution().enableAuthz()
         }
     }
-    protected EntityList listInternal(ExecutionContext ec) throws EntityException {
+    protected EntityList listInternal(ExecutionContextImpl ec) throws EntityException {
         long startTime = System.currentTimeMillis()
         long startTimeNanos = System.nanoTime()
         EntityDefinition ed = this.getEntityDef()
@@ -700,6 +735,9 @@ abstract class EntityFindBase implements EntityFind {
 
         if (entityConditionNode?.attribute('distinct') == "true") this.distinct(true)
 
+        // before combining conditions let ArtifactFacade add entity filters associated with authz
+        ec.artifactExecutionImpl.filterFindForUser(this)
+
         EntityConditionImplBase whereCondition = (EntityConditionImplBase) getWhereEntityCondition()
 
         // try the txCache first, more recent than general cache (and for update general cache entries will be cleared anyway)
@@ -708,10 +746,10 @@ abstract class EntityFindBase implements EntityFind {
         // NOTE: don't cache if there is a having condition, for now just support where
         boolean doEntityCache = this.shouldCache()
         CacheImpl entityListCache = doEntityCache ? efi.getEntityCache().getCacheList(getEntityDef().getFullEntityName()) : null
-        EntityListImpl cacheList = null
+        EntityList cacheList = null
         if (doEntityCache) cacheList = efi.getEntityCache().getFromListCache(ed, whereCondition, orderByExpanded, entityListCache)
 
-        EntityListImpl el
+        EntityList el
         if (txcEli != null) {
             el = txcEli
             // if (ed.getFullEntityName().contains("OrderItem")) logger.warn("======== Got OrderItem from txCache ${el.size()} results where: ${whereCondition}")
@@ -781,7 +819,7 @@ abstract class EntityFindBase implements EntityFind {
         try {
             EntityDefinition ed = this.getEntityDef()
             Node entityNode = ed.getEntityNode()
-            ExecutionContext ec = efi.getEcfi().getExecutionContext()
+            ExecutionContextImpl ec = efi.getEcfi().getEci()
 
             String authorizeSkip = (String) entityNode.attribute('authorize-skip')
             ArtifactExecutionInfo aei = new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW").setActionDetail("list")
@@ -812,7 +850,7 @@ abstract class EntityFindBase implements EntityFind {
         long startTimeNanos = System.nanoTime()
         EntityDefinition ed = this.getEntityDef()
         Node entityNode = ed.getEntityNode()
-        ExecutionContext ec = efi.getEcfi().getExecutionContext()
+        ExecutionContextImpl ec = efi.getEcfi().getEci()
 
         if (ed.isViewEntity() && (!entityNode.get("member-entity") || !entityNode.get("alias")))
             throw new EntityException("Cannot do find for view-entity with name [${entityName}] because it has no member entities or no aliased fields.")
@@ -847,6 +885,9 @@ abstract class EntityFindBase implements EntityFind {
         // we always want fieldsToSelect populated so that we know the order of the results coming back
         if (!this.fieldsToSelect) this.selectFields(ed.getFieldNames(true, true, false))
         // TODO: this will not handle query conditions on UserFields, it will blow up in fact
+
+        // before combining conditions let ArtifactFacade add entity filters associated with authz
+        ec.artifactExecutionImpl.filterFindForUser(this)
 
         EntityConditionImplBase whereCondition = (EntityConditionImplBase) getWhereEntityCondition()
         EntityConditionImplBase viewWhere = ed.makeViewWhereCondition()
@@ -907,7 +948,7 @@ abstract class EntityFindBase implements EntityFind {
         long startTimeNanos = System.nanoTime()
         EntityDefinition ed = this.getEntityDef()
         Node entityNode = ed.getEntityNode()
-        ExecutionContext ec = efi.getEcfi().getExecutionContext()
+        ExecutionContextImpl ec = efi.getEcfi().getEci()
 
         String authorizeSkip = (String) entityNode.attribute('authorize-skip')
         ArtifactExecutionInfo aei = new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW").setActionDetail("count")
@@ -915,6 +956,9 @@ abstract class EntityFindBase implements EntityFind {
 
         // there may not be a simpleAndMap, but that's all we have that can be treated directly by the EECA
         // find EECA rules deprecated, not worth performance hit: efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-count", true)
+
+        // before combining conditions let ArtifactFacade add entity filters associated with authz
+        ec.artifactExecutionImpl.filterFindForUser(this)
 
         EntityConditionImplBase whereCondition = (EntityConditionImplBase) getWhereEntityCondition()
         // NOTE: don't cache if there is a having condition, for now just support where

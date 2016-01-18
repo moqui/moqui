@@ -23,6 +23,11 @@ along with this software (see the LICENSE.md file). If not, see
         <actions><script>ec.user.setPreference(preferenceKey, preferenceValue)</script></actions>
         <default-response type="none"/>
     </transition>
+    <transition name="setPrefGoLast" read-only="true">
+        <parameter name="preferenceKey"/><parameter name="preferenceValue"/>
+        <actions><script>ec.user.setPreference(preferenceKey, preferenceValue)</script></actions>
+        <default-response type="screen-last"/>
+    </transition>
 
     <subscreens default-item="AppList">
         <!-- refer to the various app roots here -->

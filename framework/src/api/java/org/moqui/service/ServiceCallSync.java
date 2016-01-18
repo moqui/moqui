@@ -42,6 +42,9 @@ public interface ServiceCallSync extends ServiceCall {
     ServiceCallSync requireNewTransaction(boolean requireNewTransaction);
     ServiceCallSync useTransactionCache(boolean useTransactionCache);
 
+    /** Normally service won't run if there was an error (ec.message.hasError()), set this to true to run anyway. */
+    ServiceCallSync ignorePreviousError(boolean ipe);
+
     /** If true expect multiple sets of parameters passed in a single map, each set with a suffix of an underscore
      * and the row of the number, ie something like "userId_8" for the userId parameter in the 8th row.
      * @return Reference to this for convenience.

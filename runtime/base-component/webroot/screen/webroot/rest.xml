@@ -18,6 +18,33 @@ along with this software (see the LICENSE.md file). If not, see
     <!-- NOTE: require-authentication=false is required to allow transitions to decide. -->
 
     <!--
+    Send request to api_key to get a temporary login/api key to pass to other rest calls instead of username/password.
+
+    A user must be authenticated for this request, and the key will be associated with that user. Each time this is
+    called a new key is issued as the key is one-way hashed when saved to the database. Keys expire after the number of
+    hours configured on the Moqui Conf XML file (in user-facade.login-key.@expire-hours). The default is 144 hours, some
+    may want a short time (like 1 hour) for more of a session like behavior, others may want to expire after months for
+    server clients and more of a utility API.
+
+    A client may know a key but not know the user credentials, ie for longer term issued keys. In this case don't use
+    this request to get a key, just use the API key in the header for requests.
+
+    An example request:
+
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/api_key
+
+    Put the value from that request in the "api_key" header for authc on other requests.
+
+    curl -X GET -H "api_key: {apiKey}" http://localhost:8080/rest/s1/example/examples/TEST2
+
+    Along with this a tenant_id header is also supported:
+
+    curl -X GET -H "api_key: {apiKey}" -H "tenant_id: {tenantId}" http://localhost:8080/rest/s1/example/examples/TEST2
+    -->
+    <transition name="api_key"><actions><script>ec.web.sendTextResponse(ec.user.getLoginKey())</script></actions>
+        <default-response type="none"/></transition>
+
+    <!--
     EXAMPLES
 
     Verbs: GET=find, POST=create, PUT=store (create or update), PATCH=update, DELETE=delete
@@ -154,7 +181,7 @@ along with this software (see the LICENSE.md file). If not, see
 
     curl -X GET -u john.doe:moqui http://localhost:8080/rest/entity.json/examples
     curl -X GET -u john.doe:moqui http://localhost:8080/rest/entity.json/examples.json
-    curl -X GET -u john.doe:moqui http://localhost:8080/rest/entity.json/example.Example
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/entity.json/moqui.example.Example
 
     To get the json-schema (see http://json-schema.org) for ALL entities use a request like:
 
@@ -169,7 +196,7 @@ along with this software (see the LICENSE.md file). If not, see
     curl -X GET -u john.doe:moqui http://localhost:8080/rest/entity.swagger/all.json
     curl -X GET -u john.doe:moqui http://localhost:8080/rest/entity.swagger/all.yaml
 
-    To get the Swagger definition for just the example.Example (examples) entity use a request like:
+    To get the Swagger definition for just the moqui.example.Example (examples) entity use a request like:
 
     curl -X GET -u john.doe:moqui http://localhost:8080/rest/entity.swagger/examples.json
     curl -X GET -u john.doe:moqui http://localhost:8080/rest/entity.swagger/examples.yaml
@@ -196,7 +223,7 @@ along with this software (see the LICENSE.md file). If not, see
     curl -X GET -u john.doe:moqui http://localhost:8080/rest/master.json/examples/default
     curl -X GET -u john.doe:moqui http://localhost:8080/rest/master.json/examples/default.json
     curl -X GET -u john.doe:moqui http://localhost:8080/rest/master.json/examples.json
-    curl -X GET -u john.doe:moqui http://localhost:8080/rest/master.json/example.Example
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/master.json/moqui.example.Example
 
     To get the json-schema (see http://json-schema.org) for ALL master entities simply leave off the entity name and
     master name:
@@ -207,7 +234,7 @@ along with this software (see the LICENSE.md file). If not, see
 
     curl -X GET -u john.doe:moqui http://localhost:8080/rest/master.raml/examples/default
     curl -X GET -u john.doe:moqui http://localhost:8080/rest/master.raml/examples.raml
-    curl -X GET -u john.doe:moqui http://localhost:8080/rest/master.raml/example.Example
+    curl -X GET -u john.doe:moqui http://localhost:8080/rest/master.raml/moqui.example.Example
     curl -X GET -u john.doe:moqui http://localhost:8080/rest/master.raml
 
     To get the Swagger definition for all master entities use a request like:
@@ -215,12 +242,12 @@ along with this software (see the LICENSE.md file). If not, see
     curl -X GET -u john.doe:moqui http://localhost:8080/rest/entity.swagger/all.json
     curl -X GET -u john.doe:moqui http://localhost:8080/rest/entity.swagger/all.yaml
 
-    To get the Swagger definition for all master definitions of the example.Example (examples) entity use a request like:
+    To get the Swagger definition for all master definitions of the moqui.example.Example (examples) entity use a request like:
 
     curl -X GET -u john.doe:moqui http://localhost:8080/rest/master.swagger/examples.json
     curl -X GET -u john.doe:moqui http://localhost:8080/rest/master.swagger/examples.yaml
 
-    To get the Swagger definition for the 'default' master definitions of the example.Example (examples) entity use a request like:
+    To get the Swagger definition for the 'default' master definitions of the moqui.example.Example (examples) entity use a request like:
 
     curl -X GET -u john.doe:moqui http://localhost:8080/rest/master.swagger/examples/default.json
     curl -X GET -u john.doe:moqui http://localhost:8080/rest/master.swagger/examples/default.yaml

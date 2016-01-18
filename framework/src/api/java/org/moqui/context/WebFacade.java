@@ -28,7 +28,12 @@ public interface WebFacade {
 
     HttpServletRequest getRequest();
     Map<String, Object> getRequestAttributes();
+    /** Returns a Map with request parameters including session saved, multi-part body, json body, declared and named
+     * path parameters, and standard Servlet request parameters (query string parameters, form body parameters). */
     Map<String, Object> getRequestParameters();
+    /** Returns a Map with only secure (encrypted if over HTTPS) request parameters including session saved,
+     * multi-part body, json body, and form body parameters (standard Servlet request parameters IFF there is no query string). */
+    Map<String, Object> getSecureRequestParameters();
     String getHostName(boolean withPort);
 
     HttpServletResponse getResponse();

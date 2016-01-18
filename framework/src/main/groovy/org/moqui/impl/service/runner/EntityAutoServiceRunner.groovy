@@ -230,7 +230,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
             EntityDefinition.RelationshipInfo relInfo = ed.getRelationshipInfo(entryName)
             if (relInfo != null) {
                 if (!relInfo.mutable) {
-                    if (logger.isInfoEnabled()) logger.info("In create entity auto service found key [${entryName}] which is a non-mutable relationship of [${ed.getFullEntityName()}], skipping")
+                    if (logger.isTraceEnabled()) logger.trace("In create entity auto service found key [${entryName}] which is a non-mutable relationship of [${ed.getFullEntityName()}], skipping")
                     continue
                 }
                 subEd = relInfo.relatedEd
@@ -410,8 +410,8 @@ public class EntityAutoServiceRunner implements ServiceRunner {
         // NOTE: keep a separate Map of parent PK values to pass down, can't just be current record's PK fields because
         //     we allow other entities to be nested, and they may have nested records that depend ANY ancestor's PKs
         // this returns a clone or new Map, so we'll modify it freely
-        Map pkMap = parentValue.getPrimaryKeys()
-        if (parentPks) pkMap.putAll(parentPks)
+        Map<String, Object> sharedPkMap = parentValue.getPrimaryKeys()
+        if (parentPks) sharedPkMap.putAll(parentPks)
 
         Map nonFieldEntries = ed.cloneMapRemoveFields(parameters, null)
         for (Map.Entry entry in nonFieldEntries.entrySet()) {
@@ -425,15 +425,21 @@ public class EntityAutoServiceRunner implements ServiceRunner {
             if (otherFieldsToSkip.contains(entryName)) continue
 
             EntityDefinition subEd = null
+            Map<String, Object> pkMap = null
             EntityDefinition.RelationshipInfo relInfo = ed.getRelationshipInfo(entryName)
             if (relInfo != null) {
                 if (!relInfo.mutable) {
-                    if (logger.isInfoEnabled()) logger.info("In store entity auto service found key [${entryName}] which is a non-mutable relationship of [${ed.getFullEntityName()}], skipping")
+                    if (logger.isTraceEnabled()) logger.trace("In store entity auto service found key [${entryName}] which is a non-mutable relationship of [${ed.getFullEntityName()}], skipping")
                     continue
                 }
                 subEd = relInfo.relatedEd
+
+                // this is a relationship so add mapped key fields to the parentPks if any field names are different
+                pkMap = relInfo.getTargetParameterMap(sharedPkMap)
+                pkMap.putAll(sharedPkMap)
             } else if (efi.isEntityDefined(entryName)) {
                 subEd = efi.getEntityDefinition(entryName)
+                pkMap = sharedPkMap
             }
             if (subEd == null) {
                 // this happens a lot, extra stuff passed to the service call, so be quiet unless trace is on

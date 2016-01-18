@@ -18,6 +18,7 @@ import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.RandomAccess;
 
 /**
  * Contains a list of EntityValue objects.
@@ -26,7 +27,7 @@ import java.util.Map;
  * The various methods here modify the internal list for efficiency and return a reference to this for convenience.
  * If you want a new EntityList with the modifications, use clone() or cloneList() then modify it.
  */
-public interface EntityList extends List<EntityValue>, Iterable<EntityValue>, Cloneable {
+public interface EntityList extends List<EntityValue>, Iterable<EntityValue>, Cloneable, RandomAccess {
 
     /** Get the first value in the list.
      *
@@ -50,6 +51,7 @@ public interface EntityList extends List<EntityValue>, Iterable<EntityValue>, Cl
      *@return List of EntityValue objects that match the values in the fields parameter.
      */
     EntityList filterByAnd(Map<String, Object> fields);
+    EntityList filterByAnd(Map<String, Object> fields, Boolean include);
 
     EntityList removeByAnd(Map<String, Object> fields);
 

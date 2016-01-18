@@ -38,6 +38,8 @@ import org.moqui.BaseException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock
 
@@ -61,6 +63,7 @@ class EntityFacadeImpl implements EntityFacade {
     /** Sequence name (often entity name) plus tenantId is the key and the value is an array of 2 Longs the first is the next
      * available value and the second is the highest value reserved/cached in the bank. */
     final Cache entitySequenceBankCache
+    protected final ConcurrentMap<String, Lock> dbSequenceLocks = new ConcurrentHashMap<String, Lock>()
     protected final Lock locationLoadLock = new ReentrantLock()
 
     protected final Map<String, List<EntityEcaRule>> eecaRulesByEntityName = new HashMap()
@@ -341,6 +344,7 @@ class EntityFacadeImpl implements EntityFacade {
         return entityRrList
     }
 
+    @CompileStatic
     void loadAllEntityLocations() {
         // lock or wait for lock, this lock used here and for checking entity defined
         locationLoadLock.lock()
@@ -357,10 +361,10 @@ class EntityFacadeImpl implements EntityFacade {
                 int numDbViewEntities = 0
                 for (EntityValue dbViewEntity in makeFind("moqui.entity.view.DbViewEntity").list()) {
                     if (dbViewEntity.packageName) {
-                        List pkgList = (List) this.entityLocationCache.get(dbViewEntity.packageName + "." + dbViewEntity.dbViewEntityName)
+                        List pkgList = (List) this.entityLocationCache.get((String) dbViewEntity.packageName + "." + dbViewEntity.dbViewEntityName)
                         if (!pkgList) {
                             pkgList = new LinkedList()
-                            this.entityLocationCache.put(dbViewEntity.packageName + "." + dbViewEntity.dbViewEntityName, pkgList)
+                            this.entityLocationCache.put((String) dbViewEntity.packageName + "." + dbViewEntity.dbViewEntityName, pkgList)
                         }
                         if (!pkgList.contains("_DB_VIEW_ENTITY_")) pkgList.add("_DB_VIEW_ENTITY_")
                     }
@@ -394,6 +398,7 @@ class EntityFacadeImpl implements EntityFacade {
     }
 
     // NOTE: only called by loadAllEntityLocations() which is synchronized/locked, so doesn't need to be
+    @CompileStatic
     protected void loadEntityFileLocations(ResourceReference entityRr) {
         Node entityRoot = getEntityFileRoot(entityRr)
         if (entityRoot.name() == "entities") {
@@ -401,9 +406,9 @@ class EntityFacadeImpl implements EntityFacade {
             int numEntities = 0
             List<Node> entityRootChildren = (List<Node>) entityRoot.children()
             for (Node entity in entityRootChildren) {
-                String entityName = (String) entity."@entity-name"
-                String packageName = (String) entity."@package-name"
-                String shortAlias = (String) entity."@short-alias"
+                String entityName = (String) entity.attribute("entity-name")
+                String packageName = (String) entity.attribute("package-name")
+                String shortAlias = (String) entity.attribute("short-alias")
 
                 if (!entityName) {
                     logger.warn("Skipping entity XML file [${entityRr.getLocation()}] element with no @entity-name: ${entity}")
@@ -509,7 +514,10 @@ class EntityFacadeImpl implements EntityFacade {
         // If this is a moqui.entity.view.DbViewEntity, handle that in a special way (generate the Nodes from the DB records)
         if (entityLocationList.contains("_DB_VIEW_ENTITY_")) {
             EntityValue dbViewEntity = makeFind("moqui.entity.view.DbViewEntity").condition("dbViewEntityName", entityName).one()
-            if (dbViewEntity == null) throw new EntityNotFoundException("Could not find DbViewEntity with name ${entityName}")
+            if (dbViewEntity == null) {
+                logger.warn("Could not find DbViewEntity with name ${entityName}")
+                return null
+            }
             Node dbViewNode = new Node(null, "view-entity", ["entity-name":entityName, "package-name":dbViewEntity.packageName])
             if (dbViewEntity.cache == "Y") dbViewNode.attributes().put("cache", "true")
             else if (dbViewEntity.cache == "N") dbViewNode.attributes().put("cache", "false")
@@ -655,6 +663,8 @@ class EntityFacadeImpl implements EntityFacade {
         Set<String> entityNameSet = getAllEntityNames()
         for (String entityName in entityNameSet) {
             EntityDefinition ed = getEntityDefinition(entityName)
+            // may happen if all entity names includes a DB view entity or other that doesn't really exist
+            if (ed == null) continue
             List<String> pkSet = ed.getPkFieldNames()
             for (Node relNode in ed.entityNode."relationship") {
                 // don't create reverse for auto reference relationships
@@ -712,6 +722,7 @@ class EntityFacadeImpl implements EntityFacade {
         //     called for new ones, not from cache
         for (String entityName in entityNameSet) {
             EntityDefinition ed = getEntityDefinition(entityName)
+            if (ed == null) continue
             ed.hasReverseRelationships = true
         }
 
@@ -856,18 +867,18 @@ class EntityFacadeImpl implements EntityFacade {
     List<Map> getAllEntityInfo(int levels, boolean excludeViewEntities) {
         Map<String, Map> entityInfoMap = [:]
         for (String entityName in getAllEntityNames()) {
-            if (excludeViewEntities) {
-                EntityDefinition ed = getEntityDefinition(entityName)
-                if (ed.isViewEntity()) continue
-            }
+            EntityDefinition ed = getEntityDefinition(entityName)
+            boolean isView = ed.isViewEntity()
+            if (excludeViewEntities && isView) continue
             int lastDotIndex = 0
             for (int i = 0; i < levels; i++) lastDotIndex = entityName.indexOf(".", lastDotIndex+1)
             String name = lastDotIndex == -1 ? entityName : entityName.substring(0, lastDotIndex)
             Map curInfo = entityInfoMap.get(name)
             if (curInfo) {
-                StupidUtilities.addToBigDecimalInMap("entities", 1, curInfo)
+                if (isView) StupidUtilities.addToBigDecimalInMap("viewEntities", 1, curInfo)
+                else StupidUtilities.addToBigDecimalInMap("entities", 1, curInfo)
             } else {
-                entityInfoMap.put(name, [name:name, entities:1])
+                entityInfoMap.put(name, [name:name, entities:(isView ? 0 : 1), viewEntities:(isView ? 1 : 0)])
             }
         }
         TreeSet<String> nameSet = new TreeSet(entityInfoMap.keySet())
@@ -1356,70 +1367,90 @@ class EntityFacadeImpl implements EntityFacade {
 
     protected final static long defaultBankSize = 50L
     @CompileStatic
-    protected synchronized String dbSequencedIdPrimary(String seqName, Long staggerMax, Long bankSize) {
+    protected Lock getDbSequenceLock(String seqName) {
+        Lock oldLock, dbSequenceLock = dbSequenceLocks.get(seqName)
+        if (dbSequenceLock == null) {
+            dbSequenceLock = new ReentrantLock()
+            oldLock = dbSequenceLocks.putIfAbsent(seqName, dbSequenceLock)
+            if(oldLock != null) {
+                return oldLock
+            }
+        }
+        return dbSequenceLock
+    }
+    @CompileStatic
+    protected String dbSequencedIdPrimary(String seqName, Long staggerMax, Long bankSize) {
+
         // TODO: find some way to get this running non-synchronized for performance reasons (right now if not
         // TODO:     synchronized the forUpdate won't help if the record doesn't exist yet, causing errors in high
         // TODO:     traffic creates; is it creates only?)
 
+        Lock dbSequenceLock = getDbSequenceLock(seqName)
+        dbSequenceLock.lock()
+
         // NOTE: simple approach with forUpdate, not using the update/select "ethernet" approach used in OFBiz; consider
         // that in the future if there are issues with this approach
 
-        // first get a bank if we don't have one already
-        String bankCacheKey = seqName
-        ArrayList<Long> bank = (ArrayList<Long>) this.entitySequenceBankCache.get(bankCacheKey)
-        if (bank == null || bank[0] == null || bank[0] > bank[1]) {
-            if (bank == null) {
-                bank = new ArrayList<Long>(2)
-                this.entitySequenceBankCache.put(bankCacheKey, bank)
-            }
-
-            TransactionFacade tf = this.ecfi.getTransactionFacade()
-            boolean suspendedTransaction = false
-            try {
-                if (tf.isTransactionInPlace()) suspendedTransaction = tf.suspend()
-                boolean beganTransaction = tf.begin(null)
-                try {
-                    EntityValue svi = makeFind("moqui.entity.SequenceValueItem").condition("seqName", seqName)
-                            .useCache(false).forUpdate(true).one()
-                    if (svi == null) {
-                        svi = makeValue("moqui.entity.SequenceValueItem")
-                        svi.set("seqName", seqName)
-                        // a new tradition: start sequenced values at one hundred thousand instead of ten thousand
-                        bank[0] = 100000L
-                        bank[1] = bank[0] + ((bankSize ?: defaultBankSize) - 1L)
-                        svi.set("seqNum", bank[1])
-                        svi.create()
-                    } else {
-                        Long lastSeqNum = svi.getLong("seqNum")
-                        bank[0] = (lastSeqNum > bank[0] ? lastSeqNum + 1L : bank[0])
-                        bank[1] = bank[0] + ((bankSize ?: defaultBankSize) - 1L)
-                        svi.set("seqNum", bank[1])
-                        svi.update()
-                    }
-                } catch (Throwable t) {
-                    tf.rollback(beganTransaction, "Error getting primary sequenced ID", t)
-                } finally {
-                    if (beganTransaction && tf.isTransactionInPlace()) tf.commit()
+        try {
+            // first get a bank if we don't have one already
+            String bankCacheKey = seqName
+            ArrayList<Long> bank = (ArrayList<Long>) this.entitySequenceBankCache.get(bankCacheKey)
+            if (bank == null || bank[0] == null || bank[0] > bank[1]) {
+                if (bank == null) {
+                    bank = new ArrayList<Long>(2)
+                    this.entitySequenceBankCache.put(bankCacheKey, bank)
                 }
-            } catch (TransactionException e) {
-                throw e
-            } finally {
-                if (suspendedTransaction) tf.resume()
+
+                TransactionFacade tf = this.ecfi.getTransactionFacade()
+                boolean suspendedTransaction = false
+                try {
+                    if (tf.isTransactionInPlace()) suspendedTransaction = tf.suspend()
+                    boolean beganTransaction = tf.begin(null)
+                    try {
+                        EntityValue svi = makeFind("moqui.entity.SequenceValueItem").condition("seqName", seqName)
+                                .useCache(false).forUpdate(true).one()
+                        if (svi == null) {
+                            svi = makeValue("moqui.entity.SequenceValueItem")
+                            svi.set("seqName", seqName)
+                            // a new tradition: start sequenced values at one hundred thousand instead of ten thousand
+                            bank[0] = 100000L
+                            bank[1] = bank[0] + ((bankSize ?: defaultBankSize) - 1L)
+                            svi.set("seqNum", bank[1])
+                            svi.create()
+                        } else {
+                            Long lastSeqNum = svi.getLong("seqNum")
+                            bank[0] = (lastSeqNum > bank[0] ? lastSeqNum + 1L : bank[0])
+                            bank[1] = bank[0] + ((bankSize ?: defaultBankSize) - 1L)
+                            svi.set("seqNum", bank[1])
+                            svi.update()
+                        }
+                    } catch (Throwable t) {
+                        tf.rollback(beganTransaction, "Error getting primary sequenced ID", t)
+                    } finally {
+                        if (beganTransaction && tf.isTransactionInPlace()) tf.commit()
+                    }
+                } catch (TransactionException e) {
+                    throw e
+                } finally {
+                    if (suspendedTransaction) tf.resume()
+                }
             }
-        }
 
-        long seqNum = bank[0]
-        if (staggerMax != null && staggerMax > 1L) {
-            long stagger = Math.round(Math.random() * staggerMax)
-            if (stagger == 0L) stagger = 1L
-            bank[0] = seqNum + stagger
-            // NOTE: if bank[0] > bank[1] because of this just leave it and the next time we try to get a sequence
-            //     value we'll get one from a new bank
-        } else {
-            bank[0] = seqNum + 1L
-        }
+            long seqNum = bank[0]
+            if (staggerMax != null && staggerMax > 1L) {
+                long stagger = Math.round(Math.random() * staggerMax)
+                if (stagger == 0L) stagger = 1L
+                bank[0] = seqNum + stagger
+                // NOTE: if bank[0] > bank[1] because of this just leave it and the next time we try to get a sequence
+                //     value we'll get one from a new bank
+            } else {
+                bank[0] = seqNum + 1L
+            }
 
-        return sequencedIdPrefix + seqNum
+            return sequencedIdPrefix + seqNum
+        } finally {
+            dbSequenceLock.unlock()
+        }
     }
 
     Set<String> getAllEntityNamesInGroup(String groupName) {

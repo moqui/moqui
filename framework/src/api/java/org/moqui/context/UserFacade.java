@@ -55,6 +55,10 @@ public interface UserFacade {
      */
     void setPreference(String preferenceKey, String preferenceValue);
 
+    /** A per-user context like the execution context for but data specific to a user and maintained through service
+     * calls, etc unlike ExecutionContext.getContext(). Used for security data, etc such as entity filter values. */
+    Map<String, Object> getContext();
+
     /** Get the current date and time in a Timestamp object. This is either the current system time, or the Effective
      * Time if that has been set for this context (allowing testing of past and future system behavior).
      *
@@ -81,9 +85,13 @@ public interface UserFacade {
      * @return true if user was logged in, otherwise false
      */
     boolean loginUser(String username, String password, String tenantId);
-
     /** Remove (logout) active user. */
     void logoutUser();
+
+    /** Authenticate a user and make active using a login key */
+    boolean loginUserKey(String loginKey, String tenantId);
+    /** Get a login key for the active user. */
+    String getLoginKey();
 
     /** If no user is logged in consider an anonymous user logged in. For internal purposes to run things that require authentication. */
     boolean loginAnonymousIfNoUser();

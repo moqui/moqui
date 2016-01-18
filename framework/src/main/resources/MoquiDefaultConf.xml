@@ -87,6 +87,7 @@
     <user-facade>
         <password encrypt-hash-type="SHA-256" min-length="6" min-digits="1" min-others="1"
                   history-limit="5" change-weeks="26" email-require-change="true" email-expire-hours="48"/>
+        <login-key encrypt-hash-type="SHA-256" expire-hours="144"/><!-- default expire 6 days, 144 hours -->
         <login max-failures="3" disable-minutes="5" history-store="true" history-incorrect-password="true"/>
     </user-facade>
 
@@ -184,6 +185,23 @@
         <service-type name="remote-xml-rpc" runner-class="org.moqui.impl.service.runner.RemoteXmlrpcServiceRunner"/>
         <service-type name="remote-json-rpc" runner-class="org.moqui.impl.service.runner.RemoteJsonRpcServiceRunner"/>
         <service-type name="camel" runner-class="org.moqui.impl.service.runner.CamelServiceRunner"/>
+
+        <!-- These are not needed for running classpath services, but are for service reference (known services) -->
+        <service-file location="classpath://service/org/moqui/EmailServices.xml"/>
+        <service-file location="classpath://service/org/moqui/EntityServices.xml"/>
+        <service-file location="classpath://service/org/moqui/impl/BasicServices.xml"/>
+        <service-file location="classpath://service/org/moqui/impl/ElFinderServices.xml"/>
+        <service-file location="classpath://service/org/moqui/impl/EmailServices.xml"/>
+        <service-file location="classpath://service/org/moqui/impl/EntityServices.xml"/>
+        <service-file location="classpath://service/org/moqui/impl/EntitySyncServices.xml"/>
+        <service-file location="classpath://service/org/moqui/impl/PrintServices.xml"/>
+        <service-file location="classpath://service/org/moqui/impl/ScreenServices.xml"/>
+        <service-file location="classpath://service/org/moqui/impl/ServerServices.xml"/>
+        <service-file location="classpath://service/org/moqui/impl/ServiceServices.xml"/>
+        <service-file location="classpath://service/org/moqui/impl/SystemMessageServices.xml"/>
+        <service-file location="classpath://service/org/moqui/impl/TenantServices.xml"/>
+        <service-file location="classpath://service/org/moqui/impl/UserServices.xml"/>
+        <service-file location="classpath://service/org/moqui/impl/WikiServices.xml"/>
     </service-facade>
 
     <entity-facade default-group-name="transactional" distributed-cache-clear-enabled="false"
