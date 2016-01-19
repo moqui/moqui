@@ -53,6 +53,7 @@ public class EntityDefinition {
     protected ArrayList<String> pkFieldNameList = null
     protected ArrayList<String> nonPkFieldNameList = null
     protected ArrayList<FieldInfo> nonPkFieldInfoList = null
+    protected ArrayList<FieldInfo> allFieldInfoList = null
     protected ArrayList<String> allFieldNameList = null
     protected Boolean hasUserFields = null
     protected Boolean allowUserField = null
@@ -222,20 +223,17 @@ public class EntityDefinition {
     @CompileStatic
     boolean needsAuditLog() {
         if (needsAuditLogVal != null) return needsAuditLogVal
-        needsAuditLogVal = false
-        for (Node fieldNode in getFieldNodes(true, true, false))
-            if (getFieldAuditLog(fieldNode) == "true" || getFieldAuditLog(fieldNode) == "update") needsAuditLogVal = true
-        if (needsAuditLogVal) return true
 
-        for (Node fieldNode in getFieldNodes(false, false, true))
-            if (getFieldAuditLog(fieldNode) == "true" || getFieldAuditLog(fieldNode) == "update") needsAuditLogVal = true
+        boolean tempVal = false
+        for (FieldInfo fi in getAllFieldInfoList()) {
+            if (fi.enableAuditLog == "true" || fi.enableAuditLog == "update") {
+                tempVal = true
+                break
+            }
+        }
+
+        needsAuditLogVal = tempVal
         return needsAuditLogVal
-    }
-    @CompileStatic
-    String getFieldAuditLog(Node fieldNode) {
-        String fieldAuditLog = fieldNode.attribute('enable-audit-log')
-        if (fieldAuditLog) return fieldAuditLog
-        return internalEntityNode.attribute('enable-audit-log')
     }
 
     @CompileStatic
@@ -305,11 +303,23 @@ public class EntityDefinition {
 
         ArrayList<String> nonPkFieldNameList = getNonPkFieldNames()
         int nonPkFieldNameListSize = nonPkFieldNameList.size()
-        ArrayList<FieldInfo> tempList = new ArrayList<>(nonPkFieldNameListSize)
+        ArrayList<FieldInfo> tempList = new ArrayList<FieldInfo>(nonPkFieldNameListSize)
         for (int i = 0; i < nonPkFieldNameListSize; i++) tempList.add(getFieldInfo(nonPkFieldNameList.get(i)))
 
         nonPkFieldInfoList = tempList
         return nonPkFieldInfoList
+    }
+    @CompileStatic
+    ArrayList<FieldInfo> getAllFieldInfoList() {
+        if (allFieldInfoList != null) return allFieldInfoList
+
+        ArrayList<String> fieldNameList = getAllFieldNames()
+        int fieldNameListSize = fieldNameList.size()
+        ArrayList<FieldInfo> tempList = new ArrayList<FieldInfo>(fieldNameListSize)
+        for (int i = 0; i < fieldNameListSize; i++) tempList.add(getFieldInfo(fieldNameList.get(i)))
+
+        allFieldInfoList = tempList
+        return allFieldInfoList
     }
 
     @CompileStatic
@@ -322,6 +332,7 @@ public class EntityDefinition {
         String fullColumnName = null
         String defaultStr
         String javaType = null
+        String enableAuditLog = null
         int typeValue = -1
         boolean isPk
         boolean encrypt
@@ -354,6 +365,7 @@ public class EntityDefinition {
             isUserField = 'true'.equals(fnAttrs.get('is-user-field'))
             isSimple = !enableLocalization && !isUserField
             createOnly = fnAttrs.get('create-only') ? 'true'.equals(fnAttrs.get('create-only')) : ed.createOnly()
+            enableAuditLog = fieldNode.attribute('enable-audit-log') ?: ed.internalEntityNode.attribute('enable-audit-log')
         }
 
         String getFullColumnName(boolean includeFunctionAndComplex) {
@@ -582,7 +594,7 @@ public class EntityDefinition {
     @CompileStatic
     static class MasterDefinition {
         String name
-        List<MasterDetail> detailList = []
+        ArrayList<MasterDetail> detailList = new ArrayList<MasterDetail>()
         MasterDefinition(EntityDefinition ed, Node masterNode) {
             name = masterNode.attribute("name") ?: "default"
             List<Node> detailNodeList = masterNode.getAt("detail") as List<Node>
@@ -595,7 +607,7 @@ public class EntityDefinition {
         EntityDefinition parentEd
         RelationshipInfo relInfo
         String relatedMasterName
-        List<MasterDetail> internalDetailList = []
+        ArrayList<MasterDetail> internalDetailList = []
         MasterDetail(EntityDefinition parentEd, Node detailNode) {
             this.parentEd = parentEd
             relationshipName = detailNode.attribute("relationship")
@@ -609,9 +621,9 @@ public class EntityDefinition {
             relatedMasterName = (String) detailNode.attribute("use-master")
         }
 
-        List<MasterDetail> getDetailList() {
+        ArrayList<MasterDetail> getDetailList() {
             if (relatedMasterName) {
-                List<MasterDetail> combinedList = new ArrayList<>(internalDetailList)
+                ArrayList<MasterDetail> combinedList = new ArrayList<MasterDetail>(internalDetailList)
                 MasterDefinition relatedMaster = relInfo.relatedEd.getMasterDefinition(relatedMasterName)
                 if (relatedMaster == null) throw new IllegalArgumentException("Invalid use-master value [${relatedMasterName}], master not found in entity ${relInfo.relatedEntityName}")
                 // logger.warn("Including master ${relatedMasterName} on entity ${relInfo.relatedEd.getFullEntityName()}")
