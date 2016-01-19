@@ -612,11 +612,13 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
 
                     // see if there if any filter entities match the current entity or if it is a view then a member entity
                     Map<String, ArrayList<Node>> memberFieldAliases = null
-                    if (findEd.isViewEntity()) {
-                        memberFieldAliases = findEd.getMemberFieldAliases(filterEntityName)
-                        if (memberFieldAliases == null) continue
-                    } else {
-                        if (filterEntityName != findEd.fullEntityName) continue
+                    if (filterEntityName != findEd.fullEntityName) {
+                        if (findEd.isViewEntity()) {
+                            memberFieldAliases = findEd.getMemberFieldAliases(filterEntityName)
+                            if (memberFieldAliases == null) continue
+                        } else {
+                            continue
+                        }
                     }
 
                     Map<String, Object> filterMapObj = (Map<String, Object>) eci.getResource()
