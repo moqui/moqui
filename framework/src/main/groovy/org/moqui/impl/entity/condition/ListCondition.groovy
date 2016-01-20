@@ -31,6 +31,7 @@ class ListCondition extends EntityConditionImplBase {
         this.conditionList = new ArrayList<EntityConditionImplBase>()
         if (conditionList) {
             if (conditionList instanceof RandomAccess) {
+                // avoid creating an iterator if possible
                 int listSize = conditionList.size()
                 for (int i = 0; i < listSize; i++) {
                     EntityConditionImplBase cond = conditionList.get(i)
@@ -50,6 +51,11 @@ class ListCondition extends EntityConditionImplBase {
     void addCondition(EntityConditionImplBase condition) {
         if (condition != null) conditionList.add(condition)
         curHashCode = null
+    }
+    void addConditions(ListCondition listCond) {
+        ArrayList<EntityConditionImplBase> condList = listCond.getConditionList()
+        int condListSize = condList.size()
+        for (int i = 0; i < condListSize; i++) addCondition(condList.get(i))
     }
 
     EntityCondition.JoinOperator getOperator() { return operator }

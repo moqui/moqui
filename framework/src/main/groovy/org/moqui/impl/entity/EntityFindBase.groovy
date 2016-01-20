@@ -19,6 +19,9 @@ import groovy.transform.TypeCheckingMode
 import org.moqui.context.ArtifactExecutionInfo
 import org.moqui.impl.context.ExecutionContextImpl
 import org.moqui.impl.context.TransactionCache
+import org.moqui.impl.entity.condition.BasicJoinCondition
+import org.moqui.impl.entity.condition.DateCondition
+import org.moqui.impl.entity.condition.FieldToFieldCondition
 import org.moqui.impl.entity.condition.FieldValueCondition
 import org.moqui.impl.entity.condition.MapCondition
 
@@ -127,14 +130,15 @@ abstract class EntityFindBase implements EntityFind {
     EntityFind condition(EntityCondition condition) {
         if (condition == null) return this
 
-        if (condition instanceof FieldValueCondition) {
+        Class condClass = condition.getClass()
+        if (condClass == FieldValueCondition.class) {
             // if this is a basic field/value EQUALS condition, just add to simpleAndMap
             FieldValueCondition fvc = (FieldValueCondition) condition
             if (fvc.getOperator() == EntityCondition.EQUALS && !fvc.getIgnoreCase()) {
                 this.condition(fvc.getFieldName(), fvc.getValue())
                 return this
             }
-        } else if (condition instanceof ListCondition) {
+        } else if (condClass == ListCondition.class) {
             // if this is an AND list condition, just unroll it and add each one; could end up as another list, but may add to simpleAndMap
             ListCondition lc = (ListCondition) condition
             if (lc.getOperator() == EntityCondition.AND) {
@@ -142,7 +146,14 @@ abstract class EntityFindBase implements EntityFind {
                 for (int i = 0; i < condList.size(); i++) this.condition(condList.get(i))
                 return this
             }
-        } else if (condition instanceof MapCondition) {
+        } else if (condClass == BasicJoinCondition.class) {
+            BasicJoinCondition basicCond = (BasicJoinCondition) condition
+            if (basicCond.getOperator() == EntityCondition.AND) {
+                this.condition(basicCond.getLhs())
+                this.condition(basicCond.getRhs())
+                return this
+            }
+        } else if (condClass == MapCondition.class) {
             MapCondition mc = (MapCondition) condition
             if (mc.getJoinOperator() == EntityCondition.AND) {
                 if (mc.getComparisonOperator() == EntityCondition.EQUALS && !mc.getIgnoreCase()) {
@@ -196,9 +207,41 @@ abstract class EntityFindBase implements EntityFind {
     @Override
     EntityCondition getWhereEntityCondition() {
         if (this.simpleAndMap) {
-            EntityCondition simpleAndMapCond = this.efi.conditionFactory.makeCondition(this.simpleAndMap)
+            ListCondition simpleAndMapCond = (ListCondition) this.efi.conditionFactory.makeCondition(this.simpleAndMap)
             if (this.whereEntityCondition) {
-                return this.efi.conditionFactory.makeCondition(simpleAndMapCond, EntityCondition.JoinOperator.AND, this.whereEntityCondition)
+                Class whereEntCondClass = this.whereEntityCondition.getClass()
+                if (whereEntCondClass == ListCondition.class) {
+                    ListCondition listCond = (ListCondition) this.whereEntityCondition
+                    if (listCond.getOperator() == EntityCondition.AND) {
+                        simpleAndMapCond.addConditions(listCond)
+                        return simpleAndMapCond
+                    } else {
+                        return this.efi.conditionFactory.makeCondition(simpleAndMapCond, EntityCondition.JoinOperator.AND, this.whereEntityCondition)
+                    }
+                } else if (whereEntCondClass == MapCondition.class) {
+                    MapCondition mapCond = (MapCondition) this.whereEntityCondition
+                    if (mapCond.getJoinOperator() == EntityCondition.AND) {
+                        simpleAndMapCond.addConditions(mapCond.makeCondition())
+                        return simpleAndMapCond
+                    } else {
+                        return this.efi.conditionFactory.makeCondition(simpleAndMapCond, EntityCondition.JoinOperator.AND, this.whereEntityCondition)
+                    }
+                } else if (whereEntCondClass == FieldValueCondition.class || whereEntCondClass == DateCondition.class ||
+                        whereEntCondClass == FieldToFieldCondition.class) {
+                    simpleAndMapCond.addCondition(this.whereEntityCondition)
+                    return simpleAndMapCond
+                } else if (whereEntCondClass == BasicJoinCondition.class) {
+                    BasicJoinCondition basicCond = (BasicJoinCondition) this.whereEntityCondition
+                    if (basicCond.getOperator() == EntityCondition.AND) {
+                        simpleAndMapCond.addCondition(basicCond.getLhs())
+                        simpleAndMapCond.addCondition(basicCond.getRhs())
+                        return simpleAndMapCond
+                    } else {
+                        return this.efi.conditionFactory.makeCondition(simpleAndMapCond, EntityCondition.JoinOperator.AND, this.whereEntityCondition)
+                    }
+                } else {
+                    return this.efi.conditionFactory.makeCondition(simpleAndMapCond, EntityCondition.JoinOperator.AND, this.whereEntityCondition)
+                }
             } else {
                 return simpleAndMapCond
             }
