@@ -14,6 +14,8 @@ New Features
 - The makeCondition(Map) methods now support _comp entry for comparison
   operator, _join entry for join operator, and _list entry for a list of
   conditions that will be combined with other fields/values in the Map
+- In FieldValueCondition if the value is a collection and operator is
+  EQUALS set to IN, or if NOT_EQUAL then NOT_IN
 
 Bug Fixes
 

@@ -216,7 +216,8 @@ abstract class EntityFindBase implements EntityFind {
                         simpleAndMapCond.addConditions(listCond)
                         return simpleAndMapCond
                     } else {
-                        return this.efi.conditionFactory.makeCondition(simpleAndMapCond, EntityCondition.JoinOperator.AND, this.whereEntityCondition)
+                        return this.efi.conditionFactory.makeCondition(simpleAndMapCond,
+                                EntityCondition.JoinOperator.AND, this.whereEntityCondition)
                     }
                 } else if (whereEntCondClass == MapCondition.class) {
                     MapCondition mapCond = (MapCondition) this.whereEntityCondition
@@ -224,7 +225,8 @@ abstract class EntityFindBase implements EntityFind {
                         simpleAndMapCond.addConditions(mapCond.makeCondition())
                         return simpleAndMapCond
                     } else {
-                        return this.efi.conditionFactory.makeCondition(simpleAndMapCond, EntityCondition.JoinOperator.AND, this.whereEntityCondition)
+                        return this.efi.conditionFactory.makeCondition(simpleAndMapCond,
+                                EntityCondition.JoinOperator.AND, this.whereEntityCondition)
                     }
                 } else if (whereEntCondClass == FieldValueCondition.class || whereEntCondClass == DateCondition.class ||
                         whereEntCondClass == FieldToFieldCondition.class) {
@@ -237,10 +239,12 @@ abstract class EntityFindBase implements EntityFind {
                         simpleAndMapCond.addCondition(basicCond.getRhs())
                         return simpleAndMapCond
                     } else {
-                        return this.efi.conditionFactory.makeCondition(simpleAndMapCond, EntityCondition.JoinOperator.AND, this.whereEntityCondition)
+                        return this.efi.conditionFactory.makeCondition(simpleAndMapCond,
+                                EntityCondition.JoinOperator.AND, this.whereEntityCondition)
                     }
                 } else {
-                    return this.efi.conditionFactory.makeCondition(simpleAndMapCond, EntityCondition.JoinOperator.AND, this.whereEntityCondition)
+                    return this.efi.conditionFactory.makeCondition(simpleAndMapCond,
+                            EntityCondition.JoinOperator.AND, this.whereEntityCondition)
                 }
             } else {
                 return simpleAndMapCond
