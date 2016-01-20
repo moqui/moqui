@@ -30,13 +30,21 @@ class ListCondition extends EntityConditionImplBase {
         super(ecFactoryImpl)
         this.conditionList = new ArrayList<EntityConditionImplBase>()
         if (conditionList) {
-            Iterator<EntityConditionImplBase> conditionIter = conditionList.iterator()
-            while (conditionIter.hasNext()) {
-                EntityConditionImplBase cond = conditionIter.next()
-                if (cond != null) this.conditionList.add(cond)
+            if (conditionList instanceof RandomAccess) {
+                int listSize = conditionList.size()
+                for (int i = 0; i < listSize; i++) {
+                    EntityConditionImplBase cond = conditionList.get(i)
+                    if (cond != null) this.conditionList.add(cond)
+                }
+            } else {
+                Iterator<EntityConditionImplBase> conditionIter = conditionList.iterator()
+                while (conditionIter.hasNext()) {
+                    EntityConditionImplBase cond = conditionIter.next()
+                    if (cond != null) this.conditionList.add(cond)
+                }
             }
         }
-        this.operator = operator ?: AND
+        this.operator = operator != null ? operator : AND
     }
 
     void addCondition(EntityConditionImplBase condition) {

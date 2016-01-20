@@ -29,7 +29,6 @@ import org.moqui.impl.entity.condition.DateCondition
 import org.moqui.impl.entity.condition.WhereCondition
 import org.moqui.impl.entity.condition.FieldToFieldCondition
 import org.moqui.impl.entity.condition.ListCondition
-import org.moqui.impl.entity.condition.MapCondition
 import org.moqui.impl.StupidUtilities
 
 import org.slf4j.Logger
@@ -117,16 +116,70 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
         }
     }
 
+    @CompileStatic
+    static class KeyValue {
+        String key
+        Object value
+        KeyValue(String key, Object value) { this.key = key; this.value = value }
+    }
     @Override
     EntityCondition makeCondition(Map<String, Object> fieldMap, ComparisonOperator comparisonOperator, JoinOperator joinOperator) {
         if (!fieldMap) return null
-        return new MapCondition(this, fieldMap, comparisonOperator, joinOperator)
-    }
 
+        JoinOperator joinOp = joinOperator != null ? joinOperator : JoinOperator.AND
+        ComparisonOperator compOp = comparisonOperator != null ? comparisonOperator : ComparisonOperator.EQUALS
+        ArrayList<EntityConditionImplBase> condList = null
+        ArrayList<KeyValue> fieldList = new ArrayList()
+
+        for (Map.Entry<String, Object> entry in fieldMap.entrySet()) {
+            String key = entry.getKey()
+            Object value = entry.getValue()
+            if (key.startsWith("_")) {
+                if (key == "_comp") {
+                    compOp = getComparisonOperator((String) value)
+                    continue
+                } else if (key == "_join") {
+                    joinOp = getJoinOperator((String) value)
+                    continue
+                } else if (key == "_list") {
+                    // if there is an _list treat each as a condition Map, ie call back into this method
+                    if (value instanceof List) {
+                        List valueList = (List) value
+                        if (condList == null) condList = new ArrayList<EntityConditionImplBase>()
+                        for (Object listEntry in valueList) {
+                            if (listEntry instanceof Map) {
+                                condList.add((EntityConditionImplBase) makeCondition((Map) listEntry))
+                            } else {
+                                throw new IllegalArgumentException("Entry in _list is not a Map: ${listEntry}")
+                            }
+                        }
+                    } else {
+                        throw new IllegalArgumentException("Value for _list entry is not a List: ${value}")
+                    }
+                    continue
+                }
+            }
+
+            // add field key/value to a list to iterate over later for conditions once we have _comp for sure
+            fieldList.add(new KeyValue(key, value))
+        }
+
+        // has fields? make conditions for them
+        if (fieldList.size() > 0) {
+            if (condList == null) condList = new ArrayList<EntityConditionImplBase>()
+            int fieldListSize = fieldList.size()
+            for (int i = 0; i < fieldListSize; i++) {
+                KeyValue fieldValue = fieldList.get(i)
+                condList.add(new FieldValueCondition(this, new ConditionField(fieldValue.key), compOp, fieldValue.value))
+            }
+        }
+
+        // create and return the ListCondition
+        return new ListCondition(this, condList, joinOp)
+    }
     @Override
     EntityCondition makeCondition(Map<String, Object> fieldMap) {
-        if (!fieldMap) return null
-        return new MapCondition(this, fieldMap, ComparisonOperator.EQUALS, JoinOperator.AND)
+        return makeCondition(fieldMap, ComparisonOperator.EQUALS, JoinOperator.AND)
     }
 
     @Override
@@ -298,6 +351,7 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
         return comparisonOperatorStringMap.get(op)
     }
     static ComparisonOperator getComparisonOperator(String opName) {
+        if (!opName) return ComparisonOperator.EQUALS
         return stringComparisonOperatorMap.get(opName)
     }
 

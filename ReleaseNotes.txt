@@ -11,6 +11,10 @@ TODO
 
 New Features
 
+- The makeCondition(Map) methods now support _comp entry for comparison
+  operator, _join entry for join operator, and _list entry for a list of
+  conditions that will be combined with other fields/values in the Map
+
 Bug Fixes
 
 - Fixed issue with EntityFindBase.condition() where condition break down
