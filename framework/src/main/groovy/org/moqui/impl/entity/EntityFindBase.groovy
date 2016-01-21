@@ -17,34 +17,18 @@ import groovy.transform.CompileStatic
 import groovy.transform.TypeChecked
 import groovy.transform.TypeCheckingMode
 import org.moqui.context.ArtifactExecutionInfo
+import org.moqui.context.ExecutionContext
+import org.moqui.entity.*
+import org.moqui.impl.context.ArtifactExecutionInfoImpl
+import org.moqui.impl.context.CacheImpl
 import org.moqui.impl.context.ExecutionContextImpl
 import org.moqui.impl.context.TransactionCache
-import org.moqui.impl.entity.condition.BasicJoinCondition
-import org.moqui.impl.entity.condition.DateCondition
-import org.moqui.impl.entity.condition.FieldToFieldCondition
-import org.moqui.impl.entity.condition.FieldValueCondition
-import org.moqui.impl.entity.condition.MapCondition
+import org.moqui.impl.entity.condition.*
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 import java.sql.ResultSet
 import java.sql.Timestamp
-
-import org.apache.commons.collections.set.ListOrderedSet
-
-import org.moqui.context.ExecutionContext
-import org.moqui.entity.EntityFind
-import org.moqui.entity.EntityDynamicView
-import org.moqui.entity.EntityCondition
-import org.moqui.entity.EntityValue
-import org.moqui.entity.EntityException
-import org.moqui.entity.EntityList
-import org.moqui.entity.EntityListIterator
-import org.moqui.impl.context.ArtifactExecutionInfoImpl
-import org.moqui.impl.context.CacheImpl
-import org.moqui.impl.entity.condition.EntityConditionImplBase
-import org.moqui.impl.entity.condition.ListCondition
-
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 @CompileStatic
 abstract class EntityFindBase implements EntityFind {
@@ -172,8 +156,10 @@ abstract class EntityFindBase implements EntityFind {
                     ((ListCondition) whereEntityCondition).getOperator() == EntityCondition.AND) {
                 ((ListCondition) whereEntityCondition).addCondition((EntityConditionImplBase) condition)
             } else {
-                whereEntityCondition =
-                    (EntityConditionImplBase) efi.conditionFactory.makeCondition([whereEntityCondition, condition])
+                ArrayList<EntityConditionImplBase> condList = new ArrayList()
+                condList.add(whereEntityCondition)
+                condList.add((EntityConditionImplBase) condition)
+                whereEntityCondition = new ListCondition(efi.conditionFactoryImpl, condList, EntityCondition.AND)
             }
         } else {
             whereEntityCondition = (EntityConditionImplBase) condition
@@ -195,8 +181,10 @@ abstract class EntityFindBase implements EntityFind {
             if (havingEntityCondition instanceof ListCondition) {
                 ((ListCondition) havingEntityCondition).addCondition((EntityConditionImplBase) condition)
             } else {
-                havingEntityCondition =
-                    (EntityConditionImplBase) efi.conditionFactory.makeCondition([havingEntityCondition, condition])
+                ArrayList<EntityConditionImplBase> condList = new ArrayList()
+                condList.add(havingEntityCondition)
+                condList.add((EntityConditionImplBase) condition)
+                havingEntityCondition = new ListCondition(efi.conditionFactoryImpl, condList, EntityCondition.AND)
             }
         } else {
             havingEntityCondition = (EntityConditionImplBase) condition
@@ -207,44 +195,59 @@ abstract class EntityFindBase implements EntityFind {
     @Override
     EntityCondition getWhereEntityCondition() {
         if (this.simpleAndMap) {
-            ListCondition simpleAndMapCond = (ListCondition) this.efi.conditionFactory.makeCondition(this.simpleAndMap)
-            if (this.whereEntityCondition) {
+            EntityConditionImplBase simpleAndMapCond = this.efi.conditionFactoryImpl
+                    .makeCondition(this.simpleAndMap, EntityCondition.EQUALS, EntityCondition.AND, null, null, false)
+
+            if (this.whereEntityCondition != null) {
+                ListCondition listCondition
+                Class simpleAndCondClass = simpleAndMapCond.getClass()
+                if (simpleAndCondClass == FieldValueCondition.class) {
+                    ArrayList<EntityConditionImplBase> oneCondList = new ArrayList()
+                    oneCondList.add(simpleAndMapCond)
+                    listCondition = new ListCondition(efi.conditionFactoryImpl, oneCondList, EntityCondition.AND)
+                } else if (simpleAndCondClass == ListCondition.class) {
+                    listCondition = (ListCondition) simpleAndMapCond
+                } else {
+                    // this should never happen, based on impl of makeCondition(Map) should always be FieldValue or List
+                    throw new EntityException("Condition for simpleAndMap is not a FieldValueCondition or ListCondition, is ${simpleAndCondClass.getName()}")
+                }
+
                 Class whereEntCondClass = this.whereEntityCondition.getClass()
                 if (whereEntCondClass == ListCondition.class) {
                     ListCondition listCond = (ListCondition) this.whereEntityCondition
                     if (listCond.getOperator() == EntityCondition.AND) {
-                        simpleAndMapCond.addConditions(listCond)
-                        return simpleAndMapCond
+                        listCondition.addConditions(listCond)
+                        return listCondition
                     } else {
-                        return this.efi.conditionFactory.makeCondition(simpleAndMapCond,
-                                EntityCondition.JoinOperator.AND, this.whereEntityCondition)
+                        listCondition.addCondition(listCond)
+                        return listCondition
                     }
                 } else if (whereEntCondClass == MapCondition.class) {
                     MapCondition mapCond = (MapCondition) this.whereEntityCondition
                     if (mapCond.getJoinOperator() == EntityCondition.AND) {
-                        simpleAndMapCond.addConditions(mapCond.makeCondition())
-                        return simpleAndMapCond
+                        listCondition.addConditions(mapCond.makeCondition())
+                        return listCondition
                     } else {
-                        return this.efi.conditionFactory.makeCondition(simpleAndMapCond,
-                                EntityCondition.JoinOperator.AND, this.whereEntityCondition)
+                        listCondition.addCondition(mapCond)
+                        return listCondition
                     }
                 } else if (whereEntCondClass == FieldValueCondition.class || whereEntCondClass == DateCondition.class ||
                         whereEntCondClass == FieldToFieldCondition.class) {
-                    simpleAndMapCond.addCondition(this.whereEntityCondition)
-                    return simpleAndMapCond
+                    listCondition.addCondition(this.whereEntityCondition)
+                    return listCondition
                 } else if (whereEntCondClass == BasicJoinCondition.class) {
                     BasicJoinCondition basicCond = (BasicJoinCondition) this.whereEntityCondition
                     if (basicCond.getOperator() == EntityCondition.AND) {
-                        simpleAndMapCond.addCondition(basicCond.getLhs())
-                        simpleAndMapCond.addCondition(basicCond.getRhs())
-                        return simpleAndMapCond
+                        listCondition.addCondition(basicCond.getLhs())
+                        listCondition.addCondition(basicCond.getRhs())
+                        return listCondition
                     } else {
-                        return this.efi.conditionFactory.makeCondition(simpleAndMapCond,
-                                EntityCondition.JoinOperator.AND, this.whereEntityCondition)
+                        listCondition.addCondition(basicCond)
+                        return listCondition
                     }
                 } else {
-                    return this.efi.conditionFactory.makeCondition(simpleAndMapCond,
-                            EntityCondition.JoinOperator.AND, this.whereEntityCondition)
+                    listCondition.addCondition(this.whereEntityCondition)
+                    return listCondition
                 }
             } else {
                 return simpleAndMapCond

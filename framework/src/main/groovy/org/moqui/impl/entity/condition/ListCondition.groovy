@@ -20,15 +20,15 @@ import org.moqui.entity.EntityCondition
 
 @CompileStatic
 class ListCondition extends EntityConditionImplBase {
-    protected ArrayList<EntityConditionImplBase> conditionList
-    protected EntityCondition.JoinOperator operator
+    protected final ArrayList<EntityConditionImplBase> conditionList = new ArrayList<EntityConditionImplBase>()
+    protected final EntityCondition.JoinOperator operator
     protected Integer curHashCode = null
     protected static final Class thisClass = ListCondition.class
 
     ListCondition(EntityConditionFactoryImpl ecFactoryImpl,
             List<EntityConditionImplBase> conditionList, EntityCondition.JoinOperator operator) {
         super(ecFactoryImpl)
-        this.conditionList = new ArrayList<EntityConditionImplBase>()
+        this.operator = operator != null ? operator : AND
         if (conditionList) {
             if (conditionList instanceof RandomAccess) {
                 // avoid creating an iterator if possible
@@ -45,7 +45,6 @@ class ListCondition extends EntityConditionImplBase {
                 }
             }
         }
-        this.operator = operator != null ? operator : AND
     }
 
     void addCondition(EntityConditionImplBase condition) {

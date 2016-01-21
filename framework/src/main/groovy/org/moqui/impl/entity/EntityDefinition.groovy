@@ -1534,13 +1534,8 @@ public class EntityDefinition {
                 if (!isEmpty) {
                     if (isCharSequence) {
                         try {
-                            if (value instanceof String) {
-                                Object converted = convertFieldString(fieldName, value)
-                                if (destIsEntityValueBase) destEvb.putNoCheck(fieldName, converted) else dest.put(fieldName, converted)
-                            } else {
-                                Object converted = convertFieldString(fieldName, value.toString())
-                                if (destIsEntityValueBase) destEvb.putNoCheck(fieldName, converted) else dest.put(fieldName, converted)
-                            }
+                            Object converted = convertFieldString(fieldName, value.toString())
+                            if (destIsEntityValueBase) destEvb.putNoCheck(fieldName, converted) else dest.put(fieldName, converted)
                         } catch (BaseException be) {
                             this.efi.ecfi.executionContext.message.addValidationError(null, fieldName, null, be.getMessage(), be)
                         }

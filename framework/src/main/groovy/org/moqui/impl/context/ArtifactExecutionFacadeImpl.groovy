@@ -625,48 +625,23 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                             .expression(entityFilter.getString('filterMap'), null)
                     // logger.info("===== ${findEntityName} filterMapObj: ${filterMapObj}")
 
-                    JoinOperator joinOp = entityFilter.joinOr == "Y" ? EntityCondition.OR : EntityCondition.AND
                     ComparisonOperator compOp = entityFilter.comparisonEnumId ? eci.entity.conditionFactory
                             .comparisonOperatorFromEnumId((String) entityFilter.comparisonEnumId) : null
+                    JoinOperator joinOp = entityFilter.joinOr == "Y" ? EntityCondition.OR : EntityCondition.AND
 
-                    List<EntityConditionImplBase> condList = []
-                    for (Map.Entry<String, Object> entry in filterMapObj.entrySet()) {
-                        String fieldName = entry.key
-                        Object value = entry.value
-                        if (value == null) {
-                            if (logger.isTraceEnabled()) logger.trace("Tried to filter find on entity [${findEd.fullEntityName}] for entity [${filterEntityName}] on field ${fieldName} but value was null, not adding condition")
-                            continue
-                        }
-                        ComparisonOperator curCompOp = compOp
-                        if (curCompOp == null) curCompOp = value instanceof Collection ? EntityCondition.IN : EntityCondition.EQUALS
-                        if (memberFieldAliases) {
-                            // we have a view entity, more complex
-                            ArrayList<Node> aliases = memberFieldAliases.get(fieldName)
-                            if (!aliases) throw new ArtifactAuthorizationException("There is a filter on field ${fieldName} of entity ${filterEntityName} which is not included in view-entity ${findEd.fullEntityName}")
+                    // use makeCondition(Map) instead of breaking down here
+                    EntityCondition entCond = eci.ecfi.entityFacade.conditionFactoryImpl.makeCondition(filterMapObj,
+                            compOp, joinOp, findEd, memberFieldAliases, true)
 
-                            for (int k = 0; k < aliases.size(); k++) {
-                                Node aliasNode = aliases.get(k)
-                                // could be same as field name, but not if aliased with different name
-                                String aliasName = aliasNode.attribute("name")
-                                condList.add((EntityConditionImplBase) eci.entity.conditionFactory.makeCondition(aliasName, curCompOp, value))
-                            }
-                        } else {
-                            condList.add((EntityConditionImplBase) eci.entity.conditionFactory.makeCondition(fieldName, curCompOp, value))
-                        }
-                    }
-
-                    if (condList.size() == 0) continue
+                    if (entCond == null) continue
 
                     // add the condition to the find
                     // NOTE: just create a list cond and add it, EntityFindBase will put it in simpleAndMap or otherwise optimize it
                     addedFilter = true
-                    if (condList.size() == 1) {
-                        efb.condition(condList[0])
-                    } else {
-                        efb.condition(new ListCondition((EntityConditionFactoryImpl) eci.entity.conditionFactory, condList, joinOp))
-                    }
+                    efb.condition(entCond)
+
                     // TODO: once more tested change this to trace
-                    logger.info("Query on ${findEntityName} added authz filter conditions (${joinOp}): ${condList}")
+                    logger.info("Query on ${findEntityName} added authz filter conditions: ${entCond}")
                     // logger.info("Query on ${findEntityName} find: ${efb.toString()}")
                 }
             }
