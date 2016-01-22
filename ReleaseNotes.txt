@@ -14,7 +14,10 @@ Build Changes
 - Most JAR files removed, framework build now uses Bintray JCenter
 - JAR files are downloaded as needed on build
 - For convenience in IDEs to copy JAR files to the framework/dependencies
-  directory use: gradle framework:copyDependencies
+  directory use: gradle framework:copyDependencies; note that this is not
+  necessary in IntelliJ IDEA (will import dependencies when creating a new
+  project based on the gradle files, use the refresh button in the Gradle
+  tool window to update after updating moqui)
 - If your component builds source or runs Spock tests changes will be
   needed, see the runtime/base-component/example/build.gradle file
 
