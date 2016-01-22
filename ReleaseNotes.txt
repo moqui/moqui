@@ -9,6 +9,15 @@ Moqui Framework 1.6.1 is a minor new feature and bug fix release.
 
 TODO
 
+Build Changes
+
+- Most JAR files removed, framework build now uses Bintray JCenter
+- JAR files are downloaded as needed on build
+- For convenience in IDEs to copy JAR files to the framework/dependencies
+  directory use: gradle framework:copyDependencies
+- If your component builds source or runs Spock tests changes will be
+  needed, see the runtime/base-component/example/build.gradle file
+
 New Features
 
 - The makeCondition(Map) methods now support _comp entry for comparison
