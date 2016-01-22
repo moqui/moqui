@@ -630,19 +630,22 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                     JoinOperator joinOp = entityFilter.joinOr == "Y" ? EntityCondition.OR : EntityCondition.AND
 
                     // use makeCondition(Map) instead of breaking down here
-                    EntityCondition entCond = eci.ecfi.entityFacade.conditionFactoryImpl.makeCondition(filterMapObj,
-                            compOp, joinOp, findEd, memberFieldAliases, true)
+                    try {
+                        EntityCondition entCond = eci.ecfi.entityFacade.conditionFactoryImpl.makeCondition(filterMapObj,
+                                compOp, joinOp, findEd, memberFieldAliases, true)
+                        if (entCond == null) continue
 
-                    if (entCond == null) continue
+                        // add the condition to the find
+                        // NOTE: just create a list cond and add it, EntityFindBase will put it in simpleAndMap or otherwise optimize it
+                        addedFilter = true
+                        efb.condition(entCond)
 
-                    // add the condition to the find
-                    // NOTE: just create a list cond and add it, EntityFindBase will put it in simpleAndMap or otherwise optimize it
-                    addedFilter = true
-                    efb.condition(entCond)
-
-                    // TODO: once more tested change this to trace
-                    logger.info("Query on ${findEntityName} added authz filter conditions: ${entCond}")
-                    // logger.info("Query on ${findEntityName} find: ${efb.toString()}")
+                        // TODO: once more tested change this to trace
+                        logger.info("Query on ${findEntityName} added authz filter conditions: ${entCond}")
+                        // logger.info("Query on ${findEntityName} find: ${efb.toString()}")
+                    } catch (Exception e) {
+                        logger.warn("Error adding authz entity filter condition: ${e.toString()}")
+                    }
                 }
             }
         } finally {

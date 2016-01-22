@@ -146,7 +146,9 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
                         if (condList == null) condList = new ArrayList<EntityConditionImplBase>()
                         for (Object listEntry in valueList) {
                             if (listEntry instanceof Map) {
-                                condList.add((EntityConditionImplBase) makeCondition((Map) listEntry))
+                                EntityConditionImplBase entryCond = makeCondition((Map) listEntry, ComparisonOperator.EQUALS,
+                                        JoinOperator.AND, findEd, memberFieldAliases, excludeNulls)
+                                if (entryCond != null) condList.add(entryCond)
                             } else {
                                 throw new EntityException("Entry in _list is not a Map: ${listEntry}")
                             }
