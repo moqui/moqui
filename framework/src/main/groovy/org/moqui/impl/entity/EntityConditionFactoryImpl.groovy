@@ -38,7 +38,39 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
 
     @Override
     EntityCondition makeCondition(EntityCondition lhs, JoinOperator operator, EntityCondition rhs) {
-        return new BasicJoinCondition(this, (EntityConditionImplBase) lhs, operator, (EntityConditionImplBase) rhs)
+        if (lhs != null) {
+            if (rhs != null) {
+                // we have both lhs and rhs
+                if (lhs instanceof ListCondition) {
+                    ListCondition lhsLc = (ListCondition) lhs
+                    if (lhsLc.getOperator() == operator) {
+                        if (rhs instanceof ListCondition) {
+                            ListCondition rhsLc = (ListCondition) rhs
+                            if (rhsLc.getOperator() == operator) {
+                                lhsLc.addConditions(rhsLc)
+                                return lhsLc
+                            } else {
+                                lhsLc.addCondition(rhsLc)
+                                return lhsLc
+                            }
+                        } else {
+                            lhsLc.addCondition((EntityConditionImplBase) rhs)
+                            return lhsLc
+                        }
+                    }
+                }
+                // no special handling, create a BasicJoinCondition
+                return new BasicJoinCondition(this, (EntityConditionImplBase) lhs, operator, (EntityConditionImplBase) rhs)
+            } else {
+                return lhs
+            }
+        } else {
+            if (rhs != null) {
+                return rhs
+            } else {
+                return null
+            }
+        }
     }
 
     @Override
@@ -58,14 +90,27 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
     @Override
     EntityCondition makeCondition(List<EntityCondition> conditionList, JoinOperator operator) {
         if (!conditionList) return null
-        List<EntityConditionImplBase> newList = []
-        Iterator<EntityCondition> conditionIter = conditionList.iterator()
-        while (conditionIter.hasNext()) {
-            EntityCondition curCond = conditionIter.next()
-            if (curCond == null) continue
-            // this is all they could be, all that is supported right now
-            if (curCond instanceof EntityConditionImplBase) newList.add((EntityConditionImplBase) curCond)
-            else throw new IllegalArgumentException("EntityCondition of type [${curCond.getClass().getName()}] not supported")
+        ArrayList<EntityConditionImplBase> newList = new ArrayList()
+
+        if (conditionList instanceof RandomAccess) {
+            // avoid creating an iterator if possible
+            int listSize = conditionList.size()
+            for (int i = 0; i < listSize; i++) {
+                EntityCondition curCond = conditionList.get(i)
+                if (curCond == null) continue
+                // this is all they could be, all that is supported right now
+                if (curCond instanceof EntityConditionImplBase) newList.add((EntityConditionImplBase) curCond)
+                else throw new IllegalArgumentException("EntityCondition of type [${curCond.getClass().getName()}] not supported")
+            }
+        } else {
+            Iterator<EntityCondition> conditionIter = conditionList.iterator()
+            while (conditionIter.hasNext()) {
+                EntityCondition curCond = conditionIter.next()
+                if (curCond == null) continue
+                // this is all they could be, all that is supported right now
+                if (curCond instanceof EntityConditionImplBase) newList.add((EntityConditionImplBase) curCond)
+                else throw new IllegalArgumentException("EntityCondition of type [${curCond.getClass().getName()}] not supported")
+            }
         }
         if (!newList) return null
         if (newList.size() == 1) {

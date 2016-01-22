@@ -123,18 +123,20 @@ abstract class EntityFindBase implements EntityFind {
                 return this
             }
         } else if (condClass == ListCondition.class) {
-            // if this is an AND list condition, just unroll it and add each one; could end up as another list, but may add to simpleAndMap
             ListCondition lc = (ListCondition) condition
+            ArrayList<EntityConditionImplBase> condList = lc.getConditionList()
+            // if empty list add nothing
+            if (condList.size() == 0) return this
+            // if this is an AND list condition, just unroll it and add each one; could end up as another list, but may add to simpleAndMap
             if (lc.getOperator() == EntityCondition.AND) {
-                ArrayList<EntityConditionImplBase> condList = lc.getConditionList()
                 for (int i = 0; i < condList.size(); i++) this.condition(condList.get(i))
                 return this
             }
         } else if (condClass == BasicJoinCondition.class) {
             BasicJoinCondition basicCond = (BasicJoinCondition) condition
             if (basicCond.getOperator() == EntityCondition.AND) {
-                this.condition(basicCond.getLhs())
-                this.condition(basicCond.getRhs())
+                if (basicCond.getLhs() != null) this.condition(basicCond.getLhs())
+                if (basicCond.getRhs() != null) this.condition(basicCond.getRhs())
                 return this
             }
         } else if (condClass == MapCondition.class) {
@@ -813,18 +815,13 @@ abstract class EntityFindBase implements EntityFind {
             // TODO: this will not handle query conditions on UserFields, it will blow up in fact
 
             EntityConditionImplBase viewWhere = ed.makeViewWhereCondition()
-            if (whereCondition && viewWhere) {
-                whereCondition = (EntityConditionImplBase) efi.getConditionFactory().makeCondition(whereCondition, EntityCondition.JoinOperator.AND, viewWhere)
-            } else if (viewWhere) {
-                whereCondition = viewWhere
-            }
+            whereCondition = (EntityConditionImplBase) efi.getConditionFactory()
+                    .makeCondition(whereCondition, EntityCondition.AND, viewWhere)
+
             EntityConditionImplBase havingCondition = (EntityConditionImplBase) getHavingEntityCondition()
             EntityConditionImplBase viewHaving = ed.makeViewHavingCondition()
-            if (havingCondition && viewHaving) {
-                havingCondition = (EntityConditionImplBase) efi.getConditionFactory().makeCondition(havingCondition, EntityCondition.JoinOperator.AND, viewHaving)
-            } else if (viewHaving) {
-                havingCondition = viewHaving
-            }
+            havingCondition = (EntityConditionImplBase) efi.getConditionFactory()
+                    .makeCondition(havingCondition, EntityCondition.AND, viewHaving)
 
             // call the abstract method
             EntityListIterator eli = this.iteratorExtended(whereCondition, havingCondition, orderByExpanded)
@@ -930,20 +927,13 @@ abstract class EntityFindBase implements EntityFind {
 
         EntityConditionImplBase whereCondition = (EntityConditionImplBase) getWhereEntityCondition()
         EntityConditionImplBase viewWhere = ed.makeViewWhereCondition()
-        if (whereCondition && viewWhere) {
-            whereCondition = (EntityConditionImplBase) efi.getConditionFactory().makeCondition(whereCondition,
-                    EntityCondition.JoinOperator.AND, viewWhere)
-        } else if (viewWhere) {
-            whereCondition = viewWhere
-        }
+        whereCondition = (EntityConditionImplBase) efi.getConditionFactory()
+                .makeCondition(whereCondition, EntityCondition.AND, viewWhere)
+
         EntityConditionImplBase havingCondition = (EntityConditionImplBase) getHavingEntityCondition()
         EntityConditionImplBase viewHaving = ed.makeViewHavingCondition()
-        if (havingCondition && viewHaving) {
-            havingCondition = (EntityConditionImplBase) efi.getConditionFactory().makeCondition(havingCondition,
-                        EntityCondition.JoinOperator.AND, viewHaving)
-        } else if (viewHaving) {
-            havingCondition = viewHaving
-        }
+        havingCondition = (EntityConditionImplBase) efi.getConditionFactory()
+                .makeCondition(havingCondition, EntityCondition.AND, viewHaving)
 
         // call the abstract method
         EntityListIterator eli = iteratorExtended(whereCondition, havingCondition, orderByExpanded)
@@ -1019,21 +1009,13 @@ abstract class EntityFindBase implements EntityFind {
             if (ed.isViewEntity() && entityConditionNode?.attribute('distinct') == "true") this.distinct(true)
 
             EntityConditionImplBase viewWhere = ed.makeViewWhereCondition()
-            if (whereCondition && viewWhere) {
-                whereCondition =
-                    (EntityConditionImplBase) efi.getConditionFactory().makeCondition(whereCondition, EntityCondition.JoinOperator.AND, viewWhere)
-            } else if (viewWhere) {
-                whereCondition = viewWhere
-            }
+            whereCondition = (EntityConditionImplBase) efi.getConditionFactory()
+                    .makeCondition(whereCondition, EntityCondition.AND, viewWhere)
 
             EntityConditionImplBase havingCondition = (EntityConditionImplBase) getHavingEntityCondition()
             EntityConditionImplBase viewHaving = ed.makeViewHavingCondition()
-            if (havingCondition && viewHaving) {
-                havingCondition =
-                    (EntityConditionImplBase) efi.getConditionFactory().makeCondition(havingCondition, EntityCondition.JoinOperator.AND, viewHaving)
-            } else if (viewHaving) {
-                havingCondition = viewHaving
-            }
+            havingCondition = (EntityConditionImplBase) efi.getConditionFactory()
+                    .makeCondition(havingCondition, EntityCondition.AND, viewHaving)
 
             // call the abstract method
             count = countExtended(whereCondition, havingCondition)
