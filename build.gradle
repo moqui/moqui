@@ -50,47 +50,72 @@ task cleanLoadSave(type: Delete) { delete file('SaveH2.zip'); delete file('SaveD
 task cleanPlusRuntime(type: Delete) { delete file(plusRuntimeName) }
 task cleanOther(type: Delete) { delete fileTree(dir: '.', includes: ['**/.nbattrs', '**/*~', '**/.#*', '**/.DS_Store', '**/*.rej', '**/*.orig']) }
 
-task cleanAll {
-    dependsOn clean
-    dependsOn allCleanTasks
-    dependsOn cleanDb
-    dependsOn cleanOrientDb
-    dependsOn cleanElasticSearch
-    dependsOn cleanTxLog
-    dependsOn cleanLog
-    dependsOn cleanLoadSave
-    dependsOn cleanPlusRuntime
-    dependsOn cleanOther
+task cleanAll { dependsOn clean, allCleanTasks, cleanDb, cleanOrientDb, cleanElasticSearch, cleanTxLog, cleanLog,
+        cleanLoadSave, cleanPlusRuntime, cleanOther }
+
+// ========== check/update tasks ==========
+
+task checkRuntime {
+    description "If the runtime directory does not exist get it using settings in addons.xml"
+    doLast {
+        File runtimeDir = file('runtime')
+        if (runtimeDir.exists()) return
+        Node addons = parseAddons()
+        Node runtimeNode = addons.runtime[0]
+        if (runtimeNode == null) throw new InvalidUserDataException("The runtime directory does not exist and there is no runtime element in addons.xml")
+        String type = runtimeNode.'@type' ?: 'git'
+        String url = runtimeNode.'@url'
+        if (type == 'current' || type == 'release') {
+            File zipFile = file("runtime.zip")
+            ant.get(src: url, dest: zipFile)
+            // the eachFile closure removes the first path from each file, moving everything up a directory
+            copy { from zipTree(zipFile); into runtimeDir; eachFile { it.setPath((it.getRelativePath().getSegments() as List).tail().join("/")); return it } }
+            delete zipFile
+        } else if (type == 'git') {
+            Grgit.clone(dir: runtimeDir, uri: url)
+        }
+        logger.lifecycle("Downloaded runtime from ${url}")
+    }
+}
+task gitPullAll {
+    description "Do a git pull to update moqui, runtime, and each installed component (for each where a .git directory is found)"
+    doLast {
+        // framework and runtime
+        if (file(".git").exists()) { logger.lifecycle("\nPulling moqui"); Grgit.open(dir: '.').pull() }
+        if (file("runtime/.git").exists()) { logger.lifecycle("\nPulling runtime"); Grgit.open(dir: 'runtime').pull() }
+        // all directories under runtime/component
+        for (File compDir in file('runtime/component').listFiles().findAll { it.isDirectory() && it.listFiles().find { it.name == '.git' } }) {
+            logger.lifecycle("\nPulling ${compDir.path}")
+            Grgit.open(dir: compDir.path).pull()
+        }
+    }
 }
 
 // ========== run tasks ==========
 
 task run(type: JavaExec) {
-    dependsOn allBuildTasks
-    dependsOn cleanTempDir
+    dependsOn checkRuntime, allBuildTasks, cleanTempDir
     workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=192m', '-XX:-OmitStackTraceInFastThrow']; maxHeapSize = '256M'
     systemProperties = ['moqui.conf':moquiConfDev, 'moqui.runtime':moquiRuntime]
     // NOTE: this is a hack, using -jar instead of a class name, and then the first argument is the name of the jar file
     main = '-jar'; args = [warName]
 }
 task runStaging(type: JavaExec) {
-    dependsOn allBuildTasks
-    dependsOn cleanTempDir
+    dependsOn checkRuntime, allBuildTasks, cleanTempDir
     workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=192m', '-Xms512M']; maxHeapSize = '512M'
     systemProperties = ['moqui.conf':'conf/MoquiStagingConf.xml', 'moqui.runtime':moquiRuntime]
     main = '-jar'; args = [warName]
 }
 task runProduction(type: JavaExec) {
-    dependsOn allBuildTasks
-    dependsOn cleanTempDir
+    dependsOn checkRuntime, allBuildTasks, cleanTempDir
     workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=192m', '-Xms1024M']; maxHeapSize = '1024M'
     systemProperties = ['moqui.conf':moquiConfProduction, 'moqui.runtime':moquiRuntime]
     main = '-jar'; args = [warName]
 }
 
-// use user-specified command line args like: "gradle load -Ptypes=seed -PtenantId=EXAMPLE1"
 task load(type: JavaExec) {
-    dependsOn allBuildTasks
+    description "Run Moqui to load data; to specify data types and tenant use something like: gradle load -Ptypes=seed -PtenantId=EXAMPLE1"
+    dependsOn checkRuntime, allBuildTasks
     workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=192m']; maxHeapSize = '512M'
     systemProperties = ['moqui.conf':moquiConfDev, 'moqui.runtime':moquiRuntime]
     main = '-jar'
@@ -100,7 +125,7 @@ task load(type: JavaExec) {
     args = argList
 }
 task loadProduction(type: JavaExec) {
-    dependsOn allBuildTasks
+    dependsOn checkRuntime, allBuildTasks
     workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=192m']; maxHeapSize = '512M'
     systemProperties = ['moqui.conf':moquiConfProduction, 'moqui.runtime':moquiRuntime]
     main = '-jar'
@@ -118,9 +143,8 @@ task loadSaveExec << {
     if (file(moquiRuntime+'/elasticsearch/data').exists()) ant.zip(destfile: 'SaveElasticSearch.zip') { fileset(dir: moquiRuntime+'/elasticsearch/data') { include(name: '**/*') } }
 }
 task loadSave {
-    dependsOn cleanAll
-    dependsOn load
-    dependsOn loadSaveExec
+    description "Clean all, build and load, then save database (H2, Derby), OrientDB, and ElasticSearch files; to be used before reloadSave"
+    dependsOn cleanAll, load, loadSaveExec
 }
 
 task reloadSaveExec << {
@@ -131,15 +155,9 @@ task reloadSaveExec << {
     if (file('SaveElasticSearch.zip').exists()) copy { from zipTree('SaveElasticSearch.zip'); into file(moquiRuntime+'/elasticsearch/data') }
 }
 task reloadSave {
-    // dependsOn cleanAll
-    dependsOn cleanTempDir
-    dependsOn cleanDb
-    dependsOn cleanOrientDb
-    dependsOn cleanElasticSearch
-    dependsOn cleanTxLog
-    dependsOn cleanLog
+    description "After a loadSave clean database (H2, Derby), OrientDB, and ElasticSearch files and reload from saved copy"
+    dependsOn cleanTempDir, cleanDb, cleanOrientDb, cleanElasticSearch, cleanTxLog, cleanLog
     dependsOn allBuildTasks
-
     dependsOn reloadSaveExec
 }
 
@@ -155,30 +173,34 @@ task deployTomcat << {
     copy { from file(warName); into file(tomcatHome + '/webapps'); rename(warName, 'ROOT.war') }
 }
 
-task addRuntime << {
-    // unzip the "moqui-${version}.war" file to the wartemp directory
-    //directory { dir = file('wartemp') }
-    copy { from zipTree(warName); into file('wartemp') }
-    // copy runtime directory (with a few exceptions) into a runtime directory in the war
-    copy {
-        from fileTree(dir: '.', include: moquiRuntime+'/**', excludes: ['**/*.jar', moquiRuntime+'/classes/**', moquiRuntime+'/lib/**', moquiRuntime+'/log/**'])
-        into file('wartemp')
-    }
-    // copy the jar files from runtime/lib
-    copy { from fileTree(dir: moquiRuntime+'/lib', include: '**/*.jar').files; into 'wartemp/WEB-INF/lib' }
-    // copy the classpath resource files from runtime/classes
-    copy { from fileTree(dir: moquiRuntime+'/classes', include: '**/*'); into 'wartemp/WEB-INF/classes' }
-    // copy the jar files from components
-    copy { from fileTree(dir: moquiRuntime+'/component-lib', include: '**/*.jar').files; into 'wartemp/WEB-INF/lib' }
-    copy { from fileTree(dir: moquiRuntime+'/component', include: '**/*.jar').files; into 'wartemp/WEB-INF/lib' }
-    // add MoquiInit.properties fresh copy, just in case it was changed
-    copy { from file('MoquiInit.properties'); into 'wartemp/WEB-INF/classes' }
+task addRuntime {
+    description "Create a moqui-plus-runtime.war file with the Moqui WAR and the runtime directory embedded in it"
+    dependsOn checkRuntime, allBuildTasks
+    doLast {
+        // unzip the "moqui-${version}.war" file to the wartemp directory
+        //directory { dir = file('wartemp') }
+        copy { from zipTree(warName); into file('wartemp') }
+        // copy runtime directory (with a few exceptions) into a runtime directory in the war
+        copy {
+            from fileTree(dir: '.', include: moquiRuntime+'/**', excludes: ['**/*.jar', moquiRuntime+'/classes/**', moquiRuntime+'/lib/**', moquiRuntime+'/log/**'])
+            into file('wartemp')
+        }
+        // copy the jar files from runtime/lib
+        copy { from fileTree(dir: moquiRuntime+'/lib', include: '**/*.jar').files; into 'wartemp/WEB-INF/lib' }
+        // copy the classpath resource files from runtime/classes
+        copy { from fileTree(dir: moquiRuntime+'/classes', include: '**/*'); into 'wartemp/WEB-INF/classes' }
+        // copy the jar files from components
+        copy { from fileTree(dir: moquiRuntime+'/component-lib', include: '**/*.jar').files; into 'wartemp/WEB-INF/lib' }
+        copy { from fileTree(dir: moquiRuntime+'/component', include: '**/*.jar').files; into 'wartemp/WEB-INF/lib' }
+        // add MoquiInit.properties fresh copy, just in case it was changed
+        copy { from file('MoquiInit.properties'); into 'wartemp/WEB-INF/classes' }
 
-    // zip it up again
-    ant.zip(destfile: plusRuntimeName) { fileset(dir: 'wartemp') { include(name: '**/*') } }
-    // alternative once supported: zip { archiveName plusRuntimeName; from fileTree(dir: 'wartemp', include: '**/*') }
-    // clean up the temporary directory
-    delete file('wartemp')
+        // zip it up again
+        ant.zip(destfile: plusRuntimeName) { fileset(dir: 'wartemp') { include(name: '**/*') } }
+        // alternative once supported: zip { archiveName plusRuntimeName; from fileTree(dir: 'wartemp', include: '**/*') }
+        // clean up the temporary directory
+        delete file('wartemp')
+    }
 }
 
 // don't use this task directly, use addRuntimeTomcat which calls this
@@ -192,6 +214,30 @@ task addRuntimeTomcat {
 }
 
 // ========== component tasks ==========
+
+task getComponent {
+    description "Get a component using specified location type, also check/get all components it depends on; requires component and locationType properties"
+    dependsOn checkRuntime
+    doLast {
+        if (project.hasProperty('locationType')) getComponentTop(locationType)
+        else throw new InvalidUserDataException("No locationType property specified")
+    }
+}
+task getCurrent {
+    description "Get the current archive for a component, also check each component it depends on and if not present get its current archive; requires component property"
+    dependsOn checkRuntime
+    doLast { getComponentTop('current') }
+}
+task getRelease {
+    description "Get the release archive for a component, also check each component it depends on and if not present get its configured release archive; requires component property"
+    dependsOn checkRuntime
+    doLast { getComponentTop('release') }
+}
+task getGit {
+    description "Clone the git repository for a component, also check each component it depends on and if not present clone its git repository; requires component property"
+    dependsOn checkRuntime
+    doLast { getComponentTop('git') }
+}
 
 Node parseAddons() { new XmlParser().parse(file('addons.xml')) }
 def getComponentTop(String locationType) {
@@ -251,11 +297,3 @@ File downloadComponent(String compName, String type, String url) {
     logger.lifecycle("Downloaded component ${compName} to ${compDir}")
     return compDir
 }
-
-task getComponent << {
-    if (project.hasProperty('locationType')) getComponentTop(locationType)
-    else throw new InvalidUserDataException("No locationType property specified")
-}
-task getCurrent << { getComponentTop('current') }
-task getRelease << { getComponentTop('release') }
-task getGit << { getComponentTop('git') }

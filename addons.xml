@@ -1,6 +1,7 @@
 <addons>
     <!-- FUTURE: Configure where to get runtime if not present -->
     <runtime type="git" url="https://github.com/moqui/runtime.git"/>
+    <!-- <runtime type="current" url="https://github.com/moqui/runtime/archive/master.zip"/> -->
 
     <repository name="github">
         <location type="current" url="https://github.com/${component.'@group'}/${component.'@name'}/archive/${component.'@branch'}.zip"/>
@@ -19,20 +20,4 @@
     <component group="moqui" name="SimpleScreens" version="1.0.0" branch="master" repository="github"/>
     <component group="moqui" name="HiveMind" version="1.1.3" branch="master" repository="github"/>
     <component group="moqui" name="PopCommerce" version="1.0.1" branch="master" repository="github"/>
-
-    <!-- Tasks
-      - gradle getRuntime
-        - Download runtime directory
-      - gradle getCurrent -Pcomponent={name}
-        - Download current archive, unzip in runtime/component
-        - Check each depends-on component, download current
-      - gradle getRelease -Pcomponent={name}
-        - Download release archive, unzip in runtime/component
-        - Check each depends-on component, download release
-      - gradle getGit -Pcomponent={name}
-        - Clone git repository in runtime/component
-        - Check each depends-on component, clone git repo
-      - gitPullAll
-        - Do a git pull to update moqui, runtime, and each installed component
-    -->
 </addons>
