@@ -62,27 +62,29 @@ task cleanAll { dependsOn clean, allCleanTasks, cleanDb, cleanOrientDb, cleanEla
 
 // ========== check/update tasks ==========
 
+def checkRuntimeDir(String locationType) {
+    File runtimeDir = file('runtime')
+    if (runtimeDir.exists()) return
+    if (!locationType) locationType = file('.git').exists() ? 'git' : 'release'
+    Node addons = parseAddons()
+    Node runtimeNode = addons.runtime.find({ it."@type" == locationType })
+    if (runtimeNode == null) throw new InvalidUserDataException("The runtime directory does not exist and no runtime element found (for type ${locationType}) in addons.xml")
+    String type = runtimeNode.'@type' ?: 'git'
+    String url = runtimeNode.'@url'
+    if (type == 'current' || type == 'release') {
+        File zipFile = file("runtime.zip")
+        ant.get(src: url, dest: zipFile)
+        // the eachFile closure removes the first path from each file, moving everything up a directory
+        copy { from zipTree(zipFile); into runtimeDir; eachFile { it.setPath((it.getRelativePath().getSegments() as List).tail().join("/")); return it } }
+        delete zipFile
+    } else if (type == 'git') {
+        Grgit.clone(dir: runtimeDir, uri: url)
+    }
+    logger.lifecycle("Downloaded runtime from ${url}")
+}
 task checkRuntime {
     description "If the runtime directory does not exist get it using settings in addons.xml"
-    doLast {
-        File runtimeDir = file('runtime')
-        if (runtimeDir.exists()) return
-        Node addons = parseAddons()
-        Node runtimeNode = addons.runtime[0]
-        if (runtimeNode == null) throw new InvalidUserDataException("The runtime directory does not exist and there is no runtime element in addons.xml")
-        String type = runtimeNode.'@type' ?: 'git'
-        String url = runtimeNode.'@url'
-        if (type == 'current' || type == 'release') {
-            File zipFile = file("runtime.zip")
-            ant.get(src: url, dest: zipFile)
-            // the eachFile closure removes the first path from each file, moving everything up a directory
-            copy { from zipTree(zipFile); into runtimeDir; eachFile { it.setPath((it.getRelativePath().getSegments() as List).tail().join("/")); return it } }
-            delete zipFile
-        } else if (type == 'git') {
-            Grgit.clone(dir: runtimeDir, uri: url)
-        }
-        logger.lifecycle("Downloaded runtime from ${url}")
-    }
+    doLast { checkRuntimeDir(null) }
 }
 task gitPullAll {
     description "Do a git pull to update moqui, runtime, and each installed component (for each where a .git directory is found)"
@@ -223,32 +225,30 @@ task addRuntimeTomcat {
 // ========== component tasks ==========
 
 task getComponent {
-    description "Get a component using specified location type, also check/get all components it depends on; requires component and locationType properties"
-    dependsOn checkRuntime
+    description "Get a component using specified location type, also check/get all components it depends on; requires component property; locationType property optional (defaults to git if there is a .git directory, otherwise to release)"
     doLast {
-        if (project.hasProperty('locationType')) getComponentTop(locationType)
-        else throw new InvalidUserDataException("No locationType property specified")
+        String curLocationType = file('.git').exists() ? 'git' : 'release'
+        if (project.hasProperty('locationType')) curLocationType = locationType
+        getComponentTop(curLocationType)
     }
 }
 task getCurrent {
     description "Get the current archive for a component, also check each component it depends on and if not present get its current archive; requires component property"
-    dependsOn checkRuntime
     doLast { getComponentTop('current') }
 }
 task getRelease {
     description "Get the release archive for a component, also check each component it depends on and if not present get its configured release archive; requires component property"
-    dependsOn checkRuntime
     doLast { getComponentTop('release') }
 }
 task getGit {
     description "Clone the git repository for a component, also check each component it depends on and if not present clone its git repository; requires component property"
-    dependsOn checkRuntime
     doLast { getComponentTop('git') }
 }
 
 Node parseAddons() { new XmlParser().parse(file('addons.xml')) }
 def getComponentTop(String locationType) {
     if (project.hasProperty('component')) {
+        checkRuntimeDir(locationType)
         Set compsChecked = new TreeSet()
         File componentDir = getComponent(component, locationType, parseAddons(), compsChecked)
         if (componentDir.exists()) logger.lifecycle("Got component ${component}, dependent components checked: ${compsChecked}")
