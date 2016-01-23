@@ -206,7 +206,9 @@ dependencies {
 
     // ========== runtime-only dependencies ==========
 
-    runtime group: 'org.apache.derby', name: 'derby', version: '10.12.1.1' // Apache 2.0
+    // Uncomment this to add Derby
+    // runtime group: 'org.apache.derby', name: 'derby', version: '10.12.1.1' // Apache 2.0
+
     runtime group: 'oro', name: 'oro', version: '2.0.8' // Apache 2.0
 
     // shiro-ehcache is good for caching auth in distributed environments, but has some quirks so not enabled by default (see shiro.ini)
