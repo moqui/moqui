@@ -35,6 +35,13 @@ def moquiConfProduction = 'conf/MoquiProductionConf.xml'
 
 def allCleanTasks = getTasksByName('clean', true)
 def allBuildTasks = getTasksByName('build', true)
+def allTestTasks = getTasksByName('test', true)
+def getComponentTestTasks() {
+    Set<Task> testTasks = new LinkedHashSet()
+    for (Project subProject in getSubprojects()) if (subProject.getName().startsWith('runtime/component'))
+        testTasks.addAll(subProject.getTasksByName('test', false))
+    return testTasks
+}
 
 // ========== clean tasks ==========
 
@@ -297,3 +304,9 @@ File downloadComponent(String compName, String type, String url) {
     logger.lifecycle("Downloaded component ${compName} to ${compDir}")
     return compDir
 }
+
+// ========== combined tasks ==========
+
+task cleanPullLoad { dependsOn cleanAll, gitPullAll, load }
+task cleanPullTest { dependsOn cleanAll, gitPullAll, load, allTestTasks }
+task cleanPullCompTest { dependsOn cleanAll, gitPullAll, load, getComponentTestTasks() }
