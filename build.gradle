@@ -12,6 +12,14 @@
  * <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
+buildscript {
+  repositories { jcenter() }
+  dependencies { classpath 'org.ajoberstar:gradle-git:1.3.2' }
+}
+plugins { id 'org.ajoberstar.grgit' version '1.3.2' }
+
+import org.ajoberstar.grgit.*
+
 allprojects { version = '1.6.1' }
 defaultTasks 'build'
 
@@ -182,3 +190,72 @@ task addRuntimeTomcat {
     dependsOn addRuntime
     dependsOn deployTomcatRuntime
 }
+
+// ========== component tasks ==========
+
+Node parseAddons() { new XmlParser().parse(file('addons.xml')) }
+def getComponentTop(String locationType) {
+    if (project.hasProperty('component')) {
+        Set compsChecked = new TreeSet()
+        File componentDir = getComponent(component, locationType, parseAddons(), compsChecked)
+        if (componentDir.exists()) logger.lifecycle("Got component ${component}, dependent components checked: ${compsChecked}")
+    } else {
+        throw new InvalidUserDataException("No component property specified")
+    }
+}
+File getComponent(String compName, String type, Node addons, Set compsChecked) {
+    // get the component
+    Node component = addons.component.find({ it."@name" == compName })
+    if (component == null) { throw new InvalidUserDataException("Component ${compName} not found in addons.xml") }
+    if (component.'@skip-get' == 'true') { logger.lifecycle("Skipping get component ${compName} (skip-get=true)"); return }
+    String repositoryName = (component.'@repository' ?: 'github')
+    Node repository = addons.repository.find({ it."@name" == repositoryName })
+    if (repository == null) { throw new InvalidUserDataException("Repository ${repositoryName} not found in addons.xml") }
+    Node location = repository.location.find({ it."@type" == type })
+    if (location == null) { throw new InvalidUserDataException("Location for type ${type} now found in repository ${repositoryName} in addons.xml") }
+    String url = Eval.me('component', component, '"""' + location.'@url' + '"""')
+    logger.lifecycle("Component ${compName}, type ${type}, url: ${url}")
+    File componentDir = downloadComponent(compName, type, url)
+
+    checkComponentDependencies(compName, type, addons, compsChecked)
+    return componentDir
+}
+def checkComponentDependencies(String compName, String type, Node addons, Set compsChecked) {
+    File componentDir = file("runtime/component/${compName}")
+    if (!componentDir.exists()) return
+    compsChecked.add(compName)
+    File compXmlFile = file("${componentDir.path}/component.xml")
+    if (!compXmlFile.exists()) return
+    Node compXml = new XmlParser().parse(compXmlFile)
+    for (Node dependsOn in compXml.'depends-on') {
+        String depCompName = dependsOn.'@name'
+        if (file("runtime/component/${depCompName}").exists()) {
+            if (!compsChecked.contains(depCompName)) checkComponentDependencies(depCompName, type, addons, compsChecked)
+        } else {
+            getComponent(depCompName, type, addons, compsChecked)
+        }
+    }
+}
+File downloadComponent(String compName, String type, String url) {
+    File compDir = file("runtime/component/${compName}")
+    if (compDir.exists()) { logger.lifecycle("Component ${compName} already exists at ${compDir}"); return compDir }
+    if (type == 'current' || type == 'release') {
+        File zipFile = file("runtime/component/${compName}.zip")
+        ant.get(src: url, dest: zipFile)
+        // the eachFile closure removes the first path from each file, moving everything up a directory
+        copy { from zipTree(zipFile); into compDir; eachFile { it.setPath((it.getRelativePath().getSegments() as List).tail().join("/")); return it } }
+        delete zipFile
+    } else if (type == 'git') {
+        Grgit.clone(dir: compDir, uri: url)
+    }
+    logger.lifecycle("Downloaded component ${compName} to ${compDir}")
+    return compDir
+}
+
+task getComponent << {
+    if (project.hasProperty('locationType')) getComponentTop(locationType)
+    else throw new InvalidUserDataException("No locationType property specified")
+}
+task getCurrent << { getComponentTop('current') }
+task getRelease << { getComponentTop('release') }
+task getGit << { getComponentTop('git') }
