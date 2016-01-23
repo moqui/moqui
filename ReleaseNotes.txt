@@ -11,6 +11,16 @@ TODO
 
 Build Changes
 
+- Gradle tasks to help handle runtime directory in a separate repository
+  from Moqui Framework
+- Added component management features as Gradle tasks
+  - Components available configured in addons.xml
+  - Repositories components come from configured in addons.xml
+  - Get component from current or release archive (getCurrent, getRelease)
+  - Get component from git repositories (getGit)
+  - When getting a component, automatically gets all components it depends
+    on (must be configured in addons.xml so it knows where to get them)
+  - Do a git pull for moqui, runtime, and all components
 - Most JAR files removed, framework build now uses Bintray JCenter
 - JAR files are downloaded as needed on build
 - For convenience in IDEs to copy JAR files to the framework/dependencies
